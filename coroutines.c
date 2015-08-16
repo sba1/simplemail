@@ -78,7 +78,7 @@ void coroutine_await_socket(struct coroutine_basic_context *context, int socket_
 
 /*****************************************************************************/
 
-coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context)
+coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context)
 {
 	coroutine_t coroutine;
 
@@ -92,7 +92,7 @@ coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutine_entry
 
 /*****************************************************************************/
 
-void coroutine_schedule(struct coroutine_scheduler *scheduler)
+void coroutine_schedule(coroutine_scheduler_t scheduler)
 {
 	struct timeval zero_timeout = {0};
 	struct list finished_coroutines_list;

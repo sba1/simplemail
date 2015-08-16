@@ -45,6 +45,7 @@ typedef struct coroutine *coroutine_t;
 typedef coroutine_return_t (*coroutine_entry_t)(struct coroutine_basic_context *arg);
 
 struct coroutine_scheduler;
+typedef struct coroutine_scheduler *coroutine_scheduler_t;
 
 /**
  * The basic context of a coroutine. This should be embedded in a higher
@@ -53,7 +54,7 @@ struct coroutine_scheduler;
 struct coroutine_basic_context
 {
 	/** The scheduler that is responsible for this context */
-	struct coroutine_scheduler *scheduler;
+	coroutine_scheduler_t scheduler;
 
 	/** The state that will be executed next for this coroutine */
 	int next_state;
@@ -124,13 +125,13 @@ void coroutine_await_socket(struct coroutine_basic_context *context, int socket_
  * @param context the coroutine's context
  * @return the coroutine just added or NULL for an error.
  */
-coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context);
+coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context);
 
 /**
  * Schedule all coroutines.
  *
  * @param scheduler the scheduler
  */
-void coroutine_schedule(struct coroutine_scheduler *scheduler);
+void coroutine_schedule(coroutine_scheduler_t scheduler);
 
 #endif

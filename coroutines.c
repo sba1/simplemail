@@ -62,9 +62,6 @@ struct coroutine_scheduler
 
 	/** Contains all waiting coroutines. Elements are of type coroutine_t */
 	struct list waiting_coroutines_list;
-
-	/** First active coroutine context */
-	struct coroutine_basic_context *first;
 };
 
 /*****************************************************************************/

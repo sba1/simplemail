@@ -148,10 +148,6 @@ static void coroutine_await_socket(struct coroutine_basic_context *context, int 
 	context->socket_fd = socket_fd;
 	context->write = write;
 	FD_SET(socket_fd, &context->scheduler->rfds);
-
-	/* Enqueue */
-	context->next = context->scheduler->first;
-	context->scheduler->first = context;
 }
 
 /**

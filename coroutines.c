@@ -166,7 +166,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		/* Execute all non-waiting coroutines */
 		for (;cor;cor = cor_next)
 		{
-			cor_next =  (coroutine_t)node_next(&cor->node);
+			cor_next =  coroutines_next(cor);
 			cor_ret = cor->entry(cor->context);
 			switch (cor_ret)
 			{
@@ -226,7 +226,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 					list_insert_tail(&scheduler->coroutines_list.list, &cor->node);
 					break;
 				}
-				f = (coroutine_t)node_next(&f->node);
+				f = coroutines_next(f);
 			}
 		}
 
@@ -239,7 +239,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 			for (;cor;cor = cor_next)
 			{
-				cor_next =  (coroutine_t)node_next(&cor->node);
+				cor_next =  coroutines_next(cor);
 				if (cor->context->socket_fd < 0)
 					continue;
 

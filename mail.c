@@ -1548,7 +1548,7 @@ int mail_process_headers(struct mail_complete *mail)
 	{
 		char *buf = header->contents;
 		const struct header_entry *header_entry;
-		unsigned char lowercase_header[MAX_WORD_LENGTH+1];
+		char lowercase_header[MAX_WORD_LENGTH+1];
 		int i;
 
 		header_next = (struct header*)node_next(&header->node);
@@ -1560,7 +1560,7 @@ int mail_process_headers(struct mail_complete *mail)
 		 */
 		for (i=0; i < sizeof(lowercase_header); i++)
 		{
-			unsigned char c = header->name[i];
+			char c = header->name[i];
 			if (c >= 65 && c <= 90) c = c | 0x20;
 			lowercase_header[i] = c;
 			if (!c) break;

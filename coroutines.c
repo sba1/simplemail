@@ -234,7 +234,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		{
 			int polling = !!list_first(&scheduler->coroutines_list.list);
 			printf("about to select (%s)\n", polling?"polling":"blocking");
-			select(nfds+1, &readfds, NULL, NULL, polling?&zero_timeout:NULL);
+			select(nfds+1, &readfds, &writefds, NULL, polling?&zero_timeout:NULL);
 
 			cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 			for (;cor;cor = cor_next)

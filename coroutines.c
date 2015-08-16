@@ -66,6 +66,27 @@ struct coroutine_scheduler
 
 /*****************************************************************************/
 
+coroutine_scheduler_t coroutine_scheduler_new(void)
+{
+	coroutine_scheduler_t scheduler;
+
+	if (!(scheduler = (coroutine_scheduler_t)malloc(sizeof(*scheduler))))
+		return NULL;
+
+	FD_ZERO(&scheduler->rfds);
+	list_init(&scheduler->coroutines_list);
+	list_init(&scheduler->waiting_coroutines_list);
+}
+
+/*****************************************************************************/
+
+void coroutine_scheduler_dispose(coroutine_scheduler_t scheduler)
+{
+	free(scheduler);
+}
+
+/*****************************************************************************/
+
 void coroutine_await_socket(struct coroutine_basic_context *context, int socket_fd, int write)
 {
 	context->socket_fd = socket_fd;

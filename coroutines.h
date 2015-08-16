@@ -109,6 +109,21 @@ struct coroutine_basic_context
 	return COROUTINE_DONE;
 
 /**
+ * Create a new scheduler for coroutines.
+ *
+ * @return the scheduler nor NULL for an error.
+ */
+coroutine_scheduler_t coroutine_scheduler_new(void);
+
+/**
+ * Dispose the given scheduler. Does not check if there are any coroutines
+ * left.
+ *
+ * @param scheduler defines the scheduler to be disposed.
+ */
+void coroutine_scheduler_dispose(coroutine_scheduler_t scheduler);
+
+/**
  * Preapre the waiting state.
  *
  * @param context

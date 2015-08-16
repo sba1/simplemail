@@ -34,6 +34,7 @@ TESTEXES=\
 	boyermoore_unittest \
 	codesets_unittest \
 	configuration_unittest \
+	coroutines_unittest \
 	filter_unittest \
 	folder_unittest \
 	index_unittest \

@@ -156,7 +156,6 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 
 	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
 	{
-		coroutine_return_t cor_ret;
 		coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
 		coroutine_t cor_next;
 
@@ -166,6 +165,8 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		/* Execute all non-waiting coroutines */
 		for (;cor;cor = cor_next)
 		{
+			coroutine_return_t cor_ret;
+
 			cor_next =  coroutines_next(cor);
 			cor_ret = cor->entry(cor->context);
 			switch (cor_ret)

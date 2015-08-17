@@ -51,11 +51,7 @@ NOMEMLEAKSPERDEFAULT=\
 
 test-objs/%.o: ../%.c
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -MMD -c $< -o $@
-# Now add, for each prerequiste, a corresponding (empty) target
-	@cat $(@:.o=.d) | tr -d '\\' | tr '\n' ' ' | sed -e 's/.\+:\s*//' | sed -e 's/\s\+/:\n/g' >$(@:.o=.d.tmp)
-	@cat $(@:.o=.d.tmp) >>$(@:.o=.d)
-	@rm $(@:.o=.d.tmp)
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # General rule to compile the unit tests
 %_unittest: %_unittest.c lib$(SIMPLEMAIL_LIB).a

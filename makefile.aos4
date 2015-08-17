@@ -228,11 +228,7 @@ $(OBJSDIR)/%.o: %.S
 # Generate dependencies on the fly
 # Inspired by http://scottmcpeak.com/autodepend/autodepend.html
 $(OBJSDIR)/%.o: %.c
-	$(CC) -MMD $(CFLAGS) -c $< -o $@
-# Now add, for each prerequiste, a corresponding (empty) target
-	@cat $(@:.o=.d) | tr -d '\\' | tr '\n' ' ' | sed -e 's/.\+:\s*//' | sed -e 's/\s\+/:\n/g' >$(@:.o=.d.tmp)
-	@cat $(@:.o=.d.tmp) >>$(@:.o=.d)
-	@rm $(@:.o=.d.tmp)
+	$(CC) -MMD -MP $(CFLAGS) -c $< -o $@
 
 $(TESTOBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@

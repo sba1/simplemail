@@ -58,6 +58,9 @@ struct progmon
 
 struct progmon_info
 {
+	/** A unique id */
+	int id;
+
 	utf8 *name;
 	utf8 *working_on;
 	unsigned int work;

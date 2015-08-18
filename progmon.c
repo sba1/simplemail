@@ -24,6 +24,9 @@ static int progmon_total_work_done;
 /** @brief number of active progress monitors */
 static int progmon_number_of_actives;
 
+/** @brief the id for a new progress monitor */
+static int progmon_next_id;
+
 /** @brief arbitrate access to global data */
 static semaphore_t progmon_list_sem;
 
@@ -31,6 +34,7 @@ struct progmon_default
 {
 	struct progmon pm;
 
+	int id;
 	utf8 *name;
 	utf8 *working_on;
 	unsigned int work;
@@ -48,6 +52,7 @@ static void progmon_begin(struct progmon *pm, unsigned int work, const utf8 *txt
 
 	SM_DEBUGF(10,("%s\n",txt));
 	thread_lock_semaphore(progmon_list_sem);
+	pmd->id = progmon_next_id++;
 	list_insert_tail(&progmon_list,&pm->node);
 	progmon_total_work += work;
 	progmon_number_of_actives++;
@@ -221,6 +226,7 @@ int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *uda
 	pm = (struct progmon_default*)list_first(&progmon_list);
 	while (pm)
 	{
+		info.id = pm->id;
 		info.name = pm->name;
 		info.work = pm->work;
 		info.work_done = pm->work_done;

@@ -122,11 +122,8 @@ static void progmon_done(struct progmon *pm)
 		simplemail_update_progress_monitors();
 }
 
-/**
- * Returns the total work.
- *
- * @return
- */
+/*****************************************************************************/
+
 unsigned int progmon_get_total_work(void)
 {
 	unsigned int tw;
@@ -138,11 +135,8 @@ unsigned int progmon_get_total_work(void)
 	return tw;
 }
 
-/**
- * Returns the total work work_done.
- *
- * @return
- */
+/*****************************************************************************/
+
 unsigned int progmon_get_total_work_done(void)
 {
 	unsigned int twd;
@@ -154,11 +148,8 @@ unsigned int progmon_get_total_work_done(void)
 	return twd;
 }
 
-/**
- * Return number of active monitors.
- *
- * @return
- */
+/*****************************************************************************/
+
 unsigned int progmon_get_number_of_actives(void)
 {
 	unsigned int noa;
@@ -170,11 +161,8 @@ unsigned int progmon_get_number_of_actives(void)
 	return noa;
 }
 
-/**
- * Creates a new progress monitor.
- *
- * @return
- */
+/*****************************************************************************/
+
 struct progmon *progmon_create(void)
 {
 	struct progmon_default *pm;
@@ -192,11 +180,8 @@ struct progmon *progmon_create(void)
 	return &pm->pm;
 }
 
-/**
- * Deletes the given progress monitor.
- *
- * @param pm
- */
+/*****************************************************************************/
+
 void progmon_delete(struct progmon *pm)
 {
 	struct progmon_default *pmd = (struct progmon_default*)pm;
@@ -208,12 +193,8 @@ void progmon_delete(struct progmon *pm)
 	free(pm);
 }
 
-/**
- * Scans available progress monitors.
- *
- * @param callback
- * @param udata
- */
+/*****************************************************************************/
+
 int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *udata)
 {
 	int num;
@@ -242,11 +223,8 @@ int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *uda
 	return num;
 }
 
+/*****************************************************************************/
 
-/**
- *
- * @return
- */
 int progmon_init(void)
 {
 	int rc;
@@ -264,9 +242,8 @@ int progmon_init(void)
 	return rc;
 }
 
-/**
- * Deinitializes the prog monitors.
- */
+/*****************************************************************************/
+
 void progmon_deinit(void)
 {
 	SM_ENTER;

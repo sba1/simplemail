@@ -148,7 +148,6 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 												  struct mail_info * (*get_next_mail_info)(void *handle, void *userdata),
 												  void *userdata);
 struct filter_rule *filter_find_rule(struct filter *filter, int num);
-char *filter_get_rule_string(struct filter_rule *rule);
 void filter_remove_rule(struct filter_rule *fr);
 void filter_parse_filter_rules(struct filter *f);
 void filter_parse_all_filters(void);

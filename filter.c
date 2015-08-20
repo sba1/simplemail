@@ -33,11 +33,8 @@
 
 #include "support.h"
 
-/**
- * Creates a new filter instance with default values.
- *
- * @return
- */
+/*****************************************************************************/
+
 struct filter *filter_create(void)
 {
 	struct filter *f = (struct filter*)malloc(sizeof(struct filter));
@@ -51,11 +48,8 @@ struct filter *filter_create(void)
 	return f;
 }
 
-/**
- * Deinitializes the parsed filter rule. Does not free the rule!
- *
- * @param p
- */
+/*****************************************************************************/
+
 void filter_deinit_rule(struct filter_rule_parsed *p)
 {
 	boyermoore_delete_context(p->bm_context);
@@ -65,13 +59,8 @@ void filter_deinit_rule(struct filter_rule_parsed *p)
 	p->parsed = NULL;
 }
 
-/**
- * Initializes the given filter rule for the given str with flags.
- *
- * @param p
- * @param str
- * @param flags
- */
+/*****************************************************************************/
+
 void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags)
 {
 	int strl;
@@ -86,15 +75,8 @@ void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags)
 		p->parsed = sm_parse_pattern(str, flags);
 }
 
-/**
- * Match the given str againt the parsed filter.
- *
- * @param p
- * @param str should be 0-byte terminated even if strl is given.
- * @param strl length of the string.
- * @param flags
- * @return
- */
+/*****************************************************************************/
+
 int filter_match_rule_len(struct filter_rule_parsed *p, char *str, int strl, int flags)
 {
 	if (p->bm_context)
@@ -102,11 +84,8 @@ int filter_match_rule_len(struct filter_rule_parsed *p, char *str, int strl, int
 	return sm_match_pattern(p->parsed,str,flags);
 }
 
-/**
- * Preprocesses the pattern of all rules of the given filter
- *
- * @param f the filter of which the rules should be processed
- */
+/*****************************************************************************/
+
 void filter_parse_filter_rules(struct filter *f)
 {
 	struct filter_rule *rule;
@@ -150,9 +129,8 @@ void filter_parse_filter_rules(struct filter *f)
 	}
 }
 
-/**
- * Preparse the pattern of all filters.
- */
+/*****************************************************************************/
+
 void filter_parse_all_filters(void)
 {
 	struct filter *f = filter_list_first();
@@ -163,12 +141,8 @@ void filter_parse_all_filters(void)
 	}
 }
 
-/**
- * Duplicates a filter instance.
- *
- * @param filter
- * @return
- */
+/*****************************************************************************/
+
 struct filter *filter_duplicate(struct filter *filter)
 {
 	struct filter *f = (struct filter*)malloc(sizeof(struct filter));
@@ -231,11 +205,8 @@ struct filter *filter_duplicate(struct filter *filter)
 	return f;
 }
 
-/**
- * Disposes the filter and all associated rules.
- *
- * @param f
- */
+/*****************************************************************************/
+
 void filter_dispose(struct filter *f)
 {
 	struct filter_rule *rule;
@@ -249,24 +220,15 @@ void filter_dispose(struct filter *f)
 	free(f);
 }
 
-/**
- * Adds the given rule to the filter.
- *
- * @param filter
- * @param fr
- */
+/*****************************************************************************/
+
 void filter_add_rule(struct filter *filter, struct filter_rule *fr)
 {
 	list_insert_tail(&filter->rules_list,&fr->node);
 }
 
-/**
- * Creates and adds a rule of the given type to the given filter.
- *
- * @param filter
- * @param type
- * @return
- */
+/*****************************************************************************/
+
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 {
 	struct filter_rule *rule = (struct filter_rule*)malloc(sizeof(struct filter_rule));
@@ -280,13 +242,8 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 	return rule;
 }
 
-/**
- * Adds the copy of the given text to the filter rule if rule
- * is a text rule.
- *
- * @param r
- * @param text
- */
+/*****************************************************************************/
+
 void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text)
 {
 	char ***dst;
@@ -316,14 +273,8 @@ void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text)
 	}
 }
 
-/**
- * Create a filter rule that matches the given set of strings.
- *
- * @param strings
- * @param num_strings
- * @param flags
- * @return
- */
+/*****************************************************************************/
+
 struct filter_rule *filter_rule_create_from_strings(char **strings, int num_strings, int type)
 {
 	int pos_in_a;
@@ -369,14 +320,8 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 	return rule;
 }
 
-/**
- * Create a filter rule from common sorted recipients.
- *
- * @param addresses an array to an array of sorted recipients.
- * @param num_addresses length of addresses.
- * @param type
- * @return
- */
+/*****************************************************************************/
+
 struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***addresses, unsigned int num_addresses)
 {
 	/* This is a very naive implementation, which could be optimized */
@@ -427,15 +372,8 @@ struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***add
 	return r;
 }
 
-/**
- * Create filter rule of the specific type from a mail iteration.
- *
- * @param get_first_mail_info
- * @param get_next_mail_info
- * @param num_mails
- * @param type
- * @return
- */
+/*****************************************************************************/
+
 struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_create_type type, int num_mails,
 												  struct mail_info * (*get_first_mail_info)(void *handle, void *userdata),
 												  struct mail_info * (*get_next_mail_info)(void *handle, void *userdata),
@@ -516,12 +454,8 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 	return fr;
 }
 
+/*****************************************************************************/
 
-/**
- * Remove the rule from its filter.
- *
- * @param fr
- */
 void filter_remove_rule(struct filter_rule *fr)
 {
 	if (fr)
@@ -560,33 +494,22 @@ void filter_remove_rule(struct filter_rule *fr)
 	}
 }
 
-/**
- * Return the num-th rule of the given filter.
- *
- * @param filter
- * @param num
- * @return
- */
+/*****************************************************************************/
+
 struct filter_rule *filter_find_rule(struct filter *filter, int num)
 {
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
 }
 
-/**
- * Returns the num-th action of the given filter.
- *
- * @param filter
- * @param num
- * @return
- */
+/*****************************************************************************/
+
 struct filter_action *filter_find_action(struct filter *filter, int num)
 {
 	return (struct filter_action *)list_find(&filter->action_list,num);
 }
 
-/**
- * Clear the global configuration filter list.
- */
+/*****************************************************************************/
+
 void filter_list_clear(void)
 {
 	struct filter *f;
@@ -596,11 +519,8 @@ void filter_list_clear(void)
 	}
 }
 
-/**
- * Adds a duplicate of the filter to the global filter list
- *
- * @param f
- */
+/*****************************************************************************/
+
 void filter_list_add_duplicate(struct filter *f)
 {
 	struct filter *df;
@@ -611,32 +531,22 @@ void filter_list_add_duplicate(struct filter *f)
 	}
 }
 
-/**
- * Get the first filter of the global filter list.
- *
- * @return
- */
+/*****************************************************************************/
+
 struct filter *filter_list_first(void)
 {
 	return (struct filter*)list_first(&user.config.filter_list);
 }
 
-/**
- * Returns the next filter of the given filter.
- *
- * @param f
- * @return
- */
+/*****************************************************************************/
+
 struct filter *filter_list_next(struct filter *f)
 {
 	return (struct filter*)node_next(&f->node);
 }
 
-/**
- * Returns whether the global filter list contains any remote filters.
- *
- * @return
- */
+/*****************************************************************************/
+
 int filter_list_has_remote(void)
 {
 	struct filter *f = filter_list_first();
@@ -648,11 +558,8 @@ int filter_list_has_remote(void)
 	return 0;
 }
 
-/**
- * Loads the filter list from the already fopen()'ed filehandle.
- *
- * @param fh
- */
+/*****************************************************************************/
+
 void filter_list_load(FILE *fh)
 {
 	char *buf = (char*)malloc(512);
@@ -772,12 +679,8 @@ void filter_list_load(FILE *fh)
 
 #define MAKESTR(x) ((x)?(char*)(x):"")
 
-/**
- * Saves the filter list into the given handle that has been opened with
- * fopen() before.
- *
- * @param fh
- */
+/*****************************************************************************/
+
 void filter_list_save(FILE *fh)
 {
 	struct filter *f = filter_list_first();
@@ -880,12 +783,8 @@ void filter_list_save(FILE *fh)
 	}
 }
 
-/**
- * Duplicates the given search option.
- *
- * @param so
- * @return
- */
+/*****************************************************************************/
+
 struct search_options *search_options_duplicate(struct search_options *so)
 {
 	struct search_options *new_so = (struct search_options*)malloc(sizeof(*so));
@@ -901,10 +800,8 @@ struct search_options *search_options_duplicate(struct search_options *so)
 	return new_so;
 }
 
-/**
- * Frees all memory associated with the given search options.
- * @param so
- */
+/*****************************************************************************/
+
 void search_options_free(struct search_options *so)
 {
 	free(so->folder);

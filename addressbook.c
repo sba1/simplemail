@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressbook.c
-*/
+/**
+ * @file
+ */
 
 #include "addressbook.h"
 
@@ -50,31 +50,22 @@ static void freesnailphone(struct address_snail_phone *dest);
 
 /******************* Group *****************/
 
-/**
- * Returns the first address book group.
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_first_group(void)
 {
 	return (struct addressbook_group*)list_first(&group_list);
 }
 
-/**
- * Returns the next address book group.
- *
- * @param grp
- * @return
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_next_group(struct addressbook_group *grp)
 {
 	return (struct addressbook_group*)node_next(&grp->node);
 }
 
-/**
- * Duplicates a given address book group.
- *
- * @param srcgrp
- * @return
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *srcgrp)
 {
 	struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
@@ -90,11 +81,8 @@ struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *
 	return NULL;
 }
 
-/**
- * Free all memory associated to the given address book group.
- *
- * @param grp
- */
+/*****************************************************************************/
+
 void addressbook_free_group(struct addressbook_group *grp)
 {
 	if (!grp) return;
@@ -103,12 +91,8 @@ void addressbook_free_group(struct addressbook_group *grp)
 	free(grp);
 }
 
-/**
- * Find an address book group by the given name.
- *
- * @param name
- * @return
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_find_group_by_name(const utf8 *name)
 {
 	struct addressbook_group *grp;
@@ -123,12 +107,8 @@ struct addressbook_group *addressbook_find_group_by_name(const utf8 *name)
 	return NULL;
 }
 
-/**
- * Add a new address book group with the given name. Duplicates are allowed.
- *
- * @param name specifies the name of the address book group to be created.
- * @return the reference to the newly created address book group.
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_add_group(const utf8 *name)
 {
 	struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
@@ -145,12 +125,8 @@ struct addressbook_group *addressbook_add_group(const utf8 *name)
 	return NULL;
 }
 
-/**
- * Adds a duplicate of the given address book group.
- *
- * @param group the group to be added.
- * @return the reference to the newly created group.
- */
+/*****************************************************************************/
+
 struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_group *group)
 {
 	if ((group = addressbook_duplicate_group(group)))
@@ -161,26 +137,22 @@ struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_gro
 
 /***************** Entry ********************/
 
-/**
- * Returns the first address book entry.
- */
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_first_entry(void)
 {
 	return (struct addressbook_entry_new*)list_first(&address_list);
 }
 
-/**
- * Returns the next address book entry.
- */
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_next_entry(struct addressbook_entry_new *entry)
 {
 	return (struct addressbook_entry_new*)node_next(&entry->node);
 }
 
-/**
- * Create a duplicate of the given address book entry. The duplicate is not
- * added to the list.
- */
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook_entry_new *entry)
 {
 	struct addressbook_entry_new *new_entry = (struct addressbook_entry_new*)malloc(sizeof(*entry));
@@ -209,9 +181,8 @@ struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook
 	return new_entry;
 }
 
-/**
- * Add a duplicate of the given address book entry.
- */
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook_entry_new *entry)
 {
 	if ((entry = addressbook_duplicate_entry_new(entry)))
@@ -219,9 +190,8 @@ struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook
 	return entry;
 }
 
-/**
- * Free the memory associated with the given address book entry.
- */
+/*****************************************************************************/
+
 void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 {
 	free(entry->alias);
@@ -241,18 +211,8 @@ void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 	free(entry);
 }
 
-/**
- * Returns the rest of the a partial string with respect to the given entry.
- *
- * @param entry the entry
- * @param part a prefix string that should be completed by some field of the
- *  entry.
- * @param type_ptr will be filled with 0 if the alias has been completed, 1 for the
- *  real name and all greater than 1 the email.
- *
- * @return pointer to the remaining characters or NULL if no match was found.
- *  You must not change the contents of the result!
- */
+/*****************************************************************************/
+
 char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry, char *part, int *type_ptr)
 {
 	int pl;
@@ -283,12 +243,8 @@ char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry,
 	return NULL;
 }
 
-/**
- * Adds an entry into the address book.
- *
- * @param real name
- * @return the reference to the entry that have just been added.
- */
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_add_entry(const char *realname)
 {
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)malloc(sizeof(*entry));
@@ -301,9 +257,13 @@ struct addressbook_entry_new *addressbook_add_entry(const char *realname)
 
 /*************** FileIO ******************/
 
-/**************************************************************************
- Put a xml elelemt into a file (if string exists)
-**************************************************************************/
+/**
+ * Put a xml elelemt into a file (if string exists).
+ *
+ * @param fh
+ * @param element
+ * @param contents
+ */
 static void put_xml_element_string(FILE *fh, const char *element, const char *contents)
 {
 	const char *src;
@@ -354,9 +314,13 @@ static struct {
 	char *classic_group_name;
 } xml_context;
 
-/**************************************************************************
- Start Tag
-**************************************************************************/
+/**
+ * Start Tag.
+ *
+ * @param data
+ * @param el
+ * @param attr
+ */
 SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 {
 	/* new addressbook format */
@@ -401,9 +365,12 @@ SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 	}
 }  /* End of start handler */
 
-/**************************************************************************
- End Tag
-**************************************************************************/
+/**
+ * End Tag.
+ *
+ * @param data
+ * @param el
+ */
 SAVEDS void xml_end_tag(void *data, const char *el)
 {
 	struct address_snail_phone *asp = NULL;
@@ -565,9 +532,13 @@ static char *uft8toiso(char *chr, char *code)
 }
 #endif
 
-/**************************************************************************
- Read the characters
-**************************************************************************/
+/**
+ * Read the characters.
+ *
+ * @param data
+ * @param s
+ * @param len
+ */
 SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 {
 	if (xml_context.newcontact_tag || xml_context.newgroup_tag ||
@@ -603,9 +574,8 @@ SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 	}
 }
 
-/**************************************************************************
- Initializes the Addressbook
-**************************************************************************/
+/*****************************************************************************/
+
 void init_addressbook(void)
 {
 	struct addressbook_entry_new *entry;
@@ -714,9 +684,8 @@ void init_addressbook(void)
 	}
 }
 
-/**************************************************************************
- Cleanups the addressbook
-**************************************************************************/
+/*****************************************************************************/
+
 void cleanup_addressbook(void)
 {
 	struct addressbook_entry_new *entry;
@@ -729,9 +698,11 @@ void cleanup_addressbook(void)
 		addressbook_free_group(group);
 }
 
-/**************************************************************************
- Load the entries in the current group as XML
-**************************************************************************/
+/**
+ * Load the entries in the current group as XML.
+ *
+ * @param fh
+ */
 static void addressbook_load_entries(FILE *fh)
 {
 	char *buf;
@@ -778,9 +749,9 @@ static void addressbook_load_entries(FILE *fh)
 	free(buf);
 }
 
-/**************************************************************************
- Loads the Addressbook as the xml format
-**************************************************************************/
+
+/*****************************************************************************/
+
 int addressbook_import_sm(char *filename)
 {
 	int retval = 0;
@@ -814,9 +785,12 @@ static char *striplr(char *string)
 	return string;
 }
 
-/**************************************************************************
- Import addressbook entries from YAM
-**************************************************************************/
+/**
+ * Import addressbook entries from YAM.
+ *
+ * @param fp
+ * @return
+ */
 static int yam_import_entries(FILE *fp)
 {
 	int rc = 1;
@@ -915,9 +889,8 @@ static int yam_import_entries(FILE *fp)
 	return rc;
 }
 
-/**************************************************************************
- Import addressbook entries from YAM
-**************************************************************************/
+/*****************************************************************************/
+
 int addressbook_import_yam(char *filename)
 {
 	int rc = 0;
@@ -953,11 +926,8 @@ int addressbook_import_yam(char *filename)
 	return rc;
 }
 
-/**
- * Load the addressbook. Returns 0 for an error.
- *
- * @return
- */
+/*****************************************************************************/
+
 int addressbook_load(void)
 {
 	int rc;
@@ -986,9 +956,12 @@ int addressbook_load(void)
 #define BOOK_YAM 1
 #define BOOK_SM 2
 
-/**************************************************************************
- Returns the type of an addressbook file
-**************************************************************************/
+/**
+ * Returns the type of an addressbook file.
+ *
+ * @param filename
+ * @return
+ */
 static int addressbook_get_type(char *filename)
 {
 	int rc = BOOK_UNKNOWN;
@@ -1009,12 +982,8 @@ static int addressbook_get_type(char *filename)
 	return rc;
 }
 
-/**************************************************************************
- Add entries from a specified file. Set append to 1 if the addressbook
- should be appended. filename mybe NULL which means that the default
- filename is used. Returns 1 for success.
- TODO: replace addressbook_load().
-**************************************************************************/
+/*****************************************************************************/
+
 int addressbook_import_file(char *filename, int append)
 {
 	char *allocated_filename = NULL;
@@ -1048,9 +1017,13 @@ int addressbook_import_file(char *filename, int append)
 	return rc;
 }
 
-/**************************************************************************
- Saves the address_snail_phone structure as xml
-**************************************************************************/
+/**
+ * Saves the address_snail_phone structure as xml.
+ *
+ * @param container
+ * @param asp
+ * @param fh
+ */
 static void addressbook_save_snail_phone(const char *container, struct address_snail_phone *asp, FILE *fh)
 {
 	fprintf(fh,"<%s>\n",container);
@@ -1070,9 +1043,12 @@ static void addressbook_save_snail_phone(const char *container, struct address_s
 	fprintf(fh,"</%s>\n",container);
 }
 
-/**************************************************************************
- Save an entry
-**************************************************************************/
+/**
+ * Save an entry to the given file.
+ *
+ * @param fh where the entry is stored.
+ * @param entry
+ */
 static void addressbook_save_entry(FILE *fh, struct addressbook_entry_new *entry)
 {
 	int i;
@@ -1106,9 +1082,12 @@ static void addressbook_save_entry(FILE *fh, struct addressbook_entry_new *entry
 	fputs("</newcontact>\n",fh);
 }
 
-/**************************************************************************
- Save a group
-**************************************************************************/
+/**
+ * Save a group to the given file
+ *
+ * @param fh where the group is stored
+ * @param group the group
+ */
 static void addressbook_save_group(FILE *fh, struct addressbook_group *group)
 {
 	fputs("<newgroup>\n",fh);
@@ -1117,11 +1096,8 @@ static void addressbook_save_group(FILE *fh, struct addressbook_group *group)
 	fputs("</newgroup>\n",fh);
 }
 
-/**
- * Saves the addressbok to a given file.
- *
- * @param filename
- */
+/*****************************************************************************/
+
 void addressbook_save_as(char *filename)
 {
 	FILE *fh = fopen(filename,"w");
@@ -1151,9 +1127,8 @@ void addressbook_save_as(char *filename)
 	}
 }
 
-/**
- * Saved the addressbook to the default file
- */
+/*****************************************************************************/
+
 void addressbook_save(void)
 {
 	char *filename;
@@ -1167,10 +1142,8 @@ void addressbook_save(void)
 	free(filename);
 }
 
-/**************************************************************************
- Returns a path to the portait of the given e-mail. The returned string
- is allocated with malloc().
-**************************************************************************/
+/*****************************************************************************/
+
 char *addressbook_download_portrait(char *email)
 {
 	if (sm_makedir("PROGDIR:.portraits"))
@@ -1205,9 +1178,13 @@ char *addressbook_download_portrait(char *email)
 	return NULL;
 }
 
-/**************************************************************************
- Copies the contents of a struct address_snail_phone to another one
-**************************************************************************/
+
+/**
+ * Copies the contents of a struct address_snail_phone to another one.
+ *
+ * @param dest
+ * @param src
+ */
 static void snailphonecpy(struct address_snail_phone *dest, struct address_snail_phone *src)
 {
 	dest->title = mystrdup(src->title);
@@ -1223,10 +1200,12 @@ static void snailphonecpy(struct address_snail_phone *dest, struct address_snail
 	dest->fax = mystrdup(src->fax);
 }
 
-/**************************************************************************
- Frees all strings associated with dest (only the contents! not the
- struct itself)
-**************************************************************************/
+/**
+ * Frees all strings associated with dest (only the contents! not the
+ * struct itself)
+ *
+ * @param dest
+ */
 static void freesnailphone(struct address_snail_phone *dest)
 {
 	/* Its safe to call free() with NULL! */
@@ -1243,9 +1222,8 @@ static void freesnailphone(struct address_snail_phone *dest)
 	free(dest->fax);
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_find_entry_by_address(const char *email)
 {
 	struct addressbook_entry_new *entry;
@@ -1264,9 +1242,8 @@ struct addressbook_entry_new *addressbook_find_entry_by_address(const char *emai
 	return NULL;
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_find_entry_by_alias(const char *alias)
 {
 	struct addressbook_entry_new *entry;
@@ -1280,9 +1257,8 @@ struct addressbook_entry_new *addressbook_find_entry_by_alias(const char *alias)
 	return NULL;
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 struct addressbook_entry_new *addressbook_find_entry_by_realname(const char *realname)
 {
 	struct addressbook_entry_new *entry;
@@ -1295,12 +1271,15 @@ struct addressbook_entry_new *addressbook_find_entry_by_realname(const char *rea
 	}
 	return NULL;
 }
-
-/**************************************************************************
- Returns the expanded email address of given entry. It prefers to use the
- email address given by the index. If index is out of range, NULL is
- returned
-**************************************************************************/
+/**
+ * Returns the expanded email address of given entry. It prefers to use the
+ * email address given by the index. If index is out of range, NULL is
+ * returned
+ *
+ * @param entry
+ * @param index
+ * @return
+ */
 static char *addressbook_get_expanded_email_from_entry_indexed(struct addressbook_entry_new *entry, int index)
 {
 	string str;
@@ -1335,14 +1314,8 @@ bailout:
 	return NULL;
 }
 
+/*****************************************************************************/
 
-/**************************************************************************
- This function returns an expanded string consisting of phrases and email
- addresses. Input string is a comma separated list of phrases, email
- addresses or both.
- It uses the address book for that purpose and performs syntax checks
- (uses some parse functions). If NULL is returned something had failed.
-**************************************************************************/
 char *addressbook_get_expanded(char *unexpand)
 {
 	struct addressbook_entry_new *entry;
@@ -1488,10 +1461,8 @@ bailout:
 	return NULL;
 }
 
-/**************************************************************************
- Returns a string array of all addresses within the addressbook.
- array must be free'd with array_free() when no longer used.
-**************************************************************************/
+/*****************************************************************************/
+
 char **addressbook_get_array_of_email_addresses(void)
 {
 	struct addressbook_entry_new *entry;
@@ -1506,9 +1477,8 @@ char **addressbook_get_array_of_email_addresses(void)
 	return array;
 }
 
-/**************************************************************************
- Completes an groupname/alias/realname/e-mail address of the addressbook
-**************************************************************************/
+/*****************************************************************************/
+
 char *addressbook_complete_address(char *address)
 {
 	int al = strlen(address);

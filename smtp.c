@@ -522,7 +522,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
  * @param account the account for which auth should be processed.
  * @return 1 on success, 0 otherwise.
  */
-int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
+static int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 {
 	char dom[512];
 	char *answer;

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** http.c
-*/
+/**
+ * @file http.c
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +41,8 @@
 #include "support_indep.h"
 
 #include "http.h"
+
+/*****************************************************************************/
 
 int http_download_photo(char *path, char *email)
 {
@@ -89,6 +91,8 @@ int http_download_photo(char *path, char *email)
 	close_socket_lib();
 	return rc;
 }
+
+/*****************************************************************************/
 
 int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 {

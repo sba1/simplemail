@@ -66,6 +66,9 @@ struct coroutine_scheduler
 
 	/** Contains all waiting coroutines. Elements are of type coroutine_t */
 	struct coroutines_list waiting_coroutines_list;
+
+	int nfds;
+	fd_set readfds, writefds;
 };
 
 /*****************************************************************************/
@@ -152,15 +155,15 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 	struct timeval zero_timeout = {0};
 	struct coroutines_list finished_coroutines_list;
 
+	fd_set *readfds = &scheduler->readfds;
+	fd_set *writefds = &scheduler->writefds;
+
 	coroutines_list_init(&finished_coroutines_list);
 
 	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
 	{
 		coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
 		coroutine_t cor_next;
-
-		fd_set readfds, writefds;
-		int nfds;
 
 		/* Execute all non-waiting coroutines */
 		for (;cor;cor = cor_next)
@@ -187,9 +190,9 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			}
 		}
 
-		FD_ZERO(&readfds);
-		FD_ZERO(&writefds);
-		nfds = -1;
+		FD_ZERO(readfds);
+		FD_ZERO(writefds);
+		scheduler->nfds = -1;
 
 		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 		for (;cor;cor = cor_next)
@@ -200,17 +203,17 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 
 			if (cor->context->socket_fd >= 0)
 			{
-				if (cor->context->socket_fd > nfds)
+				if (cor->context->socket_fd > scheduler->nfds)
 				{
-					nfds = cor->context->socket_fd;
+					scheduler->nfds = cor->context->socket_fd;
 				}
 
 				if (cor->context->write)
 				{
-					FD_SET(cor->context->socket_fd, &writefds);
+					FD_SET(cor->context->socket_fd, writefds);
 				} else
 				{
-					FD_SET(cor->context->socket_fd, &readfds);
+					FD_SET(cor->context->socket_fd, readfds);
 				}
 			}
 
@@ -231,10 +234,10 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			}
 		}
 
-		if (nfds >= 0)
+		if (scheduler->nfds >= 0)
 		{
 			int polling = !!list_first(&scheduler->coroutines_list.list);
-			select(nfds+1, &readfds, &writefds, NULL, polling?&zero_timeout:NULL);
+			select(scheduler->nfds+1, readfds, writefds, NULL, polling?&zero_timeout:NULL);
 
 			cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 			for (;cor;cor = cor_next)
@@ -243,7 +246,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 				if (cor->context->socket_fd < 0)
 					continue;
 
-				if (FD_ISSET(cor->context->socket_fd, &readfds))
+				if (FD_ISSET(cor->context->socket_fd, readfds))
 				{
 					node_remove(&cor->node);
 					list_insert_tail(&scheduler->coroutines_list.list, &cor->node);

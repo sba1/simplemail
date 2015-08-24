@@ -150,6 +150,47 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 
 /*****************************************************************************/
 
+/**
+ * Prepare the set of fds for the given scheduler.
+ *
+ * @param scheduler
+ */
+static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
+{
+	coroutine_t cor, cor_next;
+
+	fd_set *readfds = &scheduler->readfds;
+	fd_set *writefds = &scheduler->writefds;
+
+	FD_ZERO(readfds);
+	FD_ZERO(writefds);
+	scheduler->nfds = -1;
+
+	cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
+	for (;cor;cor = cor_next)
+	{
+		cor_next =  coroutines_next(cor);
+
+		if (cor->context->socket_fd >= 0)
+		{
+			if (cor->context->socket_fd > scheduler->nfds)
+			{
+				scheduler->nfds = cor->context->socket_fd;
+			}
+
+			if (cor->context->write)
+			{
+				FD_SET(cor->context->socket_fd, writefds);
+			} else
+			{
+				FD_SET(cor->context->socket_fd, readfds);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+
 void coroutine_schedule(coroutine_scheduler_t scheduler)
 {
 	struct timeval zero_timeout = {0};
@@ -190,9 +231,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			}
 		}
 
-		FD_ZERO(readfds);
-		FD_ZERO(writefds);
-		scheduler->nfds = -1;
+		coroutine_schedule_prepare_fds(scheduler);
 
 		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 		for (;cor;cor = cor_next)
@@ -200,22 +239,6 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			coroutine_t f;
 
 			cor_next =  coroutines_next(cor);
-
-			if (cor->context->socket_fd >= 0)
-			{
-				if (cor->context->socket_fd > scheduler->nfds)
-				{
-					scheduler->nfds = cor->context->socket_fd;
-				}
-
-				if (cor->context->write)
-				{
-					FD_SET(cor->context->socket_fd, writefds);
-				} else
-				{
-					FD_SET(cor->context->socket_fd, readfds);
-				}
-			}
 
 			/* Check if we are waiting for another coroutine to be finished
 			 * FIXME: This needs only be done once when the coroutine that we

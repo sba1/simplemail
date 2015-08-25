@@ -33,6 +33,10 @@
 
 /*****************************************************************************/
 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+
+/*****************************************************************************/
+
 /**
  * A simple coroutine.
  */
@@ -173,10 +177,7 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 
 		if (cor->context->socket_fd >= 0)
 		{
-			if (cor->context->socket_fd > scheduler->nfds)
-			{
-				scheduler->nfds = cor->context->socket_fd;
-			}
+			scheduler->nfds = MAX(cor->context->socket_fd, scheduler->nfds);
 
 			if (cor->context->write)
 			{

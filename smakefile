@@ -32,8 +32,6 @@ INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
 CFLAGS = strmerge nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck math=s DEF=HAVE_OPENURL DEF=USE_AMISSL3
 LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib math=s
 
-TESTSRC=tests/imap_unittest.c
-
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile
 OBJSDIR = $(OBJSDIR1)/
@@ -94,7 +92,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "TESTOBJSDIR=$(TESTOBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) $(DESTDIR)/imap_unittest simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
+  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
 
   echo "\$(OBJSDIR)amiga-mui/startup.o: amiga-mui/startup.c" >>$@
   echo "  sc amiga-mui/startup.c $(CFLAGS) parm=b OBJNAME=\$@" >>$@
@@ -125,13 +123,6 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   list Charsets/\#?.txt lformat="  sm/Charsets/%n\\" >>$@
   echo "*n" >>$@
   list Charsets/\#?.txt lformat="sm/Charsets/%n: %p%n*n  copy %p%n sm/Charsets/%n*n" >>$@
-
-  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include TARGET=$(DESTDIR)/imap_unittest OBJS=TESTOBJS OBJSDIR=$$(TESTOBJSDIR) CFLAGS="$$(CFLAGS) DEF=COMPILE_TEST" NOLINK
-  echo "$(DESTDIR)/imap_unittest: tests/imap_unittest.c $$(TESTOBJS)" >>$@
-  echo "  sc $$< $$(CFLAGS) OBJNAME $$(TESTOBJSDIR)tests/imap_unittest.o" >>$@
-  echo "  sc $$(LFLAGS) link to $$@ with \<<" >>$@
-  echo "$$(TESTOBJSDIR)tests/imap_unittest.o $$(TESTOBJS)" >>$@
-  echo "<" >>$@
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover ign=79,110 link $(MAKEGENERATOR)

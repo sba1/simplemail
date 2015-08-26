@@ -71,6 +71,9 @@ struct coroutine_scheduler
 	/** Contains all waiting coroutines. Elements are of type coroutine_t */
 	struct coroutines_list waiting_coroutines_list;
 
+	/** Contains all finished coroutines. Elements are of type coroutine_t */
+	struct coroutines_list finished_coroutines_list;
+
 	int nfds;
 	fd_set readfds, writefds;
 };
@@ -120,6 +123,7 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 
 	coroutines_list_init(&scheduler->coroutines_list);
 	coroutines_list_init(&scheduler->waiting_coroutines_list);
+	coroutines_list_init(&scheduler->finished_coroutines_list);
 	return scheduler;
 }
 
@@ -195,12 +199,9 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 void coroutine_schedule(coroutine_scheduler_t scheduler)
 {
 	struct timeval zero_timeout = {0};
-	struct coroutines_list finished_coroutines_list;
 
 	fd_set *readfds = &scheduler->readfds;
 	fd_set *writefds = &scheduler->writefds;
-
-	coroutines_list_init(&finished_coroutines_list);
 
 	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
 	{
@@ -218,7 +219,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			{
 				case	COROUTINE_DONE:
 						node_remove(&cor->node);
-						list_insert_tail(&finished_coroutines_list.list, &cor->node);
+						list_insert_tail(&scheduler->finished_coroutines_list.list, &cor->node);
 						break;
 
 				case	COROUTINE_YIELD:
@@ -244,7 +245,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			/* Check if we are waiting for another coroutine to be finished
 			 * FIXME: This needs only be done once when the coroutine that we
 			 * are waiting for is done */
-			f = coroutines_list_first(&finished_coroutines_list);
+			f = coroutines_list_first(&scheduler->finished_coroutines_list);
 			while (f)
 			{
 				if ((f = cor->context->other))

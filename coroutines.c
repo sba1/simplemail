@@ -135,7 +135,7 @@ void coroutine_scheduler_dispose(coroutine_scheduler_t scheduler)
 void coroutine_await_socket(struct coroutine_basic_context *context, int socket_fd, int write)
 {
 	context->socket_fd = socket_fd;
-	context->write = write;
+	context->write_mode = write;
 }
 
 /*****************************************************************************/
@@ -179,7 +179,7 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 		{
 			scheduler->nfds = MAX(cor->context->socket_fd, scheduler->nfds);
 
-			if (cor->context->write)
+			if (cor->context->write_mode)
 			{
 				FD_SET(cor->context->socket_fd, writefds);
 			} else

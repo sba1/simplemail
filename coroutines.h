@@ -63,7 +63,7 @@ struct coroutine_basic_context
 	int socket_fd;
 
 	/** Whether we wait for a reading or writing fd */
-	int write;
+	int write_mode;
 
 	/** Another coroutine we are waiting for */
 	coroutine_t other;

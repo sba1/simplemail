@@ -194,6 +194,42 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 	}
 }
 
+/**
+ * Execute all active coroutines.
+ *
+ * @param scheduler
+ */
+static void coroutine_schedule_active(coroutine_scheduler_t scheduler)
+{
+	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
+	coroutine_t cor_next;
+
+	/* Execute all non-waiting coroutines */
+	for (;cor;cor = cor_next)
+	{
+		coroutine_return_t cor_ret;
+
+		cor_next =  coroutines_next(cor);
+		cor_ret = cor->entry(cor->context);
+		switch (cor_ret)
+		{
+			case	COROUTINE_DONE:
+					node_remove(&cor->node);
+					list_insert_tail(&scheduler->finished_coroutines_list.list, &cor->node);
+					break;
+
+			case	COROUTINE_YIELD:
+					/* Nothing special to do here */
+					break;
+
+			case	COROUTINE_WAIT:
+					node_remove(&cor->node);
+					list_insert_tail(&scheduler->waiting_coroutines_list.list,&cor->node);
+					break;
+		}
+	}
+}
+
 /*****************************************************************************/
 
 void coroutine_schedule(coroutine_scheduler_t scheduler)
@@ -205,33 +241,9 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 
 	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
 	{
-		coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
-		coroutine_t cor_next;
+		coroutine_t cor, cor_next;
 
-		/* Execute all non-waiting coroutines */
-		for (;cor;cor = cor_next)
-		{
-			coroutine_return_t cor_ret;
-
-			cor_next =  coroutines_next(cor);
-			cor_ret = cor->entry(cor->context);
-			switch (cor_ret)
-			{
-				case	COROUTINE_DONE:
-						node_remove(&cor->node);
-						list_insert_tail(&scheduler->finished_coroutines_list.list, &cor->node);
-						break;
-
-				case	COROUTINE_YIELD:
-						/* Nothing special to do here */
-						break;
-
-				case	COROUTINE_WAIT:
-						node_remove(&cor->node);
-						list_insert_tail(&scheduler->waiting_coroutines_list.list,&cor->node);
-						break;
-			}
-		}
+		coroutine_schedule_active(scheduler);
 
 		coroutine_schedule_prepare_fds(scheduler);
 

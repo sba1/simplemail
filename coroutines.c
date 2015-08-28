@@ -230,6 +230,19 @@ static void coroutine_schedule_active(coroutine_scheduler_t scheduler)
 	}
 }
 
+/**
+ * Returns whether there are any living coroutines, i.e, either waiting or
+ * active ones.
+ *
+ * @param scheduler
+ * @return
+ */
+static int coroutine_has_living_coroutines(coroutine_scheduler_t scheduler)
+{
+	return coroutines_list_first(&scheduler->coroutines_list)
+			|| coroutines_list_first(&scheduler->waiting_coroutines_list);
+}
+
 /*****************************************************************************/
 
 void coroutine_schedule(coroutine_scheduler_t scheduler)
@@ -239,7 +252,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 	fd_set *readfds = &scheduler->readfds;
 	fd_set *writefds = &scheduler->writefds;
 
-	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
+	while (coroutine_has_living_coroutines(scheduler))
 	{
 		coroutine_t cor, cor_next;
 

@@ -69,8 +69,6 @@ void app_quit(void);
 /* from mainwnd.c */
 struct Screen *main_get_screen(void);
 
-char *stradd(char *src, const char *str1);
-
 /****************************************************************
  SetRexxVarFromMsg() replacement
 *****************************************************************/

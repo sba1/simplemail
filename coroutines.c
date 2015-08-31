@@ -255,9 +255,15 @@ static int coroutine_becomes_active(coroutine_scheduler_t scheduler, coroutine_t
 	if (cor->context->socket_fd < 0)
 		return 0;
 
-	if (FD_ISSET(cor->context->socket_fd, &scheduler->readfds))
-		return 1;
-
+	if (cor->context->write_mode)
+	{
+		if (FD_ISSET(cor->context->socket_fd, &scheduler->writefds))
+			return 1;
+	} else
+	{
+		if (FD_ISSET(cor->context->socket_fd, &scheduler->readfds))
+			return 1;
+	}
 	return 0;
 }
 

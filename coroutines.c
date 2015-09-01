@@ -140,6 +140,7 @@ void coroutine_await_socket(struct coroutine_basic_context *context, int socket_
 {
 	context->socket_fd = socket_fd;
 	context->write_mode = write;
+	context->unblock = coroutine_is_fd_active;
 }
 
 /*****************************************************************************/
@@ -243,14 +244,9 @@ static int coroutine_has_living_coroutines(coroutine_scheduler_t scheduler)
 			|| coroutines_list_first(&scheduler->waiting_coroutines_list);
 }
 
-/**
- * Checks whether the given blocked coroutine becomes now active.
- *
- * @param scheduler
- * @param cor
- * @return 1 if cor should become active, 0 if it should stay blocked.
- */
-static int coroutine_becomes_active(coroutine_scheduler_t scheduler, coroutine_t cor)
+/*****************************************************************************/
+
+int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor)
 {
 	if (cor->context->socket_fd < 0)
 		return 0;
@@ -318,11 +314,14 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			{
 				cor_next =  coroutines_next(cor);
 
-				if (coroutine_becomes_active(scheduler, cor))
-				{
-					node_remove(&cor->node);
-					list_insert_tail(&scheduler->coroutines_list.list, &cor->node);
-				}
+				if (!cor->context->unblock)
+					continue;
+
+				if (!cor->context->unblock(scheduler, cor))
+					continue;
+
+				node_remove(&cor->node);
+				list_insert_tail(&scheduler->coroutines_list.list, &cor->node);
 			}
 		}
 	}

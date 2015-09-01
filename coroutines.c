@@ -248,9 +248,6 @@ static int coroutine_has_living_coroutines(coroutine_scheduler_t scheduler)
 
 int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor)
 {
-	if (cor->context->socket_fd < 0)
-		return 0;
-
 	if (cor->context->write_mode)
 	{
 		if (FD_ISSET(cor->context->socket_fd, &scheduler->writefds))

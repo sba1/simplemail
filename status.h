@@ -19,10 +19,32 @@
 #ifndef SM__STATUS_H
 #define SM__STATUS_H
 
+/**
+ * Initialize the window with as the given type.
+ *
+ * @param type
+ */
 void status_init(int type);
+
+/**
+ * Opens the status window.
+ .
+ * @return whether the window could be opened
+ */
 int status_open(void);
+
+/**
+ * Opens the status window but doesn't not activate it.
+ *
+ * @return whether the window could be opened
+ */
 int status_open_notactivated(void);
+
+/**
+ * Close the status window.
+ */
 void status_close(void);
+
 void status_set_title(const char *title);
 void status_set_title_utf8(const char *title);
 void status_set_line(char *str);

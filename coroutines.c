@@ -74,6 +74,12 @@ struct coroutine_scheduler
 	/** Contains all finished coroutines. Elements are of type coroutine_t */
 	struct coroutines_list finished_coroutines_list;
 
+	/** Function that is invoked to wait or poll for a next event */
+	void (*wait_for_event)(int poll, void *udata);
+
+	/** User data passed to wait_for_event() */
+	void *wait_for_event_udata;
+
 	int nfds;
 	fd_set readfds, writefds;
 };
@@ -125,6 +131,19 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 	coroutines_list_init(&scheduler->waiting_coroutines_list);
 	coroutines_list_init(&scheduler->finished_coroutines_list);
 	return scheduler;
+}
+
+/*****************************************************************************/
+
+coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(int poll, void *udata), void *udata)
+{
+	coroutine_scheduler_t sched = coroutine_scheduler_new();
+	if (!sched) return NULL;
+
+	sched->wait_for_event = wait_for_event;
+	sched->wait_for_event_udata = udata;
+
+	return sched;
 }
 
 /*****************************************************************************/
@@ -301,7 +320,14 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		if (scheduler->nfds >= 0)
 		{
 			int polling = !!list_first(&scheduler->coroutines_list.list);
-			select(scheduler->nfds+1, readfds, writefds, NULL, polling?&zero_timeout:NULL);
+
+			if (scheduler->wait_for_event)
+			{
+				scheduler->wait_for_event(polling, scheduler->wait_for_event_udata);
+			} else
+			{
+				select(scheduler->nfds+1, readfds, writefds, NULL, polling?&zero_timeout:NULL);
+			}
 
 			cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 			for (;cor;cor = cor_next)

@@ -121,6 +121,13 @@ struct coroutine_basic_context
 coroutine_scheduler_t coroutine_scheduler_new(void);
 
 /**
+ * Create a new scheduler for coroutines with a custom wait for event callback.
+ *
+ * @return the scheduler nor NULL for an error.
+ */
+coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(int poll, void *udata), void *udata);
+
+/**
  * Execute the current set of ready coroutines.
  *
  * @param scheduler

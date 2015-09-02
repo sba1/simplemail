@@ -195,12 +195,9 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 	}
 }
 
-/**
- * Execute all active coroutines.
- *
- * @param scheduler
- */
-static void coroutine_schedule_active(coroutine_scheduler_t scheduler)
+/*****************************************************************************/
+
+void coroutine_schedule_active(coroutine_scheduler_t scheduler)
 {
 	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
 	coroutine_t cor_next;

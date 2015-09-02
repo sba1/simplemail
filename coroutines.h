@@ -121,6 +121,13 @@ struct coroutine_basic_context
 coroutine_scheduler_t coroutine_scheduler_new(void);
 
 /**
+ * Execute the current set of ready coroutines.
+ *
+ * @param scheduler
+ */
+void coroutine_schedule_active(coroutine_scheduler_t scheduler);
+
+/**
  * Dispose the given scheduler. Does not check if there are any coroutines
  * left.
  *

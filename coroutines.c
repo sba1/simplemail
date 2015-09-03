@@ -75,7 +75,7 @@ struct coroutine_scheduler
 	struct coroutines_list finished_coroutines_list;
 
 	/** Function that is invoked to wait or poll for a next event */
-	void (*wait_for_event)(int poll, void *udata);
+	void (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata);
 
 	/** User data passed to wait_for_event() */
 	void *wait_for_event_udata;
@@ -118,9 +118,22 @@ static coroutine_t coroutines_next(coroutine_t c)
 	return (coroutine_t)node_next(&c->node);
 }
 
+/**
+ * Standard wait for event function using select().
+ *
+ * @param poll
+ * @param udata
+ */
+static void coroutine_standard_wait_for_event(coroutine_scheduler_t sched, int poll, void *udata)
+{
+	struct timeval zero_timeout = {0};
+
+	select(sched->nfds+1, &sched->readfds, &sched->writefds, NULL, poll?&zero_timeout:NULL);
+}
+
 /*****************************************************************************/
 
-coroutine_scheduler_t coroutine_scheduler_new(void)
+coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata)
 {
 	coroutine_scheduler_t scheduler;
 
@@ -130,20 +143,18 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 	coroutines_list_init(&scheduler->coroutines_list);
 	coroutines_list_init(&scheduler->waiting_coroutines_list);
 	coroutines_list_init(&scheduler->finished_coroutines_list);
+
+	scheduler->wait_for_event = wait_for_event;
+	scheduler->wait_for_event_udata = udata;
+
 	return scheduler;
 }
 
 /*****************************************************************************/
 
-coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(int poll, void *udata), void *udata)
+coroutine_scheduler_t coroutine_scheduler_new(void)
 {
-	coroutine_scheduler_t sched = coroutine_scheduler_new();
-	if (!sched) return NULL;
-
-	sched->wait_for_event = wait_for_event;
-	sched->wait_for_event_udata = udata;
-
-	return sched;
+	return coroutine_scheduler_new_custom(coroutine_standard_wait_for_event, NULL);
 }
 
 /*****************************************************************************/
@@ -280,11 +291,6 @@ int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor)
 
 void coroutine_schedule(coroutine_scheduler_t scheduler)
 {
-	struct timeval zero_timeout = {0};
-
-	fd_set *readfds = &scheduler->readfds;
-	fd_set *writefds = &scheduler->writefds;
-
 	while (coroutine_has_living_coroutines(scheduler))
 	{
 		coroutine_t cor, cor_next;
@@ -321,13 +327,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		{
 			int polling = !!list_first(&scheduler->coroutines_list.list);
 
-			if (scheduler->wait_for_event)
-			{
-				scheduler->wait_for_event(polling, scheduler->wait_for_event_udata);
-			} else
-			{
-				select(scheduler->nfds+1, readfds, writefds, NULL, polling?&zero_timeout:NULL);
-			}
+			scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
 
 			cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 			for (;cor;cor = cor_next)
@@ -445,23 +445,26 @@ static coroutine_return_t coroutines_test(struct coroutine_basic_context *arg)
 
 int main(int argc, char **argv)
 {
+	coroutine_scheduler_t sched;
 	coroutine_t example;
-
-	struct coroutine_scheduler scheduler = {0};
 
 	struct example_context example_context = {0};
 
-	coroutines_list_init(&scheduler.coroutines_list);
-	coroutines_list_init(&scheduler.waiting_coroutines_list);
+	if (!(sched = coroutine_scheduler_new()))
+	{
+		fprintf(stderr, "Couldn't allocate scheduler!\n");
+		return 1;
+	}
+
 
 	example_context.basic_context.socket_fd = -1;
 	/* TODO: It is not required to set the scheduler as this is part of coroutine_add() */
-	example_context.basic_context.scheduler = &scheduler;
+	example_context.basic_context.scheduler = sched;
 
-	example = coroutine_add(&scheduler, coroutines_test, &example_context.basic_context);
+	example = coroutine_add(sched, coroutines_test, &example_context.basic_context);
 	assert(example != 0);
 
-	coroutine_schedule(&scheduler);
+	coroutine_schedule(sched);
 
 	if (example_context.fd > 0)
 		close(example_context.fd);

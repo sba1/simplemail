@@ -65,8 +65,8 @@ struct coroutines_list
  */
 struct coroutine_scheduler
 {
-	/** Contains all active coroutines. Elements are of type coroutine_t */
-	struct coroutines_list coroutines_list;
+	/** Contains all ready coroutines. Elements are of type coroutine_t */
+	struct coroutines_list coroutines_ready_list;
 
 	/** Contains all waiting coroutines. Elements are of type coroutine_t */
 	struct coroutines_list waiting_coroutines_list;
@@ -130,7 +130,7 @@ static coroutine_t coroutines_next(coroutine_t c)
  * @param poll
  * @param udata
  */
-static void coroutine_standard_wait_for_event(coroutine_scheduler_t sched, int poll, void *udata)
+static void coroutine_wait_for_fd_event(coroutine_scheduler_t sched, int poll, void *udata)
 {
 	struct timeval zero_timeout = {0};
 
@@ -146,7 +146,7 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coro
 	if (!(scheduler = (coroutine_scheduler_t)malloc(sizeof(*scheduler))))
 		return NULL;
 
-	coroutines_list_init(&scheduler->coroutines_list);
+	coroutines_list_init(&scheduler->coroutines_ready_list);
 	coroutines_list_init(&scheduler->waiting_coroutines_list);
 	coroutines_list_init(&scheduler->finished_coroutines_list);
 
@@ -160,7 +160,7 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coro
 
 coroutine_scheduler_t coroutine_scheduler_new(void)
 {
-	return coroutine_scheduler_new_custom(coroutine_standard_wait_for_event, NULL);
+	return coroutine_scheduler_new_custom(coroutine_wait_for_fd_event, NULL);
 }
 
 /*****************************************************************************/
@@ -176,7 +176,7 @@ void coroutine_await_socket(struct coroutine_basic_context *context, int socket_
 {
 	context->socket_fd = socket_fd;
 	context->write_mode = write;
-	context->unblock = coroutine_is_fd_active;
+	context->is_now_ready = coroutine_is_fd_now_ready;
 }
 
 /*****************************************************************************/
@@ -189,7 +189,7 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 		return NULL;
 	coroutine->entry = entry;
 	coroutine->context = context;
-	list_insert_tail(&scheduler->coroutines_list.list, &coroutine->node);
+	list_insert_tail(&scheduler->coroutines_ready_list.list, &coroutine->node);
 	return coroutine;
 }
 
@@ -233,9 +233,9 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 
 /*****************************************************************************/
 
-void coroutine_schedule_active(coroutine_scheduler_t scheduler)
+void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 {
-	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
+	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_ready_list);
 	coroutine_t cor_next;
 
 	/* Execute all non-waiting coroutines */
@@ -265,21 +265,20 @@ void coroutine_schedule_active(coroutine_scheduler_t scheduler)
 }
 
 /**
- * Returns whether there are any living coroutines, i.e, either waiting or
- * active ones.
+ * Returns whether there are any unfinished coroutines.
  *
  * @param scheduler
  * @return
  */
-static int coroutine_has_living_coroutines(coroutine_scheduler_t scheduler)
+static int coroutine_has_unfinished_coroutines(coroutine_scheduler_t scheduler)
 {
-	return coroutines_list_first(&scheduler->coroutines_list)
+	return coroutines_list_first(&scheduler->coroutines_ready_list)
 			|| coroutines_list_first(&scheduler->waiting_coroutines_list);
 }
 
 /*****************************************************************************/
 
-int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor)
+int coroutine_is_fd_now_ready(coroutine_scheduler_t scheduler, coroutine_t cor)
 {
 	if (cor->context->write_mode)
 	{
@@ -297,11 +296,11 @@ int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor)
 
 void coroutine_schedule(coroutine_scheduler_t scheduler)
 {
-	while (coroutine_has_living_coroutines(scheduler))
+	while (coroutine_has_unfinished_coroutines(scheduler))
 	{
 		coroutine_t cor, cor_next;
 
-		coroutine_schedule_active(scheduler);
+		coroutine_schedule_ready(scheduler);
 
 		coroutine_schedule_prepare_fds(scheduler);
 
@@ -320,9 +319,9 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			{
 				if ((f = cor->context->other))
 				{
-					/* Move from waiting to active queue */
+					/* Move from waiting to ready queue */
 					node_remove(&cor->node);
-					list_insert_tail(&scheduler->coroutines_list.list, &cor->node);
+					list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
 					break;
 				}
 				f = coroutines_next(f);
@@ -331,7 +330,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 
 		if (scheduler->nfds >= 0)
 		{
-			int polling = !!list_first(&scheduler->coroutines_list.list);
+			int polling = !!list_first(&scheduler->coroutines_ready_list.list);
 
 			scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
 
@@ -340,14 +339,14 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			{
 				cor_next =  coroutines_next(cor);
 
-				if (!cor->context->unblock)
+				if (!cor->context->is_now_ready)
 					continue;
 
-				if (!cor->context->unblock(scheduler, cor))
+				if (!cor->context->is_now_ready(scheduler, cor))
 					continue;
 
 				node_remove(&cor->node);
-				list_insert_tail(&scheduler->coroutines_list.list, &cor->node);
+				list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
 			}
 		}
 	}

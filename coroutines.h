@@ -69,7 +69,7 @@ struct coroutine_basic_context
 	coroutine_t other;
 
 	/** Function that checks if a switch from wait to ready is possible */
-	int (*unblock)(coroutine_scheduler_t scheduler, coroutine_t cor);
+	int (*is_now_ready)(coroutine_scheduler_t scheduler, coroutine_t cor);
 };
 
 #define COROUTINE_BEGIN(context) \
@@ -132,7 +132,7 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coro
  *
  * @param scheduler
  */
-void coroutine_schedule_active(coroutine_scheduler_t scheduler);
+void coroutine_schedule_ready(coroutine_scheduler_t scheduler);
 
 /**
  * Dispose the given scheduler. Does not check if there are any coroutines
@@ -169,7 +169,7 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
  * @param cor
  * @return 1 if cor should become active, 0 if it should stay blocked.
  */
-int coroutine_is_fd_active(coroutine_scheduler_t scheduler, coroutine_t cor);
+int coroutine_is_fd_now_ready(coroutine_scheduler_t scheduler, coroutine_t cor);
 
 /**
  * Schedule all coroutines.

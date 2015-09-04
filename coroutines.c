@@ -80,8 +80,14 @@ struct coroutine_scheduler
 	/** User data passed to wait_for_event() */
 	void *wait_for_event_udata;
 
+	/** Highest number of descriptors to wait for */
 	int nfds;
-	fd_set readfds, writefds;
+
+	/** Set of read fds to wait for */
+	fd_set readfds;
+
+	/** Set of write fds to wait for */
+	fd_set writefds;
 };
 
 /*****************************************************************************/

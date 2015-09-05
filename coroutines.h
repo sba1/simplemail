@@ -95,7 +95,7 @@ struct coroutine_basic_context
 			return COROUTINE_WAIT;\
 		case __LINE__:\
 			context->basic_context.socket_fd = -1; \
-			context->basic_context.unblock = NULL;
+			context->basic_context.is_now_ready = NULL;
 
 
 /**

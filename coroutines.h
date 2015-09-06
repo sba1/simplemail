@@ -125,7 +125,7 @@ coroutine_scheduler_t coroutine_scheduler_new(void);
  *
  * @return the scheduler nor NULL for an error.
  */
-coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata);
+coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata);
 
 /**
  * Execute the current set of ready coroutines.

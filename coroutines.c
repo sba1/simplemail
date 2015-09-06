@@ -74,8 +74,12 @@ struct coroutine_scheduler
 	/** Contains all finished coroutines. Elements are of type coroutine_t */
 	struct coroutines_list finished_coroutines_list;
 
-	/** Function that is invoked to wait or poll for a next event */
-	void (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata);
+	/**
+	 * Function that is invoked to wait or poll for a next event
+	 *
+	 * @return if there were events that potentially were blocked
+	 */
+	int (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata);
 
 	/** User data passed to wait_for_event() */
 	void *wait_for_event_udata;
@@ -168,7 +172,7 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
  * @param poll
  * @param udata
  */
-static void coroutine_wait_for_fd_event(coroutine_scheduler_t sched, int poll, void *udata)
+static int coroutine_wait_for_fd_event(coroutine_scheduler_t sched, int poll, void *udata)
 {
 	struct timeval zero_timeout = {0};
 
@@ -177,12 +181,14 @@ static void coroutine_wait_for_fd_event(coroutine_scheduler_t sched, int poll, v
 	if (sched->nfds >= 0)
 	{
 		select(sched->nfds+1, &sched->readfds, &sched->writefds, NULL, poll?&zero_timeout:NULL);
+		return 1;
 	}
+	return 0;
 }
 
 /*****************************************************************************/
 
-coroutine_scheduler_t coroutine_scheduler_new_custom(void (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata)
+coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata)
 {
 	coroutine_scheduler_t scheduler;
 

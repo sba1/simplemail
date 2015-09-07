@@ -83,7 +83,10 @@ struct coroutine_scheduler
 
 	/** User data passed to wait_for_event() */
 	void *wait_for_event_udata;
+};
 
+struct coroutine_scheduler_fd_data
+{
 	/** Highest number of descriptors to wait for */
 	int nfds;
 
@@ -135,16 +138,16 @@ static coroutine_t coroutines_next(coroutine_t c)
  *
  * @param scheduler
  */
-static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
+static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler, struct coroutine_scheduler_fd_data *data)
 {
 	coroutine_t cor, cor_next;
 
-	fd_set *readfds = &scheduler->readfds;
-	fd_set *writefds = &scheduler->writefds;
+	fd_set *readfds = &data->readfds;
+	fd_set *writefds = &data->writefds;
 
 	FD_ZERO(readfds);
 	FD_ZERO(writefds);
-	scheduler->nfds = -1;
+	data->nfds = -1;
 
 	cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 	for (;cor;cor = cor_next)
@@ -153,7 +156,7 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
 
 		if (cor->context->socket_fd >= 0)
 		{
-			scheduler->nfds = MAX(cor->context->socket_fd, scheduler->nfds);
+			data->nfds = MAX(cor->context->socket_fd, data->nfds);
 
 			if (cor->context->write_mode)
 			{
@@ -174,13 +177,15 @@ static void coroutine_schedule_prepare_fds(coroutine_scheduler_t scheduler)
  */
 static int coroutine_wait_for_fd_event(coroutine_scheduler_t sched, int poll, void *udata)
 {
+	struct coroutine_scheduler_fd_data *data = (struct coroutine_scheduler_fd_data *)udata;
+
 	struct timeval zero_timeout = {0};
 
-	coroutine_schedule_prepare_fds(sched);
+	coroutine_schedule_prepare_fds(sched, data);
 
-	if (sched->nfds >= 0)
+	if (data->nfds >= 0)
 	{
-		select(sched->nfds+1, &sched->readfds, &sched->writefds, NULL, poll?&zero_timeout:NULL);
+		select(data->nfds+1, &data->readfds, &data->writefds, NULL, poll?&zero_timeout:NULL);
 		return 1;
 	}
 	return 0;
@@ -209,7 +214,18 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(corou
 
 coroutine_scheduler_t coroutine_scheduler_new(void)
 {
-	return coroutine_scheduler_new_custom(coroutine_wait_for_fd_event, NULL);
+	struct coroutine_scheduler_fd_data *data;
+	coroutine_scheduler_t sched;
+
+	if (!(data = malloc(sizeof(*data))))
+		return NULL;
+
+	if (!(sched = coroutine_scheduler_new_custom(coroutine_wait_for_fd_event, data)))
+	{
+		free(data);
+		return NULL;
+	}
+	return sched;
 }
 
 /*****************************************************************************/
@@ -291,13 +307,15 @@ static int coroutine_has_unfinished_coroutines(coroutine_scheduler_t scheduler)
 
 int coroutine_is_fd_now_ready(coroutine_scheduler_t scheduler, coroutine_t cor)
 {
+	struct coroutine_scheduler_fd_data *data = (struct coroutine_scheduler_fd_data *)scheduler->wait_for_event_udata;
+
 	if (cor->context->write_mode)
 	{
-		if (FD_ISSET(cor->context->socket_fd, &scheduler->writefds))
+		if (FD_ISSET(cor->context->socket_fd, &data->writefds))
 			return 1;
 	} else
 	{
-		if (FD_ISSET(cor->context->socket_fd, &scheduler->readfds))
+		if (FD_ISSET(cor->context->socket_fd, &data->readfds))
 			return 1;
 	}
 	return 0;

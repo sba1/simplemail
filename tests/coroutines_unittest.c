@@ -51,7 +51,7 @@ void test_simple_coroutines_loop(void)
 	struct count_context count_context1 = {0};
 	struct count_context count_context2 = {0};
 
-	coroutine_scheduler_t scheduler = coroutine_scheduler_new();
+	coroutine_scheduler_t scheduler = coroutine_scheduler_new_custom(NULL, NULL);
 	CU_ASSERT(scheduler != NULL);
 
 	coroutine_add(scheduler, count, &count_context1.basic_context);

@@ -172,7 +172,10 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 
 		polling = !!list_first(&scheduler->coroutines_ready_list.list);
 
-		scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
+		if (scheduler->wait_for_event)
+		{
+			scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
+		}
 
 		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 		for (;cor;cor = cor_next)

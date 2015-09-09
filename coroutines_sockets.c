@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 	example = coroutine_add(sched, coroutines_test, &example_context.basic_context);
 	assert(example != 0);
 
-	coroutine_schedule(sched);
+	while (coroutine_schedule(sched));
 
 	if (example_context.fd > 0)
 		close(example_context.fd);

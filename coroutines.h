@@ -143,10 +143,11 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 int coroutine_is_fd_now_ready(coroutine_scheduler_t scheduler, coroutine_t cor);
 
 /**
- * Schedule all coroutines.
+ * Schedule all coroutines once and execute possible state transitions.
  *
  * @param scheduler the scheduler
+ * @return whether there are unfinished coroutines
  */
-void coroutine_schedule(coroutine_scheduler_t scheduler);
+int coroutine_schedule(coroutine_scheduler_t scheduler);
 
 #endif

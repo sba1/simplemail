@@ -136,61 +136,59 @@ static int coroutine_has_unfinished_coroutines(coroutine_scheduler_t scheduler)
 
 /*****************************************************************************/
 
-void coroutine_schedule(coroutine_scheduler_t scheduler)
+int coroutine_schedule(coroutine_scheduler_t scheduler)
 {
-	while (coroutine_has_unfinished_coroutines(scheduler))
+	int polling;
+
+	coroutine_t cor, cor_next;
+
+	coroutine_schedule_ready(scheduler);
+
+	cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
+	for (;cor;cor = cor_next)
 	{
-		int polling;
+		coroutine_t f;
 
-		coroutine_t cor, cor_next;
+		cor_next =  coroutines_next(cor);
 
-		coroutine_schedule_ready(scheduler);
-
-		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
-		for (;cor;cor = cor_next)
+		/* Check if we are waiting for another coroutine to be finished
+		 * FIXME: This needs only be done once when the coroutine that we
+		 * are waiting for is done */
+		f = coroutines_list_first(&scheduler->finished_coroutines_list);
+		while (f)
 		{
-			coroutine_t f;
-
-			cor_next =  coroutines_next(cor);
-
-			/* Check if we are waiting for another coroutine to be finished
-			 * FIXME: This needs only be done once when the coroutine that we
-			 * are waiting for is done */
-			f = coroutines_list_first(&scheduler->finished_coroutines_list);
-			while (f)
+			if ((f = cor->context->other))
 			{
-				if ((f = cor->context->other))
-				{
-					/* Move from waiting to ready queue */
-					node_remove(&cor->node);
-					list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
-					break;
-				}
-				f = coroutines_next(f);
+				/* Move from waiting to ready queue */
+				node_remove(&cor->node);
+				list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
+				break;
 			}
-		}
-
-		polling = !!list_first(&scheduler->coroutines_ready_list.list);
-
-		if (scheduler->wait_for_event)
-		{
-			scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
-		}
-
-		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
-		for (;cor;cor = cor_next)
-		{
-			cor_next =  coroutines_next(cor);
-
-			if (!cor->context->is_now_ready)
-				continue;
-
-			if (!cor->context->is_now_ready(scheduler, cor))
-				continue;
-
-			node_remove(&cor->node);
-			list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
+			f = coroutines_next(f);
 		}
 	}
 
+	polling = !!list_first(&scheduler->coroutines_ready_list.list);
+
+	if (scheduler->wait_for_event)
+	{
+		scheduler->wait_for_event(scheduler, polling, scheduler->wait_for_event_udata);
+	}
+
+	cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
+	for (;cor;cor = cor_next)
+	{
+		cor_next =  coroutines_next(cor);
+
+		if (!cor->context->is_now_ready)
+			continue;
+
+		if (!cor->context->is_now_ready(scheduler, cor))
+			continue;
+
+		node_remove(&cor->node);
+		list_insert_tail(&scheduler->coroutines_ready_list.list, &cor->node);
+	}
+
+	return coroutine_has_unfinished_coroutines(scheduler);
 }

@@ -16,6 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file folder_search_thread.c
+ */
+
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -47,7 +51,7 @@ static void folder_search_clean_thread(void)
 }
 
 /**
- * @file
+ * Initial parameters for the search thread.
  */
 
 struct search_msg

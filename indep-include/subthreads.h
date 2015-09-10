@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** subthreads.h
-*/
+/**
+ * @file subthreads.h
+ */
 
 #ifndef SM__SUBTHREADS_H
 #define SM__SUBTHREADS_H

@@ -235,7 +235,7 @@ void test_imap(void)
 
 	imap_get_folder_list(ac->imap, test_imap_get_folder_list_callback);
 
-	thread_wait(test_imap_quit_callback, NULL, 2000);
+	thread_wait(NULL, test_imap_quit_callback, NULL, 2000);
 
 	account_free(ac);
 

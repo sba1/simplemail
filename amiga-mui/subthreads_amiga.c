@@ -995,7 +995,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 
 /*****************************************************************************/
 
-int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct timer timer;
 	int rc = 0;

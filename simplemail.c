@@ -1979,7 +1979,7 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 static int lazy_entry(void *user_data)
 {
 	thread_parent_task_can_contiue();
-	while (thread_wait(NULL,NULL,0))
+	while (thread_wait(NULL,NULL,NULL,0))
 	{
 		/* Scan through the lazy mail list */
 		while (1)

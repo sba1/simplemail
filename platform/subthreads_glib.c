@@ -497,7 +497,7 @@ static gboolean thread_wait_timer_entry(gpointer udata)
 
 /*****************************************************************************/
 
-int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;

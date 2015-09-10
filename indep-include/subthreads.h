@@ -23,6 +23,10 @@
 #ifndef SM__SUBTHREADS_H
 #define SM__SUBTHREADS_H
 
+#ifndef SM__COROUTINES_H
+#include "coroutines.h"
+#endif
+
 #define THREAD_FUNCTION(x) ((int (*)(void*))x)
 
 /**
@@ -86,6 +90,7 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata);
  * It's possible to execute functions on the threads context while this
  * function is executed via thread_call_function_xxx()
  *
+ * @param sched a scheduler for coroutines
  * @param timer_callback function that is called periodically
  * @param timer_data some data that is passed as the first argument
  *        to the callback
@@ -93,7 +98,7 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata);
  * @return 0 if the function finished due to an abort request (or failure),
  *         1 if due to a call to thread_signal().
  */
-int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis);
+int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void *timer_data, int millis);
 
 /**
  * @brief Aborts the given thread.

@@ -238,7 +238,7 @@ static void imap_thread_entry(void *test)
 {
 	if (thread_parent_task_can_contiue())
 	{
-		thread_wait(NULL,NULL,0);
+		thread_wait(NULL,NULL,NULL,0);
 
 		imap_free(imap_server);
 		free(imap_folder);

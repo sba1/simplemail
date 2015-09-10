@@ -548,7 +548,8 @@ int thread_parent_task_can_contiue(void)
  * @param entry
  * @param eudata
  * @return
- */static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
+ */
+static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
 {
 	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread)

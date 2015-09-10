@@ -243,7 +243,7 @@ void test_imap(void)
 	imap_thread_connect(f);
 	imap_thread_connect(f);
 
-	thread_wait(test_imap_timer_callback, NULL, 2000);
+	thread_wait(NULL, test_imap_timer_callback, NULL, 2000);
 
 	cleanup_threads();
 	del_folders();

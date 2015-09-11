@@ -33,6 +33,7 @@
 #include <proto/timer.h>
 #include <clib/alib_protos.h>
 
+#include "coroutines.h"
 #include "lists.h"
 #include "compiler.h"
 #include "debug.h"
@@ -1053,6 +1054,12 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 					}
 				}
 				FreeVec(tmsg);
+			}
+
+			/* And finally, schedule coroutines */
+			if (sched)
+			{
+				coroutine_schedule_ready(sched);
 			}
 
 			if (mask & SIGBREAKF_CTRL_C)

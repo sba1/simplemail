@@ -120,29 +120,6 @@ void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 					break;
 		}
 	}
-}
-
-/**
- * Returns whether there are any unfinished coroutines.
- *
- * @param scheduler
- * @return
- */
-static int coroutine_has_unfinished_coroutines(coroutine_scheduler_t scheduler)
-{
-	return coroutines_list_first(&scheduler->coroutines_ready_list)
-			|| coroutines_list_first(&scheduler->waiting_coroutines_list);
-}
-
-/*****************************************************************************/
-
-int coroutine_schedule(coroutine_scheduler_t scheduler)
-{
-	int polling;
-
-	coroutine_t cor, cor_next;
-
-	coroutine_schedule_ready(scheduler);
 
 	cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 	for (;cor;cor = cor_next)
@@ -167,6 +144,30 @@ int coroutine_schedule(coroutine_scheduler_t scheduler)
 			f = coroutines_next(f);
 		}
 	}
+
+}
+
+/**
+ * Returns whether there are any unfinished coroutines.
+ *
+ * @param scheduler
+ * @return
+ */
+static int coroutine_has_unfinished_coroutines(coroutine_scheduler_t scheduler)
+{
+	return coroutines_list_first(&scheduler->coroutines_ready_list)
+			|| coroutines_list_first(&scheduler->waiting_coroutines_list);
+}
+
+/*****************************************************************************/
+
+int coroutine_schedule(coroutine_scheduler_t scheduler)
+{
+	int polling;
+
+	coroutine_t cor, cor_next;
+
+	coroutine_schedule_ready(scheduler);
 
 	polling = !!list_first(&scheduler->coroutines_ready_list.list);
 

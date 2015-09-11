@@ -132,16 +132,6 @@ void coroutine_scheduler_dispose(coroutine_scheduler_t scheduler);
  */
 coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context);
 
-
-/**
- * Checks whether the given blocked coroutine becomes now active due to some fd conditions.
- *
- * @param scheduler
- * @param cor
- * @return 1 if cor should become active, 0 if it should stay blocked.
- */
-int coroutine_is_fd_now_ready(coroutine_scheduler_t scheduler, coroutine_t cor);
-
 /**
  * Schedule all coroutines once and execute possible state transitions.
  *

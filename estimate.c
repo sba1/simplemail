@@ -16,13 +16,15 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** estimate.c
-*/
+/**
+ * @file estimate.c
+ */
 
 #include "estimate.h"
 
 #include "timesupport.h"
+
+/*****************************************************************************/
 
 void estimate_init(struct estimate *est, unsigned int new_max_value)
 {
@@ -31,6 +33,8 @@ void estimate_init(struct estimate *est, unsigned int new_max_value)
 
 	est->max_value = new_max_value;
 }
+
+/*****************************************************************************/
 
 unsigned int estimate_calc(struct estimate *est,unsigned int value)
 {
@@ -49,6 +53,8 @@ unsigned int estimate_calc(struct estimate *est,unsigned int value)
 
 	return seconds * est->max_value / value;
 }
+
+/*****************************************************************************/
 
 unsigned int estimate_calc_remaining(struct estimate *est,unsigned int value)
 {

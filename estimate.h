@@ -16,6 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file estimate.h
+ */
+
 #ifndef SM__ESTIMATE_H
 #define SM__ESTIMAGE_H
 
@@ -26,8 +30,30 @@ struct estimate
 	unsigned int max_value;
 };
 
+/**
+ * Initialize the work "estimator" for the given max work.
+ *
+ * @param est the estimator to be initialized
+ * @param new_max_value the work that must be done maximally
+ */
 void estimate_init(struct estimate *est, unsigned int new_max_value);
+
+/**
+ * Estimate the end time when we now when given amount of work has already been processed.
+ *
+ * @param est the previously initialized estimator
+ * @param value the work that has already been processed
+ * @return the end time (in seconds)
+ */
 unsigned int estimate_calc(struct estimate *est,unsigned int value);
+
+/**
+ * Estimate the number of seconds still remaining when a given amount of work has already been processed.
+ *
+ * @param est the previously initialized estimator
+ * @param value the work that has already been processed
+ * @return the remaining time (in seconds)
+ */
 unsigned int estimate_calc_remaining(struct estimate *est,unsigned int value);
 
 #endif

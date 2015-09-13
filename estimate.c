@@ -22,6 +22,8 @@
 
 #include "estimate.h"
 
+#include <stdlib.h>
+
 #include "timesupport.h"
 
 /*****************************************************************************/
@@ -36,7 +38,15 @@ void estimate_init(struct estimate *est, unsigned int new_max_value)
 
 /*****************************************************************************/
 
-unsigned int estimate_calc(struct estimate *est,unsigned int value)
+/**
+ * Estimate the end time when we now when given amount of work has already been processed.
+ *
+ * @param est the previously initialized estimator
+ * @param value the work that has already been processed
+ * @param now_seconds stores the now time in seconds.
+ * @return the end time (in seconds)
+ */
+static int estimate_calc_absolute(struct estimate *est, unsigned int value, unsigned int *now_seconds)
 {
 	unsigned int seconds = sm_get_current_seconds();
 	unsigned int micros = sm_get_current_micros();
@@ -49,27 +59,30 @@ unsigned int estimate_calc(struct estimate *est,unsigned int value)
 	}
 	micros -= est->init_micros;
 
+	if (now_seconds) *now_seconds = seconds;
+
 	if (!value) return 0xffffffff;
 
 	return seconds * est->max_value / value;
+
+}
+
+/*****************************************************************************/
+
+unsigned int estimate_calc(struct estimate *est,unsigned int value)
+{
+	return estimate_calc_absolute(est, value, NULL);
 }
 
 /*****************************************************************************/
 
 unsigned int estimate_calc_remaining(struct estimate *est,unsigned int value)
 {
-	unsigned int seconds = sm_get_current_seconds();
-	unsigned int micros = sm_get_current_micros();
-
-	seconds -= est->init_seconds;
-	if (micros < est->init_micros)
-	{
-		seconds--;
-		micros += 1000000;
-	}
-	micros -= est->init_micros;
+	unsigned int now_seconds;
+	unsigned int end_seconds;
 
 	if (!value) return 0xffffffff;
 
-	return seconds * est->max_value / value - seconds;
+	end_seconds = estimate_calc_absolute(est, value, &now_seconds);
+	return end_seconds - now_seconds;
 }

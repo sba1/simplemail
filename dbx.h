@@ -15,11 +15,24 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+
+/**
+ * @file dbx.h
+ */
+
 #ifndef SM__DBX_H
 #define SM__DBX_H
 
 struct folder;
 
+/**
+ * Import a given file which must be a dbx file to a given folder.
+ *
+ * @param folder the folder in which the mails should be imported. May be NULL
+ *  in which case the process is handled like fetching mails.
+ * @param filename defines the dbx file.
+ * @return 1 if the process has started. This is an aynchrounous call.
+ */
 int dbx_import_to_folder(struct folder *folder, char *filename);
 
 #endif

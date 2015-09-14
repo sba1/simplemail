@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** dbx.c - import and export functions for the dbx (Outlook Express) fileformat
-* 
-*  Fileformat description is available from http://oedbx.aroh.de/
-*/
+/**
+ * @file dbx.c
+ *
+ * Import and export functions for the dbx (Outlook Express) file format
+ * The file format description is available from http://oedbx.aroh.de/
+ */
 
 #include "dbx.h"
 
@@ -40,17 +41,17 @@
 #include "subthreads.h"
 #include "support.h"
 
-/***************************************************************************/
+/*****************************************************************************/
 
 #define GetLong(ptr,off) ( (((unsigned char*)(ptr))[off]) | (((unsigned char*)(ptr))[off+1] << 8) | (((unsigned char*)(ptr))[off+2] << 16) | (((unsigned char*)(ptr))[off+3] << 24))
 
 #define GetShort(ptr,off) ((((unsigned char*)(ptr))[off]) | (((unsigned char*)(ptr))[off+1] << 8))
 
-/***************************************************************************/
+/*****************************************************************************/
 
 #define TREESIZE (0x18 + 0x264) /* header + body */
 
-/***************************************************************************/
+/*****************************************************************************/
 
 /**
  * Read the message into out file
@@ -251,7 +252,7 @@ out:
 }
 
 /**
- * Read recursivly a node within the tree. Everynode can already contain
+ * Read recursively a node within the tree. Every node can already contain
  * a value (message)
  */
 static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
@@ -333,9 +334,12 @@ struct import_data
 	int in_folder;
 };
 
-/**************************************************************************
- Entry point for the import subthread
-**************************************************************************/
+/**
+ * Entry point for the import subthread.
+ *
+ * @param data defines data of the process.
+ * @return
+ */
 static int dbx_import_entry(struct import_data *data)
 {
 	char *filename;
@@ -414,11 +418,8 @@ static int dbx_import_entry(struct import_data *data)
 	return 0;
 }
 
-/**************************************************************************
- Export a given a given file which must be a mbox file to a given folder.
- folder may be NULL which means that the mails are imported like fetching
- mails.
-**************************************************************************/
+/*****************************************************************************/
+
 int dbx_import_to_folder(struct folder *folder, char *filename)
 {
 	struct import_data data;

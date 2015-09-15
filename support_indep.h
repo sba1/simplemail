@@ -533,4 +533,12 @@ unsigned int time_ms_passed(unsigned int ref);
  */
 char *utf8strdup(char *str, int utf8);
 
+/**
+ * Identifies a given file and return its mime type
+ *
+ * @param fname
+ * @return
+ */
+char *identify_file(char *fname);
+
 #endif

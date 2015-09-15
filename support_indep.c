@@ -987,3 +987,68 @@ char *utf8strdup(char *str, int utf8)
 	if (utf8) return mystrdup(str);
 	return (char*)utf8create(str,NULL);
 }
+
+/*****************************************************************************/
+
+char *identify_file(char *fname)
+{
+	char *ctype = "application/octet-stream";
+	FILE *fh;
+
+	if ((fh = fopen(fname, "r")))
+	{
+		int len;
+		static char buffer[1024], *ext;
+
+		len = fread(buffer, 1, 1023, fh);
+		buffer[len] = 0;
+		fclose(fh);
+
+		if ((ext = strrchr(fname, '.'))) ++ext;
+		else ext = "--"; /* for rx */
+
+		if (!mystricmp(ext, "htm") || !mystricmp(ext, "html"))
+			return "text/html";
+		else if (!mystrnicmp(buffer, "@database", 9) || !mystricmp(ext, "guide"))
+			return "text/x-aguide";
+		else if (!mystricmp(ext, "ps") || !mystricmp(ext, "eps"))
+			return "application/postscript";
+		else if (!mystricmp(ext, "rtf"))
+			return "application/rtf";
+		else if (!mystricmp(ext, "lha") || !strncmp(&buffer[2], "-lh5-", 5))
+			return "application/x-lha";
+		else if (!mystricmp(ext, "lzx") || !strncmp(buffer, "LZX", 3))
+			return "application/x-lzx";
+		else if (!mystricmp(ext, "zip"))
+			return "application/x-zip";
+		else if (!mystricmp(ext, "rexx") || !mystricmp(ext+strlen(ext)-2, "rx"))
+			return "application/x-rexx";
+		else if (!strncmp(&buffer[6], "JFIF", 4))
+			return "image/jpeg";
+		else if (!strncmp(buffer, "GIF8", 4))
+			return "image/gif";
+		else if (!mystrnicmp(ext, "png",4) || !strncmp(&buffer[1], "PNG", 3))
+			return "image/png";
+		else if (!mystrnicmp(ext, "tif",4))
+			return "image/tiff";
+		else if (!strncmp(buffer, "FORM", 4) && !strncmp(&buffer[8], "ILBM", 4))
+			return "image/x-ilbm";
+		else if (!mystricmp(ext, "au") || !mystricmp(ext, "snd"))
+			return "audio/basic";
+		else if (!strncmp(buffer, "FORM", 4) && !strncmp(&buffer[8], "8SVX", 4))
+			return "audio/x-8svx";
+		else if (!mystricmp(ext, "wav"))
+			return "audio/x-wav";
+		else if (!mystricmp(ext, "mpg") || !mystricmp(ext, "mpeg"))
+			return "video/mpeg";
+		else if (!mystricmp(ext, "qt") || !mystricmp(ext, "mov"))
+			return "video/quicktime";
+		else if (!strncmp(buffer, "FORM", 4) && !strncmp(&buffer[8], "ANIM", 4))
+			return "video/x-anim";
+		else if (!mystricmp(ext, "avi"))
+			return "video/x-msvideo";
+		else if (mystristr(buffer, "\nFrom:"))
+			return "message/rfc822";
+	}
+	return ctype;
+}

@@ -32,11 +32,8 @@
 
 #include "support_indep.h"
 
-/**
- * Obtain the hash value of a given string.
- *
- * @param str the string from which to obtain the hash value.
- */
+/*****************************************************************************/
+
 unsigned long sdbm(const unsigned char *str)
 {
 	unsigned long hash = 0;
@@ -48,16 +45,8 @@ unsigned long sdbm(const unsigned char *str)
 	return hash;
 }
 
-/**
- * Initialize the given hash table with space for 2^bits entries.
- *
- * @param ht the hash table to initialize.
- * @param bits the number of bits used to identify a bucket.
- * @param filename defines the name of the file that is associated to this hash.
- *  If the file exists, the hash table is initialized with the contents of the
- *  file.
- * @return 1 on success, 0 otherwise.
- */
+/*****************************************************************************/
+
 int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 {
 	FILE *fh;
@@ -123,12 +112,8 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 	return 1;
 }
 
-/**
- * Removes all entries from the hash table. The hash table can be used again
- * after this call, it is empty.
- *
- * @param ht the hash table to clear.
- */
+/*****************************************************************************/
+
 void hash_table_clear(struct hash_table *ht)
 {
 	unsigned int i, size, mem_size;
@@ -156,13 +141,8 @@ void hash_table_clear(struct hash_table *ht)
 	}
 }
 
-/**
- * Gives back all resources occupied by the given hash table (excluding the
- * memory directly pointed to ht). The hash table can be no longer used after
- * this call returned.
- *
- * @param ht the hash table to clean
- */
+/*****************************************************************************/
+
 void hash_table_clean(struct hash_table *ht)
 {
 	unsigned int i;
@@ -189,14 +169,8 @@ void hash_table_clean(struct hash_table *ht)
 }
 
 
-/**
- * Insert a new entry into the hash table.
- *
- * @param ht
- * @param string
- * @param data
- * @return
- */
+/*****************************************************************************/
+
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data)
 {
 	unsigned int index;
@@ -223,13 +197,8 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 	return &hb->entry;
 }
 
-/**
- * Lookup an entry in the hash table.
- *
- * @param ht the hash table in which to search.
- * @param string the string to lookup
- * @return the entry or NULL.
- */
+/*****************************************************************************/
+
 struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string)
 {
 	unsigned int index;
@@ -261,12 +230,8 @@ static void hash_table_store_callback(struct hash_entry *entry, void *data)
 	fprintf((FILE*)data,"%d %s\n",entry->data,entry->string);
 }
 
-/**
- * Presists the hash table. Works only, if filename was given at
- * hash_table_init().
- *
- * @param ht the hash table to store.
- */
+/*****************************************************************************/
+
 void hash_table_store(struct hash_table *ht)
 {
 	FILE *fh;
@@ -282,13 +247,8 @@ void hash_table_store(struct hash_table *ht)
 	}
 }
 
-/**
- * For each entry, call the given function.
- *
- * @param ht the hash table to interate.
- * @param func the function that shall be called.
- * @param data the additional user data that is passed to the function.
- */
+/*****************************************************************************/
+
 void hash_table_call_for_each_entry(struct hash_table *ht, void (*func)(struct hash_entry *entry, void *data), void *data)
 {
 	unsigned int i;

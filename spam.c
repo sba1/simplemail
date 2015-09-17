@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** spam.c
-*/
+/**
+ * @file spam.c
+ */
 
 #include "spam.h"
 
@@ -42,9 +42,8 @@ static int rebuild_spam_prob_hash_table;
 
 static semaphore_t sem;
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 int spam_init(void)
 {
 	if ((sem = thread_create_semaphore()))
@@ -65,9 +64,8 @@ int spam_init(void)
 	return 0;
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 void spam_cleanup(void)
 {
 	hash_table_store(&spam_table);
@@ -79,9 +77,12 @@ void spam_cleanup(void)
 	thread_dispose_semaphore(sem);
 }
 
-/**************************************************************************
- Checks if a given html tag is known
-**************************************************************************/
+/**
+ * Checks if a given html tag is known.
+ *
+ * @param tag
+ * @return 1 if the html tag is known
+ */
 static int spam_is_known_html_tag(const char *tag)
 {
 	/* TODO: Use a trie */
@@ -111,12 +112,18 @@ static int spam_is_known_html_tag(const char *tag)
 	return 0;
 }
 
-/**************************************************************************
- Extracts all token from the given text and calls the callback function
- for every token. If callback function returns 0 the token will be freed
- and the function is immediatly aborted. It's save to call this function
- with a NULL text pointer (in which case the call will succeed)
-**************************************************************************/
+/**
+ * Extracts all token from the given text and calls the callback function
+ * for every token. If callback function returns 0 the token will be freed
+ * and the function is immediately aborted. It's save to call this function
+ * with a NULL text pointer (in which case the call will succeed)
+ *
+ * @param text the text to be processed
+ * @param prefix adds the given prefix
+ * @param callback callback that is called for every token
+ * @param data the user data that is supplied to the callback.
+ * @return 0 on a error, else 1.
+ */
 static int spam_tokenize(const char *text, const char *prefix, int (*callback)(char *token, void *data), void *data)
 {
 	const char *buf_start, *buf;
@@ -215,9 +222,13 @@ static int spam_tokenize(const char *text, const char *prefix, int (*callback)(c
 	return 1;
 }
 
-/**************************************************************************
- Is called for every token
-**************************************************************************/
+/**
+ * Callback to feed the given token into a hashtable.
+ *
+ * @param token the current token
+ * @param data a hashtable
+ * @return 1 on success, 0 on error
+ */
 static int spam_feed_hash_table_callback(char *token, void *data)
 {
 	struct hash_table *ht = (struct hash_table*)data;
@@ -236,9 +247,13 @@ static int spam_feed_hash_table_callback(char *token, void *data)
 	return 0;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Process the given complete mail for counting its text token in the given
+ * hash table.
+ *
+ * @param ht the hash table in which the tokens' occurrence are counted
+ * @param mail the complete mail
+ */
 static void spam_feed_parsed_mail(struct hash_table *ht, struct mail_complete *mail)
 {
 	if (mail->num_multiparts == 0)
@@ -271,9 +286,14 @@ static void spam_feed_parsed_mail(struct hash_table *ht, struct mail_complete *m
 	}
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/**
+ * Feed the mail into the hash table.
+ *
+ * @param folder the folder where the mail is located
+ * @param to_parse_mail the mail to be parsed.
+ * @param ht the occurrences hash table
+ * @return 1 on success, 0 otherwise.
+ */
 static int spam_feed_mail(struct folder *folder, struct mail_info *to_parse_mail, struct hash_table *ht)
 {
 	char path[380];
@@ -300,9 +320,8 @@ static int spam_feed_mail(struct folder *folder, struct mail_info *to_parse_mail
 	return rc;
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 int spam_feed_mail_as_spam(struct folder *folder, struct mail_info *mail)
 {
 	int rc;
@@ -316,9 +335,8 @@ int spam_feed_mail_as_spam(struct folder *folder, struct mail_info *mail)
 	return rc;
 }
 
-/**************************************************************************
- ...
-**************************************************************************/
+/*****************************************************************************/
+
 int spam_feed_mail_as_ham(struct folder *folder, struct mail_info *mail)
 {
 	int rc;
@@ -335,7 +353,9 @@ int spam_feed_mail_as_ham(struct folder *folder, struct mail_info *mail)
 	return rc;
 }
 
-/* Holds the probability that a mail containing this word is indeed spam */
+/**
+ * Holds the probability that a mail containing this word is indeed spam
+ */
 struct spam_token_probability
 {
 	const char *string;
@@ -344,9 +364,15 @@ struct spam_token_probability
 
 #define NUM_OF_PROBABILITIES 20
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Calculate the token probability for being spam and update the given
+ * spam_token_probability vector accordingly.
+ *
+ * @param token the token to e
+ * @param data pointer to the first element of a vector of NUM_OF_PROBABILITIES
+ *  spam_token_probability elements.
+ * @return
+ */
 static int spam_extract_prob_callback(char *token, void *data)
 {
 	struct spam_token_probability *prob = (struct spam_token_probability*)data;
@@ -402,9 +428,12 @@ static int spam_extract_prob_callback(char *token, void *data)
 	return 1;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Calculate the probabilities of the given parsed mail.
+ *
+ * @param prob vector of NUM_OF_PROBABILITIES entries that holds the probabilities.
+ * @param mail the mail for which to calculate the probabilities.
+ */
 static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct mail_complete *mail)
 {
 	if (mail->num_multiparts == 0)
@@ -437,10 +466,14 @@ static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct
 	}
 }
 
-/**************************************************************************
- Determines wheater a mail is spam or not via statistics.
- folder_path maybe NULL.
-**************************************************************************/
+/**
+ * Determines whether a mail is spam or not via statistics.
+ * folder_path maybe NULL.
+ *
+ * @param folder_path
+ * @param to_check_mail
+ * @return
+ */
 static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail_info *to_check_mail)
 {
 	char path[380];
@@ -501,11 +534,8 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail_inf
 	return rc;
 }
 
-/**************************************************************************
- Determines wheater a mail is spam or not. white and black are string
- arrays (created via the array_xxx() functions) and stand for white
- and black lists.
-**************************************************************************/
+/*****************************************************************************/
+
 int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char **white, char **black)
 {
 	char *from_addr;
@@ -527,25 +557,22 @@ int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char *
 	return rc;
 }
 
-/**************************************************************************
- Returns the number of mails classified as spam
-**************************************************************************/
+/*****************************************************************************/
+
 unsigned int spam_num_of_spam_classified_mails(void)
 {
 	return spam_table.data;
 }
 
-/**************************************************************************
- Returns the number of mails classified as ham
-**************************************************************************/
+/*****************************************************************************/
+
 unsigned int spam_num_of_ham_classified_mails(void)
 {
 	return ham_table.data;
 }
 
-/**************************************************************************
- Resets the ham statistics
-**************************************************************************/
+/*****************************************************************************/
+
 void spam_reset_ham(void)
 {
 	thread_lock_semaphore(sem);
@@ -553,9 +580,8 @@ void spam_reset_ham(void)
 	thread_unlock_semaphore(sem);
 }
 
-/**************************************************************************
- Resets the spam statistics
-**************************************************************************/
+/*****************************************************************************/
+
 void spam_reset_spam(void)
 {
 	thread_lock_semaphore(sem);

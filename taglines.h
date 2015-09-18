@@ -16,17 +16,37 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** taglines.h
-*/
+/**
+ * @file taglines.h
+ */
 
 #ifndef SM__TAGLINES_H
 #define SM__TAGLINES_H
 
 #include "lists.h"
 
+/**
+ * Return a tagline-extended buffer.
+ *
+ * @param buf the buffer that contains the contents that should be extended. The
+ *  buffer itself is freed via free() upon return.
+ * @return the extended buffer that should be freed via free() when no longer used.
+ */
 char *taglines_add_tagline(char *);
+
+/**
+ * Loads the tagline information (and creates the index if
+ * necessary
+ *
+ */
 void taglines_cleanup(void);
+
+/**
+ * Initialize the tagline subsystem.
+ *
+ * @param filename defines the name of the file that contains the
+ *  taglines.
+ */
 void taglines_init(char *filename);
 
 #endif

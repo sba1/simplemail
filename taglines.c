@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** taglines.c
-*/
+/**
+ * @file taglines.c
+ */
 
 #include "taglines.h"
 
@@ -37,9 +37,12 @@ static int *taglines_positions;
 static char *taglines_filename;
 static char *taglines_indexname;
 
-/******************************************************************
- Returns a random number
-*******************************************************************/
+/**
+ * Returns a random number uniformly distributed in [0,max-1]
+ *
+ * @param max defines the upper bound of the random number
+ * @return the random number
+ */
 static int sm_random(int max)
 {
 	static int x=0;
@@ -53,9 +56,11 @@ static int sm_random(int max)
 	return (rand() % max);
 }
 
-/******************************************************************
- Returns a random tagline which is allocated with malloc().
-*******************************************************************/
+/**
+ * Returns a random tagline that is allocated via malloc().
+ *
+ * @return a random tagline. Free via free().
+ */
 static char *get_tagline(void)
 {
 	FILE *fh;
@@ -82,9 +87,8 @@ static char *get_tagline(void)
 	return tagline;
 }
 
-/******************************************************************
- Adds a tagline to a buffer which is freed
-*******************************************************************/
+/*****************************************************************************/
+
 char *taglines_add_tagline(char *buf)
 {
 	long len = 0;
@@ -144,9 +148,12 @@ char *taglines_add_tagline(char *buf)
 	return buf;
 }
 
-/******************************************************************
- Creates a tagline index file for the given tagline file
-*******************************************************************/
+/**
+ * Create a tagine index file for a given tagkline file.
+ *
+ * @param filename
+ * @param indexname
+ */
 static void taglines_create_index(char *filename, char *indexname)
 {
 	FILE *tagfh, *indexfh;
@@ -180,11 +187,8 @@ static void taglines_create_index(char *filename, char *indexname)
 	free(buf);
 }
 
+/*****************************************************************************/
 
-/******************************************************************
- Loads the tagline information (and creates the index if
- neccessary
-*******************************************************************/
 void taglines_cleanup(void)
 {
 	free(taglines_filename);
@@ -195,12 +199,8 @@ void taglines_cleanup(void)
 	taglines_num = 0;
 }
 
-/******************************************************************
- Loads the tagline information (and creates the index if
- necessary). taglines_positions contains taglines_num + 1 entry
- describing the start positions of the taglines. The last entry
- is the size of the taglines file
-*******************************************************************/
+/*****************************************************************************/
+
 void taglines_init(char *filename)
 {
 	FILE *fh;

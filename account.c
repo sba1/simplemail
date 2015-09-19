@@ -30,11 +30,8 @@
 #include "parse.h"
 #include "support_indep.h"
 
-/**
- * Allocates a new account.
- *
- * @return
- */
+/*****************************************************************************/
+
 struct account *account_malloc(void)
 {
 	struct pop3_server *pop = NULL;
@@ -67,12 +64,8 @@ bailout:
 	return NULL;
 }
 
-/**
- * Duplicates an account.
- *
- * @param a
- * @return
- */
+/*****************************************************************************/
+
 struct account *account_duplicate(struct account *a)
 {
 	struct pop3_server *pop = NULL;
@@ -109,11 +102,8 @@ bailout:
 	return NULL;
 }
 
-/**
- * Frees an account.
- *
- * @param a
- */
+/*****************************************************************************/
+
 void account_free(struct account *a)
 {
 	free(a->account_name);
@@ -129,12 +119,8 @@ void account_free(struct account *a)
 	free(a);
 }
 
-/**
- * Find an account by a given e-mail address.
- *
- * @param from
- * @return
- */
+/*****************************************************************************/
+
 struct account *account_find_by_from(char *from)
 {
 	struct account *ac = (struct account*)list_first(&user.config.account_list);
@@ -164,12 +150,8 @@ struct account *account_find_by_from(char *from)
 	return NULL;
 }
 
-/**
- * Find an imap server by the given folder using the accounts.
- *
- * @param f
- * @return
- */
+/*****************************************************************************/
+
 struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 {
 	struct account *account;
@@ -192,15 +174,8 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 	return NULL;
 }
 
-/**
- * Returns whether the server is trustworthy.
- * For the given server, the user specified fingerprint is compared
- * to the given fingerprint.
- *
- * @param server_name
- * @param fingerprint
- * @return
- */
+/*****************************************************************************/
+
 int account_is_server_trustworthy(char *server_name, char *fingerprint)
 {
 	struct account *account;
@@ -222,12 +197,8 @@ int account_is_server_trustworthy(char *server_name, char *fingerprint)
 	return 0;
 }
 
-/**
- * Trust the given server.
- *
- * @param server_name
- * @param fingerprint
- */
+/*****************************************************************************/
+
 void account_trust_server(char *server_name, char *fingerprint)
 {
 	struct account *account;
@@ -257,12 +228,8 @@ void account_trust_server(char *server_name, char *fingerprint)
 	}
 }
 
-/**
- * Returns whether the given account is an imap one.
- *
- * @param a the account to check
- * @return 1 if it is imap, otherwise 0.
- */
+/*****************************************************************************/
+
 int account_is_imap(struct account *a)
 {
 	return a->recv_type == 1;

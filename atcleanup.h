@@ -23,8 +23,26 @@
 #ifndef SM__ATCLEANUP_H
 #define SM__ATCLEANUP_H
 
+/**
+ * Register a cleanup function.
+ *
+ * @param cleanup
+ * @param user_data
+ * @return
+ */
 int atcleanup(void (*cleanup)(void *user_data),void *user_data);
+
+/**
+ * Issues a free of the given argument on exit.
+ *
+ * @param mem
+ */
 int atcleanup_free(void *mem);
+
+/**
+ * Performs the finalization, i.e., calls all functions registered
+ * with atcleanup().
+ */
 void atcleanup_finalize(void);
 
 #endif

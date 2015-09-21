@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** configuration.c
-*/
+/**
+ * @file configuration.c
+ */
 
 #include "configuration.h"
 
@@ -52,13 +52,8 @@ struct user user;
 
 static char *profile_directory;
 
-/**
- * Sets the user profile directory. If this function is not called
- * some defaults are used.
- *
- * @param profile_directory
- * @return
- */
+/*****************************************************************************/
+
 int config_set_user_profile_directory(char *new_profile_directory)
 {
 	if (profile_directory) free(profile_directory);
@@ -67,6 +62,9 @@ int config_set_user_profile_directory(char *new_profile_directory)
 	return 1;
 }
 
+/**
+ * Initialize the configuration.
+ */
 static int init_config(void)
 {
 	struct account *account;
@@ -166,9 +164,8 @@ static int init_config(void)
 	return 1;
 }
 
-/**
- * Frees all resources needed for the configuration.
- */
+/*****************************************************************************/
+
 void free_config(void)
 {
 	free(user.config_filename);
@@ -203,6 +200,8 @@ void free_config(void)
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
+
+/*****************************************************************************/
 
 int load_config(void)
 {
@@ -616,6 +615,8 @@ int load_config(void)
 
 #define MAKESTR(x) ((x)?(char*)(x):"")
 
+/*****************************************************************************/
+
 void save_config(void)
 {
 	if (user.config_filename)
@@ -867,6 +868,8 @@ void save_config(void)
 	}
 }
 
+/*****************************************************************************/
+
 void save_filter(void)
 {
 	if (user.filter_filename)
@@ -883,7 +886,8 @@ void save_filter(void)
 	}
 }
 
-/* Clear all the accounts */
+/*****************************************************************************/
+
 void clear_config_accounts(void)
 {
 	struct account *a;
@@ -892,7 +896,8 @@ void clear_config_accounts(void)
 		account_free(a);
 }
 
-/* Insert a new account into the configuration list */
+/*****************************************************************************/
+
 void insert_config_account(struct account *account)
 {
 	struct account *new_account = account_duplicate(account);
@@ -900,7 +905,8 @@ void insert_config_account(struct account *account)
 		list_insert_tail(&user.config.account_list,&new_account->node);
 }
 
-/* Clear all the signatures  */
+/*****************************************************************************/
+
 void clear_config_signatures(void)
 {
 	struct signature *s;
@@ -909,7 +915,8 @@ void clear_config_signatures(void)
 		signature_free(s);
 }
 
-/* Insert a new signature into the configuration list */
+/*****************************************************************************/
+
 void insert_config_signature(struct signature *signature)
 {
 	struct signature *new_signature = signature_duplicate(signature);
@@ -917,7 +924,8 @@ void insert_config_signature(struct signature *signature)
 		list_insert_tail(&user.config.signature_list,&new_signature->node);
 }
 
-/* Find a signature by name */
+/*****************************************************************************/
+
 struct signature *find_config_signature_by_name(char *name)
 {
 	struct signature *s = (struct signature*)list_first(&user.config.signature_list);
@@ -930,7 +938,8 @@ struct signature *find_config_signature_by_name(char *name)
 	return NULL;
 }
 
-/* Clear all the phrases */
+/*****************************************************************************/
+
 void clear_config_phrases(void)
 {
 	struct phrase *p;
@@ -938,7 +947,8 @@ void clear_config_phrases(void)
 		phrase_free(p);
 }
 
-/* Insert a new phrase into the configuration list */
+/*****************************************************************************/
+
 void insert_config_phrase(struct phrase *phrase)
 {
 	struct phrase *new_phrase = phrase_duplicate(phrase);

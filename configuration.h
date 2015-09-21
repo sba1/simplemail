@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** configuration.h
-*/
+/**
+ * @file configuration.h
+ */
 
 #ifndef SM__CONFIGURATION_H
 #define SM__CONFIGURATION_H
@@ -171,21 +171,79 @@ struct user
 	struct config config;
 };
 
+/**
+ * Sets the user profile directory. If this function is not called
+ * some defaults are used.
+ *
+ * @param profile_directory
+ * @return 0 on failure, 1 on success
+ */
 int config_set_user_profile_directory(char *path);
 
+/**
+ * Load the configuration.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int load_config(void);
+
+/**
+ * Frees all resources needed for the configuration.
+ */
 void free_config(void);
+
+/**
+ * Save the configuration.
+ */
 void save_config(void);
+
+/**
+ * Save the filters.
+ */
 void save_filter(void);
 
+/**
+ * Clear all the accounts.
+ */
 void clear_config_accounts(void);
+
+/**
+ * Insert a new account into the configuration list.
+ *
+ * @param account the account to be inserted
+ */
 void insert_config_account(struct account *account);
 
+/**
+ * Find a signature by name.
+ *
+ * @param name the name of the signature to be found.
+ * @return the signature or NULL
+ */
 struct signature *find_config_signature_by_name(char *name);
+
+/**
+ * Clear all the signatures.
+ */
 void clear_config_signatures(void);
+
+/**
+ * Insert a new signature into the configuration list.
+ *
+ * @param signature the signature to be inserted
+ */
 void insert_config_signature(struct signature *signature);
 
+/**
+ * Clear all the phrases
+ */
 void clear_config_phrases(void);
+
+/**
+ * Insert a new phrase into the configuration list.
+ *
+ * @param phrase the phrase to be inserted.
+ */
 void insert_config_phrase(struct phrase *phrase);
 
 extern struct user user; /* the current user */

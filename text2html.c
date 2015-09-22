@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** text2html.c
-**
-** TODO: Rewrite this
-*/
+/**
+ * @file text2html.c
+ *
+ * @todo rewrite this
+ */
 
 #include "text2html.h"
 
@@ -144,6 +144,8 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *st
 
 	return 1;
 }
+
+/*****************************************************************************/
 
 char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 {

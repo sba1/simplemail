@@ -16,9 +16,22 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file text2html.h
+ */
+
 #ifndef SM__TEXT2HTML_H
 #define SM__TEXT2HTML_H
 
+/**
+ * Copy the given email text to a suitable html representation.
+ *
+ * @param buffer the buffer that contains the text to be converted.
+ * @param buffer_len the number of bytes that needs to be converted
+ * @param flags some flags
+ * @param fonttag a string that is used for the font tag
+ * @return the html representation.
+ */
 char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag);
 
 #define TEXT2HTML_BODY_TAG				(1 << 0)

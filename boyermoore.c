@@ -77,14 +77,8 @@ struct boyermoore_context
 	int plen; /**! @brief length of the pattern */
 };
 
-/**
- * Creates the boyermoore context for a given pattern and
- * length.
- *
- * @param p
- * @param plen
- * @return
- */
+/*****************************************************************************/
+
 struct boyermoore_context *boyermoore_create_context(char *p, int plen)
 {
 	struct boyermoore_context *context;
@@ -122,11 +116,8 @@ struct boyermoore_context *boyermoore_create_context(char *p, int plen)
 	return context;
 }
 
-/**
- * Creates the boyermoore context.
- *
- * @param context
- */
+/*****************************************************************************/
+
 void boyermoore_delete_context(struct boyermoore_context *context)
 {
 	if (context)
@@ -136,18 +127,7 @@ void boyermoore_delete_context(struct boyermoore_context *context)
 	}
 }
 
-/**
- * Performs the boyermoore algorithm.
- *
- * @param context the context
- * @param str string to be searched through
- * @param n number of bytes to be searches through
- * @param callback function that is called for every hit. If callback returns 0,
- *        the search is aborted.
- * @param user_data data pointer that is fed into the callback function.
- *
- * @return the position of the last found pattern or -1 if the pattern could not be found.
- */
+/*****************************************************************************/
 
 int boyermoore(struct boyermoore_context *context, char *str, int n, bm_callback callback, void *user_data)
 {

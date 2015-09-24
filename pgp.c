@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** pgp.c
-*/
+/**
+ * @file pgp.c
+ */
 
 #include "pgp.h"
 
@@ -31,9 +31,9 @@
 
 static struct list pgp_list;
 
-/******************************************************************
- Free's the pgp list
-*******************************************************************/
+/**
+ * Frees the internal pgp list.
+ */
 static void pgp_free_list(void)
 {
 	struct pgp_key *key;
@@ -45,9 +45,8 @@ static void pgp_free_list(void)
 }
 
 
-/******************************************************************
- Returns a list with struct key_node entries
-*******************************************************************/
+/*****************************************************************************/
+
 int pgp_update_key_list(void)
 {
 	int rc = 0;
@@ -84,25 +83,22 @@ int pgp_update_key_list(void)
 	return rc;
 }
 
-/******************************************************************
- Returns a list with struct key_node entries
-*******************************************************************/
+/*****************************************************************************/
+
 struct pgp_key *pgp_first(void)
 {
 	return (struct pgp_key *)list_first(&pgp_list);
 }
 
-/******************************************************************
- Returns a list with struct key_node entries
-*******************************************************************/
+/*****************************************************************************/
+
 struct pgp_key *pgp_next(struct pgp_key *next)
 {
 	return (struct pgp_key *)node_next(&next->node);
 }
 
-/******************************************************************
- Duplicate a given pgp key entry.
-*******************************************************************/
+/*****************************************************************************/
+
 struct pgp_key *pgp_duplicate(struct pgp_key *key)
 {
 	struct pgp_key *new_key;
@@ -117,9 +113,8 @@ struct pgp_key *pgp_duplicate(struct pgp_key *key)
 	return new_key;
 }
 
-/******************************************************************
- Frees all memory associated with a pgp entry.
-*******************************************************************/
+/*****************************************************************************/
+
 void pgp_dispose(struct pgp_key *key)
 {
 	if (key)
@@ -129,9 +124,8 @@ void pgp_dispose(struct pgp_key *key)
 	}
 }
 
-/******************************************************************
- Starts a pgp operation. Needs to be generalized
-*******************************************************************/
+/*****************************************************************************/
+
 int pgp_operate(char *options, char *output)
 {
 	char *path = sm_getenv("PGPPATH");

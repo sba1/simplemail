@@ -28,14 +28,8 @@
 
 #include "index_private.h"
 
-/**
- * Create an index using the given algorithm and persistence layer
- * stored at the given name.
- *
- * @param alg
- * @param filename
- * @return
- */
+/*****************************************************************************/
+
 struct index *index_create(struct index_algorithm *alg, const char *filename)
 {
 	struct index *idx;
@@ -46,54 +40,30 @@ struct index *index_create(struct index_algorithm *alg, const char *filename)
 	return idx;
 }
 
-/**
- * Free all resources associated with the given index. Does not affect
- * the persistence layer. The given index must not be accessed any longer
- * after a call to this function.
- *
- * @param index
- */
+/*****************************************************************************/
+
 void index_dispose(struct index *index)
 {
 	if (!index) return;
 	index->alg->dispose(index);
 }
 
-/**
- * Put a document of the given document id into the index.
- *
- * @param index
- * @param did
- * @param text
- * @return success or not.
- */
+/*****************************************************************************/
+
 int index_put_document(struct index *index, int did, const char *text)
 {
 	return index->alg->put_document(index,did,text);
 }
 
-/**
- * Remove the document from the index.
- *
- * @param index
- * @param did
- * @return success or not.
- *
- */
+/*****************************************************************************/
+
 int index_remove_document(struct index *index, int did)
 {
 	return index->alg->remove_document(index,did);
 }
 
-/**
- * Find documents that all contain the given string as exact substrings.
- *
- * @param index
- * @param callback
- * @param userdata
- * @param num_substrings number of following strings of type const char *.
- * @return number of documents for which the callback was called.
- */
+/*****************************************************************************/
+
 int index_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, ...)
 {
 	int rc;

@@ -16,6 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file codesets.h
+ */
+
 #ifndef SM__CODESETS_H
 #define SM__CODESETS_H
 
@@ -44,38 +48,277 @@ struct codeset
 };
 
 char **codesets_supported(void);
+
+
+/**
+ * Initialized and loads the codesets
+ *
+ * @return 1 on success, 0 on failure
+ */
 int codesets_init(void);
+
+/**
+ * Cleanup the memory for the codesets
+ */
 void codesets_cleanup(void);
+
+/**
+ * Finds the codeset by the given name. NULL returns ISO-8859-1 Latin 1
+ *
+ * @param name the name of
+ * @return the codeset
+ */
 struct codeset *codesets_find(char *name);
+
+/**
+ * Determines number of characters that cannot be converted when a given
+ * utf8 text is transformed to a given codeset
+ *
+ * @param codeset the codetest
+ * @param text the UTF8-encoded text to be converted
+ * @param text_len number of bytes that should be converted
+ * @return number of characters
+ */
 int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len);
+
+/**
+ * Returns the best codeset for the given text
+ *
+ * @param text the text for which the best codeset shall be determined
+ * @param text_len length of the text (in bytes).
+ * @param error_ptr here the number of conversion errors is stored
+ * @return the best codesets
+ */
 struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))
 #define utf8cpy(dest,src) strcpy(dest,src)
 #define utf8cat(dest,src) strcat(dest,src)
 
+/**
+ * Is the given string ASCII 7 bit only?
+ *
+ * @param str the text that should be checked
+ * @return
+ */
 int isascii7(const char *str);
+
+/**
+ * Returns the number of characters a utf8 string has. This is not
+ * identically with the size of memory is required to hold the string.
+ * Please use utf8size() for this.
+ *
+ * @param str the string whose length shall be determined.
+ * @return the length (in characters) of the string
+ */
 int utf8len(const utf8 *str);
+
+/**
+ * Duplicates an utf8 string.
+ *
+ * @param str the string to be duplicated
+ * @return
+ */
 utf8 *utf8dup(const utf8 *str);
+
+/**
+ * Returns the number of bytes occupied by the utf8 character.
+ *
+ * @param str
+ * @return
+ */
 int utf8bytes(const utf8 *str);
+
+/**
+ * Transforms a character position to the position in the char array
+ *
+ * @param str
+ * @param pos
+ * @return
+ */
 int utf8realpos(const utf8 *str, int pos);
+
+/**
+ * @brief Transform absolute byte position in the char array into a character position.
+ *
+ * @param str the utf8 string in question.
+ * @param pos the byte position within the utf8 string.
+ * @return the actual character position
+ */
 int utf8charpos(const utf8 *str, int pos);
+
+/**
+ * Copies a number of characters from "from" to "to".
+ *
+ * @param to
+ * @param from
+ * @param n
+ * @return
+ */
 utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n);
+
+/**
+ * Creates a uf8 string from a different one. from is the iso string and
+ * charset the charset of from
+ *
+ * @param from
+ * @param charset
+ * @return
+ */
 utf8 *utf8create(void *from, char *charset);
+
+/**
+ * Creates a uf8 string from a different one. from is the iso string and
+ * charset the charset of from
+ *
+ * @param from
+ * @param charset
+ * @param from_len
+ * @return
+ */
 utf8 *utf8create_len(void *from, char *charset, int from_len);
+
+/**
+ * Converts a string with a given codeset to a utf8 representation.
+ *
+ * @param from
+ * @param codeset NULL is okay (default codeset is assumed then)
+ * @param dest
+ * @param dest_size
+ * @return number of bytes within the destination buffer
+ */
 int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, int dest_size);
+
+/**
+ * Converts a utf8 string to a given charset. Return the number of bytes
+ * written to dest excluding the NULL byte (which is always ensured by this
+ * function).
+ *
+ * @param str
+ * @param dest
+ * @param dest_size
+ * @param codeset
+ * @return
+ */
 int utf8tostr(const utf8 *str, char *dest, int dest_size, struct codeset *codeset);
+
+/**
+ *  Converts a UTF8 string to a representation as given by the charset.
+ *  The returned string is allocated with malloc()
+ *
+ * @param str
+ * @param codeset
+ * @return
+ */
 char *utf8tostrcreate(const utf8 *str, struct codeset *codeset);
+
+/**
+ * Compares two utf8 string case-insensitive.
+ *
+ * @param str1
+ * @param str2
+ * @return
+ * @note should be fixed for alias and endian issues
+ */
 int utf8stricmp(const char *str1, const char *str2);
+
+/**
+ * Compares two utf8 string case-insensitive (the args might be NULL).
+ * Note: Changes for little endian
+ *
+ * @param str1
+ * @param str2
+ * @param len
+ * @return
+ */
 int utf8stricmp_len(const char *str1, const char *str2, int len);
+
+/**
+ * Converts a utf8 encoded character to its lower case equivalent.
+ *
+ * @param str defines the source character
+ * @param dest note that dest should be at least 6 bytes in size.
+ * @return the number of bytes written to dest. It is <= 0 for an error.
+ *
+ * @note should be fixed for alias and endian issues. Also doesn't respect
+ *       locale settings.
+ */
 int utf8tolower(const char *str, char *dest);
+
+/**
+ * Returns the pointer where the given string starts or NULL
+ *
+ * @param str1
+ * @param str2
+ * @return
+ */
 char *utf8stristr(const char *str1, const char *str2);
+
+/**
+ * Converts a single UTF8 char to a given charset. Returns the number of
+ * bytes to the next utf8 char. The resulting *chr might be 0 if it was
+ * not in the codeset or could not be decoded for any other reasons.
+ *
+ * @param str
+ * @param chr
+ * @param codeset
+ * @return
+ */
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
+
+/**
+ * Converts a single UFT-8 Chracter to a�Unicode character very very
+ * incomplete. Should return NULL if invalid (actualy not implemented)
+ *
+ * @param chr
+ * @param code
+ * @return
+ */
 const char *uft8toucs(const char *chr, unsigned int *code);
+
+/**
+ * Converts a UTF7 string into UTF8
+ *
+ * @param source
+ * @param sourcelen
+ * @return
+ */
 char *utf7ntoutf8(char *source, int sourcelen);
+
+/**
+ * Converts a IMAP "UTF7" string into UTF8. (see RFC2060)
+ *
+ * @param source
+ * @param sourcelen
+ * @return
+ */
 char *iutf7ntoutf8(char *source, int sourcelen);
+
+/**
+ * @brief Converts a utf8 string to utf7 that is used by IMAP4 protocol.
+ *
+ * @param utf8 defines the
+ * @param sourcelen the number bytes (not characters!) of the utf8 string.
+ * @return the null-terminated utf7 string allocated with malloc().
+ */
 char *utf8toiutf7(char *utf8, int sourcelen);
+
+/**
+ * Converts a utf8 string to puny code.
+ *
+ * @param str
+ * @param sourcelen
+ * @return
+ */
 char *utf8topunycode(const utf8 *str, int sourcelen);
+
+/**
+ * Converts a puny code sequence into a utf8 encoded string.
+ *
+ * @param source the source string
+ * @param sourcelen number of converted bytes if the source string
+ * @return
+ */
 utf8 *punycodetoutf8(const char *source, int sourcelen);
 
 #endif

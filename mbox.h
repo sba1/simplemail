@@ -15,12 +15,34 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+
+/**
+ * @file mbox.h
+ */
+
 #ifndef SM__MBOX_H
 #define SM__MBOX_H
 
 struct folder;
 
+/**
+ * Export a given folder as a mbox file to the given filename
+ *
+ * @param folder
+ * @param filename
+ * @return
+ */
 int mbox_export_folder(struct folder *folder, char *filename);
+
+/**
+ * Export a given a given file which must be a mbox file to a given folder.
+ * folder may be NULL which means that the mails are imported like fetching
+ * mails.
+ *
+ * @param folder
+ * @param filename
+ * @return
+ */
 int mbox_import_to_folder(struct folder *folder, char *filename);
 
 #endif

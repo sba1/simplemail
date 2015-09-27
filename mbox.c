@@ -16,9 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mbox.c - import and export functions for the mbox fileformat
-*/
+/**
+ * @file mbox.c
+ *
+ * import and export functions for the mbox fileformat
+ */
 
 #include "mbox.h"
 
@@ -40,10 +42,12 @@
 #include "support.h"
 #include "timesupport.h"
 
-/**************************************************************************
- Checks wheather given string can be considered as any from line.
- Buf may not be NULL
-**************************************************************************/
+/**
+ * Checks whether given string can be considered as any from line.
+*
+ * @param buf defines the string to be checked
+ * @return whether it contains a line containing From
+ */
 static int line_is_any_from(char *buf)
 {
 	unsigned char c;
@@ -65,9 +69,12 @@ struct export_data
 	char *foldername;
 };
 
-/**************************************************************************
- Entry point for the export subthread
-**************************************************************************/
+/**
+ * Entry point for the export sub thread.
+ *
+ * @param data arguments for the export thread
+ * @return
+ */
 static int export_entry(struct export_data *data)
 {
 	char *filename;
@@ -172,9 +179,8 @@ static int export_entry(struct export_data *data)
 	return 0;
 }
 
-/**************************************************************************
- Export a given folder as a mbox file to the given filename
-**************************************************************************/
+/*****************************************************************************/
+
 int mbox_export_folder(struct folder *folder, char *filename)
 {
 	struct export_data data;
@@ -194,9 +200,12 @@ struct import_data
 	int in_folder;
 };
 
-/**************************************************************************
- Entry point for the import subthread
-**************************************************************************/
+/**
+ * Entry point for the import subthread.
+ *
+ * @param data parameters for the import subthread
+ * @return
+ */
 static int import_entry(struct import_data *data)
 {
 	char *filename,*mailfilename;
@@ -316,11 +325,8 @@ static int import_entry(struct import_data *data)
 	return 0;
 }
 
-/**************************************************************************
- Export a given a given file which must be a mbox file to a given folder.
- folder may be NULL which means that the mails are imported like fetching
- mails.
-**************************************************************************/
+/*****************************************************************************/
+
 int mbox_import_to_folder(struct folder *folder, char *filename)
 {
 	struct import_data data;

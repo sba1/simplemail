@@ -64,9 +64,14 @@ static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
 
-/******************************************************************
- The special sorting functions
-*******************************************************************/
+/**
+ * Compare two mails with respect to their status.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_status(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc;
@@ -78,6 +83,14 @@ static int mail_compare_status(const struct mail_info *arg1, const struct mail_i
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the from field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_from(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = utf8stricmp(mail_info_get_from(arg1),mail_info_get_from(arg2));
@@ -85,12 +98,22 @@ static int mail_compare_from(const struct mail_info *arg1, const struct mail_inf
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the to field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_to(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = utf8stricmp(mail_info_get_to(arg1),mail_info_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
+
+/*****************************************************************************/
 
 char *mail_get_compare_subject(char *subj)
 {
@@ -150,6 +173,14 @@ char *mail_get_compare_subject(char *subj)
 	return subj;
 }
 
+/**
+ * Compares two mails with respect to the subject field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_subject(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = utf8stricmp(mail_get_compare_subject(arg1->subject),mail_get_compare_subject(arg2->subject));
@@ -157,6 +188,14 @@ static int mail_compare_subject(const struct mail_info *arg1, const struct mail_
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the reply field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_reply(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = utf8stricmp(arg1->reply_addr, arg2->reply_addr);
@@ -164,12 +203,29 @@ static int mail_compare_reply(const struct mail_info *arg1, const struct mail_in
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the date field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_date(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	if (arg1->seconds > arg2->seconds) return reverse?(-1):1;
 	else if (arg1->seconds == arg2->seconds) return 0;
 	return reverse?1:(-1);
 }
+
+/**
+ * Compares two mails with respect to the size field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 
 static int mail_compare_size(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
@@ -178,6 +234,14 @@ static int mail_compare_size(const struct mail_info *arg1, const struct mail_inf
 	return reverse?1:(-1);
 }
 
+/**
+ * Compares two mails with respect to the filename field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_filename(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = mystricmp(arg1->filename, arg2->filename);
@@ -185,6 +249,14 @@ static int mail_compare_filename(const struct mail_info *arg1, const struct mail
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the pop3 field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc = mystricmp(arg1->pop3_server, arg2->pop3_server);
@@ -192,6 +264,14 @@ static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_inf
 	return rc;
 }
 
+/**
+ * Compares two mails with respect to the received (time) field.
+ *
+ * @param arg1 first mail to be compared
+ * @param arg2 second mail to be compared
+ * @param reverse negates the result
+ * @return > 0 if arg1 is larger than arg2
+ */
 static int mail_compare_recv(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	if (arg1->received > arg2->received) return reverse?(-1):1;

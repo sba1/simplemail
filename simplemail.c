@@ -305,7 +305,8 @@ int callback_delete_mail(struct mail_info *mail)
 	return 0;
 }
 
-/* delete mails by uid and folder */
+/*****************************************************************************/
+
 void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid)
 {
 	struct folder *f;

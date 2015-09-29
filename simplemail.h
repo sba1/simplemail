@@ -537,6 +537,15 @@ void callback_number_of_mails_downloaded(int num);
  * @param mail the mail that has just been written.
  */
 void callback_new_mail_written(struct mail_info *mail);
+
+/**
+ * Delete an imap mail by uid.
+ *
+ * @param user of the imap account
+ * @param server server name of the imap account
+ * @param path path on the server
+ * @param uid defines the uid of the mail to be deleted
+ */
 void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid);
 
 /**

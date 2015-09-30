@@ -156,11 +156,10 @@ static STRPTR UsedClasses[] =
 	NULL
 };
 
+/*****************************************************************************/
+
 static Object *sound_obj;
 
-/****************************************************************
- Play a sound (from support.c)
-*****************************************************************/
 void sm_play_sound(char *filename)
 {
 	if (sound_obj) DisposeObject(sound_obj);

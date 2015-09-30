@@ -205,9 +205,9 @@ void sm_play_sound(char *filename)
 }
 */
 
-/******************************************************************
- Get environment variables
-*******************************************************************/
+
+/*****************************************************************************/
+
 char *sm_getenv(char *name)
 {
 	static char buf[2048];
@@ -215,25 +215,22 @@ char *sm_getenv(char *name)
 	return buf;
 }
 
-/******************************************************************
- Set environment variables
-*******************************************************************/
+/*****************************************************************************/
+
 void sm_setenv(char *name, char *value)
 {
 	SetVar(name,value,strlen(value),0);
 }
 
-/******************************************************************
- Unset environment variables
-*******************************************************************/
+/*****************************************************************************/
+
 void sm_unsetenv(char *name)
 {
 	DeleteVar(name,GVF_LOCAL_ONLY);
 }
 
-/******************************************************************
- An system() replacement
-*******************************************************************/
+/*****************************************************************************/
+
 int sm_system(char *command, char *output)
 {
 	BPTR fhi,fho;
@@ -256,14 +253,8 @@ int sm_system(char *command, char *output)
 	return error;
 }
 
-/**
- * Checks whether a file is in the given drawer. Returns 1 for
- * success. The given arguments may be absolute or relative.
- *
- * @param filename
- * @param path
- * @return
- */
+/*****************************************************************************/
+
 int sm_file_is_in_drawer(char *filename, char *path)
 {
 	BPTR dir = Lock(path,ACCESS_READ);
@@ -286,13 +277,8 @@ int sm_file_is_in_drawer(char *filename, char *path)
 	return rc;
 }
 
-/**
- * Checks whether the given paths represent the same resource.
- *
- * @param path1
- * @param path2
- * @return
- */
+/*****************************************************************************/
+
 int sm_is_same_path(char *path1, char *path2)
 {
 	int is_same;
@@ -314,9 +300,8 @@ int sm_is_same_path(char *path1, char *path2)
 	return is_same;
 }
 
-/******************************************************************
- Parse a given Pattern to be used in sm_match_pattern()
-*******************************************************************/
+/*****************************************************************************/
+
 char *sm_parse_pattern(utf8 *utf8_str, int flags)
 {
 	char *source = NULL;
@@ -380,9 +365,8 @@ char *sm_parse_pattern(utf8 *utf8_str, int flags)
 	return dest;
 }
 
-/******************************************************************
- Matches a pattern (from sm_parse_pattern()) against an string.
-*******************************************************************/
+/*****************************************************************************/
+
 int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 {
 	char *str;
@@ -443,9 +427,8 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 	return match;
 }
 
-/******************************************************************
- Like sprintf() but buffer overrun safe
-*******************************************************************/
+/*****************************************************************************/
+
 int sm_snprintf(char *buf, int n, const char *fmt, ...)
 {
   int r;
@@ -460,9 +443,8 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
   return r;
 }
 
-/******************************************************************
- Used for logging
-*******************************************************************/
+/*****************************************************************************/
+
 void sm_put_on_serial_line(char *txt)
 {
 #ifdef CLIB_DEBUG_PROTOS_H
@@ -490,9 +472,8 @@ void sm_put_on_serial_line(char *txt)
 #endif
 }
 
-/******************************************************************
- Tells an error message
-*******************************************************************/
+/*****************************************************************************/
+
 void tell_str(const char *str)
 {
 	error_add_message(_(str));
@@ -542,9 +523,9 @@ static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase, struct Am
 	return NULL;
 }
 #endif
-/******************************************************************
- Decodes an pkcs7...API is unfinished! This is a temp solution.
-*******************************************************************/
+
+/*****************************************************************************/
+
 int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
 #ifndef NO_SSL

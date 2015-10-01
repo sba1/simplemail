@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** searchwnd.c
-*/
+/**
+ * @file searchwnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -233,17 +233,15 @@ static void init_search(void)
 	}
 }
 
-/**************************************************************************
- Refreshes the folders
-**************************************************************************/
+/*****************************************************************************/
+
 void search_refresh_folders(void)
 {
 	if (search_folder_tree) DoMethod(search_folder_tree, MUIM_FolderTreelist_Refresh,NULL);
 }
 
-/**************************************************************************
- Opens the search window
-**************************************************************************/
+/*****************************************************************************/
+
 void search_open(char *foldername)
 {
 	if (!search_wnd)
@@ -256,18 +254,16 @@ void search_open(char *foldername)
 	SetAttrs(search_folder_text, MUIA_Text_Contents, foldername, MUIA_UserData, 0, TAG_DONE);
 }
 
-/**************************************************************************
- Opens the search window
-**************************************************************************/
+/*****************************************************************************/
+
 void search_clear_results(void)
 {
 	DoMethod(search_mail_tree, MUIM_MailTree_Clear);
 	has_mails = 0;
 }
 
-/**************************************************************************
- Opens the search window
-**************************************************************************/
+/*****************************************************************************/
+
 void search_add_result(struct mail_info **array, int size)
 {
 	int i;
@@ -288,35 +284,31 @@ void search_add_result(struct mail_info **array, int size)
   has_mails = 1;
 }
 
-/**************************************************************************
+/*****************************************************************************/
 
-**************************************************************************/
 void search_enable_search(void)
 {
 	set(search_start_button,MUIA_Disabled,TRUE);
 	set(search_stop_button,MUIA_Disabled,FALSE);
 }
 
-/**************************************************************************
+/*****************************************************************************/
 
-**************************************************************************/
 void search_disable_search(void)
 {
 	set(search_start_button,MUIA_Disabled,FALSE);
 	SetAttrs(search_stop_button,MUIA_Disabled,TRUE,MUIA_Selected,FALSE,TAG_DONE);
 }
 
-/**************************************************************************
- Returns wheather there are any mails or not
-**************************************************************************/
+/*****************************************************************************/
+
 int search_has_mails(void)
 {
 	return has_mails;
 }
 
-/**************************************************************************
- Remove the given mail
-**************************************************************************/
+/*****************************************************************************/
+
 void search_remove_mail(struct mail_info *m)
 {
 	DoMethod(search_mail_tree, MUIM_MailTree_RemoveMail, (ULONG)m);

@@ -16,10 +16,20 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file shutdownwnd.h
+ */
 #ifndef SM__SHUTDOWNWND_H
 #define SM__SHUTDOWNWND_H
 
+/**
+ * Open the shutdown window.
+ */
 void shutdownwnd_open(void);
+
+/**
+ * Close the shutdown window.
+ */
 void shutdownwnd_close(void);
 
 #endif

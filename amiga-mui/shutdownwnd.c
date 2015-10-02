@@ -43,6 +43,8 @@ static struct Screen *scr;
 static Object *obj;
 static LONG pen;
 
+/*****************************************************************************/
+
 void shutdownwnd_open(void)
 {
 	if ((scr = LockPubScreen(NULL)))
@@ -111,6 +113,8 @@ void shutdownwnd_open(void)
 		}
 	}
 }
+
+/*****************************************************************************/
 
 void shutdownwnd_close(void)
 {

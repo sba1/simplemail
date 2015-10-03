@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** readwnd.c
-*/
+/**
+ * @file readwnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -149,10 +149,12 @@ struct Read_Data /* should be a customclass */
 	/* more to add */
 };
 
-/******************************************************************
- Cleanups temporary files created for the mail. Returns 1 if can
- continue.
-*******************************************************************/
+/**
+ * Cleanups temporary files created for the mail.
+ *
+ * @param data
+ * @return 1 on success
+ */
 static int read_cleanup(struct Read_Data *data)
 {
 	struct ExAllControl *eac;
@@ -200,9 +202,12 @@ static int read_cleanup(struct Read_Data *data)
 	return rc;
 }
 
-/******************************************************************
- Open the contents of an icon (requires version 44 of the os)
-*******************************************************************/
+/**
+ * Open the contents of an icon (requires version 44 of the os)
+ *
+ * @param data the read data instance
+ * @param mail the mail to be opened
+ */
 static void open_contents(struct Read_Data *data, struct mail_complete *mail)
 {
 	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
@@ -258,9 +263,12 @@ static void open_contents(struct Read_Data *data, struct mail_complete *mail)
 	}
 }
 
-/******************************************************************
- inserts the text of the mail into the given nlist object
-*******************************************************************/
+/**
+ * Inserts the text of the mail into the given nlist object.
+ *
+ * @param data
+ * @param mail
+ */
 static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 {
 #ifndef __AROS__
@@ -374,9 +382,11 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 	}
 }
 
-/******************************************************************
- An Icon has selected
-*******************************************************************/
+/**
+ * An icon has been selected.
+ *
+ * @param pdata pointer to the read data instance.
+ */
 static void icon_selected(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -397,9 +407,12 @@ static void icon_selected(int **pdata)
 	}
 }
 
-/******************************************************************
- Open the icon
-*******************************************************************/
+/**
+ * Open the icon.
+ *
+ * @param pdata pointer to an array containing the read data instance and the
+ *   mail to be opened
+ */
 static void icon_open(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -408,9 +421,12 @@ static void icon_open(int **pdata)
 	open_contents(data,mail);
 }
 
-/******************************************************************
- The icon has been dropped on a wb drawer
-*******************************************************************/
+/**
+ * The icon has been dropped on a wb drawer.
+ *
+ * @param pdata pointer to an array containing the read data instance,
+ *  the mail and the dragged icon object.
+ */
 static void icon_drop(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -421,9 +437,11 @@ static void icon_drop(int **pdata)
 	save_contents_to(data, mail, path, mail->content_name);
 }
 
-/******************************************************************
- A context menu item has been selected
-*******************************************************************/
+/**
+ * A context menu item has been selected
+ *
+ * @param pdata
+ */
 static void context_menu_trigger(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -451,9 +469,12 @@ static void context_menu_trigger(int **pdata)
 	}
 }
 
-/******************************************************************
- inserts the mime informations (uses ugly recursion)
-*******************************************************************/
+/**
+ * Inserts the mime informations (uses ugly recursion)
+ *
+ * @param data
+ * @param mail
+ */
 static void insert_mail(struct Read_Data *data, struct mail_complete *mail)
 {
 	int i;
@@ -511,9 +532,12 @@ static void insert_mail(struct Read_Data *data, struct mail_complete *mail)
 	}
 }
 
-/******************************************************************
- Save the contents of a given mail
-*******************************************************************/
+/**
+ * Save the contents of a given mail.
+ *
+ * @param data read data instance
+ * @param mail the mail whose contents should be saved
+ */
 static void save_contents(struct Read_Data *data, struct mail_complete *mail)
 {
 	if (!mail) return;
@@ -528,9 +552,15 @@ static void save_contents(struct Read_Data *data, struct mail_complete *mail)
 	}
 }
 
-/******************************************************************
- Save the contents of a given mail to a given dest
-*******************************************************************/
+/**
+ * Save the contents of a given mail to a given dest.
+ *
+ * @param data read data instance
+ * @param mail the mail whose contents should be saved
+ * @param drawer the destination drawer where to store the file
+ * @param file the actual name of the output file.
+ * @return 1 for success, 0 on failure
+ */
 static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file)
 {
 	int rc = 0;
@@ -656,9 +686,11 @@ static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, 
 	return rc;
 }
 
-/******************************************************************
- Show the raw text with multiview
-*******************************************************************/
+/**
+ * Show the raw text with multiview
+ *
+ * @param pdata the read data instance
+ */
 static void show_raw(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -756,9 +788,12 @@ static void save_all_attachments(int **pdata)
 
 }
 
-/******************************************************************
- Shows a given mail (part)
-*******************************************************************/
+/**
+ * Shows a given mail (part)
+ *
+ * @param data the read data instance/context
+ * @param m the mail that should be shown
+ */
 static void show_mail(struct Read_Data *data, struct mail_complete *m)
 {
 	if (!m) return;
@@ -773,9 +808,11 @@ static void show_mail(struct Read_Data *data, struct mail_complete *m)
 	}
 }
 
-/******************************************************************
- Returns the currently displayed mail
-*******************************************************************/
+/**
+ * Returns the currently displayed mail.
+ *
+ * @param pdata pointer to the read data instance/context
+ */
 static void show_all_headers(void **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
@@ -791,9 +828,8 @@ static void show_all_headers(void **pdata)
 	insert_text(data, mail);
 }
 
-/******************************************************************
- Refresh the Prev/Next Button
-*******************************************************************/
+/*****************************************************************************/
+
 void read_refresh_prevnext_button(struct folder *f)
 {
 	int num;
@@ -822,11 +858,13 @@ void read_refresh_prevnext_button(struct folder *f)
 	}
 }
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook (because the object is disposed in
- this function)!
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook (because the object is disposed in
+ * this function)!
+ *
+ * @param pdata the read data instance/context
+ */
 static void read_window_dispose(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -852,9 +890,8 @@ static void read_window_dispose(struct Read_Data **pdata)
 	SM_LEAVE;
 }
 
-/**
- * Deallocates all resources associated with any read window.
- */
+/*****************************************************************************/
+
 void read_window_cleanup(void)
 {
 	int i;
@@ -874,9 +911,11 @@ void read_window_cleanup(void)
 	}
 }
 
-/******************************************************************
- The save button has been clicked
-*******************************************************************/
+/**
+ * Callback that is invoked if the save button has been clicked
+ *
+ * @param pdata the read data instance/context
+ */
 static void save_button_pressed(struct Read_Data **pdata)
 {
 	struct mail_complete *mail;
@@ -887,10 +926,12 @@ static void save_button_pressed(struct Read_Data **pdata)
 	save_contents(data,mail);
 }
 
-/******************************************************************
- The prev button has been pressed. This should be made somehow
- gui independend later
-*******************************************************************/
+/**
+ * The prev button has been pressed. This should be made somehow
+ * gui independend later
+ *
+ * @param pdata the read data instance/context
+ */
 static void prev_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -905,10 +946,12 @@ static void prev_button_pressed(struct Read_Data **pdata)
 	}
 }
 
-/******************************************************************
- The next button has been pressed This should be made somehow
- gui independend later
-*******************************************************************/
+/**
+ * The next button has been pressed This should be made somehow
+ * gui independend later
+ *
+ * @param pdata the read data instance/context
+ */
 static void next_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -923,9 +966,11 @@ static void next_button_pressed(struct Read_Data **pdata)
 	}
 }
 
-/******************************************************************
- The delete button has been pressed
-*******************************************************************/
+/**
+ * The delete button has been pressed
+ *
+ * @param pdata the read data instance/context
+ */
 static void delete_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -957,9 +1002,11 @@ static void delete_button_pressed(struct Read_Data **pdata)
 	}
 }
 
-/******************************************************************
- The move button has been pressed
-*******************************************************************/
+/**
+ * The move button has been pressed
+ *
+ * @param pdata the read data instance/context
+ */
 static void move_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -1012,9 +1059,11 @@ static void move_button_pressed(struct Read_Data **pdata)
 	}
 }
 
-/******************************************************************
- The reply button has been pressed
-*******************************************************************/
+/**
+ * The reply button has been pressed
+ *
+ * @param pdata the read data instance/context
+ */
 static void reply_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -1023,9 +1072,11 @@ static void reply_button_pressed(struct Read_Data **pdata)
 	callback_reply_mails(data->folder_path, 1, &data->ref_mail);
 }
 
-/******************************************************************
- The forward button has been pressed
-*******************************************************************/
+/**
+ * The forward button has been pressed
+ *
+ * @param pdata pointer to the read data instance/context
+ */
 static void forward_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
@@ -1034,10 +1085,12 @@ static void forward_button_pressed(struct Read_Data **pdata)
 	callback_forward_mails(data->folder_path, 1, &data->ref_mail);
 }
 
-/******************************************************************
- A an uri has been clicked
-*******************************************************************/
 #ifndef __AROS__
+/**
+ * An URI has been clicked.
+ *
+ * @param msg
+ */
 static void uri_clicked(void **msg)
 {
 	char *uri = (char*)msg[1];
@@ -1052,11 +1105,16 @@ static void uri_clicked(void **msg)
 }
 #endif
 
-/******************************************************************
- SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
- otherwise 0. -1 means reject this object totaly
-*******************************************************************/
 #ifndef __AROS__ /* no simplehtml*/
+/**
+ * SimpleHTML Load Hook. Shall return 1 if uri can be loaded by the hook
+ * otherwise 0. -1 means reject this object entirely
+ *
+ * @param h
+ * @param obj
+ * @param msg
+ * @return
+ */
 STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1,struct MUIP_SimpleHTML_LoadHook *msg))
 {
 	struct Read_Data *data = (struct Read_Data*)h->h_Data;
@@ -1096,9 +1154,13 @@ STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Obje
 }
 #endif
 
-/******************************************************************
- Display the mail
-*******************************************************************/
+/**
+ * Display the mail.
+ *
+ * @param data the read data instance
+ * @param mail the mail to be displayed
+ * @return 1 on success, 0 on failure
+ */
 static int read_window_display_mail(struct Read_Data *data, struct mail_info *mail)
 {
 	BPTR lock;
@@ -1205,11 +1267,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 	SM_RETURN(0,"%d");
 }
 
-/******************************************************************
- Opens a read window. Returns the number of the readwindow or -1
- for an error. You can specify the number of the window which to
- use or -1 for a random one.
-*******************************************************************/
+/*****************************************************************************/
+
 int read_window_open(char *folder, struct mail_info *mail, int window)
 {
 	Object *wnd,  *contents_page;
@@ -1490,18 +1549,16 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	SM_RETURN(-1,"%d");
 }
 
-/******************************************************************
- Activate a read window
-*******************************************************************/
+/*****************************************************************************/
+
 void read_window_activate(int num)
 {
 	if (num < 0 || num >= MAX_READ_OPEN) return;
 	if (read_open[num] && read_open[num]->wnd) set(read_open[num]->wnd,MUIA_Window_Open,TRUE);
 }
 
-/******************************************************************
- Closes a read window
-*******************************************************************/
+/*****************************************************************************/
+
 void read_window_close(int num)
 {
 	if (num < 0 || num >= MAX_READ_OPEN) return;
@@ -1509,9 +1566,8 @@ void read_window_close(int num)
 		read_window_dispose(&read_open[num]);
 }
 
-/******************************************************************
- Returns the displayed mail of the given window
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_complete *read_window_get_displayed_mail(int num)
 {
 	if (num < 0 || num >= MAX_READ_OPEN) return NULL;

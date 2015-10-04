@@ -143,11 +143,8 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 	SM_LEAVE;
 }
 
-/**
- * Updates the content of the progress monitor window.
- *
- * @param force
- */
+/*****************************************************************************/
+
 void progmonwnd_update(int force)
 {
 	struct progmon_gui_node *node;
@@ -178,9 +175,8 @@ void progmonwnd_update(int force)
 
 }
 
-/**
- * Opens the progess monitor window.
- */
+/*****************************************************************************/
+
 void progmonwnd_open(void)
 {
 	if (!progmon_wnd) progmonwnd_init();

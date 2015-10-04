@@ -16,10 +16,23 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file progmonwnd.h
+ */
+
 #ifndef SM__PROGMONWND_H
 #define SM__PROGMONWND_H
 
+/**
+ * Opens the progress monitor window.
+ */
 void progmonwnd_open(void);
+
+/**
+ * Updates the content of the progress monitor window.
+ *
+ * @param force set to 1 if progress update should be forced
+ */
 void progmonwnd_update(int force);
 
 #endif

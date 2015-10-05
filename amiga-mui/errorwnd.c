@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /**
- * @file
+ * @file errorwnd.c
  */
 
 #include <string.h>
@@ -55,6 +55,9 @@ static Object *text_list;
 static Object *delete_button;
 static Object *close_button;
 
+/**
+ * Callback for selecting the currently displayed error message.
+ */
 static void error_select(void)
 {
 	int num = xget(all_errors_list, MUIA_NList_Active);
@@ -71,6 +74,9 @@ static void error_select(void)
 	set(text_list, MUIA_NList_Quiet, FALSE);
 }
 
+/**
+ * Delete all messages.
+ */
 static void delete_messages(void)
 {
 	struct error_node *node;
@@ -99,6 +105,9 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	msg->strings[1] = error->text;
 }
 
+/**
+ * Initialize the error window.
+ */
 static void init_error(void)
 {
 	static struct Hook error_display_hook;
@@ -146,6 +155,8 @@ static void init_error(void)
 	}
 }
 
+/*****************************************************************************/
+
 void error_add_message(char *msg)
 {
 	if (!error_wnd) init_error();
@@ -170,6 +181,8 @@ void error_add_message(char *msg)
 		}
 	}
 }
+
+/*****************************************************************************/
 
 void error_window_open(void)
 {

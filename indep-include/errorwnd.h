@@ -18,8 +18,17 @@
 
 
 /**
- * @file
+ * @file errorwnd.h
  */
 
+/**
+ * Add an error text to the error window.
+ *
+ * @param msg text to be added.
+ */
 void error_add_message(char *msg);
+
+/**
+ * Open the error window.
+ */
 void error_window_open(void);

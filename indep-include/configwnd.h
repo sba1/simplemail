@@ -16,10 +16,26 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** configwnd.h
-*/
+/**
+ * @file configwnd.h
+ */
 
+#ifndef SM__CONFIGWND_H
+#define SM__CONFIGWND_H
+
+/**
+ * Open the config window
+ */
 void open_config(void);
+
+/**
+ * Close and dispose the config window
+ */
 void close_config(void);
+
+/**
+ * Refreshes the folders
+ */
 void config_refresh_folders(void);
+
+#endif

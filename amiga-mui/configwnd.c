@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** configwnd.c
-*/
+/**
+ * @file configwnd.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -233,9 +233,8 @@ static Object *config_last_visisble_group;
 #define RECV_SECURITY_STLS	1
 #define RECV_SECURITY_TLS	2
 
-/**************************************************************************
- Refreshes the folders
-**************************************************************************/
+/*****************************************************************************/
+
 void config_refresh_folders(void)
 {
 	if (startup_folder_tree) DoMethod(startup_folder_tree, MUIM_FolderTreelist_Refresh, NULL);
@@ -2155,9 +2154,9 @@ static int init_phrase_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Resets the ham statistics
-*******************************************************************/
+/**
+ * Resets the ham statistics
+ */
 static void spam_cfg_reset_ham(void)
 {
 	if (!sm_request(NULL,
@@ -2171,9 +2170,9 @@ static void spam_cfg_reset_ham(void)
 				spam_num_of_ham_classified_mails());
 }
 
-/******************************************************************
- Resets the ham statistics
-*******************************************************************/
+/**
+ * Resets the spam statistics
+ */
 static void spam_cfg_reset_spam(void)
 {
 	int res;
@@ -2198,10 +2197,12 @@ static void spam_cfg_reset_spam(void)
 				spam_num_of_spam_classified_mails());
 }
 
-/******************************************************************
- Init the signature group
-*******************************************************************/
-int init_spam_group(void)
+/**
+ * Initialize the signature group.
+ *
+ * @return
+ */
+static int init_spam_group(void)
 {
 	char spam_buf[16];
 	char ham_buf[16];
@@ -2493,9 +2494,8 @@ static void init_config_window(void)
 	SM_LEAVE;
 }
 
-/******************************************************************
- Open the config window
-*******************************************************************/
+/*****************************************************************************/
+
 void open_config(void)
 {
 	if (!config_wnd) init_config_window();
@@ -2508,9 +2508,8 @@ void open_config(void)
 	}
 }
 
-/******************************************************************
- Close and dispose the config window
-*******************************************************************/
+/*****************************************************************************/
+
 void close_config(void)
 {
 	if (config_wnd)

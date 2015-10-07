@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** composewnd.c
-*/
+/**
+ * @file composewnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -158,11 +158,13 @@ struct Compose_Data /* should be a customclass */
 	int attachment_unique_id;
 };
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook (because the object is disposed in
- this function))!
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook (because the object is disposed in
+ * this function))!
+ *
+ * @param pdata
+ */
 static void compose_window_dispose(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -188,9 +190,12 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 	free(data);
 }
 
-/******************************************************************
- Expand the to string. Returns 1 for a success else 0
-*******************************************************************/
+/**
+ * Expand the to string. Returns 1 for a success else 0.
+ *
+ * @param pdata
+ * @return
+ */
 static int compose_expand_to(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -226,9 +231,12 @@ static int compose_expand_to(struct Compose_Data **pdata)
 	return 1;
 }
 
-/******************************************************************
- Expand the CC string. Returns 1 for a success else 0
-*******************************************************************/
+/**
+ * Expand the CC string. Returns 1 for a success else 0.
+ *
+ * @param pdata
+ * @return
+ */
 static int compose_expand_cc(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -264,9 +272,12 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 	return 1;
 }
 
-/******************************************************************
- Expand the BCC string. Returns 1 for a success else 0
-*******************************************************************/
+/**
+ * Expand the BCC string. Returns 1 for a success else 0.
+ *
+ * @param pdata
+ * @return
+ */
 static int compose_expand_bcc(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -303,9 +314,13 @@ static int compose_expand_bcc(struct Compose_Data **pdata)
 	return 1;
 }
 
-/******************************************************************
- Add a attchment to the treelist
-*******************************************************************/
+/**
+ * Add an attachment to the treelist
+ *
+ * @param data
+ * @param attach
+ * @param list
+ */
 static void compose_add_attachment(struct Compose_Data *data, struct attachment *attach, int list)
 {
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_ActiveList);
@@ -374,9 +389,11 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 }
 
 
-/******************************************************************
- Add a multipart node to the list
-*******************************************************************/
+/**
+ * Add a multipart node to the list.
+ *
+ * @param pdata
+ */
 static void compose_add_text(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -390,9 +407,11 @@ static void compose_add_text(struct Compose_Data **pdata)
 	compose_add_attachment(data,&attach,0);
 }
 
-/******************************************************************
- Add a multipart node to the list
-*******************************************************************/
+/**
+ * Add a multipart node to the list.
+ *
+ * @param pdata
+ */
 static void compose_add_multipart(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -425,9 +444,11 @@ static void compose_add_file_as_an_attachment(struct Compose_Data *data, char *f
 	compose_add_attachment(data,&attach,0);
 }
 
-/******************************************************************
- Add files to the list
-*******************************************************************/
+/**
+ * Add files to the list.
+ *
+ * @param pdata
+ */
 static void compose_add_files(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -471,9 +492,11 @@ static void compose_add_files(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- Add files to the list
-*******************************************************************/
+/**
+ * Add files to the list.
+ *
+ * @param pdata
+ */
 static void compose_remove_file(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -507,9 +530,11 @@ static void compose_remove_file(struct Compose_Data **pdata)
 
 }
 
-/******************************************************************
- A new attachment has been clicked
-*******************************************************************/
+/**
+ * A new attachment has been clicked.
+ *
+ * @param pdata
+ */
 static void compose_quick_attach_active(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -526,9 +551,11 @@ static void compose_quick_attach_active(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- A new attachment has been clicked
-*******************************************************************/
+/**
+ * A new attachment has been clicked.
+ *
+ * @param pdata
+ */
 static void compose_attach_active(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -607,9 +634,11 @@ static void compose_attach_active(struct Compose_Data **pdata)
 	data->last_attachment = attach;
 }
 
-/******************************************************************
- Attach the mail given in the treenode to the current mail
-*******************************************************************/
+/**
+ * Attach the mail given in the treenode to the current mail.
+ *
+ * @param pdata
+ */
 static void compose_attach_desc(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -627,10 +656,14 @@ static void compose_attach_desc(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- Attach the mail given in the treenode to the current mail
- (recursive)
-*******************************************************************/
+/**
+ * Attach the mail given in the treenode to the current mail
+ * (recursive)
+ *
+ * @param data
+ * @param treenode
+ * @param cmail
+ */
 static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NListtree_TreeNode *treenode, struct composed_mail *cmail)
 {
 	struct attachment *attach;
@@ -670,9 +703,12 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 	}
 }
 
-/******************************************************************
- Compose a mail and close the window
-*******************************************************************/
+/**
+ * Compose a mail and close the window.
+ *
+ * @param data
+ * @param hold
+ */
 static void compose_mail(struct Compose_Data *data, int hold)
 {
 	if (compose_expand_to(&data) && compose_expand_cc(&data) && compose_expand_bcc(&data))
@@ -765,36 +801,46 @@ static void compose_mail(struct Compose_Data *data, int hold)
 	}
 }
 
-/******************************************************************
- The mail should be send immediatly
-*******************************************************************/
+/**
+ * The mail should be send immediately.
+ *
+ * @param pdata
+ */
 static void compose_window_send_now(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	compose_mail(data,2);
 }
 
-/******************************************************************
- A mail should be send later
-*******************************************************************/
+/**
+ * A mail should be send later.
+ *
+ * @param pdata
+ */
 static void compose_window_send_later(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	compose_mail(data,0);
 }
 
-/******************************************************************
- A mail should be hold
-*******************************************************************/
+/**
+ * A mail should be hold.
+ *
+ * @param pdata
+ */
 static void compose_window_hold(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	compose_mail(data,1);
 }
 
-/******************************************************************
- inserts a mail into the listtree (uses recursion)
-*******************************************************************/
+/**
+ * Inserts a mail into the listtree (uses recursion)
+ *
+ * @param data
+ * @param mail
+ * @param listnode
+ */
 static void compose_add_mail(struct Compose_Data *data, struct mail_complete *mail, struct MUI_NListtree_TreeNode *listnode)
 {
 	/* Note, the following three datas are static although the function is recursive
@@ -893,9 +939,11 @@ static void compose_add_mail(struct Compose_Data *data, struct mail_complete *ma
 	}
 }
 
-/******************************************************************
- Set default signature
-*******************************************************************/
+/**
+ * Set default signature.
+ *
+ * @param pdata
+ */
 static void compose_set_def_signature(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -915,9 +963,11 @@ static void compose_set_def_signature(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- Set a signature
-*******************************************************************/
+/**
+ * Set a signature.
+ *
+ * @param pdata
+ */
 static void compose_set_signature(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -984,9 +1034,11 @@ static void compose_set_signature(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- Set the correct signature when edit a previous written mail
-*******************************************************************/
+/**
+ * Set the correct signature when edit a previous written mail.
+ *
+ * @param pdata
+ */
 static void compose_set_old_signature(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
@@ -1020,9 +1072,8 @@ static void compose_set_old_signature(struct Compose_Data **pdata)
 	}
 }
 
-/******************************************************************
- Refresh the Signature Cycle if the config has changed
-*******************************************************************/
+/*****************************************************************************/
+
 void compose_refresh_signature_cycle()
 {
 	int num;
@@ -1043,9 +1094,11 @@ void compose_refresh_signature_cycle()
 	}
 }
 
-/******************************************************************
- Set the reply to the current selected account
-*******************************************************************/
+/**
+ * Set the reply to the current selected account
+ *
+ * @param msg
+ */
 static void compose_set_replyto(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data*)msg[0];
@@ -1057,9 +1110,11 @@ static void compose_set_replyto(void **msg)
 	}
 }
 
-/******************************************************************
- Called when the reply button is clicked
-*******************************************************************/
+/**
+ * Called when the reply button is clicked.
+ *
+ * @param msg
+ */
 static void compose_reply_button(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data*)msg[0];
@@ -1102,9 +1157,11 @@ static void compose_reply_button(void **msg)
 	DoMethod(group,MUIM_Group_ExitChange);
 }
 
-/******************************************************************
- Called when the bcc button is clicked
-*******************************************************************/
+/**
+ * Called when the bcc button is clicked.
+ *
+ * @param msg the message
+ */
 static void compose_bcc_button(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data*)msg[0];
@@ -1147,9 +1204,11 @@ static void compose_bcc_button(void **msg)
 	DoMethod(group,MUIM_Group_ExitChange);
 }
 
-/******************************************************************
- New Gadget should be activated
-*******************************************************************/
+/**
+ * New gadget should be activated
+ *
+ * @param msg
+ */
 static void compose_new_active(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data *)msg[0];
@@ -1162,9 +1221,8 @@ static void compose_new_active(void **msg)
 	}
 }
 
-/******************************************************************
- Opens a compose window
-*******************************************************************/
+/*****************************************************************************/
+
 int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button, *headers_group;
@@ -1660,21 +1718,16 @@ int compose_window_open(struct compose_args *args)
 	return -1;
 }
 
-/******************************************************************
- Activate a read window
-*******************************************************************/
+/*****************************************************************************/
+
 void compose_window_activate(int num)
 {
 	if (num < 0 || num >= MAX_COMPOSE_OPEN) return;
 	if (compose_open[num] && compose_open[num]->wnd) set(compose_open[num]->wnd,MUIA_Window_Open,TRUE);
 }
 
-/**
- * Attach the given attachments.
- *
- * @param num number of the window
- * @param filenames NULL terminated array of files to attach.
- */
+/*****************************************************************************/
+
 void compose_window_attach(int num, char **filenames)
 {
 	int i;
@@ -1687,9 +1740,8 @@ void compose_window_attach(int num, char **filenames)
 		compose_add_file_as_an_attachment(compose_open[num],filename);
 }
 
-/******************************************************************
- Closes a read window
-*******************************************************************/
+/*****************************************************************************/
+
 void compose_window_close(int num, int action)
 {
 	if (num < 0 || num >= MAX_COMPOSE_OPEN) return;

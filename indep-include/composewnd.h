@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** composewnd.h
-*/
+/**
+ * @file composewnd.h
+ */
 
 #ifndef COMPOSEWND_H
 #define COMPOSEWND_H
@@ -36,8 +36,24 @@ struct compose_args
 #define COMPOSE_ACTION_REPLY   2
 #define COMPOSE_ACTION_FORWARD 3
 
+/**
+ * Opens a compose window.
+ *
+ * @param args arguments
+ * @return the number of the opened window
+ */
 int compose_window_open(struct compose_args *args);
+
+/**
+ * Activate a read window
+ *
+ * @param num the number of the read window that shall be activated
+ */
 void compose_window_activate(int num);
+
+/**
+ * Refresh the signature cycle if the config has changed
+ */
 void compose_refresh_signature_cycle(void);
 
 #define COMPOSE_CLOSE_CANCEL 0
@@ -45,8 +61,20 @@ void compose_refresh_signature_cycle(void);
 #define COMPOSE_CLOSE_LATER 2
 #define COMPOSE_CLOSE_HOLD 3
 
+/**
+ * Close the given compose window with the given action.
+ *
+ * @param num the number of the compose window to be closed
+ * @param action the close action
+ */
 void compose_window_close(int num, int action);
 
+/**
+ * Attach the given attachments to the mail currently edited in the given window.
+ *
+ * @param num number of the window
+ * @param filenames NULL terminated array of files to attach.
+ */
 void compose_window_attach(int num, char **filenames);
 
 #endif

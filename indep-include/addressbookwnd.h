@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressbookwnd.h
-*/
+/**
+ * @file addressbookwnd.h
+ */
 
 #ifndef SM__ADDRESSBOOKWND_H
 #define SM__ADDRESSBOOKWND_H
@@ -26,10 +26,32 @@
 struct mail;
 struct addressbook_entry_new;
 
+/**
+ * Opens the address book
+ */
 void addressbookwnd_open(void);
+
+/**
+ * Opens an address book and let the given entry be edited
+ *
+ * @param entry
+ */
 void addressbookwnd_create_entry(struct addressbook_entry_new *entry);
+
+/**
+ * Selects an address entry to the currently selected one.
+ *
+ * @param alias the alias of the entry to be selected
+ * @return the number of the entry that has been selected
+ *
+ * @note if the alias couldn't not been found, this will return 0
+ *  as well
+ */
 int addressbookwnd_set_active_alias(char *alias);
 
+/**
+ * Refreshes the address book
+ */
 void addressbookwnd_refresh(void);
 
 #endif

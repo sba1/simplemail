@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressbookwnd.c
-*/
+/**
+ * @file addressbookwnd.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -126,9 +126,9 @@ struct Person_Data /* should be a customclass */
 static char group_name_buf[64];
 static struct Hook group_name_display_hook;
 
-/********************************************
- Dislayfunction function for addressgroups
-*********************************************/
+/**
+ * Display hook function for addressgroups
+ */
 STATIC ASM SAVEDS VOID group_name_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
@@ -145,9 +145,12 @@ STATIC ASM SAVEDS VOID group_name_display(REG(a0,struct Hook *h),REG(a2,Object *
 	}
 }
 
-/******************************************************************
- Set the contents of this group
-*******************************************************************/
+/**
+ * Set the contents of this group.
+ *
+ * @param data
+ * @param asp
+ */
 static void setsnail(struct Snail_Data *data, struct address_snail_phone *asp)
 {
 	if (data->title_string) setutf8string(data->title_string,asp->title);
@@ -163,9 +166,12 @@ static void setsnail(struct Snail_Data *data, struct address_snail_phone *asp)
 	if (data->fax_string) setutf8string(data->fax_string,asp->fax);
 }
 
-/******************************************************************
- Addopt the Snail Phone changes
-*******************************************************************/
+/**
+ * Adopt the Snail Phone changes
+ *
+ * @param asp
+ * @param data
+ */
 static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
 {
 	/* Safe to call free() with NULL */
@@ -194,9 +200,11 @@ static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
 	if (data->fax_string) asp->fax = mystrdup(getutf8string(data->fax_string));
 }
 
-/******************************************************************
- Close group window
-*******************************************************************/
+/**
+ * Close group window.
+ *
+ * @param pdata
+ */
 static void person_group_window_close(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -211,10 +219,11 @@ static void person_group_window_close(struct Person_Data **pdata)
 	}
 }
 
-
-/******************************************************************
- Opens a window with available groups
-*******************************************************************/
+/**
+ * Commit persons data and close the window.
+ *
+ * @param pdata
+ */
 static void person_group_added(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -246,9 +255,11 @@ static void person_group_added(struct Person_Data **pdata)
 	person_group_window_close(pdata);
 }
 
-/******************************************************************
- Opens a window with available groups
-*******************************************************************/
+/**
+ * Opens a window to add a new group.
+ *
+ * @param pdata
+ */
 static void person_add_group(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -322,11 +333,13 @@ static void person_add_group(struct Person_Data **pdata)
 	}
 }
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook, because the object is disposed in
- this function)!
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook, because the object is disposed in
+ * this function)!
+ *
+ * @param pdata
+ */
 static void person_window_close(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -340,12 +353,14 @@ static void person_window_close(struct Person_Data **pdata)
 	free(data);
 }
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook, because the object is disposed in
- this function)!
- The person is added to the list (currently only at the end)
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook, because the object is disposed in
+ * this function)!
+ * The person is added to the list (currently only at the end)
+ *
+ * @param pdata
+ */
 static void person_window_ok(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -481,9 +496,11 @@ static void person_window_ok(struct Person_Data **pdata)
 	main_build_addressbook();
 }
 
-/******************************************************************
- Try to open the homepage
-*******************************************************************/
+/**
+ * Try to open the homepage associated with the given person.
+ *
+ * @param pdata
+ */
 static void person_homepage(struct Person_Data **pdata)
 {
 	char *uri = (char*)xget((*pdata)->homepage_string,MUIA_String_Contents);
@@ -494,18 +511,22 @@ static void person_homepage(struct Person_Data **pdata)
 	}
 }
 
-/******************************************************************
- Portrait has changed
-*******************************************************************/
+/**
+ * Portrait name has has changed. Update it.
+ *
+ * @param pdata
+ */
 static void person_portrait(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
 	set(data->portrait_button, MUIA_PictureButton_Filename, (char*)xget(data->portrait_string,MUIA_String_Contents));
 }
 
-/******************************************************************
- Try to downloads the portait of the person
-*******************************************************************/
+/**
+ * Try to downloads the portrait of the person
+ *
+ * @param pdata
+ */
 static void person_download_portrait(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
@@ -532,18 +553,18 @@ static void person_download_portrait(struct Person_Data **pdata)
 	set(App, MUIA_Application_Sleep, FALSE);
 }
 
-/******************************************************************
- Hook function
-*******************************************************************/
+/**
+ * Hook function for updating the pgp keys
+ */
 STATIC ASM SAVEDS ULONG person_pgp_strobj(REG(a0,struct Hook *h),REG(a2,Object *list),REG(a1,Object *str))
 {
 	DoMethod(list, MUIM_PGPList_Refresh);
 	return 1;
 }
 
-/******************************************************************
- Hook function
-******************************************************************/
+/**
+ * Hook function for displaying pgp keys.
+ */
 STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a0,struct Hook *h),REG(a2,Object *list),REG(a1,Object *str))
 {
 	struct pgp_key *key;
@@ -554,9 +575,11 @@ STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a0,struct Hook *h),REG(a2,Object *l
 	}
 }
 
-/******************************************************************
- Opens a person window
-*******************************************************************/
+/**
+ * Opens the person window for the given entry.
+ *
+ * @param entry
+ */
 static void person_window_open(struct addressbook_entry_new *entry)
 {
 	Object *wnd, *reg_group, *email_texteditor;
@@ -1049,10 +1072,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	}
 }
 
-
-
-/**********************************************************************/
-
+/*****************************************************************************/
 
 #define MAX_GROUP_OPEN 10
 static int group_open[MAX_GROUP_OPEN];
@@ -1069,11 +1089,13 @@ struct Group_Data /* should be a customclass */
 	/* more to add */
 };
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook, because the object is disposed in
- this function)!
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook, because the object is disposed in
+ * this function)!
+ *
+ * @param pdata
+ */
 static void group_window_close(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
@@ -1084,12 +1106,14 @@ static void group_window_close(struct Group_Data **pdata)
 	free(data);
 }
 
-/******************************************************************
- This close and disposed the window (note: this must not be called
- within a normal callback hook, because the object is disposed in
- this function)!
- The group is added to the list.
-*******************************************************************/
+/**
+ * This close and disposed the window (note: this must not be called
+ * within a normal callback hook, because the object is disposed in
+ * this function)!
+ * The group is added to the list.
+ *
+ * @param pdata
+ */
 static void group_window_ok(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
@@ -1249,14 +1273,13 @@ static void group_window_open(struct addressbook_group *group)
 	}
 }
 
-
-/**********************************************************************/
+/*****************************************************************************/
 
 /* the address window functions */
 
-/******************************************************************
- Updates the internal address book
-*******************************************************************/
+/**
+ * Updates the global address book with the current state of the window.
+ */
 void addressbookwnd_store(void)
 {
 	int i;
@@ -1272,9 +1295,9 @@ void addressbookwnd_store(void)
 	DoMethod(address_list, MUIM_AddressEntryList_Store);
 }
 
-/******************************************************************
- Save the addressbook to disk
-*******************************************************************/
+/**
+ * Save the address book to disk
+ */
 static void addressbookwnd_save_pressed(void)
 {
 	cleanup_addressbook();
@@ -1282,25 +1305,25 @@ static void addressbookwnd_save_pressed(void)
 	addressbook_save();
 }
 
-/******************************************************************
- Adds a new person to the window
-*******************************************************************/
+/**
+ * Add a new person to the window
+ */
 static void addressbookwnd_add_person(void)
 {
 	person_window_open(NULL);
 }
 
-/******************************************************************
- Adds a new group to the window
-*******************************************************************/
+/**
+ * Add a new group to the window
+ */
 static void addressbookwnd_add_group(void)
 {
 	group_window_open(NULL);
 }
 
-/******************************************************************
-
-*******************************************************************/
+/**
+ * Refreshes the members in accordance of the currently selected group
+ */
 static void addressbookwnd_refresh_persons(void)
 {
 	struct addressbook_group *group;
@@ -1312,9 +1335,9 @@ static void addressbookwnd_refresh_persons(void)
 	else set(address_list,MUIA_AddressEntryList_GroupName, NULL);
 }
 
-/******************************************************************
- Remove selected group. Warn's if there a members of the group
-*******************************************************************/
+/**
+ * Remove selected group. Warn's if the group has members.
+ */
 static void addressbookwnd_rem_group(void)
 {
 	struct addressbook_group *group;
@@ -1364,9 +1387,9 @@ static void addressbookwnd_rem_group(void)
 	}
 }
 
-/******************************************************************
- Opens a edut window for the current selected group
-*******************************************************************/
+/**
+ * Opens an edit window for the currently selected group
+ */
 static void addressbookwnd_edit_group(void)
 {
 	struct addressbook_group *group;
@@ -1377,9 +1400,9 @@ static void addressbookwnd_edit_group(void)
 		group_window_open(group);
 }
 
-/******************************************************************
- Change the current selected entry
-*******************************************************************/
+/**
+ * Change the currently selected entry
+ */
 static void addressbookwnd_edit_person(void)
 {
 	struct addressbook_entry_new *entry;
@@ -1388,9 +1411,9 @@ static void addressbookwnd_edit_person(void)
 	if (entry) person_window_open(entry);
 }
 
-/******************************************************************
- Removes the currently selected entry
-*******************************************************************/
+/**
+ * Remove the currently selected entry
+ */
 static void addressbookwnd_remove_person(void)
 {
 	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Selected);
@@ -1536,9 +1559,8 @@ static void addressbookwnd_init(void)
 	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_edit_person);
 }
 
-/******************************************************************
- Opens the addressbook
-*******************************************************************/
+/*****************************************************************************/
+
 void addressbookwnd_open(void)
 {
 	if (!address_wnd) addressbookwnd_init();
@@ -1553,18 +1575,16 @@ void addressbookwnd_open(void)
 	}
 }
 
-/******************************************************************
- Opens a addressbook and let the given entry be edited
-*******************************************************************/
+/*****************************************************************************/
+
 void addressbookwnd_create_entry(struct addressbook_entry_new *entry)
 {
 	addressbookwnd_open();
 	person_window_open(entry);
 }
 
-/******************************************************************
- Selects an address entry to the actual one
-*******************************************************************/
+/*****************************************************************************/
+
 int addressbookwnd_set_active_alias(char *alias)
 {
 	if (!address_wnd) addressbookwnd_init();
@@ -1589,9 +1609,8 @@ int addressbookwnd_set_active_alias(char *alias)
 	return 0;
 }
 
-/******************************************************************
- Refreshs the addressbook
-*******************************************************************/
+/*****************************************************************************/
+
 void addressbookwnd_refresh(void)
 {
 	DoMethod(address_list, MUIM_AddressEntryList_Refresh, NULL);

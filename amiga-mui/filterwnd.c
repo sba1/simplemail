@@ -126,10 +126,8 @@ STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,
 	return 1;
 }
 
-/**
- * Refreshes the folder list. It should be called, whenever the folder list
- * has been changed.
- */
+/*****************************************************************************/
+
 void filter_update_folder_list(void)
 {
 	DoMethod(filter_folder_list, MUIM_FolderTreelist_Refresh, NULL);
@@ -622,13 +620,8 @@ static void init_filter(void)
 	}
 }
 
-/**
- * Opens the filter window with a new filter.
- *
- * @param nf defines the filter that should be added. The
- * object copied so the argument can be freed after calling
- * the function.
- */
+/*****************************************************************************/
+
 void filter_open_with_new_filter(struct filter *nf)
 {
 	struct filter *f;
@@ -667,9 +660,8 @@ void filter_open_with_new_filter(struct filter *nf)
 	set(filter_wnd, MUIA_Window_Open, TRUE);
 }
 
-/**
- * Opens the filter window.
- */
+/*****************************************************************************/
+
 void filter_open(void)
 {
 	filter_open_with_new_filter(NULL);

@@ -16,11 +16,31 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file filterwnd.h
+ */
+
 #ifndef SM__FILTERWND_H
 #define SM__FILTERWND_H
 
+/**
+ * Opens the filter window.
+ */
 void filter_open(void);
+
+/**
+ * Opens the filter window with a new filter.
+ *
+ * @param nf defines the filter that should be added. The
+ * object copied so the argument can be freed after calling
+ * the function.
+ */
 void filter_open_with_new_filter(struct filter *nf);
+
+/**
+ * Refreshes the folder list. It should be called, whenever the folder list
+ * has been changed.
+ */
 void filter_update_folder_list(void);
 
 #endif

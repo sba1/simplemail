@@ -684,24 +684,25 @@ void folder_edit_new_path(char *init_path)
 	if (!new_folder_wnd)
 	{
 		init_new_folder();
-		if (!new_folder_wnd) return;
 	}
 
-	if (new_folder_wnd)
+	if (!new_folder_wnd)
 	{
-		if (init_path)
-		{
-			char *buf = malloc(strlen(FilePart(init_path))+1);
-			if (buf)
-			{
-				strcpy(buf,FilePart(init_path));
-				*buf = ToUpper(*buf);
-				set(new_folder_name_string, MUIA_String_Contents, buf);
-				free(buf);
-			}
-		}
-		set(new_folder_path_string, MUIA_String_Contents, init_path);
-		set(new_folder_wnd, MUIA_Window_Open, TRUE);
+		return;
 	}
+
+	if (init_path)
+	{
+		char *buf = malloc(strlen(FilePart(init_path))+1);
+		if (buf)
+		{
+			strcpy(buf,FilePart(init_path));
+			*buf = ToUpper(*buf);
+			set(new_folder_name_string, MUIA_String_Contents, buf);
+			free(buf);
+		}
+	}
+	set(new_folder_path_string, MUIA_String_Contents, init_path);
+	set(new_folder_wnd, MUIA_Window_Open, TRUE);
 }
 

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** folderwnd.c
-*/
+/**
+ * @file folderwnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -193,6 +193,9 @@ static void imap_folders_unsubscribe_pressed(void)
 	}
 }
 
+/**
+ * Accept current folder settings.
+ */
 static void folder_ok(void)
 {
 	set(folder_wnd, MUIA_Window_Open, FALSE);
@@ -200,30 +203,42 @@ static void folder_ok(void)
 	changed_folder = NULL;
 }
 
+/*****************************************************************************/
+
 struct folder *folder_get_changed_folder(void)
 {
 	return changed_folder;
 }
+
+/*****************************************************************************/
 
 char *folder_get_changed_name(void)
 {
 	return (char*)xget(name_string,MUIA_String_Contents);
 }
 
+/*****************************************************************************/
+
 char *folder_get_changed_path(void)
 {
 	return (char*)xget(path_string,MUIA_String_Contents);
 }
+
+/*****************************************************************************/
 
 int folder_get_changed_type(void)
 {
 	return (int)xget(type_cycle, MUIA_Cycle_Active);
 }
 
+/*****************************************************************************/
+
 char *folder_get_changed_defto(void)
 {
 	return (char *)xget(defto_string,MUIA_UTF8String_Contents);
 }
+
+/*****************************************************************************/
 
 char *folder_get_changed_deffrom(void)
 {
@@ -232,32 +247,43 @@ char *folder_get_changed_deffrom(void)
 	return NULL;
 }
 
+/*****************************************************************************/
+
 char *folder_get_changed_defreplyto(void)
 {
 	return (char*)xget(replyto_string,MUIA_UTF8String_Contents);
 }
+
+/*****************************************************************************/
 
 char *folder_get_changed_defsignature(void)
 {
 	return (char *)xget(defsign_cycle, MUIA_SignatureCycle_SignatureName);
 }
 
+/*****************************************************************************/
+
 int folder_get_changed_primary_sort(void)
 {
 	return (int)xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
+
+/*****************************************************************************/
 
 int folder_get_changed_secondary_sort(void)
 {
 	return (int)xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
+/*****************************************************************************/
+
 int folder_get_imap_download(void)
 {
 	return (int)xget(imap_download_cycle,MUIA_Cycle_Active);
 }
 
-/* Refresh the Signature Cycle if the config has changed */
+/*****************************************************************************/
+
 void folder_refresh_signature_cycle(void)
 {
 	if (folder_wnd)
@@ -268,6 +294,9 @@ void folder_refresh_signature_cycle(void)
 	}
 }
 
+/**
+ * Initialize the folder window.
+ */
 static void init_folder(void)
 {
 	Object *ok_button, *cancel_button;
@@ -420,6 +449,8 @@ static void init_folder(void)
 		imap_mode = 1;
 	}
 }
+
+/*****************************************************************************/
 
 void folder_edit(struct folder *f)
 {
@@ -600,6 +631,8 @@ void folder_edit(struct folder *f)
 	set(folder_wnd, MUIA_Window_Open, TRUE);
 }
 
+/*****************************************************************************/
+
 void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list)
 {
 	if (imap_folders_list)
@@ -678,6 +711,8 @@ void init_new_folder(void)
 	}
 
 }
+
+/*****************************************************************************/
 
 void folder_edit_new_path(char *init_path)
 {

@@ -16,27 +16,119 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file folderwnd.h
+ */
+
 #ifndef SM__FOLDERWND_H
 #define SM__FOLDERWND_H
 
 struct folder;
 
+/**
+ * Edit settings of the given folder.
+ *
+ * @param f folder to be edited.
+ */
 void folder_edit(struct folder *f);
+
+/**
+ * Update the GUI folder list according to the given lists.
+ *
+ * @param list contains all known folders
+ * @param sub_folder_list contains all subscribed folders
+ */
 void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list);
 
+/**
+ * Return the folder that is currently being edited.
+ *
+ * @return the folder that is currently being edited or NULL if no such folder
+ *  exists
+ */
 struct folder *folder_get_changed_folder(void);
+
+/**
+ * Return the name of the changed folder.
+ *
+ * @return the name
+ */
 char *folder_get_changed_name(void);
+
+/**
+ * Return the path of the changed folder
+ *
+ * @return the path of the folder currently being edited
+ */
 char *folder_get_changed_path(void);
+
+/**
+ * Return the type of the folder currently being edited
+ *
+ * @return the folder type
+ */
 int folder_get_changed_type(void);
+
+/**
+ * Return the default to field of the folder currently being edited
+ *
+ * @return the settings of the default to field.
+ */
 char *folder_get_changed_defto(void);
+
+/**
+ * Return the default to field of the folder currently being edited
+ *
+ * @return the settings for the default from field
+ */
 char *folder_get_changed_deffrom(void);
+
+/**
+ * Return the default replay to field of the folder currently being edited
+ *
+ * @return the settings for the default reply to field
+ */
 char *folder_get_changed_defreplyto(void);
+
+/**
+ * Return the default signature of the folder currently being edited
+ *
+ * @return the settings for the default signature
+ */
 char *folder_get_changed_defsignature(void);
+
+/**
+ * Return the primary sort mode of the folder currently being edited
+ *
+ * @return the settings for the primary sort mode
+ */
 int folder_get_changed_primary_sort(void);
+
+/**
+ * Return the secondary sort mode of the folder currently being edited
+ *
+ * @return the settings for the secondary sort mode
+ */
 int folder_get_changed_secondary_sort(void);
+
+/**
+ * Return the settings for the imap download mode of folder currently being
+ * edited.
+ *
+ * @return the imap download mode of the folder currently being edited
+ */
 int folder_get_imap_download(void);
 
+/**
+ * Edit a new folder with the given path.
+ *
+ * @param init_path the initial path of the new folder.
+ */
 void folder_edit_new_path(char *init_path);
+
+/**
+ * Refresh the signature cycle in accordance of the current configuration
+ */
 void folder_refresh_signature_cycle(void);
 
 #endif

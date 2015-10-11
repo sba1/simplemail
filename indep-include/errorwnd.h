@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-#ifndef SM__ERRORWND_H
-#define SM__ERRORWND_H
-
-
 /**
  * @file errorwnd.h
  */
+
+#ifndef SM__ERRORWND_H
+#define SM__ERRORWND_H
+
 
 /**
  * Add an error text to the error window.

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** startupwnd.c
-*/
+/**
+ * @file startupwnd.c
+ */
 
 #include <stdlib.h>
 
@@ -38,6 +38,8 @@
 static struct Window *startup_wnd;
 static struct Screen *scr;
 static Object *obj;
+
+/*****************************************************************************/
 
 void startupwnd_open(void)
 {
@@ -90,6 +92,8 @@ void startupwnd_open(void)
 	}
   SM_LEAVE;
 }
+
+/*****************************************************************************/
 
 void startupwnd_close(void)
 {

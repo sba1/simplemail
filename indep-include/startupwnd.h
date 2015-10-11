@@ -16,10 +16,21 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file startupwnd.h
+ */
+
 #ifndef SM__STARTUPWND_H
 #define SM__STARTUPWND_H
 
+/**
+ * Open the startup / splash window.
+ */
 void startupwnd_open(void);
+
+/**
+ * Close the startup / splash window.
+ */
 void startupwnd_close(void);
 
 #endif

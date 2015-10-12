@@ -25,8 +25,26 @@
 
 struct bt;
 
+/**
+ * Get the backtrace.
+ *
+ * @return the stack backtrace. Free via arch_debug_free_bt().
+ */
 struct bt *arch_debug_get_bt(void);
+
+/**
+ * Free the given stack backtrace.
+ *
+ * @param bt stack backtrace to be freed
+ */
 void arch_debug_free_bt(struct bt *bt);
+
+/**
+ * Turns the backtrace into a string that can be displayed
+ *
+ * @param bt
+ * @return
+ */
 char *arch_debug_bt2string(struct bt *bt);
 
 #endif

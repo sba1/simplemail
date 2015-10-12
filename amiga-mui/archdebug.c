@@ -86,6 +86,8 @@ extern ULONG __code_size;
 #endif
 
 
+/*****************************************************************************/
+
 struct bt *arch_debug_get_bt(void)
 {
 	struct bt *bt = NULL;
@@ -120,6 +122,8 @@ struct bt *arch_debug_get_bt(void)
 #endif
 	return bt;
 }
+
+/*****************************************************************************/
 
 void arch_debug_free_bt(struct bt *bt)
 {
@@ -305,12 +309,8 @@ bailout:
 #endif
 #endif
 
-/**
- * Turns the backtrace into a string that can be displayed
- *
- * @param bt
- * @return
- */
+/*****************************************************************************/
+
 char *arch_debug_bt2string(struct bt *bt)
 {
 #if defined(__SASC) && defined(DEBUG_RESTRACK)

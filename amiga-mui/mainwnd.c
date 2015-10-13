@@ -755,9 +755,8 @@ void main_save_environment(void)
 	DoMethod(App, MUIM_Application_Save, (ULONG)MUIV_Application_Save_ENVARC);
 }
 
-/******************************************************************
- Initialize the main window
-*******************************************************************/
+/*****************************************************************************/
+
 int main_window_init(void)
 {
 	int rc;
@@ -1241,9 +1240,8 @@ int main_window_init(void)
 	return(rc);
 }
 
-/******************************************************************
- Open the main window
-*******************************************************************/
+/*****************************************************************************/
+
 int main_window_open(void)
 {
 	if (win_main)
@@ -1281,9 +1279,8 @@ static void main_free_accounts(void)
 	}
 }
 
-/**
- * Deinitializes the main window.
- */
+/*****************************************************************************/
+
 void main_window_deinit(void)
 {
 	int i;
@@ -1333,9 +1330,8 @@ static void main_refresh_folders_text(void)
 	}
 }
 
-/******************************************************************
- Refreshs the folder list
-*******************************************************************/
+/*****************************************************************************/
+
 void main_refresh_folders(void)
 {
 	int act = xget(folder_tree, MUIA_NList_Active);
@@ -1361,9 +1357,8 @@ void main_refresh_folders(void)
 	main_refresh_folders_text();
 }
 
-/******************************************************************
- Refreshs a single folder entry
-*******************************************************************/
+/*****************************************************************************/
+
 void main_refresh_folder(struct folder *folder)
 {
 	struct MUI_NListtree_TreeNode *tree_node = FindListtreeUserData(folder_tree, folder);
@@ -1376,43 +1371,36 @@ void main_refresh_folder(struct folder *folder)
 	if (folder->parent_folder) main_refresh_folder(folder->parent_folder);
 }
 
-/******************************************************************
- Inserts a new mail into the listview at the end
-*******************************************************************/
+/*****************************************************************************/
+
 void main_insert_mail(struct mail_info *mail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, -2);
 }
 
-/******************************************************************
- Inserts a new mail into the listview after a given position
-*******************************************************************/
+/*****************************************************************************/
+
 void main_insert_mail_pos(struct mail_info *mail, int after)
 {
 	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, after);
 }
 
-/******************************************************************
- Remove a given mail from the listview
-*******************************************************************/
+/*****************************************************************************/
+
 void main_remove_mail(struct mail_info *mail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RemoveMail, (ULONG)mail);
 }
 
-/******************************************************************
- Replaces a mail with a new mail.
- This also activates the new mail, however it would be better if
- this done by an extra call
-*******************************************************************/
+/*****************************************************************************/
+
 void main_replace_mail(struct mail_info *oldmail, struct mail_info *newmail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_ReplaceMail, (ULONG)oldmail, (ULONG)newmail);
 }
 
-/******************************************************************
- Refresh a mail (if it status has changed fx)
-*******************************************************************/
+/*****************************************************************************/
+
 void main_refresh_mail(struct mail_info *m)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RefreshMail, (ULONG)m);
@@ -1420,9 +1408,8 @@ void main_refresh_mail(struct mail_info *m)
 	main_refresh_folders_text();
 }
 
-/******************************************************************
- Clears the folder list
-*******************************************************************/
+/*****************************************************************************/
+
 void main_clear_folder_mails(void)
 {
 	DoMethod(mail_tree, MUIM_MailTree_Clear);
@@ -1450,9 +1437,8 @@ void main_set_folder_mails(struct folder *folder)
 	mailtreelist_update_title_markers();
 }
 
-/******************************************************************
- Activates a different folder
-*******************************************************************/
+/*****************************************************************************/
+
 void main_set_folder_active(struct folder *folder)
 {
 	SM_ENTER;
@@ -1463,51 +1449,38 @@ void main_set_folder_active(struct folder *folder)
 	SM_LEAVE;
 }
 
-/**
- * Returns the current selected folder, NULL if no real folder
- * has been selected. It returns the true folder like it is
- * in the folder list
- *
- * @return
- */
+/*****************************************************************************/
+
 struct folder *main_get_folder(void)
 {
 	return (struct folder*)xget(folder_tree,MUIA_FolderTreelist_Active);
 }
 
-/**
- *  Returns the path of the current selected folder, or NULL if no
- *  folder is selected.
- *
- * @return
- */
- char *main_get_folder_drawer(void)
+/*****************************************************************************/
+
+char *main_get_folder_drawer(void)
 {
 	struct folder *folder = main_get_folder();
 	if (folder) return folder->path;
 	return NULL;
 }
 
-/******************************************************************
- Sets the active mail
-*******************************************************************/
+/*****************************************************************************/
+
 void main_set_active_mail(struct mail_info *m)
 {
 	set(mail_tree, MUIA_MailTree_Active, m);
 }
 
-/******************************************************************
- Returns the active mail. NULL if no one is active
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *main_get_active_mail(void)
 {
 	return (struct mail_info*)xget(mail_tree, MUIA_MailTreelist_Active);
 }
 
-/******************************************************************
- Returns the filename of the active mail, NULL if no thing is
- selected
-*******************************************************************/
+/*****************************************************************************/
+
 char *main_get_mail_filename(void)
 {
 	struct mail_info *m = main_get_active_mail();
@@ -1515,9 +1488,8 @@ char *main_get_mail_filename(void)
 	return NULL;
 }
 
-/******************************************************************
- Returns the contents of the quick filter (or NULL).
-*******************************************************************/
+/*****************************************************************************/
+
 utf8 *main_get_quick_filter_contents(void)
 {
 	if (xget(main_settings_filter_menuitem,MUIA_Menuitem_Checked))
@@ -1525,42 +1497,36 @@ utf8 *main_get_quick_filter_contents(void)
 	return NULL;
 }
 
-/******************************************************************
- Returns the first selected mail. NULL if no mail is selected
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *main_get_mail_first_selected(void *handle)
 {
 	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetFirstSelected, (ULONG)handle);
 }
 
-/******************************************************************
- Returns the next selected mail. NULL if no more mails are
- selected
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *main_get_mail_next_selected(void *handle)
 {
 	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetNextSelected, (ULONG)handle);
 }
 
-/******************************************************************
- Remove all selected mails,
-*******************************************************************/
+/*****************************************************************************/
+
 void main_remove_mails_selected(void)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RemoveSelected);
 }
 
-/******************************************************************
- Refresh all selected mails
-*******************************************************************/
+/*****************************************************************************/
+
 void main_refresh_mails_selected(void)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RefreshSelected);
 }
 
-/******************************************************************
- Build the check singe account menu
-*******************************************************************/
+/*****************************************************************************/
+
 void main_build_accounts(void)
 {
 	struct account *account = (struct account*)list_first(&user.config.account_list);
@@ -1606,9 +1572,8 @@ void main_build_accounts(void)
 	}
 }
 
-/******************************************************************
- Build the scripts menu
-*******************************************************************/
+/*****************************************************************************/
+
 void main_build_scripts(void)
 {
 	DoMethod(main_scripts_menu, OM_REMMEMBER, (ULONG)main_scripts_execute_menuitem);
@@ -1616,49 +1581,43 @@ void main_build_scripts(void)
 	DoMethod(main_scripts_menu, OM_ADDMEMBER, (ULONG)main_scripts_execute_menuitem);
 }
 
-/******************************************************************
- Build the addressbook which is displayed in this window
-*******************************************************************/
+/*****************************************************************************/
+
 void main_build_addressbook(void)
 {
 	DoMethod(address_list, MUIM_AddressEntryList_Refresh, NULL);
 }
 
-/******************************************************************
- Freeze the mail list
-*******************************************************************/
+/*****************************************************************************/
+
 void main_freeze_mail_list(void)
 {
 	DoMethod(mail_tree,MUIM_MailTree_Freeze);
 }
 
-/******************************************************************
- Thaws the mail list
-*******************************************************************/
+/*****************************************************************************/
+
 void main_thaw_mail_list(void)
 {
 	DoMethod(mail_tree,MUIM_MailTree_Thaw);
 }
 
-/******************************************************************
- Select a mail, specified by number
-*******************************************************************/
+/*****************************************************************************/
+
 void main_select_mail(int mail)
 {
 	set(mail_tree,MUIA_NList_Active, mail);
 }
 
-/******************************************************************
- Return the iconified status of the Application
-*******************************************************************/
+/*****************************************************************************/
+
 int main_is_iconified(void)
 {
 	return !!xget(App, MUIA_Application_Iconified);
 }
 
-/******************************************************************
- Return wheter the message view is displayed.
-*******************************************************************/
+/*****************************************************************************/
+
 int main_is_message_view_displayed(void)
 {
 	return !!xget(main_settings_messageview_menuitem,MUIA_Menuitem_Checked);
@@ -1672,18 +1631,16 @@ struct Screen *main_get_screen(void)
 	return (struct Screen*)xget(win_main, MUIA_Window_Screen);
 }
 
-/******************************************************************
- Sets an UTF formated status text
-*******************************************************************/
+/*****************************************************************************/
+
 void main_set_status_text(char *txt)
 {
 	/* TODO: Convert to host charset */
 	set(status_text, MUIA_Text_Contents, txt);
 }
 
-/******************************************************************
- Displays the given mail within the message view
-*******************************************************************/
+/*****************************************************************************/
+
 void main_display_active_mail(void)
 {
 	struct mail_info *m = main_get_active_mail();
@@ -1692,9 +1649,8 @@ void main_display_active_mail(void)
 	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 }
 
-/******************************************************************
- Refresh the title of the main window
-*******************************************************************/
+/*****************************************************************************/
+
 void main_refresh_window_title(unsigned int autocheck_seconds_start)
 {
 	static char win_main_title[128];
@@ -1710,12 +1666,8 @@ void main_refresh_window_title(unsigned int autocheck_seconds_start)
 	}
 }
 
-/**
- * Sets the visual aspects of the global progress bar.
- *
- * @param max_work
- * @param work
- */
+/*****************************************************************************/
+
 void main_set_progress(unsigned int max_work, unsigned int work)
 {
 	SetAttrs(status_gauge,
@@ -1731,9 +1683,8 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 	}
 }
 
-/**
- * Hides the global progress bar.
- */
+/*****************************************************************************/
+
 void main_hide_progress(void)
 {
 	if (status_gauge_shown)

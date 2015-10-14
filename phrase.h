@@ -16,10 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** phrase.h
-*/
-
+/**
+ * @file phrase.h
+ */
 
 #ifndef SM__PHRASE_H
 #define SM__PHRASE_H
@@ -42,9 +41,35 @@ struct phrase
 	char *forward_finish;
 };
 
+/**
+ * Allocates a new phrase.
+ *
+ * @return the new phrase.
+ */
 struct phrase *phrase_malloc(void);
+
+/**
+ * Duplicates the given phrase.
+ *
+ * @param s the phrase to be duplicated
+ * @return the duplicated phrase
+ */
 struct phrase *phrase_duplicate(struct phrase *s);
+
+/**
+ * Frees the given phrase.
+ *
+ * @param p the phrase to be freed.
+ */
 void phrase_free(struct phrase *s);
+
+/**
+ * Finds the phrase which meets the address best (actually which first fits,
+ * expect the one which is for all).
+ *
+ * @param addr
+ * @return the phrase or NULL.
+ */
 struct phrase *phrase_find_best(char *addr);
 
 #endif

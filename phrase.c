@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** phrase.c
-*/
+/**
+ * @file phrase.c
+ */
 
 #include "phrase.h"
 
@@ -28,11 +28,8 @@
 #include "configuration.h"
 #include "support_indep.h"
 
-/**
- * Allocates a new phrase.
- *
- * @return the new phrase.
- */
+/*****************************************************************************/
+
 struct phrase *phrase_malloc(void)
 {
 	struct phrase *sig;
@@ -44,12 +41,8 @@ struct phrase *phrase_malloc(void)
 	return sig;
 }
 
-/**
- * Duplicates the given phrase.
- *
- * @param s the phrase to be duplicated
- * @return the duplicated phrase
- */
+/*****************************************************************************/
+
 struct phrase *phrase_duplicate(struct phrase *p)
 {
 	struct phrase *np = phrase_malloc();
@@ -68,11 +61,8 @@ struct phrase *phrase_duplicate(struct phrase *p)
 	return np;
 }
 
-/**
- * Frees the given phrase.
- *
- * @param p the phrase to be freed.
- */
+/*****************************************************************************/
+
 void phrase_free(struct phrase *p)
 {
 	if (!p) return;
@@ -88,11 +78,8 @@ void phrase_free(struct phrase *p)
 	free(p);
 }
 
-/**************************************************************************
- Finds the phrase which meets the address best (actually which first fits,
- expect the one which is for all).
- Might return NULL!
-**************************************************************************/
+/*****************************************************************************/
+
 struct phrase *phrase_find_best(char *addr)
 {
 	struct phrase *phrase;

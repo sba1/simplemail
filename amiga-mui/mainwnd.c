@@ -1415,9 +1415,8 @@ void main_clear_folder_mails(void)
 	DoMethod(mail_tree, MUIM_MailTree_Clear);
 }
 
-/******************************************************************
- Updates the mail trees with the mails in the given folder
-*******************************************************************/
+/*****************************************************************************/
+
 void main_set_folder_mails(struct folder *folder)
 {
 	struct folder *created_folder = NULL;

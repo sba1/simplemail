@@ -102,6 +102,12 @@ void main_refresh_mail(struct mail_info *m);
  * Clears the folder list
  */
 void main_clear_folder_mails(void);
+
+/**
+ * Updates the mail trees with the mails in the given folder
+ *
+ * @param folder
+ */
 void main_set_folder_mails(struct folder *folder);
 
 /**

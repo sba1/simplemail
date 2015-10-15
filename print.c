@@ -35,9 +35,9 @@
 #include "sysprint.h"
 #include "timesupport.h"
 
-#define ANSI_NORMAL     "[0m"
-#define ANSI_BOLD       "[1m"
-#define ANSI_UNDER      "[4m"
+#define ANSI_NORMAL     "\033[0m"
+#define ANSI_BOLD       "\033[1m"
+#define ANSI_UNDER      "\033[4m"
 
 static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 {

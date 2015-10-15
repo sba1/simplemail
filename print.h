@@ -16,16 +16,22 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** print.h
-*/
-
+/**
+ * @file print.h
+ */
 
 #ifndef SM__PRINT_H
 #define SM__PRINT_H
 
 struct mail_complete;
 
+/**
+ * Prints a given mail.
+ *
+ * @param m the mail to be printed
+ * @param printhdr whether headers would also be printed or not.
+ * @return 0 on failure, 1 on success.
+ */
 int print_mail(struct mail_complete *, int);
 
 #endif

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** print.c
-*/
+/**
+ * @file print.c
+ */
 
 #include "print.h"
 
@@ -39,6 +39,13 @@
 #define ANSI_BOLD       "\033[1m"
 #define ANSI_UNDER      "\033[4m"
 
+/**
+ * Write headers of a mail into the given file using ANSI formatted text.
+ *
+ * @param fp the handle of the file in which the headers are written.
+ * @param mail the mail whose headers shall be written.
+ * @return
+ */
 static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 {
 	char rc = 0;
@@ -155,11 +162,8 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 	return rc;
 }
 
-/*
-** print_mail - prints a given mail.
-**
-** These are the system-independent routines.
-*/
+/*****************************************************************************/
+
 int print_mail(struct mail_complete *m, int printhdr)
 {
 	int rc = 0;

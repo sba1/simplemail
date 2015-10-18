@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** gui_main.c
-*/
+/**
+ * @file gui_main.c
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -240,9 +240,8 @@ static int gui_open_input_device(void)
 	return 1;
 }
 
-/****************************************************************
- The main loop
-*****************************************************************/
+/*****************************************************************************/
+
 void loop(void)
 {
 	ULONG sigs = 0;
@@ -263,18 +262,20 @@ void loop(void)
 	}
 }
 
-/****************************************************************
- The app is getting (un)iconified
-*****************************************************************/
-void app_change_iconified_state(void)
+/**
+ * Called if the iconify state of the applications changes.
+ */
+static void app_change_iconified_state(void)
 {
 	if (user.config.appicon_show == 1) appicon_refresh(1);
 }
 
-/****************************************************************
- Initialize the application object
-*****************************************************************/
-int app_init(void)
+/**
+ * Initialize the application object
+ *
+ * @return 1 on success, 0 otherwise.
+ */
+static int app_init(void)
 {
 	struct DiskObject *HideIcon = appicon_get_hide_icon();
 	SM_ENTER;
@@ -302,10 +303,10 @@ int app_init(void)
 	return !!App;
 }
 
-/****************************************************************
- Delete the Application Object
-*****************************************************************/
-void app_del(void)
+/**
+ * Delete the Application Object
+ */
+static void app_del(void)
 {
 	if (App)
 	{
@@ -314,19 +315,19 @@ void app_del(void)
 	}
 }
 
-/****************************************************************
- Quit the Application
-*****************************************************************/
+/**
+ * Quit the Application
+ */
 void app_quit(void)
 {
 	if (App)
 		DoMethod(App, MUIM_Application_PushMethod, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 }
 
-/****************************************************************
- Delete the rest
-*****************************************************************/
-void all_del(void)
+/**
+ * Delete the rest
+ */
+static void all_del(void)
 {
 	if (MUIMasterBase)
 	{
@@ -387,10 +388,13 @@ void all_del(void)
 
 #undef printf
 
-/****************************************************************
- Initialize everything
-*****************************************************************/
-int all_init(void)
+
+/**
+ * Initialize everything.
+ *
+ * @return 0 on failure, 1 on success
+ */
+static int all_init(void)
 {
 	int rexxsyslib_version;
 
@@ -485,17 +489,15 @@ void app_show(void)
 	main_set_folder_active(main_get_folder());
 }
 
-/****************************************************************
- The app is busy
-*****************************************************************/
+/*****************************************************************************/
+
 void app_busy(void)
 {
 	set(App,MUIA_Application_Sleep,TRUE);
 }
 
-/****************************************************************
- The app is ready
-*****************************************************************/
+/*****************************************************************************/
+
 void app_unbusy(void)
 {
 	set(App,MUIA_Application_Sleep,FALSE);
@@ -509,29 +511,25 @@ static char **initial_attachments;
 
 static char *gui_images_directory;
 
-/**
- * Returns the directory, in which the images are stored.
- *
- * @return
- */
+/*****************************************************************************/
+
 char *gui_get_images_directory(void)
 {
 	if (!gui_images_directory) return "PROGDIR:Images";
 	return gui_images_directory;
 }
 
-/****************************************************************
- Called if the appicons needs to be refreshed
-*****************************************************************/
+/**
+ * Called if the app icons needs to be refreshed
+ */
 static void refresh_appicon(void)
 {
 	appicon_refresh(0);
 	thread_push_function_delayed(2000,refresh_appicon,0);
 }
 
-/****************************************************************
- Initialize the GUI
-*****************************************************************/
+/*****************************************************************************/
+
 int gui_init(void)
 {
 	int rc;
@@ -638,9 +636,8 @@ int gui_init(void)
 	SM_RETURN(rc,"%ld");
 }
 
-/**
- * The GUI loop.
- */
+/*****************************************************************************/
+
 void gui_loop(void)
 {
 	SM_ENTER;
@@ -651,9 +648,8 @@ void gui_loop(void)
 	SM_LEAVE;
 }
 
-/**
- * Frees the GUI.
- */
+/*****************************************************************************/
+
 void gui_deinit(void)
 {
 	read_window_cleanup();
@@ -663,9 +659,8 @@ void gui_deinit(void)
 	dt_cleanup();
 }
 
-/****************************************************************
- Parse the start arguments
-*****************************************************************/
+/*****************************************************************************/
+
 int gui_parseargs(int argc, char *argv[])
 {
 	struct command_args {
@@ -751,21 +746,20 @@ int gui_parseargs(int argc, char *argv[])
 	return 1;
 }
 
-/****************************************************************
- Execute an ARexx script
-*****************************************************************/
+/*****************************************************************************/
+
 int gui_execute_arexx(char *filename)
 {
 	return arexx_execute_script(filename);
 }
 
 
-/****************************************************************
- The main entry point.
-*****************************************************************/
 #if !defined(__AROS__) && !defined(__MORPHOS__) && !defined(COMPILE_TEST)
 /* main() for AROS is in startup-aros.c */
 /* main() for MorphOS is in startup-morphos.c */
+/**
+ * The main entry point.
+ */
 int main(int argc, char *argv[])
 {
 	return simplemail_main();

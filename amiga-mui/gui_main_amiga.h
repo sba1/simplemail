@@ -17,13 +17,22 @@
 ***************************************************************************/
 
 /**
- * @file
+ * @file gui_main_amiga.h
  */
 
 #ifndef GUI_MAIN_AMIGA_H
 #define GUI_MAIN_AMIGA_H
 
+/**
+ * Returns the directory, in which the images are stored.
+ *
+ * @return
+ */
 char *gui_get_images_directory(void);
+
+/**
+ * Execute the main event loop.
+ */
 void loop(void);
 
 #endif

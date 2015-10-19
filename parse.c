@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** parse.c
-*/
+/**
+ * @file parse.c
+ */
 
 #include "parse.h"
 
@@ -30,9 +30,12 @@
 
 static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset);
 
-/**************************************************************************
- is the char a rfc822 special
-**************************************************************************/
+/**
+ * Is the char a rfc822 special.
+ *
+ * @param c the character to check.
+ * @return whether c is a rfc822 special character
+ */
 static int isspecial(char c)
 {
 	if (c == '(' || c == ')' || c == '<' || c == '>' || c == '<' ||
@@ -42,9 +45,12 @@ static int isspecial(char c)
 	return 0;
 }
 
-/**************************************************************************
- is the char a mime special?
-**************************************************************************/
+/**
+ * Is the given character a MIME special?
+ *
+ * @param c the character to check
+ * @return if c is a MIME special 1, else 0
+ */
 static int ismimespecial(char c)
 {
 	if (c == '(' || c == ')' || c == '<' || c == '>' || c == '@' ||
@@ -55,9 +61,12 @@ static int ismimespecial(char c)
 	return 0;
 }
 
-/**************************************************************************
- is the char a e special (encoded words)?
-**************************************************************************/
+/**
+ * Is the given character an encoded word special?
+ *
+ * @param c the character to check
+ * @return if c is an encoded special 1, else 0
+ */
 static int isespecial(char c)
 {
 	if ( c == '(' || c == ')' || c == '<' || c == '>' || c == '@' ||
@@ -66,9 +75,8 @@ static int isespecial(char c)
 	return 0;
 }
 
-/**************************************************************************
- Needs the string quotation marks?
-**************************************************************************/
+/*****************************************************************************/
+
 int needs_quotation(char *str)
 {
 	char c;
@@ -79,10 +87,8 @@ int needs_quotation(char *str)
 	return 0;
 }
 
+/*****************************************************************************/
 
-/**************************************************************************
- Needs the string quotation marks?
-**************************************************************************/
 int needs_quotation_len(char *str, int len)
 {
 	char c;
@@ -94,9 +100,13 @@ int needs_quotation_len(char *str, int len)
 	return 0;
 }
 
-/**************************************************************************
- Skip spaces (also comments)
-**************************************************************************/
+
+/**
+ * Skip spaces (and comments) for the given string.
+ *
+ * @param buf pointing to spaces that should be skipped
+ * @return the pointer to the first non-space character
+ */
 static char *skip_spaces(const char *buf)
 {
 	unsigned char c;
@@ -112,9 +122,17 @@ static char *skip_spaces(const char *buf)
 	return (char*)buf;
 }
 
-/**************************************************************************
- atom        =  1*<any CHAR except specials, SPACE and CTLs>
-**************************************************************************/
+/**
+ * Parse a string as atom.
+ *
+ * @verbatim
+ * atom        =  1*<any CHAR except specials, SPACE and CTLs>
+ * @endverbatim
+ *
+ * @param atom pointer to the characters to parse as atom
+ * @param pbuf pointer where the parsed atom is stored
+ * @return NULL for a parse error or the pointer to the next unparsed character
+ */
 static char *parse_atom(char *atom, char **pbuf)
 {
 	const char *atom_start;
@@ -143,9 +161,17 @@ static char *parse_atom(char *atom, char **pbuf)
 	return atom;
 }
 
-/**************************************************************************
- quoted-string = <"> *(qtext/quoted-pair) <">
-**************************************************************************/
+/**
+ * Parse a string as a quoted string
+ *
+ * @verbatim
+ * quoted-string = <"> *(qtext/quoted-pair) <">
+ * @endverbatim
+ *
+ * @param quoted_string pointer to the characters to parse as atom
+ * @param pbuf pointer where the parsed quoted string is stored
+ * @return NULL for a parse error or the pointer to the next unparsed character
+ */
 static char *parse_quoted_string(char *quoted_string, char **pbuf)
 {
 	char *quoted_string_start;
@@ -206,9 +232,17 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 	return NULL;
 }
 
-/**************************************************************************
- word        =  atom / quoted-string
-**************************************************************************/
+/**
+ * Parse a string a (simple) word.
+ *
+ * @verbatim
+ * word        =  atom / quoted-string
+ * @endverbatim
+ *
+ * @param word pointer to the buffer that contains a word
+ * @param pbuf where the word is stored
+ * @return
+ */
 static char *parse_word_simple(char *word, char **pbuf)
 {
 	char *ret;
@@ -218,9 +252,13 @@ static char *parse_word_simple(char *word, char **pbuf)
 	return ret;
 }
 
-/**************************************************************************
- Parses an encoded word and converts it to utf8
-**************************************************************************/
+/**
+ * Parses an encoded word and converts it to utf8.
+ *
+ * @param word pointer to the buffer that contains a word
+ * @param pbuf where the word is stored
+ * @return NULL for an error or the pointer to the next unparsed character
+ */
 static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)
 {
   char *ret;
@@ -240,9 +278,18 @@ static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)
 	return ret;
 }
 
-/**************************************************************************
- word        =  atom / quoted-string (encoded_word)
-**************************************************************************/
+/**
+ * Parse a word as UTF8.
+ *
+ * @verbatim
+ * word        =  atom / quoted-string (encoded_word)
+ * @endverbatim
+ *
+ * @param word the word to be parsed
+ * @param pbuf where the word is stored
+ * @param quoted where the information is stored if it was a quoted word
+ * @return NULL for an error or the pointer to the next unparsed character
+ */
 static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
 {
 	char *ret;
@@ -272,9 +319,17 @@ static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
 	return ret;
 }
 
-/**************************************************************************
- local-part  =  word *("." word)
-**************************************************************************/
+/**
+ * Parse the local part of an address.
+ *
+ * @verbatim
+ * local-part  =  word *("." word)
+ * @endverbatim
+ *
+ * @param local_part the local_part to be parsed
+ * @param pbuf where the local part is stored
+ * @return NULL for an error or the pointer to the next unparsed character
+ */
 static char *parse_local_part(char *local_part, char **pbuf)
 {
 	char *buf;
@@ -305,11 +360,19 @@ static char *parse_local_part(char *local_part, char **pbuf)
 	return ret_save;
 }
 
-/**************************************************************************
- sub-domain  =  domain-ref / domain-literal
- domain-ref = atom
- domain-literal actually not implemented
-**************************************************************************/
+/**
+ * Parse a sub domain string.
+ *
+ * @verbatim
+ * sub-domain  =  domain-ref / domain-literal
+ * domain-ref = atom
+ * domain-literal actually not implemented
+ * @endverbatim
+ *
+ * @param sub_domain the sub domain to be parsed
+ * @param pbuf where the sub domain is stored
+ * @return NULL for an error or the pointer to the next unparsed character
+ */
 static char *parse_sub_domain(char *sub_domain, char **pbuf)
 {
 	char *ret, *ref;
@@ -327,9 +390,17 @@ static char *parse_sub_domain(char *sub_domain, char **pbuf)
 	return ret;
 }
 
-/**************************************************************************
- domain      =  sub-domain *("." sub-domain)
-**************************************************************************/
+/**
+ * Parse a domain string.
+ *
+ * @verbatim
+ * domain      =  sub-domain *("." sub-domain)
+ * @endverbatim
+ *
+ * @param domain the domain to be parsed
+ * @param pbuf where the domain is stored
+ * @return NULL for an error or the pointer to the next unparsed character
+ */
 static char *parse_domain(char *domain, char **pbuf)
 {
 	char *buf;
@@ -364,9 +435,8 @@ static char *parse_domain(char *domain, char **pbuf)
 	return ret_save;
 }
 
-/**************************************************************************
- addr-spec   =  local-part "@" domain
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_addr_spec(char *addr_spec, char **pbuf)
 {
 	char *local_part, *domain = NULL;
@@ -404,9 +474,17 @@ out:
 	return NULL;
 }
 
-/**************************************************************************
- phrase      =  1*word
-**************************************************************************/
+/**
+ * Parse a string as phrase.
+ *
+ * @verbatim
+ * phrase      =  1*word
+ * @endverbatim
+ *
+ * @param phrase pointer to the characters to parse as phrase
+ * @param pbuf pointer where the parsed phrase is stored
+ * @return NULL for a parse error or the pointer to the next unparsed character
+ */
 static char *parse_phrase(char *phrase, utf8 **pbuf)
 {
 	utf8 *buf;
@@ -442,10 +520,8 @@ static char *parse_phrase(char *phrase, utf8 **pbuf)
 	return ret_save;
 }
 
-/**************************************************************************
- mailbox = addr-spec | phrase route-addr
- route_addr = "<" [route] addr-spec ">"
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_mailbox(char *mailbox, struct mailbox *mbox)
 {
 	char *ret;
@@ -505,9 +581,17 @@ bailout:
 	return NULL;
 }
 
-/**************************************************************************
- group = phrase ":" [#mailbox] ";"
-**************************************************************************/
+/**
+ * Parse a string as a mailbox group
+ *
+ * @verbatim
+ * group = phrase ":" [#mailbox] ";"
+ * @endverbatim
+ *
+ * @param group pointer to the characters to parse as phrase
+ * @param dest pointer where the parsed address is stored
+ * @return NULL for a parse error or the pointer to the next unparsed character
+ */
 static char *parse_group(char *group, struct parse_address *dest)
 {
 	char *ret = parse_phrase(group,(utf8**)&dest->group_name);
@@ -545,12 +629,8 @@ static char *parse_group(char *group, struct parse_address *dest)
 	return ret;
 }
 
-/**************************************************************************
- Parses an address
- Returns the name or the first e-mail address
- address     =  mailbox / group
- (actually 1#mailbox / group which is not correct)
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_address(char *address, struct parse_address *dest)
 {
 	char *retval;
@@ -585,9 +665,8 @@ char *parse_address(char *address, struct parse_address *dest)
 	return retval;
 }
 
-/**************************************************************************
- Frees all memory allocated in parse_address
-**************************************************************************/
+/*****************************************************************************/
+
 void free_address(struct parse_address *addr)
 {
 	struct mailbox *mb;
@@ -600,13 +679,8 @@ void free_address(struct parse_address *addr)
 	}
 }
 
-/**************************************************************************
- text        =  <any CHAR, including bare    ; => atoms, specials,
-                 CR & bare LF, but NOT       ;  comments and
-                 including CRLF>             ;  quoted-strings are NOT recognized
+/*****************************************************************************/
 
- text_string = *(encoded-word/text)
-**************************************************************************/
 void parse_text_string(char *text, utf8 **pbuf)
 {
 	int len = strlen(text);
@@ -700,9 +774,8 @@ void parse_text_string(char *text, utf8 **pbuf)
 }
 
 
-/**************************************************************************
- Checks whether the given string is a token as defined below.
-**************************************************************************/
+/*****************************************************************************/
+
 int is_token(char *token)
 {
 	int i;
@@ -716,10 +789,8 @@ int is_token(char *token)
 	return 1;
 }
 
-/**************************************************************************
- In Mime support
- token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or tspecials>
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_token(char *token, char **pbuf)
 {
 	const char *token_start = token;
@@ -752,10 +823,8 @@ char *parse_token(char *token, char **pbuf)
 	return token;
 }
 
-/**************************************************************************
- In Mime support
- value := token / quoted-string
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_value(char *value, char **pbuf)
 {
 	char *ret;
@@ -763,14 +832,8 @@ char *parse_value(char *value, char **pbuf)
 	return parse_quoted_string(value,pbuf);
 }
 
-/**************************************************************************
- In Mime support
- parameter := attribute "=" value
- attribute := token
+/*****************************************************************************/
 
- Modified a little bit such that spaces surrounding the "=" sign are
- also accepted.
-**************************************************************************/
 char *parse_parameter(char *parameter, struct parse_parameter *dest)
 {
 	char *attr;
@@ -792,10 +855,19 @@ char *parse_parameter(char *parameter, struct parse_parameter *dest)
   return NULL;
 }
 
-
-/**************************************************************************
- token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or especials>
-**************************************************************************/
+/**
+ * Parse a string as token.
+ *
+ * @verbatim
+ * token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or especials>
+ * @endverbatim
+ *
+ * @param token the pointer to the characters to parse as token
+ * @param pbuf will hold the buffer that contains the token only. The string
+ *  shall be freed via free() when no longer in use.
+ * @return pointer to the first character that is not a token or NULL if the
+ *  string was not token
+ */
 char *parse_etoken(char *token, char **pbuf)
 {
 	const char *token_start = token;
@@ -829,10 +901,18 @@ char *parse_etoken(char *token, char **pbuf)
 }
 
 
-/**************************************************************************
- encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
- charset might be set to NULL
-**************************************************************************/
+/**
+ * Parse an encoded word
+ *
+ * @verbatim
+ * encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
+ * @endverbatim
+ *
+ * @param encoded_word the pointer to the encoded word to be parsed
+ * @param pbuf where the encoded word is stored
+ * @param pcharset the charset or NULL
+ * @return NULL for a parse error or the pointer to the next unparsed character
+ */
 static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset)
 {
 	char *ret,*encoding_start;
@@ -904,9 +984,8 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset
 	return NULL;
 }
 
-/**************************************************************************
- Parses the date
-**************************************************************************/
+/*****************************************************************************/
+
 char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec, int *pgmt)
 {
 	int day, month, year, hour, min, sec, gmt;

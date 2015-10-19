@@ -219,44 +219,6 @@ static char *parse_word_simple(char *word, char **pbuf)
 }
 
 /**************************************************************************
- word        =  atom / quoted-string (encoded_word)
-**************************************************************************/
-#if 0
-static char *parse_word(char *word, char **pbuf, char **pcharset)
-{
-	char *ret;
-
-	if ((ret = parse_encoded_word(word,pbuf,pcharset))) return ret;
-	*pcharset = NULL;
-
-	ret = parse_quoted_string(word,pbuf);
-	if (!ret) ret = parse_atom(word,pbuf);
-	return ret;
-}
-#endif
-
-/**************************************************************************
- word        =  atom / quoted-string (encoded_word)
-**************************************************************************/
-#if 0
-static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quoted)
-{
-	char *ret;
-
-	if ((ret = parse_encoded_word(word,pbuf,pcharset)))
-	{
-		*quoted = 1;
-		return ret;
-	}
-	*quoted = 0;
-	*pcharset = NULL;
-	if (!ret) ret = parse_quoted_string(word,pbuf);
-	if (!ret) ret = parse_atom(word,pbuf);
-	return ret;
-}
-#endif
-
-/**************************************************************************
  Parses an encoded word and converts it to utf8
 **************************************************************************/
 static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)

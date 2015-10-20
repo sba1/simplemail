@@ -41,28 +41,6 @@ static const char encoding_table[] =
 	'0','1','2','3','4','5','6','7','8','9','+','/'
 };
 
-
-#if 0
-
-/**************************************************************************
- Gets the hexa digit if any (if not it returns 0). Otherwise
- the digit is in *val (only the lower 4 bits get overwritten)
-**************************************************************************/
-static int get_hexadigit(char c, int *pval)
-{
-	int val;
-
-	if (c >= '0' && c <= '9') val = c - '0';
-	else if (c >= 'A' && c <= 'F') val = c - 'A' + 10;
-	else if (c >= 'a' && c <= 'f') val = c - 'a' + 10;
-	else return 0;
-
-	*pval = ((*pval) & 0xfffffff0) | val;
-	return 1;
-}
-
-#endif
-
 /**
  * Decoding a given buffer using the base64 algorithm. *ret_len can be used
  * to cut the decoding, but the result might differ

@@ -16,15 +16,37 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** sysprint.h
-*/
+/**
+ * @file sysprint.h
+ */
+
+#ifndef SM__SYSPRINT_H
+#define SM__SYSPRINT_H
 
 typedef struct PrintHandle PrintHandle; /* Opaque */
 
-/* Open and Close */
+/**
+ * Open a printer handle.
+ *
+ * @return the printer handle.
+ */
 PrintHandle *sysprint_prepare(void);
-void sysprint_cleanup(PrintHandle *);
 
-/* print */
-int sysprint_print(PrintHandle *, char *, unsigned long);
+/**
+ * Cleanup everything related to the given print handle.
+ *
+ * @param ph handle to cleanup
+ */
+void sysprint_cleanup(PrintHandle *ph);
+
+/**
+ * Print the given text via the handle.
+ *
+ * @param ph the handle that is used to print
+ * @param txt the text that is printed
+ * @param len the length of the text to be printed
+ * @return 0 on failure, 1 on success.
+ */
+int sysprint_print(PrintHandle *ph, char *txt, unsigned long len);
+
+#endif

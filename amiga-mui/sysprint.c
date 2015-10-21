@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** sysprint.c
-*/
+/**
+ * @file sysprint.c
+ */
 
 #include "configuration.h"
 #include "debug.h"
@@ -36,6 +36,8 @@ struct PrintHandle
 {
 	BPTR printer;
 };
+
+/*****************************************************************************/
 
 int sysprint_print(PrintHandle *ph, char *txt, unsigned long len)
 {
@@ -63,6 +65,8 @@ int sysprint_print(PrintHandle *ph, char *txt, unsigned long len)
 	return rc;
 }
 
+/*****************************************************************************/
+
 PrintHandle * sysprint_prepare(void)
 {
 	PrintHandle *rc = NULL;
@@ -81,6 +85,8 @@ PrintHandle * sysprint_prepare(void)
 
 	return rc;
 }
+
+/*****************************************************************************/
 
 void sysprint_cleanup(PrintHandle *ph)
 {

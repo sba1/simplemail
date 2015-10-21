@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /**
- * @file
+ * @file support.h
  */
 #ifndef SM__SUPPORT_H
 #define SM__SUPPORT_H

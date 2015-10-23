@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** arexx.h
-*/
+/**
+ * @file arexx.h
+ */
 
 #ifndef SM__AREXX_H
 #define SM__AREXX_H
@@ -27,11 +27,46 @@
 #include <exec/types.h>
 #endif
 
+/**
+ * Returns the ARexx message port if it already exists. Should
+ * be called in Forbid() state.
+ *
+ * @return the ARexx port.
+ */
 struct MsgPort *arexx_find(void);
+
+/**
+ * Initialize the ARexx port, fails if the port already exists.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 int arexx_init(void);
+
+/**
+ * Cleanup ARexx stuff
+ */
 void arexx_cleanup(void);
+
+/**
+ * Executes the given ARexx command
+ *
+ * @param command the command to be executed.
+ * @return 0 on failure, 1 on success
+ */
 int arexx_execute_script(char *command);
+
+/**
+ * Returns the mask of the ARexx port
+ *
+ * @return the mask of the ARexx port
+ */
 ULONG arexx_mask(void);
+
+/**
+ * Handle the incoming ARexx messages.
+ *
+ * @return always 0.
+ */
 int arexx_handle(void);
 
 #endif

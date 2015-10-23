@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** arexx.c
-*/
+/**
+ * @file arexx.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -69,9 +69,15 @@ void app_quit(void);
 /* from mainwnd.c */
 struct Screen *main_get_screen(void);
 
-/****************************************************************
- SetRexxVarFromMsg() replacement
-*****************************************************************/
+/**
+ * Replacement for SetRexxVarFromMsg().
+ *
+ * @param name the name of the ARexx variable
+ * @param value the value that the ARexx variable should have
+ * @param message the message defining the ARexx context
+ * @return 0 on failure
+ */
+
 LONG MySetRexxVarFromMsg(STRPTR name, STRPTR value, struct RexxMsg *message)
 {
 #ifdef __AMIGAOS4__
@@ -82,18 +88,15 @@ LONG MySetRexxVarFromMsg(STRPTR name, STRPTR value, struct RexxMsg *message)
 #endif
 }
 
-/****************************************************************
- Returns the arexx message port if it already exists. Should
- be called in Forbid() state.
-*****************************************************************/
+/*****************************************************************************/
+
 struct MsgPort *arexx_find(void)
 {
 	return FindPort("SIMPLEMAIL.1");
 }
 
-/****************************************************************
- Initialize the arexx port, fails if the port already exits
-*****************************************************************/
+/*****************************************************************************/
+
 int arexx_init(void)
 {
 	int rc = 0;
@@ -115,9 +118,8 @@ int arexx_init(void)
 	return rc;
 }
 
-/****************************************************************
- Cleanup Arexx Stuff
-*****************************************************************/
+/*****************************************************************************/
+
 void arexx_cleanup(void)
 {
 	if (arexx_port)
@@ -141,18 +143,16 @@ void arexx_cleanup(void)
 	if (arexx_execute_port) DeleteMsgPort(arexx_execute_port);
 }
 
-/****************************************************************
- Returns the mask of the arexx port
-*****************************************************************/
+/*****************************************************************************/
+
 ULONG arexx_mask(void)
 {
 	if (!arexx_port) return 0UL;
 	return 1UL << arexx_port->mp_SigBit;
 }
 
-/****************************************************************
- Returns the mask of the arexx port
-*****************************************************************/
+/*****************************************************************************/
+
 int arexx_execute_script(char *command)
 {
 	struct RexxMsg *rxmsg;
@@ -195,9 +195,12 @@ int arexx_execute_script(char *command)
 	return 0;
 }
 
-/****************************************************************
- Sets the RESULT variable
-*****************************************************************/
+/**
+ * Set the result variable.
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param string the contents of the result
+ */
 static void arexx_set_result(struct RexxMsg *rxmsg, STRPTR string)
 {
 	if (!string) string = "";
@@ -208,9 +211,13 @@ static void arexx_set_result(struct RexxMsg *rxmsg, STRPTR string)
 	}
 }
 
-/****************************************************************
- Sets a given variable as a integer number
-*****************************************************************/
+/**
+ * Sets a given variable as a integer number.
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param varname
+ * @param num
+ */
 static void arexx_set_var_int(struct RexxMsg *rxmsg, char *varname, int num)
 {
 	char num_buf[24];
@@ -219,9 +226,12 @@ static void arexx_set_var_int(struct RexxMsg *rxmsg, char *varname, int num)
 }
 
 
-/****************************************************************
- MAINTOFRONT Arexx Command
-*****************************************************************/
+/**
+ * MAINTOFRONT Arexx Command.
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param args
+ */
 static void arexx_maintofront(struct RexxMsg *rxmsg, STRPTR args)
 {
 	main_window_open();
@@ -232,7 +242,7 @@ static int compose_active_window;
 /**
  * MAILWRITE ARexx command.
  *
- * @param rxmsg
+ * @param rxmsg the message defining the ARexx context.
  * @param args
  */
 static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
@@ -309,8 +319,8 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 /**
  * WRITEATTACH ARexx command.
  *
- * @param rxmsg
- * @param args
+ * @param rxmsg the message defining the ARexx context.
+ * @param args the command's arguments
  */
 static void arexx_writeattach(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -339,17 +349,23 @@ static void arexx_writeattach(struct RexxMsg *rxmsg, STRPTR args)
 #endif
 }
 
-/****************************************************************
- WRITECLOSE ARexx Command
-*****************************************************************/
+/**
+ * WRITECLOSE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param args the command's arguments
+ */
 static void arexx_writeclose(struct RexxMsg *rxmsg, STRPTR args)
 {
 	compose_window_close(compose_active_window,COMPOSE_CLOSE_CANCEL);
 }
 
-/****************************************************************
- SETMAIL Arexx Command
-*****************************************************************/
+/**
+ * SETMAIL ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param args the command's arguments
+ */
 static void arexx_setmail(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -366,9 +382,12 @@ static void arexx_setmail(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- SETMAILFILE Arexx Command
-*****************************************************************/
+/**
+ * SETMAILFILE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param args the command's arguments
+ */
 static void arexx_setmailfile(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -389,9 +408,12 @@ static void arexx_setmailfile(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- GETSELECTED Arexx Command
-*****************************************************************/
+/**
+ * GETSELECTED ARexx command.
+ *
+ * @param rxmsg the message defining the ARexx context.
+ * @param args the command's arguments
+ */
 static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -475,9 +497,12 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- GETMAILSTAT Arexx Command
-*****************************************************************/
+/**
+ * GETMAILSTAT ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_getmailstat(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -522,33 +547,45 @@ static void arexx_getmailstat(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- SHOW Arexx Command
-*****************************************************************/
+/**
+ * SHOW ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_show(struct RexxMsg *rxmsg, STRPTR args)
 {
 	app_show();
 }
 
-/****************************************************************
- HIDE Arexx Command
-*****************************************************************/
+/**
+ * HIDE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_hide(struct RexxMsg *rxmsg, STRPTR args)
 {
 	app_hide();
 }
 
-/****************************************************************
- QUIT Arexx Command
-*****************************************************************/
+/**
+ * QUIT ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_quit(struct RexxMsg *rxmsg, STRPTR args)
 {
 	app_quit();
 }
 
-/****************************************************************
- FOLDERINFO Arexx Command
-*****************************************************************/
+/**
+ * FOLDERINFO ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -646,9 +683,12 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- REQUEST Arexx Command
-*****************************************************************/
+/**
+ * REQUEST ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_request(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -687,9 +727,12 @@ static void arexx_request(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- REQUESTSTRING Arexx Command
-*****************************************************************/
+/**
+ * REQUESTSTRING ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -734,9 +777,12 @@ static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- REQUESTFILE Arexx Command
-*****************************************************************/
+/**
+ * REQUESTFILE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -875,9 +921,12 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- MAILINFO Arexx Command
-*****************************************************************/
+/**
+ * MAILINFO ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -997,9 +1046,12 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- SETFOLDER Arexx Command
-*****************************************************************/
+/**
+ * SETFOLDER ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_setfolder(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1017,9 +1069,12 @@ static void arexx_setfolder(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- ADDRGOTO Arexx Command
-*****************************************************************/
+/**
+ * ADDRGOTO ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_addrgoto(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1036,9 +1091,12 @@ static void arexx_addrgoto(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- ADDRNEW Arexx Command
-*****************************************************************/
+/**
+ * ADDRNEW ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_addrnew(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1079,9 +1137,12 @@ static void arexx_addrnew(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- ADDRSAVE ARexx Command
-*****************************************************************/
+/**
+ * ADDRSAVE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1099,9 +1160,12 @@ static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- ADDRLOAD ARexx Command
-*****************************************************************/
+/**
+ * ADDRLOAD ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_addrload(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1123,9 +1187,12 @@ static void arexx_addrload(struct RexxMsg *rxmsg, STRPTR args)
 
 }
 
-/****************************************************************
- GETURL Arexx Command
-*****************************************************************/
+/**
+ * GETURL ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_geturl(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1154,9 +1221,12 @@ static void arexx_geturl(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- NEWMAILFILE ARexx Command
-*****************************************************************/
+/**
+ * NEWMAILFILE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1229,9 +1299,12 @@ static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 
 static int read_active_window;
 
-/****************************************************************
- MAILREAD ARexx Command
-*****************************************************************/
+/**
+ * MAILREAD ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1279,17 +1352,23 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- READCLOSE ARexx Command
-*****************************************************************/
+/**
+ * READCLOSE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_readclose(struct RexxMsg *rxmsg, STRPTR args)
 {
 	read_window_close(read_active_window);
 }
 
-/****************************************************************
- READINFO ARexx Command
-*****************************************************************/
+/**
+ * READINFO ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1379,9 +1458,12 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- READSAVE ARexx Command
-*****************************************************************/
+/**
+ * READSAVE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_readsave(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1429,9 +1511,12 @@ static void arexx_readsave(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- REQUESTFOLDER Arexx Command
-*****************************************************************/
+/**
+ * REQUESTFOLDER ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1478,13 +1563,16 @@ static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- MAILADD Arexx Command
-
- Adds a mail with FILENAME into the folder. If the mail
- (FILENAME) is already in the folder it isn't copied. Otherwise
- it is copied. Returns the filename of the mail.
-*****************************************************************/
+/**
+ * MAILADD Arexx Command
+ *
+ * Adds a mail with FILENAME into the folder. If the mail
+ * (FILENAME) is already in the folder it isn't copied. Otherwise
+ * it is copied. Returns the filename of the mail.
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1528,11 +1616,14 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- MAILSETSTATUS Arexx Command
-
- Sets the status of a given mail (or selected mail).
-*****************************************************************/
+/**
+ * MAILSETSTATUS Arexx Command
+ *
+ * Sets the status of a given mail (or selected mail).
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_mailsetstatus(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1588,9 +1679,12 @@ static void arexx_mailsetstatus(struct RexxMsg *rxmsg, STRPTR args)
 
 }
 
-/****************************************************************
- MAILFETCH Arexx Command
-*****************************************************************/
+/**
+ * MAILFETCH Arexx Command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_mailfetch(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1615,9 +1709,12 @@ static void arexx_mailfetch(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-/****************************************************************
- OPENMESSAGE Arexx Command
-*****************************************************************/
+/**
+ * OPENMESSAGE ARexx command
+ *
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
+ */
 static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -1663,8 +1760,8 @@ static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
 /**
  * Returns the version of SimpleMail.
  *
- * @param rxmsg
- * @param args
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
  */
 static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -1695,8 +1792,8 @@ static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
 /**
  * Moves the active or the specified mail to a given folder.
  *
- * @param rxmsg
- * @param args
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
  */
 static void arexx_mailmove(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -1751,8 +1848,8 @@ static void arexx_mailmove(struct RexxMsg *rxmsg, STRPTR args)
 /**
  * Moves the active or the specified mail to a given folder.
  *
- * @param rxmsg
- * @param args
+ * @param rxmsg the message defining the ARexx context
+ * @param args the command's arguments
  */
 static void arexx_maildelete(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -1793,7 +1890,7 @@ static void arexx_maildelete(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /**
- * Handle this single arexx message.
+ * Handle this single ARexx message.
  *
  * @param rxmsg
  * @return
@@ -1862,11 +1959,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	return 0;
 }
 
-/**
- * Handle the incoming arexx messages.
- *
- * @return
- */
+/*****************************************************************************/
+
 int arexx_handle(void)
 {
 	int retval = 0;

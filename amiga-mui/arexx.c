@@ -50,6 +50,7 @@
 #include "amigasupport.h"
 #include "arexx.h"
 #include "composewnd.h"
+#include "gui_main_amiga.h"
 #include "mainwnd.h"
 #include "readwnd.h"
 #include "request.h"
@@ -62,8 +63,6 @@ static struct MsgPort *arexx_execute_port;
 static int arexx_execute_out; /* number of arexx messages standing out */
 
 /* from gui_main.c */
-void app_hide(void);
-void app_show(void);
 void app_quit(void);
 
 /* from mainwnd.c */

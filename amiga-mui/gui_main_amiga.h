@@ -35,4 +35,14 @@ char *gui_get_images_directory(void);
  */
 void loop(void);
 
+/**
+ * Shows the application (uniconifies it).
+ */
+void app_show(void);
+
+/**
+ * Hides the application (iconifies it).
+ */
+void app_hide(void);
+
 #endif

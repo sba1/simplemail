@@ -42,9 +42,6 @@
 #include "mainwnd.h"
 #include "statuswnd.h"
 
-void app_show(void);                          /* in gui_main.c */
-void app_quit(void);
-
 struct AppIcon_Stat
 {
 	int total_msg;

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** accountpopclass.c
-*/
+/**
+ * @file accountpopclass.c
+ */
 
 #include "accountpopclass.h"
 
@@ -304,7 +304,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, AccountPop_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_AccountPop;
+
+/*****************************************************************************/
 
 int create_accountpop_class(void)
 {
@@ -317,6 +321,8 @@ int create_accountpop_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AccountPop\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_accountpop_class(void)
 {

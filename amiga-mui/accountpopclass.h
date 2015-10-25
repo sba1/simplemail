@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** accountpopclass.h
-*/
+/**
+ * @file accountpopclass.h
+ */
 
 #ifndef SM__ACCOUNTPOPCLASS_H
 #define SM__ACCOUNTPOPCLASS_H
@@ -36,7 +36,16 @@ IMPORT struct MUI_CustomClass *CL_AccountPop;
 #define MUIM_AccountPop_Refresh         (TAG_USER | 0x30030101)
 struct  MUIP_AccountPop_Refresh         {ULONG MethodID;};
 
+/**
+ * Create the account popup custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_accountpop_class(void);
+
+/**
+ * Delete the account popup custom class.
+ */
 void delete_accountpop_class(void);
 
 #endif

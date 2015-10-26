@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressentrylistclass.h
-*/
+/**
+ * @file addressentrylistclass.h
+ */
 
 #ifndef SM__ADDRESSENTRYLISTCLASS_H
 #define SM__ADDRESSENTRYLISTCLASS_H
@@ -39,7 +39,17 @@ struct MUIP_AddressEntryList_Refresh {ULONG MethodID;};
 #define MUIV_AddressEntryList_Type_Addressbook	0
 #define MUIV_AddressEntryList_Type_Main					1
 
+/**
+ * Create the address entry list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_addressentrylist_class(void);
+
+
+/**
+ * Delete the address entry list custom class.
+ */
 void delete_addressentrylist_class(void);
 
 #endif

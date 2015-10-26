@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressentrylistclass.c
-*/
+/**
+ * @file addressentrylistclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -82,27 +82,27 @@ struct AddressEntryList_Data
 	Object *show_groups_item;
 };
 
-/********************************************
- Constructor for addressgroup entries
-*********************************************/
+/**
+ * Constructor for address entries.
+ */
 STATIC ASM SAVEDS struct addressbook_entry_new *addressentry_construct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new *)msg->entry;
 	return addressbook_duplicate_entry_new(entry);
 }
 
-/********************************************
- Destructor for addressentry entries
-*********************************************/
+/**
+ * Destructor for address entries.
+ */
 STATIC ASM SAVEDS VOID addressentry_destruct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_DestructMessage *msg))
 {
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new *)msg->entry;
 	addressbook_free_entry_new(entry);
 }
 
-/********************************************
- Dislayfunction function for addressentrys
-*********************************************/
+/**
+ * Display function function for address entries
+ */
 STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
@@ -153,9 +153,9 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 	}
 }
 
-/********************************************
- Comparefunction for addressentrys
-*********************************************/
+/**
+ * Compare function for address entries.
+ */
 STATIC ASM SAVEDS LONG addressentry_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct NList_CompareMessage *msg))
 {
 	struct addressbook_entry_new *entry1 = (struct addressbook_entry_new *)msg->entry1;
@@ -164,9 +164,12 @@ STATIC ASM SAVEDS LONG addressentry_compare(REG(a0, struct Hook *h), REG(a2, Obj
 	return utf8stricmp(entry1->realname,entry2->realname);
 }
 
-/******************************
- Update the format of the list
-*******************************/
+/**
+ * Update the lists format.
+ *
+ * @param cl the class
+ * @param obj the object
+ */
 STATIC VOID AddressEntryList_UpdateFormat(struct IClass *cl,Object *obj)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
@@ -188,9 +191,14 @@ STATIC VOID AddressEntryList_UpdateFormat(struct IClass *cl,Object *obj)
 
 /********************** BOOPSI Methods **********************/
 
-/********************************************
- OM_NEW
-*********************************************/
+/**
+ * Implementation of OM_NEW.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg
+ * @return
+ */
 STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressEntryList_Data *data;
@@ -244,9 +252,14 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	return (ULONG)obj;
 }
 
-/********************************************
- OM_DISPOSE
-*********************************************/
+/**
+ * Implementation of OM_DISPOSE.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
@@ -254,9 +267,14 @@ STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
-/********************************************
- OM_SET
-*********************************************/
+/**
+ * Implementation of OM_SET.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg
+ * @param msg the parameter of the method
+ */
 STATIC ULONG AddressEntryList_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
@@ -282,9 +300,14 @@ STATIC ULONG AddressEntryList_Set(struct IClass *cl, Object *obj, struct opSet *
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-/********************************************
- MUIM_AddressEntryList_Refresh
-*********************************************/
+/**
+ * Implementation of MUIM_AddressEntryList_Refresh.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
@@ -322,9 +345,14 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
-/********************************************
- MUIM_AddressEntryList_Store
-*********************************************/
+/**
+ * Implementation of MUIM_AddressEntryList_Store.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_Store(struct IClass *cl, Object *obj, Msg msg)
 {
 	int i;
@@ -348,9 +376,14 @@ STATIC ULONG AddressEntryList_Store(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
-/********************************************
- MUIM_ContextMenuChoice
-*********************************************/
+/**
+ * Implementation of MUIM_ContextMenuChoice.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)
 {
 	switch (xget(msg->item,MUIA_UserData))
@@ -368,9 +401,14 @@ STATIC ULONG AddressEntryList_ContextMenuChoice(struct IClass *cl, Object *obj, 
   return 0;
 }
 
-/********************************************
- MUIM_NList_ContextMenuBuild
-*********************************************/
+/**
+ * Implementation of MUIM_NList_ContextMenuBuild
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
@@ -381,9 +419,14 @@ STATIC ULONG AddressEntryList_ContextMenuBuild(struct IClass *cl, Object * obj, 
 	return 0;
 }
 
-/********************************************
- MUIM_DragQuery
-*********************************************/
+/**
+ * Implementation fo MUIM_DragQuery
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 /*	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);*/
@@ -392,9 +435,14 @@ STATIC ULONG AddressEntryList_DragQuery(struct IClass *cl, Object *obj, struct M
 	return MUIV_DragQuery_Refuse;
 }
 
-/********************************************
- MUIM_DragDrop
-*********************************************/
+/**
+ * Implemenation of MUIM_DragDrop.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressEntryList_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
 	if (OCLASS(msg->obj) != CL_MailTreelist->mcc_Class) return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -402,9 +450,9 @@ STATIC ULONG AddressEntryList_DragDrop(struct IClass *cl, Object *obj, struct MU
 	return 0;
 }
 
-/********************************************
- Boopsi Dispatcher
-*********************************************/
+/**
+ * The Boopsi Dispatcher for the address entry list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
@@ -421,8 +469,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
+/*****************************************************************************/
 
 struct MUI_CustomClass *CL_AddressEntryList;
+
+/*****************************************************************************/
 
 int create_addressentrylist_class(void)
 {
@@ -435,6 +486,8 @@ int create_addressentrylist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AddressEntryList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_addressentrylist_class(void)
 {

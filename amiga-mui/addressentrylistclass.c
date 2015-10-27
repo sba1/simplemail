@@ -420,7 +420,7 @@ STATIC ULONG AddressEntryList_ContextMenuBuild(struct IClass *cl, Object * obj, 
 }
 
 /**
- * Implementation fo MUIM_DragQuery
+ * Implementation of MUIM_DragQuery
  *
  * @param cl the class
  * @param obj the object
@@ -436,7 +436,7 @@ STATIC ULONG AddressEntryList_DragQuery(struct IClass *cl, Object *obj, struct M
 }
 
 /**
- * Implemenation of MUIM_DragDrop.
+ * Implementation of MUIM_DragDrop.
  *
  * @param cl the class
  * @param obj the object

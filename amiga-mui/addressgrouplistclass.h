@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressgrouplistclass.h
-*/
+/**
+ * @file addressgrouplistclass.h
+ */
 
 #ifndef SM__ADDRESSGROUPLISTCLASS_H
 #define SM__ADDRESSGROUPLISTCLASS_H
 
-/* AddressStringClass */
+/* AddressGroupListClass */
 IMPORT struct MUI_CustomClass *CL_AddressGroupList;
 #define AddressGroupListObject (Object*)MyNewObject(CL_AddressGroupList->mcc_Class, NULL
 
@@ -31,7 +31,16 @@ IMPORT struct MUI_CustomClass *CL_AddressGroupList;
 
 struct MUIP_AddressGroupList_Refresh {ULONG MethodID; };
 
+/**
+ * Create the address group list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_addressgrouplist_class(void);
+
+/**
+ * Delete the address group list custom class.
+ */
 void delete_addressgrouplist_class(void);
 
 #endif

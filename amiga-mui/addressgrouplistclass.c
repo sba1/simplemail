@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressgrouplistclass.c
-*/
+/**
+ * @file addressgrouplistclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -58,27 +58,27 @@ struct AddressGroupList_Data
 	struct Hook display_hook;
 };
 
-/********************************************
- Constructor for addressgroup entries
-*********************************************/
+/**
+ * Constructor for address groups.
+ */
 STATIC ASM SAVEDS struct addressbook_group *addressgroup_construct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct addressbook_group *entry = (struct addressbook_group *)msg->entry;
 	return addressbook_duplicate_group(entry);
 }
 
-/********************************************
- Destructor for addressgroup entries
-*********************************************/
+/**
+ * Destructor for address groups.
+ */
 STATIC ASM SAVEDS VOID addressgroup_destruct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_DestructMessage *msg))
 {
 	struct addressbook_group *entry = (struct addressbook_group *)msg->entry;
 	addressbook_free_group(entry);
 }
 
-/********************************************
- Dislayfunction function for addressgroups
-*********************************************/
+/**
+ * Display function for address groups.
+ */
 STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
@@ -99,9 +99,9 @@ STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object
 	}
 }
 
-/********************************************
- Compare functon
-*********************************************/
+/**
+ * Compare function for address groups.
+ */
 STATIC ASM SAVEDS LONG addressgroup_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct NList_CompareMessage *msg))
 {
 	struct addressbook_group *entry1 = (struct addressbook_group *)msg->entry1;
@@ -111,9 +111,14 @@ STATIC ASM SAVEDS LONG addressgroup_compare(REG(a0, struct Hook *h), REG(a2, Obj
 }
 
 
-/********************************************
- OM_NEW
-*********************************************/
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressGroupList_Data *data;
@@ -141,36 +146,56 @@ STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	return (ULONG)obj;
 }
 
-/********************************************
- OM_DISPOSE
-*********************************************/
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 /*	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)INST_DATA(cl,obj);*/
 	return DoSuperMethodA(cl,obj,msg);
 }
 
-/********************************************
- MUIM_DragQuery
-*********************************************/
+/**
+ * Implementation of MUIM_DragQuery
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;
 	return MUIV_DragQuery_Refuse;
 }
 
-/********************************************
- MUIM_DropType
-*********************************************/
+/**
+ * Implementation of MUIM_DropType
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_DropType(struct IClass *cl, Object *obj, struct MUIP_NList_DropType *msg)
 {
 	*msg->type = MUIV_NList_DropType_Onto;
 	return 1;
 }
 
-/********************************************
- MUIM_DragDrop
-*********************************************/
+/**
+ * Implementation of MUIM_DragDrop
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
 	LONG pos;
@@ -217,9 +242,14 @@ STATIC ULONG AddressGroupList_DragDrop(struct IClass *cl,Object *obj,struct MUIP
 	return 1;
 }
 
-/********************************************
- MUIM_AddressGroupList_Refresh
-*********************************************/
+/**
+ * Implementation of MUIM_AddressGroupList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressGroupList_Refresh(struct IClass *cl, Object *obj, Msg msg)
 {
 /*	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)INST_DATA(cl,obj); */
@@ -237,9 +267,9 @@ STATIC ULONG AddressGroupList_Refresh(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
-/********************************************
- Boopsi Dispatcher
-*********************************************/
+/**
+ * The Boopsi Dispatcher for the address group list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressGroupList_Dispatcher,cl,obj,msg)
 {
 
@@ -256,7 +286,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressGroupList_Dispatcher,cl,obj,msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_AddressGroupList;
+
+/*****************************************************************************/
 
 int create_addressgrouplist_class(void)
 {
@@ -269,6 +303,8 @@ int create_addressgrouplist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AddressGroupList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_addressgrouplist_class(void)
 {

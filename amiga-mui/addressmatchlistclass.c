@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressmatchlistclass.c
-*/
+/**
+ * @file addressmatchlistclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -69,9 +69,9 @@ struct AddressMatchList_Data
 	Object *status_group_obj;
 };
 
-/********************************************
- Constructor for addressgroup entries
-*********************************************/
+/**
+ * Constructor for address match entries.
+ */
 STATIC ASM SAVEDS struct address_match_entry *matchentry_construct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct address_match_entry *entry = (struct address_match_entry *)msg->entry;
@@ -96,9 +96,9 @@ err:
 	return NULL;
 }
 
-/********************************************
- Destructor for addressentry entries
-*********************************************/
+/**
+ * Destructor for address match entries.
+ */
 STATIC ASM SAVEDS VOID matchentry_destruct(REG(a0, struct Hook *h), REG(a2, Object *obj),REG(a1,struct NList_DestructMessage *msg))
 {
 	struct address_match_entry *entry = (struct address_match_entry *)msg->entry;
@@ -107,9 +107,9 @@ STATIC ASM SAVEDS VOID matchentry_destruct(REG(a0, struct Hook *h), REG(a2, Obje
 	free(entry);
 }
 
-/********************************************
- Dislayfunction function for addressentrys
-*********************************************/
+/**
+ * Display function for address match entries.
+ */
 STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
@@ -202,9 +202,9 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 	}
 }
 
-/********************************************
- Comparefunction for addressentrys
-*********************************************/
+/**
+ * Compare function for address match entries.
+ */
 STATIC ASM SAVEDS LONG matchentry_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct NList_CompareMessage *msg))
 {
 	char *str1, *str2;
@@ -223,9 +223,14 @@ STATIC ASM SAVEDS LONG matchentry_compare(REG(a0, struct Hook *h), REG(a2, Objec
 
 /********************** BOOPSI Methods **********************/
 
-/********************************************
- OM_NEW
-*********************************************/
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressMatchList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressMatchList_Data *data;
@@ -256,9 +261,14 @@ STATIC ULONG AddressMatchList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	return (ULONG)obj;
 }
 
-/********************************************
- OM_DISPOSE
-*********************************************/
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressMatchList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressMatchList_Data *data = (struct AddressMatchList_Data*)INST_DATA(cl,obj);
@@ -267,9 +277,14 @@ STATIC ULONG AddressMatchList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
-/********************************************
- MUIM_Setup
-*********************************************/
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressMatchList_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct AddressMatchList_Data *data = (struct AddressMatchList_Data*)INST_DATA(cl,obj);
@@ -281,9 +296,14 @@ STATIC ULONG AddressMatchList_Setup(struct IClass *cl, Object *obj, struct MUIP_
 	return 1;
 }
 
-/********************************************
- MUIM_Cleanup
-*********************************************/
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressMatchList_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressMatchList_Data *data = (struct AddressMatchList_Data*)INST_DATA(cl,obj);
@@ -291,9 +311,14 @@ STATIC ULONG AddressMatchList_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
-/********************************************
- MUIM_AddressMatchList_Refresh
-*********************************************/
+/**
+ * Implementation of MUIM_AddressMatchList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressMatchList_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressMatchList_Refresh *msg)
 {
 	struct AddressMatchList_Data *data = (struct AddressMatchList_Data*)INST_DATA(cl,obj);
@@ -341,9 +366,9 @@ STATIC ULONG AddressMatchList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
-/********************************************
- Boopsi Dispatcher
-*********************************************/
+/**
+ * The Boopsi Dispatcher for the address match list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressMatchList_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
@@ -357,7 +382,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressMatchList_Dispatcher,cl,obj,msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_AddressMatchList;
+
+/*****************************************************************************/
 
 int create_addressmatchlist_class(void)
 {
@@ -370,6 +399,8 @@ int create_addressmatchlist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AddressMatchList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_addressmatchlist_class(void)
 {

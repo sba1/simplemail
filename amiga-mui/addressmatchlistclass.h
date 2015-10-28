@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressmatchlistclass.h
-*/
+/**
+ * @file addressmatchlistclass.h
+ */
 
 #ifndef SM__ADDRESSMATCHLISTCLASS_H
 #define SM__ADDRESSMATCHLISTCLASS_H
@@ -42,7 +42,16 @@ struct address_match_entry
 	} o;
 };
 
+/**
+ * Create the address match list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_addressmatchlist_class(void);
+
+/**
+ * Delete the address match list custom class.
+ */
 void delete_addressmatchlist_class(void);
 
 #endif

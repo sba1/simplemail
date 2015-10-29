@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressstringclass.c
-*/
+/**
+ * @file addressstringclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -46,10 +46,14 @@
 #include "muistuff.h"
 #include "utf8stringclass.h"
 
-/******************************************************************
- Returns a malloced() sting for the address start (this what should
- be completed)
-*******************************************************************/
+/**
+ * Returns a malloced() sting for the address start (this what should
+ * be completed). The comma is identied as a separator.
+ *
+ * @param contents the entire
+ * @param pos the completion anchor
+ * @return the string that should be completed
+ */
 static char *get_address_start(char *contents, int pos)
 {
 	char *buf;
@@ -79,7 +83,7 @@ static char *get_address_start(char *contents, int pos)
 	return buf;
 }
 
-/* --------------------------------- */
+/*****************************************************************************/
 
 struct MatchWindow_Data
 {
@@ -90,10 +94,12 @@ struct MatchWindow_Data
 
 struct MUI_CustomClass *CL_MatchWindow;
 
-/***********************************************************
- Completes the address if a new entry within the match list
- gets activated
-************************************************************/
+/**
+ * Used as a callback to complete the address if a new entry within the match
+ * list gets activated.
+ *
+ * @param msg defines parameters of this function call.
+ */
 STATIC VOID MatchWindow_NewActive(void **msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data *)msg[0];
@@ -133,6 +139,14 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 	}
 }
 
+/**
+ * Implementation of OM_NEW.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	Object *list,*str;
@@ -166,6 +180,14 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of OM_GET.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
@@ -177,12 +199,28 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_AddressMatchList_Refresh.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressMatchList_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	return DoMethod(data->list, MUIM_AddressMatchList_Refresh, (ULONG)msg->pattern);
 }
 
+/**
+ * Implementation of MUIM_MatchWindow_Up.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
@@ -199,6 +237,14 @@ STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+/**
+ * Implementation of MUIM_MatchWindow_Down.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
@@ -215,6 +261,9 @@ STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+/**
+ * The Boopsi Dispatcher for the match window class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -229,7 +278,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 }
 
 
-/*-------------------------------------*/
+/*****************************************************************************/
 
 struct AddressString_Data
 {
@@ -241,6 +290,14 @@ STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj);
 STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj);
 STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj);
 
+/**
+ * Implementation of OM_NEW.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	if (!(obj=(Object *)DoSuperMethodA(cl,obj,(Msg)msg)))
@@ -249,6 +306,14 @@ STATIC ULONG AddressString_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_Setup.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_Setup(struct IClass *cl, Object *obj,struct MUIP_Setup *msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -261,11 +326,27 @@ STATIC ULONG AddressString_Setup(struct IClass *cl, Object *obj,struct MUIP_Setu
 	return 1;
 }
 
+/**
+ * Implementation of MUIM_Cleanup.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_Cleanup(struct IClass *cl, Object *obj, struct MUIP_Cleanup *msg)
 {
 	return DoSuperMethodA(cl, obj, (Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_GoActive.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_GoActive(struct IClass *cl, Object *obj,Msg msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -275,6 +356,14 @@ STATIC ULONG AddressString_GoActive(struct IClass *cl, Object *obj,Msg msg)
 	return DoSuperMethodA(cl, obj, msg);
 }
 
+/**
+ * Implementation of MUIM_GoInactive.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_GoInactive(struct IClass *cl, Object *obj,Msg msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -285,6 +374,14 @@ STATIC ULONG AddressString_GoInactive(struct IClass *cl, Object *obj,Msg msg)
 	return DoSuperMethodA(cl, obj, msg);
 }
 
+/**
+ * Implementation of MUIM_HandleEvent.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -376,15 +473,30 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	return 0;
 }
 
-/******************************************************************
- MUIM_DragQuery. Accept dragged objects from Address Entry List
-*******************************************************************/
+/**
+ * Implementation of MUIM_DragQuery.
+ *
+ * Here we accept dragged objects from Address Entry List.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;
 	return MUIV_DragQuery_Refuse;
 }
 
+/**
+ * Implementation of MUIM_AddressGroupList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
 	struct addressbook_entry_new *entry;
@@ -433,6 +545,14 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
+/**
+ * Implementation of MUIM_AddressString_Complete
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_AddressString_Complete *msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -474,6 +594,14 @@ STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
+/**
+ * Implementation of MUIM_AddressGroupList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -486,6 +614,14 @@ STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
 	}
 }
 
+/**
+ * Implementation of MUIM_AddressGroupList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -505,6 +641,14 @@ STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj)
 	}
 }
 
+/**
+ * Implementation of MUIM_AddressString_UpdateList
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
@@ -533,7 +677,9 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	return 0;
 }
 
-
+/**
+ * The Boopsi Dispatcher for the address string class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -552,7 +698,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_AddressString;
+
+/*****************************************************************************/
 
 int create_addressstring_class(void)
 {
@@ -571,6 +721,8 @@ int create_addressstring_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_MatchWindow\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_addressstring_class(void)
 {

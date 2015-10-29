@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** addressstringclass.h
-*/
+/**
+ * @file addressstringclass.h
+ */
 
 #ifndef SM__ADDRESSSTRING_HPP
 #define SM__ADDRESSSTRING_HPP
@@ -39,8 +39,16 @@ struct  MUIP_AddressString_UpdateList {ULONG MethodID;};
 #define MUIM_MatchWindow_Up      (TAG_USER | 0x30020101)
 #define MUIM_MatchWindow_Down    (TAG_USER | 0x30020102)
 
-
+/**
+ * Create the address string custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_addressstring_class(void);
+
+/**
+ * Delete the address string list custom class.
+ */
 void delete_addressstring_class(void);
 
 #endif

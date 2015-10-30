@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** debug.h
-*/
+/**
+ * @file amigadebug.h
+ */
 
 #ifndef __DEBUG_H
 #define __DEBUG_H

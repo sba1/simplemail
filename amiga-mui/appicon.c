@@ -273,6 +273,8 @@ void appicon_refresh(int force)
 		appicon_label[0] = '\0';
 		for (src = user.config.appicon_label; *src; src++)
 		{
+			int l;
+
 			if (*src == '%')
 			{
 				switch (*++src)
@@ -289,7 +291,9 @@ void appicon_refresh(int force)
 			{
 				sprintf(buf, "%c", *src);
 			}
-			strcat(appicon_label, buf);
+			/* TODO: Keep pointer */
+			l = strlen(appicon_label);
+			mystrlcpy(appicon_label + l, buf, sizeof(appicon_label) - l);
 		}
 
 		/* get the position of the last appicon */

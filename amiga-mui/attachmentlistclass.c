@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** attachmentlistclass.c
-*/
+/**
+ * @file attachmentlistclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -53,6 +53,9 @@ struct AttachmentList_Data
 	int quick;
 };
 
+/**
+ * Constructor for attachment entries.
+ */
 STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a0,struct Hook *h),REG(a2,Object *o),REG(a1,struct MUIP_NListtree_ConstructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
@@ -69,6 +72,9 @@ STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a0,struct Hook *h)
 	return new_attach;
 }
 
+/**
+ * Destructor for attachment entries.
+ */
 STATIC ASM SAVEDS VOID attachment_destruct(REG(a0,struct Hook *h),REG(a2,Object *o),REG(a1,struct MUIP_NListtree_DestructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
@@ -87,6 +93,9 @@ STATIC ASM SAVEDS VOID attachment_destruct(REG(a0,struct Hook *h),REG(a2,Object 
 	}
 }
 
+/**
+ * Display functions for attachment entries.
+ */
 STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	struct AttachmentList_Data *data = (struct AttachmentList_Data*)INST_DATA(CL_AttachmentList->mcc_Class,obj);
@@ -119,6 +128,14 @@ STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *
 	}
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AttachmentList_Data *data;
@@ -150,6 +167,14 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_AskMinMax
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AttachmentList_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
 {
   DoSuperMethodA(cl, obj, (Msg) msg);
@@ -158,6 +183,14 @@ STATIC ULONG AttachmentList_AskMinMax(struct IClass *cl,Object *obj, struct MUIP
 }
 
 
+/**
+ * Implementation of MUIM_NList_DropType
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_NList_DropType *msg)
 {
 	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
@@ -185,6 +218,14 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	return rv;
 }
 
+/**
+ * Implementation of MUIM_AttachmentList_FindUniqueID
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AttachmentList_FindUniqueID(struct IClass *cl, Object *obj, struct MUIP_AttachmentList_FindUniqueID *msg)
 {
 	int i;
@@ -199,6 +240,9 @@ STATIC ULONG AttachmentList_FindUniqueID(struct IClass *cl, Object *obj, struct 
 	return 0;
 }
 
+/**
+ * The Boopsi Dispatcher for the attachment list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG,AttachmentList_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
@@ -211,7 +255,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG,AttachmentList_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_AttachmentList;
+
+/*****************************************************************************/
 
 int create_attachmentlist_class(void)
 {
@@ -224,6 +272,8 @@ int create_attachmentlist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AttachmentList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_attachmentlist_class(void)
 {

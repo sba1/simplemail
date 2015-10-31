@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** attachmentlistclass.h
-*/
+/**
+ * @file attachmentlistclass.h
+ */
 
 #ifndef SM__ATTACHMENTLISTCLASS_H
 #define SM__ATTACHMENTLISTCLASS_H
@@ -32,7 +32,16 @@ IMPORT struct MUI_CustomClass *CL_AttachmentList;
 #define MUIM_AttachmentList_FindUniqueID (TAG_USER | 0x30060101)
 struct  MUIP_AttachmentList_FindUniqueID {ULONG MethodID; int unique_id;};
 
+/**
+ * Create the attachment list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_attachmentlist_class(void);
+
+/**
+ * Delete the attachment list custom class.
+ */
 void delete_attachmentlist_class(void);
 
 /* structure of a entry of this list */

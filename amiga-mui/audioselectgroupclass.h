@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** audioselectgroupclass.h
-*/
+/**
+ * @file audioselectgroupclass.h
+ */
 
 #ifndef SM__AUDIOSELECTGROUPCLASS_H
 #define SM__AUDIOSELECTGROUPCLASS_H
@@ -26,7 +26,16 @@
 IMPORT struct MUI_CustomClass *CL_AudioSelectGroup;
 #define AudioSelectGroupObject (Object*)MyNewObject(CL_AudioSelectGroup->mcc_Class, NULL
 
+/**
+ * Create the audio select group custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_audioselectgroup_class(void);
+
+/**
+ * Delete the audio select group custom class.
+ */
 void delete_audioselectgroup_class(void);
 
 #endif

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** audioselectgroupclass.c
-*/
+/**
+ * @file audioselectgroupclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -55,6 +55,11 @@ struct AudioSelectGroup_Data
 	Object *sound_obj;
 };
 
+/**
+ * Callback function that is invoked when the audio shall be placed.
+ *
+ * @param pdata pointer to a pointer to an AudioSelectGroup_Data struct.
+ */
 STATIC VOID AudioSelectGroup_Play(struct AudioSelectGroup_Data **pdata)
 {
 	struct AudioSelectGroup_Data *data = *pdata;
@@ -77,6 +82,14 @@ STATIC VOID AudioSelectGroup_Play(struct AudioSelectGroup_Data **pdata)
 	}
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AudioSelectGroup_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AudioSelectGroup_Data *data;
@@ -103,6 +116,14 @@ STATIC ULONG AudioSelectGroup_New(struct IClass *cl,Object *obj,struct opSet *ms
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG AudioSelectGroup_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct AudioSelectGroup_Data *data = (struct AudioSelectGroup_Data*)INST_DATA(cl,obj);
@@ -114,6 +135,9 @@ STATIC ULONG AudioSelectGroup_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * The Boopsi dispatcher for the audio select group class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, AudioSelectGroup_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
@@ -124,11 +148,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, AudioSelectGroup_Dispatcher, cl, obj, msg)
 	
 	return DoSuperMethodA(cl,obj,msg);
 }
+/*****************************************************************************/
 
 struct MUI_CustomClass *CL_AudioSelectGroup;
 
-int create_audioselectgroup_class(void);
-void delete_audioselectgroup_class(void);
+/*****************************************************************************/
 
 int create_audioselectgroup_class(void)
 {
@@ -141,6 +165,8 @@ int create_audioselectgroup_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_AudioSelectGroup\n"));
 	SM_RETURN(FALSE,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_audioselectgroup_class(void)
 {

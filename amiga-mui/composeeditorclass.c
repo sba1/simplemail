@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** composeeditorclass.c
-*/
+/**
+ * @file composeeditorclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -59,6 +59,14 @@ struct ComposeEditor_Data
 	char **array;
 };
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct ComposeEditor_Data *data;
@@ -74,6 +82,14 @@ STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct TagItem *tstate, *tag;
@@ -124,6 +140,14 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
@@ -140,6 +164,14 @@ STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Set
 	return retval;
 }
 
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
@@ -149,6 +181,14 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_DragQuery
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class) return MUIV_DragQuery_Accept;
@@ -156,6 +196,15 @@ STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP
 	return MUIV_DragQuery_Refuse;
 }
 
+
+/**
+ * Implementation of MUIM_DragDrop
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
 	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class)
@@ -184,6 +233,9 @@ STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the compose editor class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, ComposeEditor_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -198,7 +250,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, ComposeEditor_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_ComposeEditor;
+
+/*****************************************************************************/
 
 int create_composeeditor_class(void)
 {
@@ -211,6 +267,8 @@ int create_composeeditor_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_ComposeEditor\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_composeeditor_class(void)
 {

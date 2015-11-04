@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** composeeditorclass.h
-*/
+/**
+ * @file composeeditorclass.h
+ */
 
 #ifndef SM__COMPOSEEDITORCLASS_H
 #define SM__COMPOSEEDITORCLASS_H
@@ -29,7 +29,16 @@ IMPORT struct MUI_CustomClass *CL_ComposeEditor;
 #define MUIA_ComposeEditor_Array        (TAG_USER | 0x30050001)
 #define MUIA_ComposeEditor_UTF8Contents (TAG_USER | 0x30050002)
 
+/**
+ * Create the compose editor custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_composeeditor_class(void);
+
+/**
+ * Delete the compose editor custom class.
+ */
 void delete_composeeditor_class(void);
 
 #endif

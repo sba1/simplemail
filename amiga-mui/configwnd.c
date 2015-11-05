@@ -240,9 +240,9 @@ void config_refresh_folders(void)
 	if (startup_folder_tree) DoMethod(startup_folder_tree, MUIM_FolderTreelist_Refresh, NULL);
 }
 
-/******************************************************************
- Hookfunctions for the startup_folder_popobject
-*******************************************************************/
+/**
+ * Object to string hook function for the startup folder popobject.
+ */
 STATIC ASM VOID startup_folder_objstr(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
 {
 	struct MUI_NListtree_TreeNode *tree_node;
@@ -258,6 +258,9 @@ STATIC ASM VOID startup_folder_objstr(REG(a0, struct Hook *h), REG(a2, Object *l
 	}
 }
 
+/**
+ * String to object hook function for the startup folder popobject.
+ */
 STATIC ASM LONG startup_folder_strobj(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
 {
 	char *s;
@@ -401,9 +404,9 @@ static void account_load(void)
 	}
 }
 
-/******************************************************************
- Gets the Signature which was last selected
-*******************************************************************/
+/**
+ * Gets the signature which was last selected
+ */
 static void signature_store(void)
 {
 	if (signature_last_selected)
@@ -420,9 +423,9 @@ static void signature_store(void)
 	}
 }
 
-/******************************************************************
- Loads the current selected signature
-*******************************************************************/
+/**
+ * Loads the current selected signature
+ */
 static void signature_load(void)
 {
 	struct signature *signature = signature_last_selected;
@@ -435,9 +438,9 @@ static void signature_load(void)
 	}
 }
 
-/******************************************************************
- Gets the phrase which was last selected
-*******************************************************************/
+/**
+ * Gets the phrase which was last selected
+ */
 static void phrase_store(void)
 {
 	if (phrase_last_selected)
@@ -466,9 +469,9 @@ static void phrase_store(void)
 	}
 }
 
-/******************************************************************
- Loads the current selected phrase
-*******************************************************************/
+/**
+ * Loads the current selected phrase
+ */
 static void phrase_load(void)
 {
 	struct phrase *phrase = phrase_last_selected;
@@ -504,9 +507,11 @@ static void phrase_load(void)
 	}
 }
 
-/******************************************************************
- Use the config
-*******************************************************************/
+/**
+ * Use the config.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 static int config_use(void)
 {
 	int i,j,err;
@@ -727,9 +732,9 @@ static int config_use(void)
 	return 1;
 }
 
-/******************************************************************
- Save the configuration
-*******************************************************************/
+/**
+ * Save the configuration
+ */
 static void config_save(void)
 {
 	if (config_use())
@@ -738,17 +743,17 @@ static void config_save(void)
 	}
 }
 
-/******************************************************************
- Save the configuration
-*******************************************************************/
+/**
+ * Save the configuration
+ */
 static void config_cancel(void)
 {
 	close_config();
 }
 
-/******************************************************************
- A new entry in the config listtree has been selected
-*******************************************************************/
+/**
+ * A new entry in the config listtree has been selected.
+ */
 static void config_selected(void)
 {
 	LONG active = xget(config_list,MUIA_NList_Active);
@@ -778,9 +783,11 @@ static void config_selected(void)
 	}
 }
 
-/******************************************************************
- Init the user group
-*******************************************************************/
+/**
+ * Init the user group.
+ *
+ * @return 0 on failure, 1 on success
+ */
 static int init_user_group(void)
 {
 	static struct Hook startup_folder_objstr_hook, startup_folder_strobj_hook;
@@ -889,9 +896,11 @@ static int init_user_group(void)
 	return 1;
 }
 
-/******************************************************************
- Initialize the receive group
-*******************************************************************/
+/**
+ * Initialize the receive group.
+ *
+ * @return 0 on failure, 1 on success
+ */
 static int init_tcpip_receive_group(void)
 {
 	static char *preselection[4];
@@ -973,9 +982,9 @@ static int init_tcpip_receive_group(void)
 	return 1;
 }
 
-/******************************************************************
- Add a new account
-*******************************************************************/
+/**
+ * Add a new account.
+ */
 static void account_add(void)
 {
 	struct account *account = account_malloc();
@@ -991,9 +1000,9 @@ static void account_add(void)
 	}
 }
 
-/******************************************************************
- Remove the current account
-*******************************************************************/
+/**
+ * Remove the currently selected account.
+ */
 static void account_remove(void)
 {
 	struct account *ac;
@@ -1006,9 +1015,9 @@ static void account_remove(void)
 	}
 }
 
-/******************************************************************
-
-*******************************************************************/
+/**
+ * A new account has been selected. Store it and load the new one.
+ */
 static void account_selected(void)
 {
 	account_store();
@@ -1016,18 +1025,18 @@ static void account_selected(void)
 	account_load();
 }
 
-/******************************************************************
- Redraw the List content if there is an input in the Stringgadget
-*******************************************************************/
+/**
+ * Redraw the list content if there is an input in the string gadget
+ */
 static void account_update(void)
 {
 	account_store();
 	DoMethod(account_account_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
 }
 
-/******************************************************************
- Refresh the account SignatureCycle
-*******************************************************************/
+/**
+ * Refresh the account signature cycle.
+ */
 static void account_refresh_signature_cycle(void)
 {
 	struct list tmp_signature_list;
@@ -1394,9 +1403,11 @@ static int init_account_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Init the readmisc group
-*******************************************************************/
+/**
+ * Init the write group.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 static int init_write_group(void)
 {
 	static char *wordwrap_entries[4];
@@ -1451,9 +1462,11 @@ static int init_write_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Init the readmisc group
-*******************************************************************/
+/**
+ * Init the readmisc group.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 static int init_mails_readmisc_group(void)
 {
 	int i;
@@ -1540,9 +1553,11 @@ static int init_mails_readmisc_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Init the read group
-*******************************************************************/
+/**
+ * Init the read group.
+ *
+ * @return 0 on failure, 1 on success
+ */
 static int init_mails_read_group(void)
 {
 	static char *read_palette_names[7];
@@ -1657,10 +1672,11 @@ static int init_mails_read_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-
-/******************************************************************
- Init the readhtml group
-*******************************************************************/
+/**
+ * Initialize the readhtml group.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 static int init_mails_readhtml_group(void)
 {
 	SM_ENTER;
@@ -1685,9 +1701,9 @@ static int init_mails_readhtml_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Add a new signature
-*******************************************************************/
+/**
+ * Add a new signature.
+ */
 static void signature_add(void)
 {
 	struct signature *s = signature_malloc();
@@ -1703,9 +1719,9 @@ static void signature_add(void)
 	}
 }
 
-/******************************************************************
- Remove a signature
-*******************************************************************/
+/**
+ * Remove the currently selected signature.
+ */
 static void signature_remove(void)
 {
 	struct signature *sign;
@@ -1766,9 +1782,9 @@ static void signature_remove(void)
 	}
 }
 
-/******************************************************************
-
-*******************************************************************/
+/**
+ * A new signature has been selected. Store it and load the new one.
+ */
 static void signature_selected(void)
 {
 	signature_store();
@@ -1776,9 +1792,9 @@ static void signature_selected(void)
 	signature_load();
 }
 
-/******************************************************************
- Redraw the List content if there is an input in the Stringgadget
-*******************************************************************/
+/**
+ * Redraw the list content if there is an input in the string gadget
+ */
 static void signature_update(void)
 {
 	signature_store();
@@ -1798,9 +1814,11 @@ STATIC ASM SAVEDS VOID signature_display(REG(a0,struct Hook *h), REG(a2,char **a
 	}
 }
 
-/******************************************************************
- Init the signature group
-*******************************************************************/
+/**
+ * Init the signature group.
+ *
+ * @return 0 on failure, 1 on success.
+ */
 static int init_signature_group(void)
 {
 	static struct Hook signature_display_hook;
@@ -1887,9 +1905,9 @@ static int init_signature_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Add a new phrase
-*******************************************************************/
+/**
+ * Add a new phrase
+ */
 static void phrase_add(void)
 {
 	struct phrase *p = phrase_malloc();
@@ -1905,9 +1923,9 @@ static void phrase_add(void)
 	}
 }
 
-/******************************************************************
- Duplicate the current phrase
-*******************************************************************/
+/**
+ * Duplicate the current phrase
+ */
 static void phrase_dup(void)
 {
 	struct phrase *phr;
@@ -1920,9 +1938,9 @@ static void phrase_dup(void)
 	}
 }
 
-/******************************************************************
- Remove a phrase
-*******************************************************************/
+/**
+ * Remove a phrase
+ */
 static void phrase_remove(void)
 {
 	struct phrase *phr;
@@ -1935,9 +1953,9 @@ static void phrase_remove(void)
 	}
 }
 
-/******************************************************************
-
-*******************************************************************/
+/**
+ * A new phrase has been selected. Store it and load the new one.
+ */
 static void phrase_selected(void)
 {
 	phrase_store();
@@ -1945,9 +1963,9 @@ static void phrase_selected(void)
 	phrase_load();
 }
 
-/******************************************************************
- Redraw the List content if there is an input in the Stringgadget
-*******************************************************************/
+/**
+ * Redraw the list content if there is an input in the string object.
+ */
 static void phrase_update(void)
 {
 	phrase_store();
@@ -1968,9 +1986,11 @@ STATIC ASM SAVEDS VOID phrase_display(REG(a0,struct Hook *h), REG(a2,char **arra
 }
 
 
-/******************************************************************
- Init the signature group
-*******************************************************************/
+/**
+ * Init the signature group.
+ *
+ * @return 1 on success, 0 on failure
+ */
 static int init_phrase_group(void)
 {
 	Object *add_button, *dup_button, *rem_button;
@@ -2296,9 +2316,9 @@ static int init_spam_group(void)
 	SM_RETURN(1,"%ld");
 }
 
-/******************************************************************
- Init the config window
-*******************************************************************/
+/**
+ * Init the config window
+ */
 static void init_config_window(void)
 {
 	Object *save_button, *use_button, *cancel_button;

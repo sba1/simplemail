@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** configwnd_stuff.c
-*/
+/**
+ * @file configwnd_stuff.c
+ */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -43,11 +43,8 @@
 #include "request.h"
 #include "support.h"
 
-/******************************************************************
- Convert addresses from a texteditor object to an array.
- this is principle the same like in addressbookwnd.c but uses
- parse_mailbox
-*******************************************************************/
+/*****************************************************************************/
+
 char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_ptr, Object *config_wnd, Object *config_list)
 {
 	char *addresses;
@@ -96,9 +93,9 @@ char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_p
 	return new_array;
 }
 
-/******************************************************************
- The size custom class. Only used in the configwnd.
-*******************************************************************/
+/**
+ * The Boopsi dispatcher for the size custom class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -119,6 +116,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 
 struct MUI_CustomClass *CL_Sizes;
 
+/*****************************************************************************/
+
 int create_sizes_class(void)
 {
 	SM_ENTER;
@@ -130,6 +129,8 @@ int create_sizes_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_Sizes\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_sizes_class(void)
 {
@@ -148,12 +149,16 @@ void delete_sizes_class(void)
 	SM_LEAVE;
 }
 
+/*****************************************************************************/
+
 int value2size(int val)
 {
 	if (val > 35) val = (val - 33)*100;
 	else if (val > 16) val = (val - 15)*10;
 	return val;
 }
+
+/*****************************************************************************/
 
 int size2value(int val)
 {

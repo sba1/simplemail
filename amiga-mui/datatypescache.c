@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** datatypescache.c
-*/
+/**
+ * @file datatypescache.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -132,12 +132,8 @@ APTR MySetProcWindow(void *newvalue)
 #define MySetProcWindow SetProcWindow
 #endif
 
-/*************************************************************
- Loads the picture and maps it to the given screen. Returns
- a datatypes object which needs to be freed with
- DisposeDTObject(). Note the picture cannot be remapped
- to another screen.
-**************************************************************/
+/*****************************************************************************/
+
 Object *LoadAndMapPicture(char *filename, struct Screen *scr)
 {
 	Object *o;
@@ -177,10 +173,13 @@ Object *LoadAndMapPicture(char *filename, struct Screen *scr)
 	return NULL;
 }
 
-/*************************************************************
- Loads the picture. Returns a datatypes object which needs to
- be freed with DisposeDTObject().
-**************************************************************/
+/**
+ * Loads the picture. Returns a datatypes object which needs to
+ * be freed with DisposeDTObject().
+ *
+ * @param filename specifies the file to load
+ * @return the datatype object
+ */
 static Object *LoadPicture(char *filename)
 {
 	Object *o;
@@ -202,9 +201,13 @@ static Object *LoadPicture(char *filename)
 	return o;
 }
 
-/*************************************************************
- Maps the given object to the screen.
-**************************************************************/
+/**
+ * Maps the given object to the screen.
+ *
+ * @param obj the data types object to be mapped
+ * @param scr the screen
+ * @return 1 on success, 0 on failure
+ */
 static int MapPicture(Object *obj, struct Screen *scr)
 {
 	struct FrameInfo fri = {0};
@@ -223,11 +226,8 @@ static int MapPicture(Object *obj, struct Screen *scr)
 	return 0;
 }
 
-/**************************************************************/
+/*****************************************************************************/
 
-/*************************************************************
- Initialized the cache.
-**************************************************************/
 void dt_init(void)
 {
 	BPTR file;
@@ -320,9 +320,8 @@ void dt_init(void)
 	free(images_list_filename);
 }
 
-/*************************************************************
- Free all ressources associated with the cache.
-**************************************************************/
+/*****************************************************************************/
+
 void dt_cleanup(void)
 {
 	struct dt_node *dt;
@@ -350,9 +349,14 @@ void dt_cleanup(void)
 	}
 }
 
-/****************************************************************
- Create the dt object directly from filename
-****************************************************************/
+/*****************************************************************************/
+
+/**
+ * Create the dt object directly from filename.
+ *
+ * @param filename
+ * @return
+ */
 static struct dt_node *dt_create_from_filename(char *filename)
 {
 	struct dt_node *node;
@@ -389,10 +393,8 @@ static struct dt_node *dt_create_from_filename(char *filename)
 	return NULL;
 }
 
-/****************************************************************
- Load the dt object. A given filename is instanciated only
- once.
-****************************************************************/
+/*****************************************************************************/
+
 struct dt_node *dt_load_unmapped_picture(char *filename)
 {
 	struct icon_desc *icon;
@@ -480,10 +482,8 @@ struct dt_node *dt_load_unmapped_picture(char *filename)
 	SM_RETURN(node,"%p");
 }
 
-/****************************************************************
- Load the dt object. A given filename is instantiated only
- once.
-****************************************************************/
+/*****************************************************************************/
+
 struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 {
 	struct dt_node *node;
@@ -557,9 +557,8 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 	SM_RETURN(node,"%p");
 }
 
-/****************************************************************
- Dispose the given dt
-****************************************************************/
+/*****************************************************************************/
+
 void dt_dispose_picture(struct dt_node *node)
 {
 	SM_ENTER;
@@ -596,19 +595,22 @@ void dt_dispose_picture(struct dt_node *node)
 	SM_LEAVE;
 }
 
+/*****************************************************************************/
+
 int dt_width(struct dt_node *node)
 {
 	return node->x2 - node->x1 + 1;
 }
+
+/*****************************************************************************/
 
 int dt_height(struct dt_node *node)
 {
 	return node->y2 - node->y1 + 1;
 }
 
-/***************************************************************
- Puts the dt node onto the given rastport.
-****************************************************************/
+/*****************************************************************************/
+
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 {
 	struct BitMap *bitmap = NULL;
@@ -655,10 +657,8 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 	}
 }
 
-/***************************************************************
- Returns the ARGB buffer solely of this image. You can use
- dt_width() and dt_height() to query the dimension.
-****************************************************************/
+/*****************************************************************************/
+
 void *dt_argb(struct dt_node *node)
 {
 	int w,h;
@@ -698,10 +698,8 @@ void *dt_argb(struct dt_node *node)
 	SM_RETURN(node->argb, "0x%08lx");
 }
 
-/***************************************************************
- Pastes the dt node into an ARGB buffer which is ensured
- to have enough space.
-****************************************************************/
+/*****************************************************************************/
+
 void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int y)
 {
 	dt_argb(node);
@@ -721,9 +719,19 @@ void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int
 	}
 }
 
-/***************************************************************
- Pastes the dt node into an ARGB buffer.
-****************************************************************/
+/**
+ * Paste a sub rectangle of the dt node into an ARGB buffer.
+ *
+ * @param node the node/object that shall be pasted
+ * @param srcx source x offset
+ * @param srcy source y offset
+ * @param src_width width of the sub rectangle to paste
+ * @param src_height height of the sub rectangle to paste
+ * @param dest destination buffer
+ * @param dest_width the actual with of the destination buffer
+ * @param x the x offset where to paste within the dest buffer
+ * @param y the y offset where to paste within the dest buffer
+ */
 static void dt_put_rect_on_argb(struct dt_node *node, int srcx, int srcy, int src_width, int src_height, void *dest, int dest_width, int x, int y)
 {
 	dt_argb(node);

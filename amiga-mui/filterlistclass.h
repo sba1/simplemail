@@ -31,7 +31,7 @@ IMPORT struct MUI_CustomClass *CL_FilterList;
  *
  * @return 0 on failure, 1 on success
  */
-nt create_filterlist_class(void);
+int create_filterlist_class(void);
 
 /**
  * Delete the filter list custom class.

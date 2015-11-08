@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** filterlistclass.h
-*/
+/**
+ * @file filterlistclass.h
+ */
 
 #ifndef SM__FILTERLISTCLASS_H
 #define SM__FILTERLISTCLASS_H
@@ -26,7 +26,16 @@
 IMPORT struct MUI_CustomClass *CL_FilterList;
 #define FilterListObject (Object*)MyNewObject(CL_FilterList->mcc_Class, NULL
 
-int create_filterlist_class(void);
+/**
+ * Create the filter list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
+nt create_filterlist_class(void);
+
+/**
+ * Delete the filter list custom class.
+ */
 void delete_filterlist_class(void);
 
 #endif

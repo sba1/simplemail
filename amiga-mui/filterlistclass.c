@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** filterlistclass.c
-*/
+/**
+ * @file filterlistclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -42,6 +42,14 @@ struct FilterList_Data
 	int dummy;
 };
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 /*	struct FilterList_Data *data; */
@@ -54,16 +62,35 @@ STATIC ULONG FilterList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_DragQuery
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_DragDrop
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterList_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * The Boopsi dispatcher for the filter list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -75,7 +102,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_FilterList;
+
+/*****************************************************************************/
 
 int create_filterlist_class(void)
 {
@@ -88,6 +119,8 @@ int create_filterlist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_FilterList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_filterlist_class(void)
 {

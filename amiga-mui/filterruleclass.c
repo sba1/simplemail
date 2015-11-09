@@ -16,6 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+/**
+ * @file filterruleclass.c
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -103,7 +107,12 @@ const static struct rule rules[] = {
 static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
 
 
-void status_cycle_active(Object **objs)
+/**
+ * Status cycle selection has been changed. Update the icon.
+ *
+ * @param objs array to two objects: the cycle, the picture button.
+ */
+static void status_cycle_active(Object **objs)
 {
 	int active = xget(objs[0],MUIA_Cycle_Active);
 	set(objs[1],MUIA_PictureButton_Filename,status_filenames[active]);
@@ -148,6 +157,12 @@ STATIC VOID FilterRule_FlagsUpdate(struct FilterRule_Data **pdata)
 	}
 }
 
+/**
+ * Create objects according to the currently set type cycle.
+ *
+ * @param data instance date
+ * @return 0 on failure, 1 on success
+ */
 STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 {
 	Object *group1, *group2;
@@ -249,6 +264,12 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 	return TRUE;
 }
 
+/**
+ * Update the view according to the given filter rule.
+ *
+ * @param data instance data
+ * @param fr filter rule data that shall be set
+ */
 STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *fr)
 {
 	data->type = fr->type;
@@ -284,6 +305,11 @@ STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *
 	DoMethod(data->group, MUIM_Group_ExitChange);
 }
 
+/**
+ * The type cycle has been changed.
+ *
+ * @param pdata pointer to pointer to struct FilterRule_Data.
+ */
 STATIC VOID FilterRule_TypeCycleActive(struct FilterRule_Data **pdata)
 {
 	struct FilterRule_Data *data = *pdata;
@@ -291,6 +317,14 @@ STATIC VOID FilterRule_TypeCycleActive(struct FilterRule_Data **pdata)
 	FilterRule_CreateObjects(data);
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct FilterRule_Data *data;
@@ -321,16 +355,40 @@ STATIC ULONG FilterRule_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of OM_GET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct FilterRule_Data *data = (struct FilterRule_Data*)INST_DATA(cl,obj);
@@ -393,6 +451,14 @@ static int FilterRule_AcceptDrag(struct FilterRule_Data *data, Object *dragged_o
   return 1;
 }
 
+/**
+ * Implementation of MUIM_DragQuery
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_DragQuery(struct IClass *cl,Object *obj,struct MUIP_DragQuery *msg)
 {
   struct FilterRule_Data *data = (struct FilterRule_Data*)INST_DATA(cl,obj);
@@ -425,6 +491,14 @@ static struct mail_info *FilterRule_Get_Next_Mail_Info(void *handle, void *userd
 }
 
 
+/**
+ * Implementation of MUIM_DragDrop
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
   struct filter_rule *fr;
@@ -466,6 +540,9 @@ STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragD
   return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the filter rule list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -480,7 +557,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_FilterRule;
+
+/*****************************************************************************/
 
 int create_filterrule_class(void)
 {
@@ -507,6 +588,8 @@ int create_filterrule_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_FilterRule\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_filterrule_class(void)
 {

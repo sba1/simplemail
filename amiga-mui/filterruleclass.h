@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** filterruleclass.h
-*/
+/**
+ * @file filterruleclass.h
+ */
 
 #ifndef SM__FILTERRULECLASS_H
 #define SM__FILTERRULECLASS_H
@@ -29,7 +29,16 @@ IMPORT struct MUI_CustomClass *CL_FilterRule;
 #define MUIA_FilterRule_Data (TAG_USER | 0x30120001) /* I.. struct filter_rule * */
 #define MUIA_FilterRule_Type (TAG_USER | 0x30120002) /* I.. LONG */
 
+/**
+ * Create the filter rule custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_filterrule_class(void);
+
+/**
+ * Delete the filter rule custom class.
+ */
 void delete_filterrule_class(void);
 
 #endif  /* SM__FILTERRULECLASS_H */

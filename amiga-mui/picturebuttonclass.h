@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** picturebuttonclass.h
-*/
+/**
+ * @file picturebuttonclass.h
+ */
 
 #ifndef SM__PICTUREBUTTONCLASS_H
 #define SM__PICTUREBUTTONCLASS_H
@@ -32,9 +32,25 @@ IMPORT struct MUI_CustomClass *CL_PictureButton;
 #define MUIA_PictureButton_ShowLabel (TAG_USER | 0x300D0004) /* BOOL */
 #define MUIA_PictureButton_Directory (TAG_USER | 0x300D0005) /* STRPTR */
 
+/**
+ * Create the picture button custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_picturebutton_class(void);
+
+/**
+ * Delete the picture button custom class.
+ */
 void delete_picturebutton_class(void);
 
+/**
+ * Make a picture button conveniently.
+ *
+ * @param label the label of the button
+ * @param filename the filename of the picture
+ * @return the object
+ */
 Object *MakePictureButton(const char *label, const char *filename);
 
 #endif

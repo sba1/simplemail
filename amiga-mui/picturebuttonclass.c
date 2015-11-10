@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** picturebuttonclass.c
-*/
+/**
+ * @file picturebuttonclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -46,6 +46,12 @@
 #include "picturebuttonclass.h"
 #include "support.h"
 
+/**
+ * Duplicate the given string but omit the underscore.
+ *
+ * @param str the string to be copied.
+ * @return the duplicated string with memory being allocated via AllocVec().
+ */
 STATIC STRPTR StrNoUnderscoreCopy(STRPTR str)
 {
 	STRPTR buf = (STRPTR)AllocVec(strlen(str)+1,0);
@@ -92,6 +98,12 @@ struct PictureButton_Data
 	int label_height;
 };
 
+/**
+ * Load the picture from disk.
+ *
+ * @param data instance data
+ * @param obj the actual picture button object
+ */
 STATIC VOID PictureButton_Load(struct PictureButton_Data *data, Object *obj)
 {
 	if (data->name)
@@ -100,6 +112,11 @@ STATIC VOID PictureButton_Load(struct PictureButton_Data *data, Object *obj)
 	}
 }
 
+/**
+ * Unload the picture.
+ *
+ * @param data instance data
+ */
 STATIC VOID PictureButton_Unload(struct PictureButton_Data *data)
 {
 	if (data->dt)
@@ -109,6 +126,14 @@ STATIC VOID PictureButton_Unload(struct PictureButton_Data *data)
 	}
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct PictureButton_Data *data;
@@ -151,6 +176,14 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return((ULONG)obj);
 }
 
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_Dispose(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -158,6 +191,14 @@ STATIC ULONG PictureButton_Dispose(struct IClass *cl,Object *obj,Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -202,6 +243,14 @@ STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -215,6 +264,14 @@ STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 	return 1;
 }
 
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -223,6 +280,14 @@ STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_AskMinMax
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_AskMinMax *msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -280,6 +345,14 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	return 0;
 }
 
+/**
+ * Implementation of MUIM_Draw
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -344,6 +417,9 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the picture button class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, PictureButton_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
@@ -360,7 +436,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, PictureButton_Dispatcher, cl, obj, msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_PictureButton;
+
+/*****************************************************************************/
 
 int create_picturebutton_class(void)
 {
@@ -373,6 +453,7 @@ int create_picturebutton_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_PictureButton\n"));
 	SM_RETURN(FALSE,"%ld");
 }
+/*****************************************************************************/
 
 void delete_picturebutton_class(void)
 {
@@ -390,6 +471,8 @@ void delete_picturebutton_class(void)
 	}
 	SM_LEAVE;
 }
+
+/*****************************************************************************/
 
 Object *MakePictureButton(const char *label, const char *filename)
 {

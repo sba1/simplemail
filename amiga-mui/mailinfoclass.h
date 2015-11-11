@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mailinfo.h
-*/
+/**
+ * @file mailinfo.h
+ */
 
 #ifndef SM__MAILINFOCLASS_H
 #define SM__MAILINFOCLASS_H
@@ -29,7 +29,16 @@ IMPORT struct MUI_CustomClass *CL_MailInfo;
 
 #define MUIA_MailInfo_MailInfo					(TAG_USER | 0x30070001) /* struct mail_info * */
 
+/**
+ * Create the mail info custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_mailinfo_class(void);
+
+/**
+ * Delete the mail info custom class.
+ */
 void delete_mailinfo_class(void);
 
 #endif

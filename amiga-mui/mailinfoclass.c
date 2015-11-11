@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mailinfoclass.c
-*/
+/**
+ * @file mailinfoclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -52,12 +52,12 @@
 #include "support.h"
 #include "timesupport.h"
 
-/**************************************************************************/
+/*****************************************************************************/
 
 #define BORDER						2		/* border */
 #define CONTENTS_OFFSET 	8	/* offset from field column to text column */
 
-/**************************************************************************/
+/*****************************************************************************/
 
 struct text_node
 {
@@ -83,13 +83,21 @@ struct field
 	struct list text_list;
 };
 
-/**************************************************************************/
+/*****************************************************************************/
 
 struct TinyButton_Data
 {
 	int dummy;
 };
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG TinyButton_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
@@ -103,6 +111,14 @@ STATIC ULONG TinyButton_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_AskMinMax
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG TinyButton_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg)
 {
 	int fonty;
@@ -121,6 +137,14 @@ STATIC ULONG TinyButton_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_As
   return 0;
 }
 
+/**
+ * Implementation of MUIM_Draw
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {
 	int x1,y1,x2,y2;
@@ -171,6 +195,9 @@ STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *m
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the tiny button custom class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, TinyButton_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
@@ -182,7 +209,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, TinyButton_Dispatcher, cl, obj, msg)
 	}
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 
 struct MailInfoArea_Data
 {
@@ -215,9 +242,11 @@ struct MailInfoArea_Data
 	char background[60];
 };
 
-/********************************************************************
- Free a complete field and its memory
-*********************************************************************/
+/**
+ * Free a complete field and its memory.
+ *
+ * @param f the field to be freed.
+ */
 static void field_free(struct field *f)
 {
 	struct text_node *t;
@@ -231,9 +260,14 @@ static void field_free(struct field *f)
 	free(f);
 }
 
-/********************************************************************
- Add a new text field into the given field list
-*********************************************************************/
+/**
+ * Add a new text field into the given field list.
+ *
+ * @param list the field list
+ * @param name the name
+ * @param text the text
+ * @return the newly created field
+ */
 static struct field *field_add_text(struct list *list, char *name, char *text)
 {
 	struct field *f;
@@ -265,9 +299,14 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 	return f;
 }
 
-/********************************************************************
- Add a new address field into the given field list
-*********************************************************************/
+/**
+ * Add a new address field into the given field list.
+ *
+ * @param list the field dlist
+ * @param name the name of the header
+ * @param addr_list the address list with addresses to add
+ * @return the newly created field
+ */
 static struct field *field_add_addresses(struct list *list, char *name, struct address_list *addr_list)
 {
 	struct field *f;
@@ -320,9 +359,16 @@ out:
 	return 0;
 }
 
-/********************************************************************
- Finds the text node on the given position
-*********************************************************************/
+/**
+ * Finds the text node on the given position.
+ *
+ * @param field_list the field liust
+ * @param x the x offset
+ * @param y the y offset
+ * @param fonty height of the font
+ * @param field_ptr where the field pointer is stored
+ * @param text_ptr where the text pointer is stored
+ */
 static void field_find(struct list *field_list, int x, int y, int fonty, struct field **field_ptr, struct text_node **text_ptr)
 {
 	struct text_node *text;
@@ -351,10 +397,13 @@ static void field_find(struct list *field_list, int x, int y, int fonty, struct 
 	}
 }
 
-/********************************************************************
- Determine the space requirements of the current field list (if
- possible)
-*********************************************************************/
+/**
+ * Determine the space requirements of the current field list (if
+ * possible)
+ *
+ * @param obj the object in question
+ * @param data the instance data
+ */
 STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *data)
 {
 	struct field *f;
@@ -387,9 +436,13 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	SM_DEBUGF(20,("Leave\n"));
 }
 
-/********************************************************************
- Sets a new mail info
-*********************************************************************/
+/**
+ * Sets a new mail info.
+ *
+ * @param obj the object in question
+ * @param data the instance data
+ * @param mi the mail info
+ */
 VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struct mail_info *mi)
 {
 	struct field *f;
@@ -464,10 +517,16 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 	SM_DEBUGF(20,("Leave\n"));
 }
 
-/********************************************************************
- Draw a given field at the given y position (relativ to the object)
- Setting update to 1 means, that only data->redraw_text is rendered
-*********************************************************************/
+/**
+ * Draw a given field at the given y position (relativ to the object)
+ * Setting update to 1 means, that only data->redraw_text is rendered
+ *
+ * @param obj the object in question
+ * @param data the instance data
+ * @param f the field to be draws
+ * @param y the y offset
+ * @param update specify 1 if this is only an update.
+ */
 STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
                                    struct field *f, int y, int update)
 {
@@ -708,13 +767,13 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	}
 }
 
-/*************************************************************************/
+/*****************************************************************************/
 
 #define MUIM_MailInfo_CompactChanged 0x6e37289
 
-/********************************************************************
- Layout hook function
-*********************************************************************/
+/**
+ * Layout function.
+ */
 static ASM ULONG MailInfoArea_LayoutFunc( REG(a0, struct Hook *hook), REG(a2, Object *obj), REG(a1,struct MUI_LayoutMsg *lm))
 {
 	extern struct MUI_CustomClass *CL_MailInfoArea;
@@ -768,9 +827,14 @@ static ASM ULONG MailInfoArea_LayoutFunc( REG(a0, struct Hook *hook), REG(a2, Ob
   return MUILM_UNKNOWN;
 }
 
-/********************************************************************
- OM_NEW
-*********************************************************************/
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailInfoArea_Data *data;
@@ -832,9 +896,14 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	return (ULONG)obj;
 }
 
-/********************************************************************
- OM_DISPOSE
-*********************************************************************/
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data;
@@ -857,9 +926,14 @@ STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return rc;
 }
 
-/********************************************************************
- OM_SET
-*********************************************************************/
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -883,9 +957,14 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	return rc;
 }
 
-/********************************************************************
- MUIM_Setup
-*********************************************************************/
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -909,9 +988,14 @@ STATIC ULONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	return rc;
 }
 
-/********************************************************************
- MUIM_Cleanup
-*********************************************************************/
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -921,9 +1005,14 @@ STATIC ULONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
 }
 
-/********************************************************************
- MUIM_Show
-*********************************************************************/
+/**
+ * Implementation of MUIM_Show
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Show(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -936,9 +1025,14 @@ STATIC ULONG MailInfoArea_Show(struct IClass *cl, Object *obj, Msg msg)
 	return rc;
 }
 
-/********************************************************************
- MUIM_Cleanup
-*********************************************************************/
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -946,9 +1040,14 @@ STATIC ULONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
 }
 
-/********************************************************************
- MUIM_Draw
-*********************************************************************/
+/**
+ * Implementation of MUIM_Draw
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {
 	struct field *f;
@@ -976,9 +1075,14 @@ STATIC ULONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	return 0;
 }
 
-/********************************************************************
- MUIM_HandleEvent
-*********************************************************************/
+/**
+ * Implementation of MUIM_HandleEvent
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct IntuiMessage *imsg;
@@ -1081,9 +1185,14 @@ STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
-/********************************************************************
- MUIM_MailInfo_CompactChanged
-*********************************************************************/
+/**
+ * Implementation of MUIM_MailInfo_CompactChanged
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfo_CompactChanged(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -1104,6 +1213,9 @@ STATIC ULONG MailInfo_CompactChanged(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the mail info area class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -1129,9 +1241,14 @@ struct MailInfo_Data
 	Object *mailinfo;
 };
 
-/*************************************************************************
- OM_NEW
-**************************************************************************/
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG MailInfo_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MailInfo_Data *data;
@@ -1156,7 +1273,9 @@ STATIC ULONG MailInfo_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
-
+/**
+ * The Boopsi dispatcher for the mail info group class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -1172,6 +1291,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
 struct MUI_CustomClass *CL_MailInfo;
 struct MUI_CustomClass *CL_MailInfoArea;
 struct MUI_CustomClass *CL_TinyButton;
+
+/*****************************************************************************/
 
 int create_mailinfo_class(void)
 {
@@ -1200,6 +1321,8 @@ int create_mailinfo_class(void)
 
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_mailinfo_class(void)
 {

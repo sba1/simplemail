@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** pgplistclass.c
-*/
+/**
+ * @file pgplistclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -53,18 +53,27 @@ struct PGPList_Data
 	char buf[100];
 };
 
+/**
+ * Constructor for pgp list entries.
+ */
 STATIC ASM SAVEDS struct pgp_key *pgp_construct(REG(a0,struct Hook *h), REG(a2,Object *obj), REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	return pgp_duplicate(key);
 }
 
+/**
+ * Destructor for pgp list entries.
+ */
 STATIC ASM SAVEDS VOID pgp_destruct(REG(a0,struct Hook *h), REG(a2,Object *obj), REG(a1,struct NList_DestructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	if (key) pgp_dispose(key);
 }
 
+/**
+ * Display function for pgp list entries.
+ */
 STATIC ASM SAVEDS VOID pgp_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
 	struct PGPList_Data *data = (struct PGPList_Data*)INST_DATA(CL_PGPList->mcc_Class,obj);
@@ -81,6 +90,14 @@ STATIC ASM SAVEDS VOID pgp_display(REG(a0,struct Hook *h),REG(a2,Object *obj),RE
 	}
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PGPList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct PGPList_Data *data;
@@ -104,6 +121,14 @@ STATIC ULONG PGPList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of MUIM_PGPList_Refresh
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG PGPList_Refresh(struct IClass *cl,Object *obj, Msg msg)
 {
 	struct pgp_key *key;
@@ -124,6 +149,9 @@ STATIC ULONG PGPList_Refresh(struct IClass *cl,Object *obj, Msg msg)
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the pgp list class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, PGPList_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -134,7 +162,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, PGPList_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_PGPList;
+
+/*****************************************************************************/
 
 int create_pgplist_class(void)
 {
@@ -147,6 +179,8 @@ int create_pgplist_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_PGPList\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_pgplist_class(void)
 {

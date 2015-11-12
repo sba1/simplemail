@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** pgplistclass.h
-*/
+/**
+ * @file pgplistclass.h
+ */
 
 #ifndef SM__PGPLISTCLASS_H
 #define SM__PGPLISTCLASS_H
@@ -30,7 +30,16 @@ IMPORT struct MUI_CustomClass *CL_PGPList;
 #define MUIM_PGPList_Refresh (TAG_USER | 0x300E0101)
 struct  MUIP_PGPList_Refresh { ULONG MethodID;};
 
+/**
+ * Create the pgp list custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_pgplist_class(void);
+
+/**
+ * Delete the pgp list custom class.
+ */
 void delete_pgplist_class(void);
 
 #endif

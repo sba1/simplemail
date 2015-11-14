@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** muistuff.h
-*/
+/**
+ * @file muistuff.h
+ */
 
 #ifndef SM__MUISTUFF_H
 #define SM__MUISTUFF_H
@@ -32,6 +32,17 @@
 #endif
 
 /* useful MUI supports */
+
+/**
+ * Return the value of the given attribute.
+ *
+ * This assumes that the attribute is actually known to the object.
+ *
+ * @param obj the object to query
+ * @param attribute the attribute to query
+ * @return the value of the attribute. If the attribute is not known, this
+ *  function returns trash.
+ */
 IPTR xget(Object * obj, ULONG attribute);
 #ifdef __MORPHOS__
 /* DoSuperNew is part of libabox.a */
@@ -44,12 +55,63 @@ APTR MyNewObject (struct IClass *cl, CONST_STRPTR id, Tag tag1, ...) __stackparm
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
 APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
 #endif
+
+/**
+ * Make a simple label displaying the given str.
+ *
+ * @param str the string of the label
+ * @return the label object
+ */
 Object *MakeLabel(STRPTR str);
+
+/**
+ * Make a simple button object displaying the given str.
+ *
+ * @param str the string of the button
+ * @return the button object
+ */
 Object *MakeButton(STRPTR str);
+
+/**
+ * Make a simple checkbox object.
+ *
+ * @param label the label of the checkbox, used for keyboard handling
+ * @param check the state of the checkbox
+ * @return the checkbox object
+ */
 Object *MakeCheck(STRPTR label, ULONG check);
+
+/**
+ * Make a simple cycle object
+ *
+ * @param label the label of the cycle, used for keyboard handling
+ * @param array the array defining the entries to be displayed
+ * @return the cycle object
+ */
 Object *MakeCycle(STRPTR label, STRPTR * array);
+
+/**
+ * Dispose all the children associated with the given group object.
+ *
+ * @param o the group object whose children should be disposed.
+ */
 VOID DisposeAllChilds(Object *o);
+
+/**
+ * Dispose all the children associated with the given family object.
+ *
+ * @param o the family object whose children should be disposed.
+ */
 VOID DisposeAllFamilyChilds(Object *o);
+
+/**
+ * Add a new button to the given speedbar.
+ *
+ * @param speedbar the speedbar object to which a new button shall be added.
+ * @param image_idx the image index of the new object
+ * @param text the text of the new object
+ * @param help the help string of the new object
+ */
 VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help);
 
 /* Custom class creation helper */
@@ -61,11 +123,31 @@ extern Object *App;
 /* global hook, use it for easy notifications */
 extern struct Hook hook_standard;
 
-/* initialized the global notify hook */
+/**
+ * Initialize the global notify hook.
+ *
+ * Must be called before the hook_standard is used
+ */
 void init_hook_standard(void);
 
-/* Use this function if the data field of the hook structure is not needed */
+/**
+ * Prepare the given hook to call the given function.
+ *
+ * @param h the hook to be initialized
+ * @param func the function that shall be associated to the hook
+ * @note This function shall be used only, if the data field of the given Hook
+ *  is not needed.
+ */
 void init_hook(struct Hook *h, unsigned long (*func)(void));
+
+/**
+ * Prepare the given hook to call the given function.
+ *
+ * @param h the hook to be initialized
+ * @param func the function that shall be associated to the hook
+ * @param data defines the data that is accessible via the h_Data field of
+ *  the hook when called
+ */
 void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data);
 
 /* Some macros to be used in custom classes */

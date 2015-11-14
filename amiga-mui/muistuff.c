@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** muistuff.c
-*/
+/**
+ * @file muistuff.c
+ */
 
 #include <utility/hooks.h>
 #include <intuition/classusr.h> /* Object * */
@@ -40,6 +40,7 @@ extern void hookEntry(void);
 extern ULONG muiDispatcherEntry(void);
 #endif
 
+/*****************************************************************************/
 
 IPTR xget(Object * obj, ULONG attribute)
 {
@@ -47,6 +48,8 @@ IPTR xget(Object * obj, ULONG attribute)
 	get(obj, attribute, &x);
 	return (x);
 }
+
+/*****************************************************************************/
 
 #ifdef __AMIGAOS4__
 #include <stdarg.h>
@@ -152,10 +155,14 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 #endif /* __AMIGAOS4__ || __MORPHOS__ */
 
 
+/*****************************************************************************/
+
 Object *MakeLabel(STRPTR str)
 {
 	return (MUI_MakeObject(MUIO_Label, str, 0));
 }
+
+/*****************************************************************************/
 
 Object *MakeButton(STRPTR str)
 {
@@ -167,6 +174,8 @@ Object *MakeButton(STRPTR str)
 	return obj;
 }
 
+/*****************************************************************************/
+
 Object *MakeCheck(STRPTR label, ULONG check)
 {
 	Object *obj = MUI_MakeObject(MUIO_Checkmark, label);
@@ -177,6 +186,8 @@ Object *MakeCheck(STRPTR label, ULONG check)
 	return (obj);
 }
 
+/*****************************************************************************/
+
 Object *MakeCycle(STRPTR label, STRPTR * array)
 {
 	Object *obj = MUI_MakeObject(MUIO_Cycle, label, array);
@@ -184,6 +195,8 @@ Object *MakeCycle(STRPTR label, STRPTR * array)
 		set(obj, MUIA_CycleChain, 1);
 	return (obj);
 }
+
+/*****************************************************************************/
 
 VOID DisposeAllChilds(Object *o)
 {
@@ -198,6 +211,8 @@ VOID DisposeAllChilds(Object *o)
 	}
 }
 
+/*****************************************************************************/
+
 VOID DisposeAllFamilyChilds(Object *o)
 {
 	struct List *child_list = (struct List*)xget(o,MUIA_Family_List);
@@ -211,6 +226,8 @@ VOID DisposeAllFamilyChilds(Object *o)
 	}
 }
 
+/*****************************************************************************/
+
 struct Hook hook_standard;
 
 STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1, ULONG * funcptr))
@@ -221,7 +238,6 @@ STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object
 		func(funcptr + 1);
 }
 
-/* Must be called before the hook_standard is used */
 void init_hook_standard(void)
 {
 #if defined(__AMIGAOS4__)
@@ -255,6 +271,8 @@ STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG
 }
 #endif
 
+/*****************************************************************************/
+
 void init_hook(struct Hook *h, unsigned long (*func)(void))
 {
 #if defined(__AMIGAOS4__)
@@ -274,6 +292,8 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 	h->h_SubEntry = func;
 #endif
 }
+
+/*****************************************************************************/
 
 void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data)
 {

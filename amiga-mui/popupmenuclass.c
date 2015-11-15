@@ -16,10 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** popupmenuclass.c
-*/
-
+/**
+ * @file popupmenuclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -46,12 +45,16 @@
 #include "muistuff.h"
 #include "popupmenuclass.h"
 
+/*****************************************************************************/
+
 struct popup_node
 {
 	struct node node;
 	char *name;
 	void *udata;
 };
+
+/*****************************************************************************/
 
 struct Popupmenu_Data
 {
@@ -64,6 +67,16 @@ struct Popupmenu_Data
 	struct list popup_list;
 };
 
+/*****************************************************************************/
+
+/**
+ * Draw a popup menu entry.
+ *
+ * @param cl popup menu class
+ * @param obj the objet
+ * @param entry number of the entry to be drawn
+ * @param selected whether it shall be drawn as selected or not
+ */
 STATIC VOID Popupmenu_DrawEntry(struct IClass *cl, Object *obj, LONG entry, LONG selected)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -98,6 +111,12 @@ STATIC VOID Popupmenu_DrawEntry(struct IClass *cl, Object *obj, LONG entry, LONG
 	Text(rp, node->name, strlen(node->name));
 }
 
+/**
+ * Open the popupwindow
+ *
+ * @param cl popup menu class
+ * @param obj the object
+ */
 STATIC VOID Popupmenu_OpenWindow(struct IClass *cl,Object *obj)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -157,6 +176,12 @@ STATIC VOID Popupmenu_OpenWindow(struct IClass *cl,Object *obj)
 	}
 }
 
+/**
+ * Close the popup menu class.
+ *
+ * @param cl the popup menu class
+ * @param obj the object
+ */
 STATIC VOID Popupmenu_CloseWindow(struct IClass *cl, Object *obj)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -167,6 +192,14 @@ STATIC VOID Popupmenu_CloseWindow(struct IClass *cl, Object *obj)
 	}
 }
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct Popupmenu_Data *data;
@@ -194,6 +227,14 @@ STATIC ULONG Popupmenu_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	Popupmenu_CloseWindow(cl,obj);
@@ -201,6 +242,14 @@ STATIC ULONG Popupmenu_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+/**
+ * Implementation of MUIM_Get
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -218,17 +267,41 @@ STATIC ULONG Popupmenu_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	ULONG retval = DoSuperMethodA(cl,obj,(Msg)msg);
 	return retval;
 }
 
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_Show
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Show(struct IClass *cl, Object *obj, struct MUIP_Show *msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -238,6 +311,14 @@ STATIC ULONG Popupmenu_Show(struct IClass *cl, Object *obj, struct MUIP_Show *ms
 	return 1;
 }
 
+/**
+ * Implementation of MUIM_Hide
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -246,6 +327,14 @@ STATIC ULONG Popupmenu_Hide(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_HandleEvent
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct IntuiMessage *imsg;
@@ -322,6 +411,14 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 	return 0;
 }
 
+/**
+ * Implementation of MUIM_Popupmenu_Clear
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_Clear(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -336,6 +433,14 @@ STATIC ULONG Popupmenu_Clear(struct IClass *cl, Object *obj, Msg msg)
 	return 1;
 }
 
+/**
+ * Implementation of MUIM_Popupmenu_AddEntry
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Popupmenu_AddEntry(struct IClass *cl, Object *obj,struct MUIP_Popupmenu_AddEntry *msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
@@ -359,6 +464,9 @@ STATIC ULONG Popupmenu_AddEntry(struct IClass *cl, Object *obj,struct MUIP_Popup
 	return 0;
 }
 
+/**
+ * The Boopsi dispatcher for the popup menu class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, Popupmenu_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
@@ -377,7 +485,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, Popupmenu_Dispatcher,cl,obj,msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_Popupmenu;
+
+/*****************************************************************************/
 
 int create_popupmenu_class(void)
 {
@@ -390,6 +502,8 @@ int create_popupmenu_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_Popupmenu\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_popupmenu_class(void)
 {

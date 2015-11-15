@@ -15,13 +15,27 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+
+/**
+ * @file popupmenuclass.h
+ */
+
 #ifndef SM__POPUPMENUCLASS_H
 #define SM__POPUPMENUCLASS_H
 
 IMPORT struct MUI_CustomClass *CL_Popupmenu;
 #define PopupmenuObject (Object*)MyNewObject(CL_Popupmenu->mcc_Class, NULL
 
+/**
+ * Create the popup menu custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_popupmenu_class(void);
+
+/**
+ * Delete the popup menu custom class.
+ */
 void delete_popupmenu_class(void);
 
 #define MUIA_Popupmenu_Selected     (TAG_USER | 0x300C0001) /* Notify */

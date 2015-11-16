@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** utf8stringclass.h
-*/
+/**
+ * @file utf8stringclass.h
+ */
 
 #ifndef SM__UTF8STRING_HPP
 #define SM__UTF8STRING_HPP
@@ -35,7 +35,16 @@ IMPORT struct MUI_CustomClass *CL_UTF8String;
 #define nnsetutf8string(o,str) nnset(o,MUIA_UTF8String_Contents,str)
 #define getutf8string(o) (char*)xget(o,MUIA_UTF8String_Contents)
 
+/**
+ * Create the utf8 string custom class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_utf8string_class(void);
+
+/**
+ * Delete the utf8 string custom class.
+ */
 void delete_utf8string_class(void);
 
 #endif

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** utf8stringclass.c
-*/
+/**
+ * @file utf8stringclass.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -54,6 +54,14 @@ struct UTF8String_Data
 
 STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg);
 
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG UTF8String_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 /*	struct UTF8String_Data *data;*/
@@ -66,6 +74,14 @@ STATIC ULONG UTF8String_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG UTF8String_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
@@ -73,6 +89,14 @@ STATIC ULONG UTF8String_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
@@ -137,6 +161,14 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	return 1;
 }
 
+/**
+ * Implementation of OM_GET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG UTF8String_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
@@ -154,6 +186,14 @@ STATIC ULONG UTF8String_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**
+ * Implementation of MUIM_UTF8String_Insert
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_BetterString_Insert *msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
@@ -176,6 +216,9 @@ STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_Bette
 	return rc;
 }
 
+/**
+ * The Boopsi dispatcher for the utf8 string class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -189,7 +232,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
 	}
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_UTF8String;
+
+/*****************************************************************************/
 
 int create_utf8string_class(void)
 {
@@ -202,6 +249,8 @@ int create_utf8string_class(void)
 	SM_DEBUGF(5,("FAILED! Create CL_UTF8String\n"));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 void delete_utf8string_class(void)
 {

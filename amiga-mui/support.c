@@ -479,9 +479,8 @@ void tell_str(const char *str)
 	error_add_message(_(str));
 }
 
-/******************************************************************
- Tells an error message from a subtask
-*******************************************************************/
+/*****************************************************************************/
+
 void tell_from_subtask(const char *str)
 {
 	thread_call_parent_function_sync(NULL,tell_str,1,str);

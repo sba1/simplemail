@@ -220,7 +220,7 @@ dirs:
 # Rules for building
 $(TARGET): envs dirs $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
-	$(STRIP) --strip-all -o $@ $@.debug
+	$(STRIP) --strip-all -R .comment -o $@ $@.debug
 
 $(OBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@

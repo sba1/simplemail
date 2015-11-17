@@ -29,6 +29,7 @@
 
 /*#define MYDEBUG*/
 #include "amigadebug.h"
+#include "timesupport.h"
 
 struct Library *SysBase;
 struct Library *DOSBase;

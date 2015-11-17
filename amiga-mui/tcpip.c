@@ -409,4 +409,10 @@ int shutdown(int sockfd, int how)
 	return ISocket->shutdown(sockfd, how);
 }
 
+int close(int fd)
+{
+	myclosesocket(fd);
+	return 0;
+}
+
 #endif

@@ -7,11 +7,13 @@
 
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <workbench/startup.h>
 
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/intuition.h>
 #include <proto/locale.h>
 #include <proto/utility.h>
 
@@ -50,7 +52,7 @@ struct Library *LayersBase;
 struct ExecIFace *IExec;
 struct DOSIFace *IDOS;
 struct UtilityIFace *IUtility;
-struct Interface *IIntuition;
+struct IntuitionIFace *IIntuition;
 struct LocaleIFace *ILocale;
 #ifdef MEMGRIND
 struct MMUIFace *IMMU;
@@ -1445,4 +1447,15 @@ int strncasecmp(const char *str1, const char *str2, size_t size)
 	return IUtility->Strnicmp(str1,str2,size);
 }
 
+int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+	ULONG mics,secs;
+
+	IIntuition->CurrentTime(&secs,&mics);
+
+	tv->tv_micro = mics;
+	tv->tv_secs = secs;
+
+	return 0;
+}
 //int __random_seed = 1;

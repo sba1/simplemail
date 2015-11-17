@@ -1405,6 +1405,21 @@ int isdigit(int c)
 	return ('0' <= c && c <= '9');
 }
 
+int isxdigit(int c)
+{
+	return isdigit(c) || ((c>='a' && c <= 'f') && (c>='A' && c <= 'F'));
+}
+
+int isalnum(int c)
+{
+	return isalpha(c) || isdigit(c);
+}
+
+int isupper(int c)
+{
+	return c>='A' && c <= 'Z';
+}
+
 int tolower(int c)
 {
 	return ('A' <= c && c <= 'Z') ? (c + ('a' - 'A')) : c;

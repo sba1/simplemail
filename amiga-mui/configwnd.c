@@ -334,6 +334,7 @@ static void account_store(void)
 		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->imap->ssl = recv_security == RECV_SECURITY_TLS;
+		account_last_selected->imap->starttls = recv_security == RECV_SECURITY_STLS;
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
@@ -361,6 +362,7 @@ static void account_load(void)
 		if (account_is_imap(account))
 		{
 			if (account->imap->ssl) recv_security = RECV_SECURITY_TLS;
+			else if (account->imap->starttls) recv_security = RECV_SECURITY_STLS;
 			else recv_security = RECV_SECURITY_NONE;
 		} else
 		{

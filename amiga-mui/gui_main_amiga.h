@@ -45,4 +45,9 @@ void app_show(void);
  */
 void app_hide(void);
 
+/**
+ * Quits the application.
+ */
+void app_quit();
+
 #endif

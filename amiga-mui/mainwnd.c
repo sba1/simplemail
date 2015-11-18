@@ -245,7 +245,7 @@ void display_about(void)
 	sm_snprintf(ssl, sizeof(ssl), _("No ssl support."));
 #else
 	{
-		char *ssl_support;
+		const char *ssl_support;
 #if defined(USE_OPENSSL)
 		ssl_support = SSLeay_version(SSLEAY_VERSION);
 #elif defined(USE_AMISSL3)

@@ -1458,4 +1458,27 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 	return 0;
 }
+
+static struct tm tm;
+
+/* This function is only used by mem_dbg.c of openssl. Only few elements are
+ * used */
+struct tm *localtime(const time_t *t)
+{
+	ULONG mics, secs;
+	struct ClockData cd;
+
+	IIntuition->CurrentTime(&secs,&mics);
+	IUtility->Amiga2Date(secs, &cd);
+	tm.tm_hour = cd.hour;
+	tm.tm_mday = cd.mday;
+	tm.tm_min = cd.min;
+	tm.tm_mon = cd.month - 1;
+	tm.tm_sec = cd.sec;
+	tm.tm_wday = cd.wday;
+	tm.tm_yday = 0; /* Not needed */
+	tm.tm_year = cd.year - 1900;
+	return &tm;
+}
+
 //int __random_seed = 1;

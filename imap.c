@@ -940,6 +940,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 			args.conn = conn;
 			args.path = folder->imap_path;
+			args.set_status = callbacks->set_status;
+			args.set_status_static = callbacks->set_status_static;
 
 			if (num_of_todel_local_mails)
 			{

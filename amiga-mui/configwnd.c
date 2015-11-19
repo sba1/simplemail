@@ -366,8 +366,8 @@ static void account_load(void)
 			else recv_security = RECV_SECURITY_NONE;
 		} else
 		{
-			if (account->pop->stls) recv_security = RECV_SECURITY_TLS;
-			else if (account->pop->ssl) recv_security = RECV_SECURITY_STLS;
+			if (account->pop->ssl) recv_security = RECV_SECURITY_TLS;
+			else if (account->pop->stls) recv_security = RECV_SECURITY_STLS;
 			else recv_security = RECV_SECURITY_NONE;
 		}
 

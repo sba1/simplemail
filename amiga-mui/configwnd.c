@@ -1353,7 +1353,7 @@ static int init_account_group(void)
 	/* connect the up/down keys to the List */
 	set(account_account_name_string, MUIA_String_AttachedList, account_account_list);
 
-	/* Update the account_list if one of the displayd fields are changed */
+	/* Update the account_list if one of the displayed fields are changed */
 	/* This fields must be set without notification in the account_load() function! */
 	DoMethod(account_account_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_update);
 	DoMethod(account_email_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_update);

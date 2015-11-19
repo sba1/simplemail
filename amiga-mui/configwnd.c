@@ -1380,11 +1380,11 @@ static int init_account_group(void)
 	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));
 	set(account_reply_string,MUIA_ShortHelp,_("Address where the replies of the mails should\nbe sent (required only if different from the e-mail address)."));
 	set(account_def_signature_cycle,MUIA_ShortHelp,_("The default signature for this account"));
-	set(account_recv_server_string,MUIA_ShortHelp,_("The name of the so called POP3 server from\nwhich you download your e-Mails (required; ask your\nprovider if unknown)."));
+	set(account_recv_server_string,MUIA_ShortHelp,_("The name of the so called POP3 or IMAP4 server from\nwhich you download your e-Mails (required; ask your\nprovider if unknown)."));
 	set(account_recv_port_string,MUIA_ShortHelp,_("The port number. Usually 110"));
 	set(account_recv_fingerprint_string,MUIA_ShortHelp,_("The server's fingerprint (SHA1 or SHA256).\nThis is used to verify the servers identity,\nif the certificate could not be trusted."));
 	set(account_recv_login_string,MUIA_ShortHelp,_("The login/UserID which you got from your ISP."));
-	set(account_recv_password_string,MUIA_ShortHelp,_("Your very own password to access the mails\nlocated on the POP3 server."));
+	set(account_recv_password_string,MUIA_ShortHelp,_("Your very own password to access the mails\nlocated on the POP3 or IMAP4 server."));
 	set(account_recv_active_check,MUIA_ShortHelp,_("Deactivate this if you don't want SimpleMail to\ndownload the e-Mails when pressing on 'Fetch'."));
 	set(account_recv_delete_check,MUIA_ShortHelp,_("After successful downloading the mails should be deleted\non the POP3 server."));
 	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleting e-mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
@@ -1542,7 +1542,7 @@ static int init_mails_readmisc_group(void)
 
   set(mails_readmisc_close_after_last, MUIA_ShortHelp, _("If this option is enabled, SimpleMail will close the read window "
                                                          "after all mails in the folder have been processed (e.g. deleted) by the user "
-                                                         "completly in the current direction. Otherwise SimpleMail tries to browse into "
+                                                         "completely in the current direction. Otherwise SimpleMail tries to browse into "
                                                          "the other direction and closes the window only if no other mail exists within "
                                                          "the folder."));
 

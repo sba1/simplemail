@@ -1372,6 +1372,7 @@ static int init_account_group(void)
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_remove);
 
 	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)account_recv_avoid_check, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)account_recv_apop_cycle, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	set(account_recv_secure_cycle, MUIA_Weight, 0);
 	set(account_send_secure_cycle, MUIA_Weight, 0);

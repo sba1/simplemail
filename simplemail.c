@@ -2339,7 +2339,7 @@ void callback_remove_folder(void)
 
 /*****************************************************************************/
 
-int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii, char *sha256_ascii)
+int callback_failed_ssl_verification(const char *server_name, const char *reason, const char *cert_summary, const char *sha1_ascii, const char *sha256_ascii)
 {
 	int choice;
 	int sha256_supported = sha256_ascii[0];

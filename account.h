@@ -135,7 +135,7 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f);
  * @param fingerprint
  * @return
  */
-int account_is_server_trustworthy(char *server_name, char *fingerprint);
+int account_is_server_trustworthy(const char *server_name, const char *fingerprint);
 
 /**
  * Trust the given server.
@@ -143,7 +143,7 @@ int account_is_server_trustworthy(char *server_name, char *fingerprint);
  * @param server_name
  * @param fingerprint
  */
-void account_trust_server(char *server_name, char *fingerprint);
+void account_trust_server(const char *server_name, const char *fingerprint);
 
 /**
  * Returns whether the given account is an imap one.

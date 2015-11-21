@@ -40,10 +40,25 @@ typedef struct x509_st X509;
 
 #endif
 
+/**
+ * Type for a callback that is invoked  when the ssl verification failed. The
+ * callback must be callable as long as the connection is alive.
+ *
+ * @return 1 if the connection should still take place, 0 if the connection
+ *  should be closed.
+ */
+typedef int (*tcp_ssl_verfiy_failed_t)(const char *server_name, const char *reason, const char *cert_summary, const char *sha1_ascii, const char *sha256_ascii);
+
 struct connect_options
 {
 	int use_ssl;
 	char *fingerprint;
+
+	/**
+	 * The ssl verification failed callback. This must be callable as long as
+	 * the connection is kept alive
+	 */
+	tcp_ssl_verfiy_failed_t ssl_verify_failed;
 };
 
 struct connection
@@ -51,6 +66,9 @@ struct connection
 	long socket;
 #ifndef NO_SSL
 	SSL *ssl;
+
+	/** The ssl verification failed callback. */
+	tcp_ssl_verfiy_failed_t ssl_verify_failed;
 #endif
 	/* for tcp_write() */
 	unsigned char write_buf[CONN_BUF_WRITE_SIZE];

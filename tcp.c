@@ -134,6 +134,8 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 
 	memset(conn,0,sizeof(struct connection));
 
+	conn->ssl_verify_failed = options->ssl_verify_failed;
+
 	if ((hostent = gethostbyname(server)))
 	{
 		sd = socket(PF_INET, SOCK_STREAM, 0);
@@ -360,9 +362,15 @@ int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprin
 
 			verify_results = SSL_get_verify_result(conn->ssl);
 
-			/* TODO: Use callbacks for proper decoupling */
-			rc = thread_call_function_sync(thread_get_main(), callback_failed_ssl_verification, 5,
-					server_name, X509_verify_cert_error_string(verify_results), cert_summary, sha1_ascii, sha256_ascii);
+			if (conn->ssl_verify_failed)
+			{
+				rc = conn->ssl_verify_failed(server_name, X509_verify_cert_error_string(verify_results), cert_summary, sha1_ascii, sha256_ascii);
+			} else
+			{
+				/* FIXME: Remove this */
+				rc = thread_call_function_sync(thread_get_main(), callback_failed_ssl_verification, 5,
+						server_name, X509_verify_cert_error_string(verify_results), cert_summary, sha1_ascii, sha256_ascii);
+			}
 
 			/* Add some checks here */
 			X509_free(server_cert);

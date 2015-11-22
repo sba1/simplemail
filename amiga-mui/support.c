@@ -492,6 +492,7 @@ void tell_from_subtask(const char *str)
 #ifndef NO_SSL
 
 #ifdef USE_OPENSSL
+struct AmiSSLIFace {int dummy; };
 #include <openssl/ssl.h>
 #else
 
@@ -562,6 +563,10 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				TAG_DONE))
 		{
 #endif
+#endif
+
+#ifdef USE_OPENSSL
+			const
 #endif
 			unsigned char *p = (unsigned char*)buf;
 			PKCS7 *pkcs7;

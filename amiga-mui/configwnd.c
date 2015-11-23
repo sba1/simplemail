@@ -547,7 +547,7 @@ static int config_use(void)
 							set(config_wnd,MUIA_Window_ActiveObject,account_email_string);
 							sm_request(NULL,_("SimpleMail currently doesn't support the same email address for\n"
 															  "multiple accounts. Please ensure that every email address is unique.\n"
-															  "However, you can set the reply address field to your prefered addresse."),_("Ok"));
+															  "However, you can set the reply address field to your preferred address."),_("Ok"));
 							return 0;
 						}
 						free(addr2);

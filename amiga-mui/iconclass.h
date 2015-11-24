@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** iconclass.h
-*/
+/**
+ * @file iconclass.h
+ */
 
 #ifndef SM__ICONCLASS_H
 #define SM__ICONCLASS_H
 
-/* the objects of the listview */
+/* the objects of the icon class */
 IMPORT struct MUI_CustomClass *CL_Icon;
 #define IconObject (Object*)MyNewObject(CL_Icon->mcc_Class, NULL
 
@@ -34,7 +34,16 @@ IMPORT struct MUI_CustomClass *CL_Icon;
 #define MUIA_Icon_MimeSubType (TAG_USER | 0x30100005) /* (STRPTR) IS. */
 #define MUIA_Icon_MimeType    (TAG_USER | 0x30100006) /* (STRPTR) IS. */
 
+/**
+ * Create the icon class.
+ *
+ * @return 0 on failure, 1 on success
+ */
 int create_icon_class(void);
+
+/**
+ * Delete the icon class.
+ */
 void delete_icon_class(void);
 
 #endif

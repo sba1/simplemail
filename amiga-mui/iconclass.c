@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** iconclass.c
-*/
+/**
+ * @file iconclass.c
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -70,9 +70,14 @@ struct Icon_Data
 };
 
 
-/***********************************************************
- OM_NEW
-************************************************************/
+/**
+ * Implementation of OM_NEW
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
@@ -84,9 +89,14 @@ STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
-/***********************************************************
- OM_DISPOSE
-************************************************************/
+/**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -98,9 +108,14 @@ STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	DoSuperMethodA(cl,obj,msg);
 }
 
-/***********************************************************
- OM_SET
-************************************************************/
+/**
+ * Implementation of OM_SET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -152,9 +167,14 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	return 1;
 }
 
-/***********************************************************
- OM_GET
-************************************************************/
+/**
+ * Implementation of OM_GET
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -171,9 +191,14 @@ STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-/***********************************************************
- MUIM_Setup
-************************************************************/
+/**
+ * Implementation of MUIM_Setup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -254,9 +279,14 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 	return 1;
 }
 
-/***********************************************************
- MUIM_Cleanup
-************************************************************/
+/**
+ * Implementation of MUIM_Cleanup
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -270,9 +300,14 @@ STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
-/***********************************************************
- MUIM_AskMinMax
-************************************************************/
+/**
+ * Implementation of MUIM_AskMinMax
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
 {
 	int w,h;
@@ -311,9 +346,14 @@ STATIC ULONG Icon_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax
   return 0;
 }
 
-/***********************************************************
- MUIM_Draw
-************************************************************/
+/**
+ * Implementation of MUIM_Draw
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -341,9 +381,14 @@ STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 	return 1;
 }
 
-/***********************************************************
- MUIM_HandleEvent
-************************************************************/
+/**
+ * Implementation of MUIM_HandleEvent
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -439,13 +484,18 @@ STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *o
 }
 #endif
 
-/***********************************************************
- MUIM_DeleteDragImage
-
- This method is issued, to delete the image data when the
- dragged object is released (done by Area class in this
- case). We use it to determine a possible workbench drawer.
-************************************************************/
+/**
+ * Implementation of MUIM_DeleteDragImage
+ *
+ * This method is issued, to delete the image data when the
+ * dragged object is released (done by Area class in this
+ * case). We use it to determine a possible workbench drawer.
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
 STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -600,9 +650,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
 	}
 }
 
-/**********************************************************************/
+/*****************************************************************************/
 
 struct MUI_CustomClass *CL_Icon;
+
+/*****************************************************************************/
 
 int create_icon_class(void)
 {

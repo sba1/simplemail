@@ -109,9 +109,9 @@ STATIC ASM LONG folder_strobj(REG(a0, struct Hook *h), REG(a2, Object *list), RE
 
 #define MAKE_NULL(x) if ((x) && !*(x)) (x) = NULL;
 
-/**************************************************************************
- Begin the search process
-**************************************************************************/
+/**
+ * Begin the search process
+ */
 static void searchwnd_start(void)
 {
 	struct search_options so;
@@ -134,9 +134,9 @@ static void searchwnd_start(void)
 	set(App, MUIA_Application_Sleep, FALSE);
 }
 
-/**************************************************************************
- Read the selected mail
-**************************************************************************/
+/**
+ * Read the selected mail
+ */
 static void searchwnd_read(void)
 {
 	struct mail_info *mail;
@@ -144,9 +144,9 @@ static void searchwnd_read(void)
 	if (mail) callback_read_mail(NULL,mail,-1);
 }
 
-/**************************************************************************
- Init the search window
-**************************************************************************/
+/**
+ * Init the search window
+ */
 static void init_search(void)
 {
 	static struct Hook folder_objstr_hook, folder_strobj_hook;

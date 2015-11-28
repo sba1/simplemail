@@ -227,7 +227,13 @@ static void status_set_status_really(const char *str)
  */
 void status_set_status(const char *str)
 {
-	thread_call_function_sync(thread_get_main(), status_set_status_really, 1, str);
+	if (thread_get() != thread_get_main())
+	{
+		thread_call_function_sync(thread_get_main(), status_set_status_really, 1, str);
+	} else
+	{
+		status_set_status_really(str);
+	}
 }
 
 /******************************************************************

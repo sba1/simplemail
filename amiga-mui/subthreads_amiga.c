@@ -872,6 +872,11 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 	va_start(argptr,argcount);
 
+	if (thread == thread_get())
+	{
+		SM_DEBUGF(0,("Calling a function on the same thread context!\n"));
+	}
+
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
 		struct MsgPort *subthread_port = tmsg->msg.mn_ReplyPort;
@@ -914,6 +919,11 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 	struct ThreadMessage *tmsg;
 
 	va_start(argptr,argcount);
+
+	if (thread == thread_get())
+	{
+		SM_DEBUGF(0,("Calling a function on the same thread context!\n"));
+	}
 
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{

@@ -305,7 +305,7 @@ static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
 
 	callbacks->set_status_static(_("Checking for mail duplicates..."));
 
-	if (!tcp_write(conn,"UIDL\r\n",6) == 6)
+	if (tcp_write(conn,"UIDL\r\n",6) != 6)
 		SM_RETURN(0,"%ld");
 
 	if (!(answer = pop3_receive_answer(conn,0)))

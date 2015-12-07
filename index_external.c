@@ -376,7 +376,7 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 static void bnode_clear_elements(struct index_external *idx, bnode *n, int start)
 {
 	struct bnode_element *e = bnode_get_ith_element_of_node(idx, n, start);
-	memset(e, (idx->max_elements_per_node - start)*sizeof(struct bnode_element), 0);
+	memset(e, 0, (idx->max_elements_per_node - start)*sizeof(struct bnode_element));
 }
 
 #ifdef DEBUG_FUNCTIONS

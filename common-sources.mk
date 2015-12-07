@@ -29,6 +29,7 @@ NONARCHSRCS=\
 	lists.c \
 	mail.c \
 	mail_support.c \
+	mailinfo_extractor.c \
 	mbox.c \
 	md5.c \
 	parse.c \

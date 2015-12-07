@@ -235,12 +235,18 @@ int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
 
 	if (!lazy_thread)
 	{
-		lazy_thread = thread_add("SimpleMail - Lazy",lazy_entry,NULL);
-		list_init(&lazy_mail_list);
-		lazy_semaphore = thread_create_semaphore();
-	}
+		if (!(lazy_semaphore = thread_create_semaphore()))
+			return 0;
 
-	if (!lazy_thread) return 0;
+		if (!(lazy_thread = thread_add("SimpleMail - Lazy",lazy_entry,NULL)))
+		{
+			thread_dispose_semaphore(lazy_semaphore);
+			lazy_semaphore = NULL;
+			return 0;
+		}
+
+		list_init(&lazy_mail_list);
+	}
 
 	if (!(folder_path = mystrdup(f->path)))
 		return 0;

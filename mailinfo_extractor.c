@@ -267,8 +267,10 @@ int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
 
 void cleanup_mailinfo_extractor(void)
 {
+	if (!lazy_semaphore)
+		return;
+
 	/* If there are some pending requests, clean them now */
 	lazy_clean_list();
-
-	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
+	thread_dispose_semaphore(lazy_semaphore);
 }

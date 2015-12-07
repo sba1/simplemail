@@ -2471,7 +2471,7 @@ void mail_complete_free(struct mail_complete *mail)
 void mail_reference(struct mail_info *mail)
 {
 	mail->reference_count++;
-	SM_DEBUGF(20,("Increased refrence count of mail %p to %ld\n",mail,mail->reference_count));
+	SM_DEBUGF(20,("Increased reference count of mail %p to %ld\n",mail,mail->reference_count));
 }
 
 /*****************************************************************************/
@@ -2484,7 +2484,7 @@ void mail_dereference(struct mail_info *mail)
 		return;
 	}
 	mail->reference_count--;
-	SM_DEBUGF(20,("Decreased refrence count of mail %p to %ld\n",mail,mail->reference_count));
+	SM_DEBUGF(20,("Decreased reference count of mail %p to %ld\n",mail,mail->reference_count));
 	if (mail->to_be_freed) mail_info_free(mail);
 }
 

@@ -2481,6 +2481,10 @@ void simplemail_deinit(void)
 	gui_deinit();
 	if (user.config.delete_deleted)
 		folder_delete_deleted();
+
+	cleanup_threads();
+	cleanup_mailinfo_extractor();
+
 	ssl_cleanup();
 	spam_cleanup();
 
@@ -2490,8 +2494,6 @@ void simplemail_deinit(void)
 	codesets_cleanup();
 
 	cleanup_addressbook();
-	cleanup_threads();
-	cleanup_mailinfo_extractor();
 
 	progmon_deinit();
 

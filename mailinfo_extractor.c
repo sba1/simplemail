@@ -238,7 +238,7 @@ int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
 		if (!(lazy_semaphore = thread_create_semaphore()))
 			return 0;
 
-		if (!(lazy_thread = thread_add("SimpleMail - Lazy",lazy_entry,NULL)))
+		if (!(lazy_thread = thread_add("SimpleMail - Mail Extractor",lazy_entry,NULL)))
 		{
 			thread_dispose_semaphore(lazy_semaphore);
 			lazy_semaphore = NULL;

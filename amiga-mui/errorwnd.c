@@ -151,7 +151,7 @@ static void init_error(void)
 		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)delete_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_messages);
 		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(all_errors_list, MUIM_Notify, MUIA_NList_Active, (ULONG)all_errors_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
+		DoMethod(all_errors_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)all_errors_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
 	}
 }
 

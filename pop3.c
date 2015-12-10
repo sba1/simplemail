@@ -219,6 +219,7 @@ static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *co
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED && !timestamp)
 			tell_from_subtask(N_("Error while identifying the user"));
+		callbacks->set_status_static(_("Failed to identify the user"));
 		SM_DEBUGF(15,("Sending the USER command failed\n"));
 		return 0;
 	}
@@ -230,6 +231,7 @@ static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *co
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
 			tell_from_subtask(N_("Error while identifying the user"));
+		callbacks->set_status_static(_("Failed to identify the user"));
 		return 0;
 	}
 

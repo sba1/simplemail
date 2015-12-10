@@ -61,7 +61,7 @@ static Object *close_button;
 static void error_select(void)
 {
 	int num = xget(all_errors_list, MUIA_NList_Active);
-	struct error_node *node = (struct error_node *)list_find(&error_list,num-1);
+	struct error_node *node = (struct error_node *)list_find(&error_list,num);
 
 	set(text_list, MUIA_NList_Quiet, TRUE);
 	DoMethod(text_list, MUIM_NList_Clear);

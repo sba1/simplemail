@@ -89,7 +89,8 @@ struct smtp_server
 
 	int ip_as_domain;
 	int pop3_first;
-	int secure;
+	int ssl; /* different port */
+	int secure; /* starttls */
 
 	int auth;
 	char *auth_login;

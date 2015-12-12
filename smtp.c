@@ -947,6 +947,7 @@ int smtp_send_really(struct smtp_send_options *options)
 
 			/* Make a possible fingerprint available */
 			connect_opts.fingerprint = account->smtp->fingerprint;
+			connect_opts.use_ssl = account->smtp->ssl && !account->smtp->secure;
 			conn.fingerprint = account->smtp->fingerprint;
 
 			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,&connect_opts,&error_code)))

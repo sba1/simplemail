@@ -233,6 +233,10 @@ static Object *config_last_visisble_group;
 #define RECV_SECURITY_STLS	1
 #define RECV_SECURITY_TLS	2
 
+#define SEND_SECURITY_NONE		0
+#define SEND_SECURITY_STARTTLS	1
+#define SEND_SECURITY_TLS		2
+
 /*****************************************************************************/
 
 void config_refresh_folders(void)
@@ -338,7 +342,8 @@ static void account_store(void)
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
-		account_last_selected->smtp->secure = xget(account_send_secure_cycle, MUIA_Cycle_Active) == 1;
+		account_last_selected->smtp->secure = xget(account_send_secure_cycle, MUIA_Cycle_Active) == SEND_SECURITY_STARTTLS;
+		account_last_selected->smtp->ssl = xget(account_send_secure_cycle, MUIA_Cycle_Active) == SEND_SECURITY_TLS;
 		account_last_selected->smtp->name = mystrdup((char*)xget(account_send_server_string, MUIA_String_Contents));
 		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
 		account_last_selected->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
@@ -356,6 +361,7 @@ static void account_load(void)
 	{
 		char *recv_fingerprint;
 		int recv_security;
+		int send_security;
 
 		recv_fingerprint = account_is_imap(account)?account->imap->fingerprint:account->pop->fingerprint;
 
@@ -402,7 +408,12 @@ static void account_load(void)
 		set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
 		setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
 		setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
-		setcycle(account_send_secure_cycle, account->smtp->secure?1:0);
+
+		if (account->smtp->secure) send_security = SEND_SECURITY_STARTTLS;
+		else if (account->smtp->ssl) send_security = SEND_SECURITY_TLS;
+		else send_security = SEND_SECURITY_NONE;
+
+		nnset(account_send_secure_cycle, MUIA_Cycle_Active, send_security);
 	}
 }
 
@@ -1131,7 +1142,7 @@ static int init_account_group(void)
 	static char *recv_entries[3];
 	static char *recv_secure_labels[4];
 	static char *apop_labels[4];
-	static char *send_secure_labels[3];
+	static char *send_secure_labels[4];
 	static struct Hook account_display_hook;
 
 	SM_ENTER;
@@ -1151,6 +1162,7 @@ static int init_account_group(void)
 
 	send_secure_labels[0] = _("None");
 	send_secure_labels[1] = _("STARTTLS");
+	send_secure_labels[2] = _("TLS");
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,

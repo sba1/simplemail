@@ -421,6 +421,8 @@ int load_config(void)
 										account->smtp->pop3_first = CONFIG_BOOL_VAL(result);
 									if ((result = get_key_value(account_buf,"SMTP.Secure")))
 										account->smtp->secure = CONFIG_BOOL_VAL(result);
+									if ((result = get_key_value(account_buf,"SMTP.SSL")))
+										account->smtp->ssl = CONFIG_BOOL_VAL(result);
 
 									if ((result = get_key_value(account_buf,"RECV.Type")))
 										account->recv_type = atoi(result);
@@ -681,6 +683,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.SMTP.IPasDomain=%s\n",i,account->smtp->ip_as_domain?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.SMTP.POP3first=%s\n",i,account->smtp->pop3_first?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.SMTP.Secure=%s\n",i,account->smtp->secure?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.SMTP.SSL=%s\n",i,account->smtp->ssl?"Y":"N");
 
 				fprintf(fh,"ACCOUNT%d.RECV.Type=%d\n",i,account->recv_type);
 				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));

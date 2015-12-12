@@ -1762,7 +1762,7 @@ void callback_mail_has_been_sent(char *filename)
 		folder_set_mail_status(out,m,MAIL_STATUS_SENT);
 		callback_move_mail(m,out,sent);
 
-		/* This has to be optmized! */
+		/* This has to be optimized! */
 		if ((f = folder_mail_can_be_filtered(folder_sent(), m, 2)))
 		{
 			if (f->use_dest_folder && f->dest_folder)

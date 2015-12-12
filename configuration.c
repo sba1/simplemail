@@ -464,6 +464,8 @@ int load_config(void)
 										account->imap->active = atoi(result);
 									if ((result = get_key_value(account_buf,"IMAP.SSL")))
 										account->imap->ssl = CONFIG_BOOL_VAL(result);
+									if ((result = get_key_value(account_buf,"IMAP.STARTTLS")))
+										account->imap->starttls = CONFIG_BOOL_VAL(result);
 									if ((result = get_key_value(account_buf,"IMAP.Ask")))
 										account->imap->ask = CONFIG_BOOL_VAL(result);
 								}
@@ -701,6 +703,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.IMAP.Password=%s\n",i,MAKESTR(account->imap->passwd));
 				fprintf(fh,"ACCOUNT%d.IMAP.Active=%d\n",i,account->imap->active);
 				fprintf(fh,"ACCOUNT%d.IMAP.SSL=%s\n",i,account->imap->ssl?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.IMAP.STARTTLS=%s\n",i,account->imap->starttls?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.IMAP.Ask=%s\n",i,account->imap->ask?"Y":"N");
 
 				account = (struct account*)node_next(&account->node);

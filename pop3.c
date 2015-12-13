@@ -505,7 +505,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 	}
 
 	/* Freeze the list which displays the e-Mails */
-	callbacks->mail_list_freeze();
+	if (callbacks->mail_list_freeze) callbacks->mail_list_freeze();
 
 	/* Encounter the sizes of the mails, if we find a mail *
 	 * with a bigger size notify the transfer window       */
@@ -534,7 +534,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 	}
 
 	/* Thaw the list which displays the e-Mails */
-	callbacks->mail_list_thaw();
+	if (callbacks->mail_list_thaw) callbacks->mail_list_thaw();
 
 	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 	{
@@ -1089,7 +1089,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 		}
 	}
 	/* Clear the preselection entries */
-	callbacks->mail_list_clear();
+	if (callbacks->mail_list_clear) callbacks->mail_list_clear();
 out:
 	*nummails_ptr = nummails;
 	return rc;

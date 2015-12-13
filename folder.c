@@ -3007,7 +3007,7 @@ int folder_save_index(struct folder *f)
 				mail_info_free(mail_info_array[i]);
 
 			f->num_pending_mails = 0;
-			fseek(fh,SEEK_SET,0);
+			fseek(fh,0,SEEK_SET);
 			folder_save_index_header(f,fh);
 		}
 		fclose(fh);

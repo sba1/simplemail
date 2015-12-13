@@ -431,6 +431,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					 int receive_size, int has_remote_filter, int quiet)
 {
 	char *answer;
+	char *next_answer;
 	struct dl_mail *mail_array;
 	int i,amm,size,mails_add = 0,cont = 0;
 	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
@@ -446,8 +447,12 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 	}
 
 	if ((*answer++) != ' ') return 0;
-	if ((amm = strtol(answer,&answer,10))<=0) return 0;
-	if ((size = strtol(answer,NULL,10))<=0) return 0;
+
+	if ((amm = strtol(answer,&next_answer,10))<0) return 0;
+	if (answer == next_answer) return 0;
+
+	if ((size = strtol(next_answer,&answer,10))<0) return 0;
+	if (next_answer == answer) return 0;
 
 	if (!(mail_array = malloc((amm+1)*sizeof(struct dl_mail)))) return 0;
 	stats->num_dl_mails = amm;

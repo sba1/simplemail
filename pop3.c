@@ -492,7 +492,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 		return 1;
 	}
 
-	/* Was the command succesful? */
+	/* Was the command successful? */
 	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)

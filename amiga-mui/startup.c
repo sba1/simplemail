@@ -312,14 +312,19 @@ int errno;
 
 FILE *fopen(const char *filename, const char *mode)
 {
+	/* Note that we implement only what we really need for SimpleMail */
 	struct __iobuf *file = NULL;
 	int _file;
+	int append = 0;
 
 	LONG amiga_mode;
-	if (*mode == 'w') amiga_mode = MODE_NEWFILE;
-	else if (*mode == 'r') amiga_mode = MODE_OLDFILE;
-	else if (*mode == 'a') amiga_mode = MODE_READWRITE;
-	else return NULL;
+	switch (mode[0])
+	{
+	case	'w': amiga_mode = MODE_NEWFILE; break;
+	case	'r': amiga_mode = mode[1] == '+'?MODE_READWRITE:MODE_OLDFILE; break;
+	case	'a': amiga_mode = MODE_READWRITE; append = 1; break;
+	default: return NULL;
+	}
 
 	ObtainSemaphore(&files_sem);
 	/* Look if we can still open file left */
@@ -333,7 +338,7 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!(files[_file] = Open((STRPTR)filename,amiga_mode))) goto fail;
 	file->_file = _file;
 
-	if (amiga_mode == MODE_READWRITE)
+	if (append)
 	{
 		Seek(files[_file],0,OFFSET_END);
 		file->_rcnt = Seek(files[_file],0,OFFSET_CURRENT);

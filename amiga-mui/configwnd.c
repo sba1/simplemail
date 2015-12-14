@@ -1179,9 +1179,9 @@ static int init_account_group(void)
 			Child, VGroup,
 				MUIA_Weight,0,
 				Child, HVSpace,
-				Child, account_add_button = MakeButton(_("_Add Account")),
+				Child, account_add_button = MakeButton(_("_Add")),
 				Child, HVSpace,
-				Child, account_remove_button = MakeButton(_("_Remove Account")),
+				Child, account_remove_button = MakeButton(_("_Remove")),
 				Child, HVSpace,
 				End,
 			End,
@@ -1413,7 +1413,7 @@ static int init_account_group(void)
 	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
 	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the initial greetings.\nThis avoids some error headers on some providers."));
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));
-	set(account_remove_button,MUIA_ShortHelp,_("Remove the current account."));
+	set(account_remove_button,MUIA_ShortHelp,_("Remove the currently selected account."));
 
 	SM_RETURN(1,"%ld");
 }

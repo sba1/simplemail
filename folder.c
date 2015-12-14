@@ -567,7 +567,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 
 	if (folder->special == FOLDER_SPECIAL_GROUP) SM_RETURN(0,"%ld");
 
-	if ((fh = folder_open_indexfile(folder,"ab")))
+	if ((fh = folder_open_indexfile(folder,"rb+")))
 	{
 		/* Move at the position of the field */
 
@@ -2913,7 +2913,7 @@ int folder_save_index(struct folder *f)
 
 	append = !!f->num_pending_mails;
 
-	if ((fh = folder_open_indexfile(f,append?"ab":"wb")))
+	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))
 	{
 		int i;
 		struct mail_info **mail_info_array;
@@ -2921,6 +2921,7 @@ int folder_save_index(struct folder *f)
 
 		if (append)
 		{
+			fseek(fh,0,SEEK_END);
 			num_mails = f->num_pending_mails;
 			mail_info_array = f->pending_mail_info_array;
 		} else

@@ -767,7 +767,28 @@ int mails_upload_single(struct mail_info *mi)
 
 /*****************************************************************************/
 
+static thread_t test_account_thread;
+
+static int mails_test_account_entry(void *udata)
+{
+	struct account *ac = account_duplicate((struct account*)udata);
+	if (!ac) return 0;
+	if (!thread_parent_task_can_contiue())
+		goto bailout;
+
+bailout:
+	if (ac) account_free(ac);
+
+	/* It is okay if the thread is shortly yielded after setting this to NULL */
+	test_account_thread = NULL;
+	return 0; /* Return value not really relevant */
+}
+
 int mails_test_account(struct account *ac)
 {
-	return 0;
+	if (test_account_thread) return 0;
+
+	if (!(test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, ac)))
+		return 0;
+	return 1;
 }

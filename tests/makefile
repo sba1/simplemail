@@ -43,6 +43,7 @@ TESTEXES=\
 	mail_unittest \
 	pop3_unittest \
 	support_indep_unittest \
+	test_account_unittest \
 	text2html_unittest \
 	tcp_unittest
 

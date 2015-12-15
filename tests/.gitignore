@@ -14,6 +14,7 @@ libsimplemail.a
 memleaks-*.xml
 of-human-bondage.txt
 pop3-profile
+test-account-profile
 test-objs
 test-profile
 written-with-attachment.eml

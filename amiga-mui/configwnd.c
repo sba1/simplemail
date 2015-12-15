@@ -148,6 +148,7 @@ static Object *account_send_pop3_check;
 static Object *account_send_ip_check;
 static Object *account_send_secure_cycle;
 static Object *account_add_button;
+static Object *account_test_button;
 static Object *account_remove_button;
 
 static Object *signature_use_checkbox;
@@ -1014,6 +1015,21 @@ static void account_add(void)
 }
 
 /**
+ * Test the settings of the currently selected account.
+ */
+static void account_test(void)
+{
+	struct account *ac;
+
+	account_store();
+	DoMethod(account_account_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&ac);
+
+	if (!ac) return;
+
+	callback_test_account(ac);
+}
+
+/**
  * Remove the currently selected account.
  */
 static void account_remove(void)
@@ -1180,6 +1196,8 @@ static int init_account_group(void)
 				MUIA_Weight,0,
 				Child, HVSpace,
 				Child, account_add_button = MakeButton(_("_Add")),
+				Child, HVSpace,
+				Child, account_test_button = MakeButton(_("_Test")),
 				Child, HVSpace,
 				Child, account_remove_button = MakeButton(_("_Remove")),
 				Child, HVSpace,
@@ -1381,6 +1399,7 @@ static int init_account_group(void)
 	DoMethod(account_recv_ask_checkbox, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)account_recv_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_add);
+	DoMethod(account_test_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_test);
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_remove);
 
 	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)account_recv_avoid_check, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
@@ -1413,6 +1432,7 @@ static int init_account_group(void)
 	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
 	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the initial greetings.\nThis avoids some error headers on some providers."));
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));
+	set(account_test_button,MUIA_ShortHelp,_("Test the settings of the currently selected account."));
 	set(account_remove_button,MUIA_ShortHelp,_("Remove the currently selected account."));
 
 	SM_RETURN(1,"%ld");

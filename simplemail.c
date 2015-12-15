@@ -1371,6 +1371,13 @@ void callback_config(void)
 
 /*****************************************************************************/
 
+void callback_test_account(struct account *ac)
+{
+	mails_test_account(ac);
+}
+
+/*****************************************************************************/
+
 void callback_folder_active(void)
 {
 	struct folder *folder = main_get_folder();

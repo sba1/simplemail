@@ -765,4 +765,9 @@ int mails_upload_single(struct mail_info *mi)
 	return 1;
 }
 
+/*****************************************************************************/
 
+int mails_test_account(struct account *ac)
+{
+	return 0;
+}

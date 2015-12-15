@@ -23,6 +23,7 @@
 #ifndef SM__SIMPLEMAIL_H
 #define SM__SIMPLEMAIL_H
 
+struct account;
 struct filter;
 struct folder;
 struct mail_info;
@@ -287,6 +288,13 @@ void callback_addressbook(void);
  * Open the view for config editing.
  */
 void callback_config(void);
+
+/**
+ * Test the given account.
+ *
+ * @param ac account to be tested
+ */
+void callback_test_account(struct account *ac);
 
 /**
  * Update the for a newly actived folder.

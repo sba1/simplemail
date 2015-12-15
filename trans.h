@@ -58,4 +58,12 @@ int mails_upload(void);
  */
 int mails_upload_single(struct mail_info *mi);
 
+/**
+ * Tests whether logging in into the given account works.
+ *
+ * @param ac account to test.
+ * @return 1 if all settings are fine, otherwise 0.
+ */
+int mails_test_account(struct account *ac);
+
 #endif

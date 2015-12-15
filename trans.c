@@ -776,6 +776,27 @@ static int mails_test_account_entry(void *udata)
 	if (!thread_parent_task_can_contiue())
 		goto bailout;
 
+	/* Test logging into the receive server */
+	if (account_is_imap(ac))
+	{
+		if (ac->imap && ac->imap->name)
+		{
+			/* TODO: Write me */
+		}
+	} else if (ac->pop && ac->pop->name)
+	{
+		struct pop3_dl_callbacks pop3_callbacks = {0};
+		pop3_callbacks.set_status_static = trans_set_status_static;
+		pop3_callbacks.set_status = trans_set_status;
+		pop3_login_only(ac->pop, &pop3_callbacks);
+	}
+
+	/* Test logging into the send server if any */
+	if (ac->smtp && ac->smtp->name)
+	{
+	}
+
+	/* Test logging into the send server */
 bailout:
 	if (ac) account_free(ac);
 

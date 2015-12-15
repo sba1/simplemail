@@ -42,6 +42,7 @@ TESTEXES=\
 	imap2_unittest \
 	mail_unittest \
 	pop3_unittest \
+	subthreads_network_unittest \
 	support_indep_unittest \
 	text2html_unittest \
 	tcp_unittest

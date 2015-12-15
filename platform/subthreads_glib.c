@@ -250,6 +250,28 @@ bailout:
 
 /*****************************************************************************/
 
+static int thread_network_thread(void *args)
+{
+	int rc = 0;
+
+	if (!thread_parent_task_can_contiue())
+		goto bailout;
+	rc = 1;
+
+	thread_wait(NULL, NULL, NULL, 0);
+bailout:
+	return rc;
+}
+
+/*****************************************************************************/
+
+thread_t thread_add_network(char *thread_name)
+{
+	return thread_add(thread_name, thread_network_thread, NULL);
+}
+
+/*****************************************************************************/
+
 int thread_start(int (*entry)(void*), void *udata)
 {
 	return !!thread_add("Default Thread", entry, udata);

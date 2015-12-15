@@ -82,6 +82,15 @@ int thread_start(int (*entry)(void*), void *udata);
  */
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata);
 
+/**
+ * Add a network thread to the system. This is basically a normal thread that
+ * reacts on function calls but also  has special treatment for non-blocking
+ * sockets.
+ *
+ * @param thread_name
+ * @return the network thread.
+ */
+thread_t thread_add_network(char *thread_name);
 
 /**
  * @brief Waits until a signal has been sent and calls timer_callback

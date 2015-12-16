@@ -342,7 +342,7 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 				j++;
 			}
 			data->sign_array_utf8count = j;
-			data->sign_array[j] = _("No Signature");
+			data->sign_array[j] = _("Without"); /* was "No Signature" but "Without" is shorter */
 			if (val == -1)
 			{
 				if (mystrcmp(sign_current, MUIV_SignatureCycle_NoSignature) == 0) val = j;

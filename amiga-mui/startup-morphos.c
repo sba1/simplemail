@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include <dos/stdio.h>
 #include <workbench/startup.h>
 
@@ -206,6 +208,10 @@ int main(int argc, char **argv)
 	{
 		wbs = (struct WBStartup*)argv;
 	}
+	
+	/* Avoid libnix calls raise()/exit() on CTRL-C */
+	signal(SIGINT, SIG_IGN);
+
 	return start(wbs);
 }
 
@@ -527,11 +533,3 @@ struct EmulLibEntry xml_char_data_trap =
 {
 	TRAP_LIB, 0, (void (*)(void)) xml_char_data_gate
 };
-
-/***********************************
- * libnix hack                     *
- * Do not raise()/exit() on CTRL-C *
- ***********************************/
-void __chkabort(void)
-{
-}

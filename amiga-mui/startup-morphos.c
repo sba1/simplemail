@@ -527,3 +527,11 @@ struct EmulLibEntry xml_char_data_trap =
 {
 	TRAP_LIB, 0, (void (*)(void)) xml_char_data_gate
 };
+
+/***********************************
+ * libnix hack                     *
+ * Do not raise()/exit() on CTRL-C *
+ ***********************************/
+void __chkabort(void)
+{
+}

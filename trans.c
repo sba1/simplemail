@@ -803,6 +803,17 @@ static int mails_test_account_entry(void *udata)
 	/* Test logging into the send server if any */
 	if (ac->smtp && ac->smtp->name)
 	{
+		const char *status_text;
+		struct smtp_send_callbacks smtp_callbacks = {0};
+		smtp_callbacks.set_status_static = trans_set_status_static;
+		if (smtp_login_only(ac, &smtp_callbacks))
+		{
+			status_text = _("Login to the SMTP server successful");
+		} else
+		{
+			status_text = _("Failed to login into SMTP server");
+		}
+		trans_set_status_static(status_text);
 	}
 
 	/* Test logging into the send server */

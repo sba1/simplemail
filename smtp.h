@@ -27,6 +27,8 @@
 #include "lists.h"
 #endif
 
+struct account;
+
 /**
  * Minimal description for outgoing mails.
  */
@@ -125,6 +127,16 @@ struct smtp_send_options
 	/** callbacks called during some operations */
 	struct smtp_send_callbacks callbacks;
 };
+
+/**
+ * Log only into the smtp server as specified by the account and quit
+ * Immediately.
+ *
+ * @param ac account with settings
+ * @param callbacks used to inform about status messages during the process.
+ * @return 1 on success, 0 otherwise.
+ */
+int smtp_login_only(struct account *ac, struct smtp_send_callbacks *callbacks);
 
 /**
  * Send the mails in the context of the calling thread.

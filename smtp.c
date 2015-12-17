@@ -965,6 +965,34 @@ static int smtp_connect(struct smtp_connection *conn, struct account *ac, struct
 
 /*****************************************************************************/
 
+int smtp_login_only(struct account *ac, struct smtp_send_callbacks *callbacks)
+{
+	int rc;
+	struct smtp_connection conn;
+
+	rc = 0;
+
+	if (!open_socket_lib())
+		return 0;
+
+
+	if (!(rc = smtp_connect(&conn, ac, callbacks)))
+	{
+		goto bailout;
+	}
+
+	smtp_quit(&conn);
+
+	tcp_disconnect(conn.conn);
+	rc = 1;
+
+bailout:
+	close_socket_lib();
+	return rc;
+}
+
+/*****************************************************************************/
+
 int smtp_send_really(struct smtp_send_options *options)
 {
 	int rc = 0;

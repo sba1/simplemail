@@ -39,6 +39,7 @@
 #include "mainwnd.h"
 #include "parse.h"
 #include "pop3.h"
+#include "progmon.h"
 #include "smintl.h"
 #include "smtp.h"
 #include "spam.h"
@@ -778,6 +779,7 @@ struct mails_test_account_data
 
 static int mails_test_account_entry(void *udata)
 {
+	struct progmon *pm = NULL;
 	struct account *ac = account_duplicate(((struct mails_test_account_data*)udata)->ac);
 	account_tested_callback_t callback = ((struct mails_test_account_data*)udata)->callback;
 	account_tested_callback_success_t success = RESOURCE_FAILED;
@@ -790,7 +792,22 @@ static int mails_test_account_entry(void *udata)
 	if (!thread_parent_task_can_contiue())
 		goto bailout;
 
+	/* Progress monitor is optional */
+	if ((pm = progmon_create()))
+	{
+		utf8 txt[80];
+		utf8fromstr(_("Testing account settings"),NULL,txt,sizeof(txt));
+		pm->begin(pm, 2, txt);
+	}
+
 	/* Test logging into the receive server */
+	if (pm)
+	{
+		utf8 txt[80];
+		utf8fromstr(_("Testing receive settings"),NULL,txt,sizeof(txt));
+		pm->working_on(pm, txt);
+	}
+
 	if (account_is_imap(ac))
 	{
 		if (ac->imap && ac->imap->name)
@@ -814,7 +831,18 @@ static int mails_test_account_entry(void *udata)
 		trans_set_status_static(status_text);
 	}
 
+	if (pm)
+	{
+		pm->work(pm, 1);
+	}
+
 	/* Test logging into the send server if any */
+	if (pm)
+	{
+		utf8 txt[80];
+		utf8fromstr(_("Testing send settings"),NULL,txt,sizeof(txt));
+		pm->working_on(pm, txt);
+	}
 	if (ac->smtp && ac->smtp->name)
 	{
 		const char *status_text;
@@ -831,8 +859,15 @@ static int mails_test_account_entry(void *udata)
 		trans_set_status_static(status_text);
 	}
 
+	if (pm)
+	{
+		pm->work(pm, 1);
+		pm->done(pm);
+	}
+
 	success &= ~RESOURCE_FAILED;
 bailout:
+	if (pm) progmon_delete(pm);
 	if (ac) account_free(ac);
 
 	callback(success);

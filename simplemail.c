@@ -1377,7 +1377,7 @@ void callback_config(void)
  *
  * @param success whether login was successful.
  */
-static void mails_test_account_callback(int success)
+static void mails_test_account_callback(account_tested_callback_success_t success)
 {
 	thread_call_function_async(thread_get_main(), config_accounts_can_be_tested, 1, 1);
 }

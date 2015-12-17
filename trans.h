@@ -58,13 +58,21 @@ int mails_upload(void);
  */
 int mails_upload_single(struct mail_info *mi);
 
+typedef enum
+{
+	POP3_FAILED = 1,
+	IMAP4_FAILED = 2,
+	SMTP_FAILED = 4,
+	RESOURCE_FAILED = 8
+} account_tested_callback_success_t;
+
 /**
  * Callback type for mails_test_account().
  *
  * @param success whether the test was successful, i.e., the config is likely
  *  to work as given.
  */
-typedef void (*account_tested_callback_t)(int success);
+typedef void (*account_tested_callback_t)(account_tested_callback_success_t success);
 
 /**
  * Tests whether logging in into the given account works. This is an async call.

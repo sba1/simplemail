@@ -780,11 +780,11 @@ static int mails_test_account_entry(void *udata)
 {
 	struct account *ac = account_duplicate(((struct mails_test_account_data*)udata)->ac);
 	account_tested_callback_t callback = ((struct mails_test_account_data*)udata)->callback;
-	int success = 0;
+	account_tested_callback_success_t success = RESOURCE_FAILED;
 
 	if (!ac)
 	{
-		callback(0);
+		callback(success);
 		return 0;
 	}
 	if (!thread_parent_task_can_contiue())
@@ -809,6 +809,7 @@ static int mails_test_account_entry(void *udata)
 		} else
 		{
 			status_text = _("Failed to login into POP3 server");
+			success |= POP3_FAILED;
 		}
 		trans_set_status_static(status_text);
 	}
@@ -825,11 +826,12 @@ static int mails_test_account_entry(void *udata)
 		} else
 		{
 			status_text = _("Failed to login into SMTP server");
+			success |= SMTP_FAILED;
 		}
 		trans_set_status_static(status_text);
 	}
 
-	success = 1;
+	success &= ~RESOURCE_FAILED;
 bailout:
 	if (ac) account_free(ac);
 

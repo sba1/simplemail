@@ -905,9 +905,12 @@ static int smtp_connect(struct smtp_connection *conn, struct account *ac, struct
 	int error_code;
 
 	if (ac->account_name)
-		callbacks->set_title_utf8(ac->account_name);
-	else
-		callbacks->set_title(ac->smtp->name);
+	{
+		if (callbacks->set_title_utf8) callbacks->set_title_utf8(ac->account_name);
+	} else
+	{
+		if (callbacks->set_title) callbacks->set_title(ac->smtp->name);
+	}
 
 	if (ac->smtp->pop3_first)
 	{
@@ -917,16 +920,19 @@ static int smtp_connect(struct smtp_connection *conn, struct account *ac, struct
 
 		pop3_callbacks.set_status_static = callbacks->set_status_static;
 
-		sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s, connecting to %s first"),ac->smtp->name,ac->pop->name);
-		callbacks->set_head(head_buf);
+		if (callbacks->set_head)
+		{
+			sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s, connecting to %s first"),ac->smtp->name,ac->pop->name);
+			callbacks->set_head(head_buf);
+		}
 
 		callbacks->set_status_static(_("Log into POP3 Server...."));
 		pop3_login_only(ac->pop, &pop3_callbacks);
 	}
 
 	sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s"),ac->smtp->name);
-	callbacks->set_head(head_buf);
-	callbacks->set_connect_to_server(ac->smtp->name);
+	if (callbacks->set_head) callbacks->set_head(head_buf);
+	if (callbacks->set_connect_to_server) callbacks->set_connect_to_server(ac->smtp->name);
 
 	/* Make a possible fingerprint available to tcp_connect() */
 	connect_opts.fingerprint = ac->smtp->fingerprint;

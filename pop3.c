@@ -571,9 +571,10 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
 				if (!(answer = pop3_receive_answer(conn,0)))
 				{
+					mail_complete_free(m);
+
 					if (tcp_error_code() == TCP_INTERRUPTED)
 					{
-						mail_complete_free(m);
 						pop3_free_mail_array(stats);
 						return 0;
 					}
@@ -635,11 +636,11 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					callbacks->mail_list_set_info(i, from, subject, date);
 				}
 
+				mail_complete_free(m);
+
 				/* Check if we should receive more statistics */
 				if (callbacks->more_statitics())
 					break;
-
-				mail_complete_free(m);
 			}
 		}
 	}

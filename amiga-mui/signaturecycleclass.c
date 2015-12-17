@@ -164,7 +164,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			j++;
 		}
 		sign_array_utf8count = j;
-		sign_array[j] = _("No Signature");
+		sign_array[j] = _("Without");
 		if (has_default_entry)
 		{
 			j++;

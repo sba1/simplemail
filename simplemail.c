@@ -1372,6 +1372,19 @@ void callback_config(void)
 /*****************************************************************************/
 
 /**
+ * Called when accounts have been tested. Called on the context of the main
+ * thread.
+ *
+ * @param success whether login was successful.
+ */
+static void mail_test_account_callback_on_main_context(account_tested_callback_success_t success)
+{
+	config_accounts_set_recv_failed_state(!!(success & (POP3_FAILED | IMAP4_FAILED)));
+	config_accounts_set_send_failed_state(!!(success & (SMTP_FAILED)));
+	config_accounts_can_be_tested(1);
+}
+
+/**
  * Called when accounts have been tested. Called not on the context of the main
  * thread!
  *
@@ -1379,7 +1392,7 @@ void callback_config(void)
  */
 static void mails_test_account_callback(account_tested_callback_success_t success)
 {
-	thread_call_function_async(thread_get_main(), config_accounts_can_be_tested, 1, 1);
+	thread_call_function_async(thread_get_main(), mail_test_account_callback_on_main_context, 1, success);
 }
 
 /*****************************************************************************/

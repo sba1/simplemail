@@ -126,6 +126,7 @@ static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
 static Object *account_def_signature_cycle;
+static Object *account_recv_group;
 static Object *account_recv_type_radio;
 static Object *account_recv_server_string;
 static Object *account_recv_port_string;
@@ -138,6 +139,7 @@ static Object *account_recv_delete_check;
 static Object *account_recv_apop_cycle;
 static Object *account_recv_secure_cycle;
 static Object *account_recv_avoid_check;
+static Object *account_send_group;
 static Object *account_send_server_string;
 static Object *account_send_port_string;
 static Object *account_send_fingerprint_string;
@@ -243,6 +245,20 @@ static Object *config_last_visisble_group;
 void config_refresh_folders(void)
 {
 	if (startup_folder_tree) DoMethod(startup_folder_tree, MUIM_FolderTreelist_Refresh, NULL);
+}
+
+/*****************************************************************************/
+
+void config_accounts_set_recv_failed_state(int state)
+{
+	set(account_recv_group, MUIA_Background, state?"2:ffffffff,00000000,00000000":NULL);
+}
+
+/*****************************************************************************/
+
+void config_accounts_set_send_failed_state(int state)
+{
+	set(account_send_group, MUIA_Background, state?"2:ffffffff,00000000,00000000":NULL);
 }
 
 /*****************************************************************************/
@@ -371,6 +387,10 @@ static void account_load(void)
 		char *recv_fingerprint;
 		int recv_security;
 		int send_security;
+
+		/* Reset the failed state of receive and send group */
+		config_accounts_set_recv_failed_state(0);
+		config_accounts_set_send_failed_state(0);
 
 		recv_fingerprint = account_is_imap(account)?account->imap->fingerprint:account->pop->fingerprint;
 
@@ -1248,75 +1268,78 @@ static int init_account_group(void)
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
 			End,
-		Child, HorizLineTextObject(_("Receive")),
-		Child, ColGroup(2),
-			Child, MakeLabel(_("Type")),
-			Child, HGroup,
-				Child, account_recv_type_radio = RadioObject,
-					MUIA_Group_Horiz, TRUE,
-					MUIA_Radio_Entries, recv_entries,
-					End,
-				Child, HVSpace,
-				Child, MakeLabel(_("Active")),
-				Child, account_recv_active_check = MakeCheck(_("Active"), FALSE),
-				End,
-			Child, MakeLabel(_("Server")),
-			Child, HGroup,
-				Child, account_recv_server_string = BetterStringObject,
-					StringFrame,
-					MUIA_CycleChain, 1,
-					MUIA_String_AdvanceOnCR, TRUE,
-				End,
-				Child, MakeLabel(_("Port")),
-				Child, account_recv_port_string = BetterStringObject,
-					StringFrame,
-					MUIA_Weight, 33,
-					MUIA_CycleChain,1,
-					MUIA_String_AdvanceOnCR, TRUE,
-					MUIA_String_Accept, "0123456789",
-					End,
-				Child, MakeLabel(_("Security")),
-				Child, account_recv_secure_cycle = MakeCycle(_("Security"), recv_secure_labels),
-				End,
-			Child, MakeLabel(_("Fingerprint")),
-			Child, account_recv_fingerprint_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_AdvanceOnCR, TRUE,
-				MUIA_String_Accept, "0123456789ABCDEF ",
-				End,
-			Child, MakeLabel(_("Login")),
-			Child,  HGroup,
-				Child, account_recv_login_string = BetterStringObject,
-					StringFrame,
-					MUIA_CycleChain, 1,
-					MUIA_String_AdvanceOnCR, TRUE,
-					End,
-				Child, MakeLabel(_("Password")),
-				Child, account_recv_password_string = BetterStringObject,
-					StringFrame,
-					MUIA_CycleChain, 1,
-					MUIA_String_Secret, TRUE,
-					MUIA_String_AdvanceOnCR, TRUE,
-					End,
-				Child, MakeLabel(_("Ask")),
-				Child, account_recv_ask_checkbox = MakeCheck(_("Ask"),FALSE),
-				End,
-			End,
 
-		Child, HGroup,
-			Child, MakeLabel(_("APOP")),
-			Child, account_recv_apop_cycle = MakeCycle(_("APOP"), apop_labels),
-			Child, HVSpace,
-			Child, MakeLabel(_("Avoid duplicates")),
-			Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE),
-			Child, HVSpace,
-			Child, MakeLabel(_("_Delete mails")),
-			Child, account_recv_delete_check = MakeCheck(_("_Delete mails"), FALSE),
+		Child, HorizLineTextObject(_("Receive")),
+		Child, account_recv_group = VGroup,
+			Child, ColGroup(2),
+				Child, MakeLabel(_("Type")),
+				Child, HGroup,
+					Child, account_recv_type_radio = RadioObject,
+						MUIA_Group_Horiz, TRUE,
+						MUIA_Radio_Entries, recv_entries,
+						End,
+					Child, HVSpace,
+					Child, MakeLabel(_("Active")),
+					Child, account_recv_active_check = MakeCheck(_("Active"), FALSE),
+					End,
+				Child, MakeLabel(_("Server")),
+				Child, HGroup,
+					Child, account_recv_server_string = BetterStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+					End,
+					Child, MakeLabel(_("Port")),
+					Child, account_recv_port_string = BetterStringObject,
+						StringFrame,
+						MUIA_Weight, 33,
+						MUIA_CycleChain,1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						MUIA_String_Accept, "0123456789",
+						End,
+					Child, MakeLabel(_("Security")),
+					Child, account_recv_secure_cycle = MakeCycle(_("Security"), recv_secure_labels),
+					End,
+				Child, MakeLabel(_("Fingerprint")),
+				Child, account_recv_fingerprint_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_String_AdvanceOnCR, TRUE,
+					MUIA_String_Accept, "0123456789ABCDEF ",
+					End,
+				Child, MakeLabel(_("Login")),
+				Child,  HGroup,
+					Child, account_recv_login_string = BetterStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, MakeLabel(_("Password")),
+					Child, account_recv_password_string = BetterStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_String_Secret, TRUE,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, MakeLabel(_("Ask")),
+					Child, account_recv_ask_checkbox = MakeCheck(_("Ask"),FALSE),
+					End,
+				End,
+
+			Child, HGroup,
+				Child, MakeLabel(_("APOP")),
+				Child, account_recv_apop_cycle = MakeCycle(_("APOP"), apop_labels),
+				Child, HVSpace,
+				Child, MakeLabel(_("Avoid duplicates")),
+				Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE),
+				Child, HVSpace,
+				Child, MakeLabel(_("_Delete mails")),
+				Child, account_recv_delete_check = MakeCheck(_("_Delete mails"), FALSE),
+				End,
 			End,
 
 		Child, HorizLineTextObject(_("Send")),
-		Child, VGroup,
+		Child, account_send_group = VGroup,
 			Child, ColGroup(2),
 				Child, MakeLabel(_("SMTP Server")),
 				Child, HGroup,

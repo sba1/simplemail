@@ -39,6 +39,21 @@ void close_config(void);
 void config_refresh_folders(void);
 
 /**
+ * Set the state of the receive failed indicator. This is used for account
+ * testing.
+ *
+ * @param state
+ */
+void config_accounts_set_recv_failed_state(int state);
+
+/**
+ * Set the state of the send failed indicator. This is used for account testing.
+ *
+ * @param state
+ */
+void config_accounts_set_send_failed_state(int state);
+
+/**
  * Informs the config window that accounts can be tested or not-
  *
  * @param tested whether accounts can be tested or not.

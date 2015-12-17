@@ -59,13 +59,21 @@ int mails_upload(void);
 int mails_upload_single(struct mail_info *mi);
 
 /**
+ * Callback type for mails_test_account().
+ *
+ * @param success whether the test was successful, i.e., the config is likely
+ *  to work as given.
+ */
+typedef void (*account_tested_callback_t)(int success);
+
+/**
  * Tests whether logging in into the given account works. This is an async call.
  *
  * @param ac account to test.
- * @param account_tested_callback
+ * @param callback
  * @return 1 if job has been submitted, 0 otherwise.
  */
-int mails_test_account(struct account *ac, void (*account_tested_callback)(int success));
+int mails_test_account(struct account *ac, account_tested_callback_t callback);
 
 
 #endif

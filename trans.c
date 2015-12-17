@@ -773,18 +773,18 @@ static thread_t test_account_thread;
 struct mails_test_account_data
 {
 	struct account *ac;
-	void (*account_tested_callback)(int success);
+	account_tested_callback_t callback;
 };
 
 static int mails_test_account_entry(void *udata)
 {
 	struct account *ac = account_duplicate(((struct mails_test_account_data*)udata)->ac);
-	void (*account_tested_callback)(int) = ((struct mails_test_account_data*)udata)->account_tested_callback;
+	account_tested_callback_t callback = ((struct mails_test_account_data*)udata)->callback;
 	int success = 0;
 
 	if (!ac)
 	{
-		account_tested_callback(0);
+		callback(0);
 		return 0;
 	}
 	if (!thread_parent_task_can_contiue())
@@ -833,7 +833,7 @@ static int mails_test_account_entry(void *udata)
 bailout:
 	if (ac) account_free(ac);
 
-	account_tested_callback(success);
+	callback(success);
 
 	/* It is okay if the thread is shortly yielded after setting this to NULL */
 	test_account_thread = NULL;
@@ -842,14 +842,14 @@ bailout:
 
 /*****************************************************************************/
 
-int mails_test_account(struct account *ac, void (*account_tested_callback)(int success))
+int mails_test_account(struct account *ac, account_tested_callback_t callback)
 {
 	struct mails_test_account_data data = {0};
 
 	if (test_account_thread) return 0;
 
 	data.ac = ac;
-	data.account_tested_callback = account_tested_callback;
+	data.callback = callback;
 
 	if (!(test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, &data)))
 		return 0;

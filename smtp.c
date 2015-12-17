@@ -892,6 +892,72 @@ static int smtp_quit(struct smtp_connection *conn)
 }
 
 /**
+ * Connect to the smtp server as specified in the given account.
+ *
+ * @param conn the connection that will be filed. It's a out parameter.
+ * @param ac the account describing the smtp server to be connected.
+ * @return 1 on success, 0 on error.
+ */
+static int smtp_connect(struct smtp_connection *conn, struct account *ac, struct smtp_send_callbacks *callbacks)
+{
+	struct connect_options connect_opts = {0};
+	char head_buf[100];
+	int error_code;
+
+	if (ac->account_name)
+		callbacks->set_title_utf8(ac->account_name);
+	else
+		callbacks->set_title(ac->smtp->name);
+
+	if (ac->smtp->pop3_first)
+	{
+		/* Connect to the pop3 server first */
+
+		struct pop3_dl_callbacks pop3_callbacks = {0};
+
+		pop3_callbacks.set_status_static = callbacks->set_status_static;
+
+		sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s, connecting to %s first"),ac->smtp->name,ac->pop->name);
+		callbacks->set_head(head_buf);
+
+		callbacks->set_status_static(_("Log into POP3 Server...."));
+		pop3_login_only(ac->pop, &pop3_callbacks);
+	}
+
+	sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s"),ac->smtp->name);
+	callbacks->set_head(head_buf);
+	callbacks->set_connect_to_server(ac->smtp->name);
+
+	/* Make a possible fingerprint available to tcp_connect() */
+	connect_opts.fingerprint = ac->smtp->fingerprint;
+	connect_opts.use_ssl = ac->smtp->ssl && !ac->smtp->secure;
+
+	if (!(conn->conn = tcp_connect(ac->smtp->name, ac->smtp->port,&connect_opts,&error_code)))
+	{
+		char message[380];
+		sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),ac->smtp->name,tcp_strerror(error_code));
+		tell_from_subtask(message);
+		return 0;
+	}
+
+	conn->server_name = ac->smtp->name;
+	conn->fingerprint = ac->smtp->fingerprint;
+
+	if (!smtp_login(conn,ac,callbacks))
+	{
+		char message[380];
+
+		tcp_disconnect(conn->conn);
+
+		sm_snprintf(message,sizeof(message),_("Unable to login into server %s"),ac->smtp->name);
+		tell_from_subtask(message);
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
  * Send the mails now.
  *
  * @param account_list
@@ -909,92 +975,36 @@ int smtp_send_really(struct smtp_send_options *options)
 	if (open_socket_lib())
 	{
 		struct account *account;
-		struct connect_options connect_opts = {0};
-		int error_code;
 
 		for (account = (struct account*)list_first(account_list);account;account = (struct account*)node_next(&account->node))
 		{
 			struct smtp_connection conn;
-			char head_buf[100];
-
-			memset(&conn,0,sizeof(struct smtp_connection));
 
 			if (count_mails(account,outmail)==0) continue;
 
-			if (account->account_name)
-				callbacks->set_title_utf8(account->account_name);
-			else
-				callbacks->set_title(account->smtp->name);
-
-			if (account->smtp->pop3_first)
+			if (smtp_connect(&conn, account, callbacks))
 			{
-				/* Connect to the pop3 server first */
-
-				struct pop3_dl_callbacks pop3_callbacks = {0};
-
-				pop3_callbacks.set_status_static = callbacks->set_status_static;
-
-				sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s, connecting to %s first"),account->smtp->name,account->pop->name);
-				callbacks->set_head(head_buf);
-
-				callbacks->set_status_static(_("Log into POP3 Server...."));
-				pop3_login_only(account->pop, &pop3_callbacks);
-			}
-
-			sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s"),account->smtp->name);
-			callbacks->set_head(head_buf);
-			callbacks->set_connect_to_server(account->smtp->name);
-
-			/* Make a possible fingerprint available */
-			connect_opts.fingerprint = account->smtp->fingerprint;
-			connect_opts.use_ssl = account->smtp->ssl && !account->smtp->secure;
-			conn.fingerprint = account->smtp->fingerprint;
-
-			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,&connect_opts,&error_code)))
-			{
-				conn.server_name = account->smtp->name;
-
-				if (smtp_login(&conn,account,callbacks))
-				{
-					rc = smtp_send_mails(&conn,account,outmail,callbacks);
-
-					if (thread_aborted())
-					{
-						callbacks->set_status_static("Aborted - Sending QUIT...");
-						smtp_quit(&conn);
-						callbacks->set_status_static("Aborted - Disconnecting...");
-						tcp_disconnect(conn.conn);
-
-						if (callbacks->skip_server())
-							continue;
-
-						break;
-					}
-
-					callbacks->set_status_static(_("Sending QUIT..."));
-					smtp_quit(&conn);
-				}
+				rc = smtp_send_mails(&conn,account,outmail,callbacks);
 
 				if (thread_aborted())
 				{
-					if (!callbacks->skip_server())
-					{
-						callbacks->set_status_static(_("Aborted - Disconnecting..."));
-						tcp_disconnect(conn.conn);
-						break;
-					}
-				}
+					callbacks->set_status_static("Aborted - Sending QUIT...");
+					smtp_quit(&conn);
+					callbacks->set_status_static("Aborted - Disconnecting...");
+					tcp_disconnect(conn.conn);
 
-				callbacks->set_status_static(_("Disconnecting..."));
-				tcp_disconnect(conn.conn);
+					if (callbacks->skip_server())
+						continue;
+
+					break;
+				}
 			} else
 			{
-				char message[380];
-
-				if (thread_aborted() && !callbacks->skip_server()) break;
-
-				sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),account->smtp->name,tcp_strerror(error_code));
-				tell_from_subtask(message);
+				if (thread_aborted() && !callbacks->skip_server())
+				{
+					callbacks->set_status_static(_("Aborted"));
+					break;
+				}
 			}
 		}
 

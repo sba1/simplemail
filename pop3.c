@@ -639,7 +639,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				mail_complete_free(m);
 
 				/* Check if we should receive more statistics */
-				if (callbacks->more_statitics())
+				if (!callbacks->more_statitics())
 					break;
 			}
 		}

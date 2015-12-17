@@ -957,13 +957,8 @@ static int smtp_connect(struct smtp_connection *conn, struct account *ac, struct
 	return 1;
 }
 
-/**
- * Send the mails now.
- *
- * @param account_list
- * @param outmail
- * @return
- */
+/*****************************************************************************/
+
 int smtp_send_really(struct smtp_send_options *options)
 {
 	int rc = 0;

@@ -32,6 +32,7 @@
 #include "simplemail.h"
 #include "status.h"
 #include "support_indep.h"
+#include "trans.h"
 
 /*************************************************************/
 
@@ -151,6 +152,10 @@ int search_has_mails(void)
 
 /*************************************************************/
 
+static void mails_test_account_callback(account_tested_callback_success_t success)
+{
+}
+
 /* @Test */
 void test_pop3(void)
 {
@@ -204,7 +209,7 @@ void test_pop3(void)
 
 	insert_config_account(ac);
 
-	mails_test_account(ac);
+	mails_test_account(ac, mails_test_account_callback);
 	sleep(3);
 
 	account_free(ac);

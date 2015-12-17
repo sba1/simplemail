@@ -39,6 +39,7 @@
 #include "mainwnd.h"
 #include "parse.h"
 #include "pop3.h"
+#include "smintl.h"
 #include "smtp.h"
 #include "spam.h"
 #include "status.h"
@@ -785,10 +786,18 @@ static int mails_test_account_entry(void *udata)
 		}
 	} else if (ac->pop && ac->pop->name)
 	{
+		const char *status_text;
 		struct pop3_dl_callbacks pop3_callbacks = {0};
 		pop3_callbacks.set_status_static = trans_set_status_static;
 		pop3_callbacks.set_status = trans_set_status;
-		pop3_login_only(ac->pop, &pop3_callbacks);
+		if (pop3_login_only(ac->pop, &pop3_callbacks))
+		{
+			status_text = _("Login to the POP3 server successful");
+		} else
+		{
+			status_text = _("Failed to login into POP3 server");
+		}
+		trans_set_status_static(status_text);
 	}
 
 	/* Test logging into the send server if any */

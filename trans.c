@@ -770,10 +770,23 @@ int mails_upload_single(struct mail_info *mi)
 
 static thread_t test_account_thread;
 
+struct mails_test_account_data
+{
+	struct account *ac;
+	void (*account_tested_callback)(int success);
+};
+
 static int mails_test_account_entry(void *udata)
 {
-	struct account *ac = account_duplicate((struct account*)udata);
-	if (!ac) return 0;
+	struct account *ac = account_duplicate(((struct mails_test_account_data*)udata)->ac);
+	void (*account_tested_callback)(int) = ((struct mails_test_account_data*)udata)->account_tested_callback;
+	int success = 0;
+
+	if (!ac)
+	{
+		account_tested_callback(0);
+		return 0;
+	}
 	if (!thread_parent_task_can_contiue())
 		goto bailout;
 
@@ -816,22 +829,29 @@ static int mails_test_account_entry(void *udata)
 		trans_set_status_static(status_text);
 	}
 
-	/* Test logging into the send server */
+	success = 1;
 bailout:
 	if (ac) account_free(ac);
 
+	account_tested_callback(success);
+
 	/* It is okay if the thread is shortly yielded after setting this to NULL */
 	test_account_thread = NULL;
-	return 0; /* Return value not really relevant */
+	return success; /* Return value not really relevant */
 }
 
 /*****************************************************************************/
 
-int mails_test_account(struct account *ac)
+int mails_test_account(struct account *ac, void (*account_tested_callback)(int success))
 {
+	struct mails_test_account_data data = {0};
+
 	if (test_account_thread) return 0;
 
-	if (!(test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, ac)))
+	data.ac = ac;
+	data.account_tested_callback = account_tested_callback;
+
+	if (!(test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, &data)))
 		return 0;
 	return 1;
 }

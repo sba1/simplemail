@@ -1371,9 +1371,25 @@ void callback_config(void)
 
 /*****************************************************************************/
 
+/**
+ * Called when accounts have been tested. Called not on the context of the main
+ * thread!
+ *
+ * @param success whether login was successful.
+ */
+static void mails_test_account_callback(int success)
+{
+	thread_call_function_async(thread_get_main(), config_accounts_can_be_tested, 1, 1);
+}
+
+/*****************************************************************************/
+
 void callback_test_account(struct account *ac)
 {
-	mails_test_account(ac);
+	if (mails_test_account(ac, mails_test_account_callback))
+	{
+		config_accounts_can_be_tested(0);
+	}
 }
 
 /*****************************************************************************/

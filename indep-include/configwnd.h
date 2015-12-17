@@ -38,4 +38,11 @@ void close_config(void);
  */
 void config_refresh_folders(void);
 
+/**
+ * Informs the config window that accounts can be tested or not-
+ *
+ * @param tested whether accounts can be tested or not.
+ */
+void config_accounts_can_be_tested(int tested);
+
 #endif

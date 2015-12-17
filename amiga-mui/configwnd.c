@@ -245,6 +245,14 @@ void config_refresh_folders(void)
 	if (startup_folder_tree) DoMethod(startup_folder_tree, MUIM_FolderTreelist_Refresh, NULL);
 }
 
+/*****************************************************************************/
+
+void config_accounts_can_be_tested(int tested)
+{
+	if (!config_wnd) return;
+	set(account_test_button, MUIA_Disabled, !tested);
+}
+
 /**
  * Object to string hook function for the startup folder popobject.
  */

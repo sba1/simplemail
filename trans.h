@@ -62,8 +62,10 @@ int mails_upload_single(struct mail_info *mi);
  * Tests whether logging in into the given account works. This is an async call.
  *
  * @param ac account to test.
+ * @param account_tested_callback
  * @return 1 if job has been submitted, 0 otherwise.
  */
-int mails_test_account(struct account *ac);
+int mails_test_account(struct account *ac, void (*account_tested_callback)(int success));
+
 
 #endif

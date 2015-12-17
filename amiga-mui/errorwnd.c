@@ -37,6 +37,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "errorwnd.h"
 #include "muistuff.h"
 #include "timesupport.h"
 
@@ -157,7 +158,7 @@ static void init_error(void)
 
 /*****************************************************************************/
 
-void error_add_message(char *msg)
+void error_add_message(error_severity_t severity, char *msg)
 {
 	struct error_node *enode;
 

@@ -23,13 +23,19 @@
 #ifndef SM__ERRORWND_H
 #define SM__ERRORWND_H
 
+typedef enum
+{
+	SEVERITY_ERROR,
+	SEVERITY_INFO
+} error_severity_t;
 
 /**
  * Add an error text to the error window.
  *
+ * @param severity the severity
  * @param msg text to be added.
  */
-void error_add_message(char *msg);
+void error_add_message(error_severity_t severity, char *msg);
 
 /**
  * Open the error window.

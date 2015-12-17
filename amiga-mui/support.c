@@ -476,7 +476,7 @@ void sm_put_on_serial_line(char *txt)
 
 void tell_str(const char *str)
 {
-	error_add_message(_(str));
+	error_add_message(SEVERITY_ERROR, _(str));
 }
 
 /*****************************************************************************/

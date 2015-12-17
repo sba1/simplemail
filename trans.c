@@ -825,6 +825,8 @@ bailout:
 	return 0; /* Return value not really relevant */
 }
 
+/*****************************************************************************/
+
 int mails_test_account(struct account *ac)
 {
 	if (test_account_thread) return 0;

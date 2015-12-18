@@ -45,6 +45,7 @@
 #include "spam.h"
 #include "status.h"
 #include "support_indep.h"
+#include "tcpip.h"
 
 #include "request.h"
 #include "simplemail.h"
@@ -812,7 +813,29 @@ static int mails_test_account_entry(void *udata)
 	{
 		if (ac->imap && ac->imap->name)
 		{
-			/* TODO: Write me */
+			const char *status_text;
+			struct connection *conn;
+			struct imap_connect_and_login_to_server_callbacks imap_callbacks = {0};
+
+			imap_callbacks.request_login = trans_request_login;
+			imap_callbacks.set_status = trans_set_status;
+
+			if (open_socket_lib())
+			{
+				if (imap_really_connect_and_login_to_server(&conn, ac->imap, &imap_callbacks))
+				{
+					status_text = _("Login to the IMAP4 server successful");
+					tcp_disconnect(conn);
+				} else
+				{
+					status_text = _("Failed to login into IMAP4 server");
+				}
+				close_socket_lib();
+			} else
+			{
+				status_text = _("Failed to open socket library");
+			}
+			trans_set_status_static(status_text);
 		}
 	} else if (ac->pop && ac->pop->name)
 	{

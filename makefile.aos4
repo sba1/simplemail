@@ -217,9 +217,17 @@ endif
 dirs:
 	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui Locale $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
 
+# Rule for list of all loggable modules
+$(OBJSDIR)/debugmodules.c: $(OBJS)
+	# Generate a list of all modules
+	rm -f $(OBJDIR)/debugmodules.c
+	echo "const char *debugmodules[] = {" >$(OBJSDIR)/debugmodules.c
+	ppc-amigaos-strings $(OBJS) | grep MODULE: | sed s/MODULE:// | sort | uniq | xargs -I{} -n1 echo \"{}\", >>$(OBJSDIR)/debugmodules.c
+	echo "};" >>$(OBJSDIR)/debugmodules.c
+
 # Rules for building
-$(TARGET): envs dirs $(OBJS) $(AOBJS)
-	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+$(TARGET): envs dirs $(OBJS) $(AOBJS) $(OBJSDIR)/debugmodules.c
+	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(OBJSDIR)/debugmodules.c $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -R .comment -o $@ $@.debug
 	-$(STRIP) --strip-unneeded-rel-relocs $@
 

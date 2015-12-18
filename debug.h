@@ -34,6 +34,14 @@ void debug_set_level(int);
 void debug_set_out(char *);
 void debug_set_modules(char *modules);
 
+/**
+ * Return all known modules that can be debugged, i.e., that emit some
+ * debug logging.
+ *
+ * @return the NULL terminated array of all recognized submodules.
+ */
+const char * const *debug_get_loggable_modules(void);
+
 /* For resource tracking */
 void debug_track(void *res, char *cl, char *args, char *filename, char *function, int line);
 void debug_untrack(void *res, char *cl, char *call, char *args, char *filename, char *function, int line);
@@ -52,7 +60,7 @@ void __debug_end(void);
 #else
 extern int __debuglevel;
 #ifdef __GNUC__
-#define SM_DEBUGF(level,x) do { if (level <= __debuglevel && debug_check(__FILE__,__LINE__)) { __debug_begin(); __debug_print("%s/%d [%s()] (%s) => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,ARCH_DEBUG_EXTRA); __debug_print x; __debug_end(); }} while (0)
+#define SM_DEBUGF(level,x) do { static const char filename[] __attribute__((used, section("DEBUGMODULES"))) = "MODULE:" __FILE__; if (level <= __debuglevel && debug_check(__FILE__,__LINE__)) { __debug_begin(); __debug_print("%s/%d [%s()] (%s) => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,ARCH_DEBUG_EXTRA); __debug_print x; __debug_end(); }} while (0)
 #else
 #ifdef __SASC
 #define SM_DEBUGF(level,x) do { if (level <= __debuglevel && debug_check(__FILE__,__LINE__)) { __debug_begin(); __debug_print("%s/%d [%s()] (%s) => ",__FILE__,__LINE__,__FUNC__,ARCH_DEBUG_EXTRA); __debug_print x; __debug_end(); }} while (0)

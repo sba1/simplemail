@@ -661,6 +661,8 @@ void gui_deinit(void)
 
 int gui_parseargs(int argc, char *argv[])
 {
+	int exit_early = 0;
+
 	struct command_args {
 		char *message;
 		char *mailto;
@@ -690,8 +692,31 @@ int gui_parseargs(int argc, char *argv[])
 			atcleanup_free(gui_images_directory);
 		if (shell_args.debugout) debug_set_out(shell_args.debugout);
 		if (shell_args.debuglevel) debug_set_level(*shell_args.debuglevel);
-		if (shell_args.debugmodules) debug_set_modules(shell_args.debugmodules);
+		if (shell_args.debugmodules)
+		{
+			if (!strcmp(shell_args.debugmodules,"?"))
+			{
+				unsigned int i;
+
+				const char * const *mods = debug_get_loggable_modules();
+
+				for (i=0; mods[i]; i++)
+				{
+					Printf("%s\n",mods[i]);
+				}
+				exit_early = 1;
+			} else
+			{
+				debug_set_modules(shell_args.debugmodules);
+			}
+		}
 		FreeArgs(rdargs);
+	}
+
+	if (exit_early)
+	{
+		/* TODO: This should return success but the upper layer would continue then */
+		return 0;
 	}
 
 	if (arexx_find())

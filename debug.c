@@ -120,6 +120,26 @@ static void debug_insert_module(char *mod)
 	}
 }
 
+/*****************************************************************************/
+
+/* Declare weak when using gcc so it can be replaced by the true list
+ * that is generated during compilation.
+ */
+#ifdef __GNUC__
+__attribute__((weak))
+#endif
+const char * const debugmodules[] =
+{
+	NULL
+};
+
+const char * const *debug_get_loggable_modules(void)
+{
+	return debugmodules;
+}
+
+/*****************************************************************************/
+
 /**
  * Sets the modules (modules is comma separated)
  * @param modules

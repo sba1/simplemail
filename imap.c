@@ -1183,84 +1183,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 /*****************************************************************************/
 
-struct imap_login_really_callbacks
-{
-	int (*request_login)(char *text, char *login, char *password, int len);
-	void (*set_status_static)(const char *str);
-};
-
-/**
- * Login into an IMAP server and return the connection.
- *
- * @param server the server to login.
- * @param callbacks some callbacks.
- * @return the connection
- */
-static struct connection *imap_login_really(struct imap_server *server, struct imap_login_really_callbacks *callbacks)
-{
-	struct connection *conn;
-	struct connect_options conn_opts = {0};
-	int error_code;
-
-	/* Ask for the login/password */
-	if (server->ask)
-	{
-		char *password = (char*)malloc(512);
-		char *login = (char*)malloc(512);
-
-		if (password && login)
-		{
-			int rc;
-
-			if (server->login) mystrlcpy(login,server->login,512);
-			password[0] = 0;
-
-			if ((rc = callbacks->request_login(server->name,login,password,512)))
-			{
-				server->login = mystrdup(login);
-				server->passwd = mystrdup(password);
-			}
-		}
-
-		free(password);
-		free(login);
-	}
-
-	conn_opts.use_ssl = server->ssl && !server->starttls;
-	conn_opts.fingerprint = server->fingerprint;
-
-	SM_DEBUGF(10,("Connecting\n"));
-	if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
-	{
-		callbacks->set_status_static(_("Waiting for login..."));
-		SM_DEBUGF(10,("Waiting for login\n"));
-		if (imap_wait_login(conn,server))
-		{
-			callbacks->set_status_static(_("Login..."));
-			SM_DEBUGF(10,("Login\n"));
-			if (imap_login(conn,server))
-			{
-				return conn;
-			} else
-			{
-				callbacks->set_status_static(_("Authentication failed!"));
-				tell_from_subtask(N_("Authentication failed!"));
-			}
-		} else
-		{
-			callbacks->set_status_static(_("Unexpected server answer!"));
-			tell_from_subtask(N_("Unexpected server answer!"));
-		}
-		tcp_disconnect(conn);
-	} else
-	{
-		SM_DEBUGF(10,("Unable to connect\n"));
-		if (!thread_aborted())
-			tell_from_subtask((char*)tcp_strerror(error_code));
-	}
-	return NULL;
-}
-
 /**
  * Synchronize a single imap account.
  *
@@ -1272,7 +1194,7 @@ static struct connection *imap_login_really(struct imap_server *server, struct i
 static int imap_synchronize_really_single(struct imap_server *server, struct imap_synchronize_callbacks *callbacks)
 {
 	struct connection *conn;
-	struct imap_login_really_callbacks login_callbacks = {0};
+	struct imap_connect_and_login_to_server_callbacks login_callbacks = {0};
 	char head_buf[100];
 
 	SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
@@ -1286,9 +1208,9 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 	callbacks->set_connect_to_server(server->name);
 
 	login_callbacks.request_login = callbacks->request_login;
-	login_callbacks.set_status_static = callbacks->set_status_static;
+	login_callbacks.set_status = callbacks->set_status;
 
-	if ((conn = imap_login_really(server, &login_callbacks)))
+	if (imap_really_connect_and_login_to_server(&conn, server, &login_callbacks))
 	{
 		struct string_list *folder_list;
 		callbacks->set_status_static(_("Login successful"));

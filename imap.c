@@ -588,6 +588,7 @@ struct imap_get_remote_mails_args
 /**
  * Read information of all mails in the given path. Put this back into an array.
  *
+ * @param no_mails where is it stored, if the folder is empty.
  * @param args arguments to this function.
  *
  * @return returns information of the mailbox in form of a remote_mailbox object.
@@ -597,7 +598,7 @@ struct imap_get_remote_mails_args
  * @note the given path stays in the selected/examine state.
  * @note the returned structure must be free with imap_free_remote_mailbox()
  */
-static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *args)
+static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_remote_mails_args *args)
 {
 	/* get number of remote mails */
 	char *line;
@@ -619,6 +620,9 @@ static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails
 	struct imap_select_mailbox_args select_mailbox_args = {0};
 
 	SM_ENTER;
+
+	/* Assume non-empty folder */
+	if (empty_folder) *empty_folder = 0;
 
 	select_mailbox_args.conn = conn;
 	select_mailbox_args.path = path;
@@ -763,6 +767,9 @@ static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails
 
 			SM_DEBUGF(10,("Remote mail array fetched after %d ms\n",time_ms_passed(fetch_time_ref)));
 		}
+	} else
+	{
+		if (empty_folder) *empty_folder = 1;
 	}
 	if (!success)
 	{
@@ -922,6 +929,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		if (local_mail_array)
 		{
 			struct remote_mailbox *rm;
+			int empty_folder;
 
 			/* get number of remote mails */
 			char *line;
@@ -941,7 +949,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			{
 				args.writemode = 1;
 
-				if ((rm = imap_get_remote_mails(&args)))
+				if ((rm = imap_get_remote_mails(NULL, &args)))
 				{
 					struct remote_mail *remote_mail_array;
 					int num_of_remote_mails;
@@ -1011,7 +1019,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			args.writemode = 0;
 
 			/* Get information of all mails within the folder */
-			if ((rm = imap_get_remote_mails(&args)))
+			if ((rm = imap_get_remote_mails(&empty_folder, &args)))
 			{
 				int i,j;
 				unsigned int max_todl_bytes = 0;
@@ -1156,6 +1164,13 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 
 				imap_free_remote_mailbox(rm);
+			} else
+			{
+				/* Assume success if folder was empty */
+				if (empty_folder)
+				{
+					success = 1;
+				}
 			}
 		}
 
@@ -1754,7 +1769,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 				args.set_status = options->callbacks.set_status;
 				args.set_status_static = options->callbacks.set_status_static;
 
-				if ((rm = imap_get_remote_mails(&args)))
+				if ((rm = imap_get_remote_mails(NULL, &args)))
 				{
 					int i,j;
 
@@ -1880,7 +1895,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
 						if (!imap_server->keep_orphans)
-							rm = imap_get_remote_mails(&args);
+							rm = imap_get_remote_mails(NULL, &args);
 						else
 							rm = NULL;
 					}

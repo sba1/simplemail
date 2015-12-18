@@ -1172,30 +1172,26 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	return success;
 }
 
+/*****************************************************************************/
+
+struct imap_login_really_callbacks
+{
+	int (*request_login)(char *text, char *login, char *password, int len);
+	void (*set_status_static)(const char *str);
+};
+
 /**
- * Synchronize a single imap account.
+ * Login into an IMAP server and return the connection.
  *
- * @param imap_server
- * @param options
- * @return 0 for failure, 1 for success.
- * @note 0 currently means abort.
+ * @param server the server to login.
+ * @param callbacks some callbacks.
+ * @return the connection
  */
-static int imap_synchronize_really_single(struct imap_server *server, struct imap_synchronize_callbacks *callbacks)
+static struct connection *imap_login_really(struct imap_server *server, struct imap_login_really_callbacks *callbacks)
 {
 	struct connection *conn;
 	struct connect_options conn_opts = {0};
-	char head_buf[100];
 	int error_code;
-
-	SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
-
-	sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
-	callbacks->set_head(head_buf);
-	if (server->title)
-		callbacks->set_title_utf8(server->title);
-	else
-		callbacks->set_title(server->name);
-	callbacks->set_connect_to_server(server->name);
 
 	/* Ask for the login/password */
 	if (server->ask)
@@ -1235,50 +1231,90 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 			SM_DEBUGF(10,("Login\n"));
 			if (imap_login(conn,server))
 			{
-				struct string_list *folder_list;
-				callbacks->set_status_static(_("Login successful"));
-				callbacks->set_status_static(_("Checking for folders"));
-
-				SM_DEBUGF(10,("Get folders\n"));
-				if ((folder_list = imap_get_folders(conn,0)))
-				{
-					struct string_node *node;
-
-					/* add the folders */
-					node = string_list_first(folder_list);
-					while (node)
-					{
-						callbacks->add_imap_folder(server->login,server->name,node->string);
-						node = (struct string_node*)node_next(&node->node);
-					}
-					callbacks->refresh_folders();
-
-					/* sync the folders */
-					node = string_list_first(folder_list);
-					while (node)
-					{
-						if (!(imap_synchonize_folder(conn, server, node->string, callbacks)))
-							break;
-						node = (struct string_node*)node_next(&node->node);
-					}
-
-					string_list_free(folder_list);
-				}
+				return conn;
 			} else
 			{
-				callbacks->set_status_static(_("Login failed!"));
+				callbacks->set_status_static(_("Authentication failed!"));
 				tell_from_subtask(N_("Authentication failed!"));
 			}
+		} else
+		{
+			callbacks->set_status_static(_("Unexpected server answer!"));
+			tell_from_subtask(N_("Unexpected server answer!"));
 		}
 		tcp_disconnect(conn);
-
-		if (thread_aborted()) return 0;
 	} else
 	{
 		SM_DEBUGF(10,("Unable to connect\n"));
-		if (thread_aborted()) return 0;
-		else tell_from_subtask((char*)tcp_strerror(error_code));
+		if (!thread_aborted())
+			tell_from_subtask((char*)tcp_strerror(error_code));
 	}
+	return NULL;
+}
+
+/**
+ * Synchronize a single imap account.
+ *
+ * @param imap_server
+ * @param options
+ * @return 0 for failure, 1 for success.
+ * @note 0 currently means abort.
+ */
+static int imap_synchronize_really_single(struct imap_server *server, struct imap_synchronize_callbacks *callbacks)
+{
+	struct connection *conn;
+	struct imap_login_really_callbacks login_callbacks = {0};
+	char head_buf[100];
+
+	SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
+
+	sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
+	callbacks->set_head(head_buf);
+	if (server->title)
+		callbacks->set_title_utf8(server->title);
+	else
+		callbacks->set_title(server->name);
+	callbacks->set_connect_to_server(server->name);
+
+	login_callbacks.request_login = callbacks->request_login;
+	login_callbacks.set_status_static = callbacks->set_status_static;
+
+	if ((conn = imap_login_really(server, &login_callbacks)))
+	{
+		struct string_list *folder_list;
+		callbacks->set_status_static(_("Login successful"));
+		callbacks->set_status_static(_("Checking for folders"));
+
+		SM_DEBUGF(10,("Get folders\n"));
+		if ((folder_list = imap_get_folders(conn,0)))
+		{
+			struct string_node *node;
+
+			/* add the folders */
+			node = string_list_first(folder_list);
+			while (node)
+			{
+				callbacks->add_imap_folder(server->login,server->name,node->string);
+				node = (struct string_node*)node_next(&node->node);
+			}
+			callbacks->refresh_folders();
+
+			/* sync the folders */
+			node = string_list_first(folder_list);
+			while (node)
+			{
+				if (!(imap_synchonize_folder(conn, server, node->string, callbacks)))
+					break;
+				node = (struct string_node*)node_next(&node->node);
+			}
+
+			string_list_free(folder_list);
+		}
+
+		tcp_disconnect(conn);
+	}
+
+	if (thread_aborted()) return 0;
 
 	/* We handle only the abort case as failure for now */
 	return 1;

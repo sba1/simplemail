@@ -1304,7 +1304,11 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 			while (node)
 			{
 				if (!(imap_synchonize_folder(conn, server, node->string, callbacks)))
+				{
+					sm_snprintf(head_buf,sizeof(head_buf),_("Failed to sync folder \"%s\""),node->string);
+					callbacks->set_status(head_buf);
 					break;
+				}
 				node = (struct string_node*)node_next(&node->node);
 			}
 

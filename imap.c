@@ -586,15 +586,9 @@ struct imap_get_remote_mails_args
 };
 
 /**
- * Read information of all mails in the given path. Put
- * this back into an array.
+ * Read information of all mails in the given path. Put this back into an array.
  *
- * @param conn defines the connection
- * @param path defines the utf8 encoded path.
- * @param writemode
- * @param headers specifies whether headers are requested.
- * @param uid_start
- * @param uid_end
+ * @param args arguments to this function.
  *
  * @return returns information of the mailbox in form of a remote_mailbox object.
  *         NULL on failure (for any reasons). If not NULL, the elements in remote_mail_array

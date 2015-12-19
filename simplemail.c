@@ -2140,7 +2140,14 @@ int callback_failed_ssl_verification(const char *server_name, const char *reason
 	if (choice == 2)
 	{
 		/* Trust always */
-		account_trust_server(server_name, sha256_supported?sha256_ascii:sha1_ascii);
+		const char *fingerprint = sha256_supported?sha256_ascii:sha1_ascii;
+		account_trust_server(server_name, fingerprint);
+		/* Inform the config window:
+		 *
+		 * TODO: The config window's test function should use an own hook for
+		 * this so that the fingerprint updated is  restricted to the config
+		 * window */
+		config_accounts_update_fingerprint(server_name, fingerprint);
 		sm_request(NULL,_("In order to trust the server permanently,\nyou must save the configuration."), _("OK"));
 	}
 	return !!choice;

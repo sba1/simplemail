@@ -269,6 +269,38 @@ void config_accounts_can_be_tested(int tested)
 	set(account_test_button, MUIA_Disabled, !tested);
 }
 
+/*****************************************************************************/
+
+void config_accounts_update_fingerprint(const char *server, const char *fingerprint)
+{
+	int i;
+
+	if (!config_wnd) return;
+
+	for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
+	{
+		struct account *ac;
+		DoMethod(account_account_list,MUIM_NList_GetEntry, i, (ULONG)&ac);
+
+		if (account_trust_server_for_single_account(ac, server, fingerprint))
+		{
+			if (ac == account_last_selected)
+			{
+				char *send_fingerprint;
+				char *recv_fingerprint;
+
+				send_fingerprint = ac->smtp->fingerprint;
+				recv_fingerprint = account_is_imap(ac)?ac->imap->fingerprint:ac->pop->fingerprint;
+
+				set(account_send_fingerprint_string, MUIA_String_Contents, send_fingerprint);
+				set(account_recv_fingerprint_string, MUIA_String_Contents, recv_fingerprint);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+
 /**
  * Object to string hook function for the startup folder popobject.
  */

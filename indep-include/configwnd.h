@@ -60,4 +60,13 @@ void config_accounts_set_send_failed_state(int state);
  */
 void config_accounts_can_be_tested(int tested);
 
+/**
+ * Inform the config window that the fingerprint of the given server has been
+ * changed.
+ *
+ * @param server name of the server for which the fingerprint has been updated.
+ * @param fingerprint the new fingerprint of the server.
+ */
+void config_accounts_update_fingerprint(const char *server, const char *fingerprint);
+
 #endif

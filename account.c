@@ -199,6 +199,38 @@ int account_is_server_trustworthy(const char *server_name, const char *fingerpri
 
 /*****************************************************************************/
 
+int account_trust_server_for_single_account(struct account *account, const char *server_name, const char *fingerprint)
+{
+	int rc;
+
+	rc = 0;
+
+	if (!mystricmp(account->smtp->name, server_name))
+	{
+		free(account->smtp->fingerprint);
+		account->smtp->fingerprint = mystrdup(fingerprint);
+		rc = 1;
+	}
+
+	if (!mystricmp(account->pop->name, server_name))
+	{
+		free(account->pop->fingerprint);
+		account->pop->fingerprint = mystrdup(fingerprint);
+		rc = 1;
+	}
+
+	if (!mystricmp(account->imap->name, server_name))
+	{
+		free(account->imap->fingerprint);
+		account->imap->fingerprint = mystrdup(fingerprint);
+		rc = 1;
+	}
+
+	return rc;
+}
+
+/*****************************************************************************/
+
 void account_trust_server(const char *server_name, const char *fingerprint)
 {
 	struct account *account;
@@ -206,24 +238,7 @@ void account_trust_server(const char *server_name, const char *fingerprint)
 	account = (struct account*)list_first(&user.config.account_list);
 	while (account)
 	{
-		if (!mystricmp(account->smtp->name, server_name))
-		{
-			free(account->smtp->fingerprint);
-			account->smtp->fingerprint = mystrdup(fingerprint);
-		}
-
-		if (!mystricmp(account->pop->name, server_name))
-		{
-			free(account->pop->fingerprint);
-			account->pop->fingerprint = mystrdup(fingerprint);
-		}
-
-		if (!mystricmp(account->imap->name, server_name))
-		{
-			free(account->imap->fingerprint);
-			account->imap->fingerprint = mystrdup(fingerprint);
-		}
-
+		account_trust_server_for_single_account(account, server_name, fingerprint);
 		account = (struct account*)node_next(&account->node);
 	}
 }

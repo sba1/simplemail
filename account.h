@@ -138,7 +138,18 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f);
 int account_is_server_trustworthy(const char *server_name, const char *fingerprint);
 
 /**
- * Trust the given server.
+ * Trust the server for a single account.
+ *
+ * @param account
+ * @param server_name
+ * @param fingerprint
+ * @return whether settings of the account has been changed (i.e., server was
+ *  associated to the account somehow).
+ */
+int account_trust_server_for_single_account(struct account *account, const char *server_name, const char *fingerprint);
+
+/**
+ * Trust the given server for all accounts.
  *
  * @param server_name
  * @param fingerprint

@@ -787,9 +787,9 @@ static int mails_test_account_entry(void *udata)
 
 	if (!ac)
 	{
-		callback(success);
 		return 0;
 	}
+
 	if (!thread_parent_task_can_contiue())
 		goto bailout;
 

@@ -57,6 +57,8 @@ struct progmon_default
 	utf8 *working_on;
 	unsigned int work;
 	unsigned int work_done;
+	progmon_cancel_callback_t cancel_callback;
+	void *cancel_callback_data;
 };
 
 static void progmon_begin(struct progmon *pm, unsigned int work, const utf8 *txt)
@@ -181,7 +183,7 @@ unsigned int progmon_get_number_of_actives(void)
 
 /*****************************************************************************/
 
-struct progmon *progmon_create(void)
+struct progmon *progmon_create_cancelable(progmon_cancel_callback_t cancel_callback, void *cancel_callback_data)
 {
 	struct progmon_default *pm;
 
@@ -193,9 +195,18 @@ struct progmon *progmon_create(void)
 		pm->pm.work = progmon_work;
 		pm->pm.canceled = progmon_canceled;
 		pm->pm.done = progmon_done;
+		pm->cancel_callback = cancel_callback;
+		pm->cancel_callback_data = cancel_callback_data;
 	}
 
 	return &pm->pm;
+}
+
+/*****************************************************************************/
+
+struct progmon *progmon_create(void)
+{
+	return progmon_create_cancelable(NULL, NULL);
 }
 
 /*****************************************************************************/
@@ -230,6 +241,7 @@ int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *uda
 		info.work = pm->work;
 		info.work_done = pm->work_done;
 		info.working_on = pm->working_on;
+		info.cancelable = !!pm->cancel_callback;
 
 		callback(&info,udata);
 
@@ -239,6 +251,32 @@ int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *uda
 	thread_unlock_semaphore(progmon_list_sem);
 
 	return num;
+}
+
+/*****************************************************************************/
+
+int progmon_cancel(int id)
+{
+	struct progmon_default *pm;
+	int canceled = 0;
+
+	thread_lock_semaphore(progmon_list_sem);
+	pm = (struct progmon_default*)list_first(&progmon_list);
+	while (pm)
+	{
+		if (pm->id == id)
+		{
+			if (pm->cancel_callback)
+			{
+				canceled = pm->cancel_callback(pm->cancel_callback_data);
+			}
+			break;
+		}
+		pm = (struct progmon_default*)node_next(&pm->pm.node);
+	}
+	thread_unlock_semaphore(progmon_list_sem);
+
+	return canceled;
 }
 
 /*****************************************************************************/

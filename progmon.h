@@ -65,12 +65,32 @@ struct progmon_info
 	utf8 *working_on;
 	unsigned int work;
 	unsigned int work_done;
+
+	/** Is the progress monitor cancelable */
+	int cancelable;
 };
+
+/**
+ * Progmon cancel callback type.
+ *
+ * @param udata supplied user data
+ * @return whether the cancel operation was successful
+ */
+typedef int (*progmon_cancel_callback_t)(void *udata);
+
+/**
+ * Create a new progress monitor with an ability to cancel.
+ *
+ * @param cancel_callback callback that is invoked when use intends to cancel the job.
+ * @param cancel_callback_data the user data supplied to the callback.
+ * @return the new progress monitor handle.
+ */
+struct progmon *progmon_create_cancelable(progmon_cancel_callback_t cancel_callback, void *cancel_callback_data);
 
 /**
  * Creates a new progress monitor.
  *
- * @return
+ * @return the new progress monitor handle.
  */
 struct progmon *progmon_create(void);
 
@@ -109,6 +129,14 @@ unsigned int progmon_get_number_of_actives(void);
  * @param udata
  */
 int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *udata);
+
+/**
+ * Cancel the progmon with the given id.
+ *
+ * @param id id of the progmon (as in progmon_info) to be cancelled.
+ * @return whether the cancel operation was successfully initiated
+ */
+int progmon_cancel(int id);
 
 /**
  * Initializes the progmon component.

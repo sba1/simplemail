@@ -29,6 +29,7 @@
 #include "account.h"
 #include "addressbook.h"
 #include "addresslist.h"
+#include "atcleanup.h"
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
@@ -770,6 +771,7 @@ int mails_upload_single(struct mail_info *mi)
 
 /*****************************************************************************/
 
+static semaphore_t test_account_thread_semaphore;
 static thread_t test_account_thread;
 
 struct mails_test_account_data
@@ -895,9 +897,22 @@ bailout:
 
 	callback(success);
 
-	/* It is okay if the thread is shortly yielded after setting this to NULL */
+	thread_lock_semaphore(test_account_thread_semaphore);
 	test_account_thread = NULL;
+	thread_unlock_semaphore(test_account_thread_semaphore);
+
+	/* It is okay if this thread is shortly yielded after setting this to NULL */
 	return success; /* Return value not really relevant */
+}
+
+/**
+ * Cleanup function for mails test account feature.
+ *
+ * @param userdata
+ */
+static void mails_test_account_cleanup(void *userdata)
+{
+	thread_dispose_semaphore(test_account_thread_semaphore);
 }
 
 /*****************************************************************************/
@@ -905,13 +920,32 @@ bailout:
 int mails_test_account(struct account *ac, account_tested_callback_t callback)
 {
 	struct mails_test_account_data data = {0};
+	int thread_active = 0;
 
-	if (test_account_thread) return 0;
+	if (!test_account_thread_semaphore)
+	{
+		if (!(test_account_thread_semaphore = thread_create_semaphore()))
+			return 0;
+		atcleanup(mails_test_account_cleanup, NULL);
+	}
+
+	thread_lock_semaphore(test_account_thread_semaphore);
+	thread_active = !!test_account_thread;
+	thread_unlock_semaphore(test_account_thread_semaphore);
+
+	/* If thread is already active return failure. We only support one test
+	 * in row for now.
+	 */
+	if (thread_active)
+		return 0;
 
 	data.ac = ac;
 	data.callback = callback;
 
-	if (!(test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, &data)))
-		return 0;
-	return 1;
+	thread_lock_semaphore(test_account_thread_semaphore);
+	test_account_thread = thread_add("SimpleMail - Test Account", mails_test_account_entry, &data);
+	thread_active = !!test_account_thread;;
+	thread_unlock_semaphore(test_account_thread_semaphore);
+
+	return thread_active;
 }

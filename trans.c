@@ -780,6 +780,35 @@ struct mails_test_account_data
 	account_tested_callback_t callback;
 };
 
+/**
+ * Called when user cancels the job associated to the task.
+ *
+ * @param udata
+ * @return whether the cancel request was successfully transmitted
+ */
+static int mails_test_account_cancel(void *udata)
+{
+	int rc;
+
+	thread_lock_semaphore(test_account_thread_semaphore);
+	if (test_account_thread)
+	{
+		thread_abort(test_account_thread);
+		rc = 1;
+	} else
+	{
+		rc = 0;
+	}
+	thread_unlock_semaphore(test_account_thread_semaphore);
+	return rc;
+}
+
+/**
+ * Code of the account testing thread.
+ *
+ * @param udata
+ * @return
+ */
 static int mails_test_account_entry(void *udata)
 {
 	struct progmon *pm = NULL;
@@ -796,7 +825,7 @@ static int mails_test_account_entry(void *udata)
 		goto bailout;
 
 	/* Progress monitor is optional */
-	if ((pm = progmon_create()))
+	if ((pm = progmon_create_cancelable(mails_test_account_cancel, NULL)))
 	{
 		utf8 txt[80];
 		utf8fromstr(_("Testing account settings"),NULL,txt,sizeof(txt));

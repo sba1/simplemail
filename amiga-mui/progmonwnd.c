@@ -120,7 +120,10 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 				End;
 
 		if (!next_node->progmon_group)
+		{
+			free(next_node);
 			return;
+		}
 
 		DoMethod(progmon_group, OM_ADDMEMBER, (ULONG)next_node->progmon_group);
 		list_insert_tail(&progmon_gui_list,&next_node->node);

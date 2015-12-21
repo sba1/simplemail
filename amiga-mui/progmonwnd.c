@@ -96,6 +96,16 @@ static void progmonwnd_init(void)
 }
 
 /**
+ * Function to be called on a cancel click.
+ *
+ * @param node
+ */
+static void progmonwnd_cancel(struct progmon_gui_node **node)
+{
+	progmon_cancel((*node)->id);
+}
+
+/**
  * Called for every progress monitor.
  *
  * @param info
@@ -136,6 +146,7 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 
 		set(next_node->progmon_cancel_button, MUIA_Weight, 0);
 		DoMethod(progmon_group, OM_ADDMEMBER, (ULONG)next_node->progmon_group);
+		DoMethod(next_node->progmon_cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, next_node->progmon_cancel_button, 4, MUIM_CallHook, &hook_standard, progmonwnd_cancel, next_node);
 		list_insert_tail(&progmon_gui_list,&next_node->node);
 
 		SM_DEBUGF(20,("Node %p added\n",next_node));

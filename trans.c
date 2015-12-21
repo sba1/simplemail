@@ -860,6 +860,7 @@ static int mails_test_account_entry(void *udata)
 				} else
 				{
 					status_text = _("Failed to login into IMAP4 server");
+					success |= IMAP4_FAILED;
 				}
 				close_socket_lib();
 			} else

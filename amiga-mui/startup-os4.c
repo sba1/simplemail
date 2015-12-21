@@ -843,6 +843,15 @@ void *realloc(void *om, size_t size)
 	return nm;
 }
 
+void *calloc(size_t nmemb, size_t size)
+{
+	void *mem;
+	if (!(mem = malloc(nmemb * size)))
+		return NULL;
+	memset(mem,0,nmemb * size);
+	return mem;
+}
+
 /***************************************************
  IO Stuff.
  This is a very simple and primitive functions of

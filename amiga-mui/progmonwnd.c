@@ -49,8 +49,13 @@ static Object *progmon_noop;
 struct progmon_gui_node
 {
 	struct node node;
+
+	/** Progress id */
+	int id;
+
 	Object *progmon_group;
 	Object *progmon_gauge;
+	Object *progmon_cancel_button;
 
 	utf8 working_on_utf8[80];
 	char working_on[80];
@@ -58,6 +63,9 @@ struct progmon_gui_node
 
 static struct list progmon_gui_list;
 
+/**
+ * Initialize the progmod window.
+ */
 static void progmonwnd_init(void)
 {
 	if (!MUIMasterBase) return;
@@ -117,6 +125,7 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 					MUIA_Gauge_Max, info->work,
 					MUIA_Gauge_InfoText, next_node->working_on,
 					End,
+				Child, next_node->progmon_cancel_button = MakeButton("Cancel"),
 				End;
 
 		if (!next_node->progmon_group)
@@ -125,6 +134,7 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 			return;
 		}
 
+		set(next_node->progmon_cancel_button, MUIA_Weight, 0);
 		DoMethod(progmon_group, OM_ADDMEMBER, (ULONG)next_node->progmon_group);
 		list_insert_tail(&progmon_gui_list,&next_node->node);
 
@@ -142,6 +152,9 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 
 		*next_node_ptr = (struct progmon_gui_node *)node_next(&next_node->node);
 	}
+
+	set(next_node->progmon_cancel_button, MUIA_ShowMe, info->cancelable);
+	next_node->id = info->id;
 
 	SM_LEAVE;
 }

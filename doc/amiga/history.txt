@@ -1,3 +1,13 @@
+Version 0.42 (28th beta) - released on 2015/12/24
+   - Updated OpenSSL version to 1.0.1q
+   - TLS support for SMTP servers (SMTPS, port 465)
+   - Ability to check account settings within the account configuration
+   - Serveral MorphOS specific fixes (thanks to henes)
+   - DEBUGMODULES command line options supports now '?' as value to
+     print all modules that have logging output (OS 4.x only)
+   - Various bug fixes and internal improvements to simplify next
+     development steps
+
 Version 0.41 (27th beta; Final Edition) - released on 2014/12/24
    - Added some server certificate checks including the possibility
      to manually specify the fingerprints of the remote servers

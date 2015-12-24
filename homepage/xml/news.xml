@@ -1,6 +1,61 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 
 <news>
+
+  <entry date="2015/12/24">
+   <text lang="en">
+    The New Edition of SimpleMail has been released (binaries still on SourceForge)! Version
+    0.42 comes with following changes:
+    <list>
+     <item>
+      Updated OpenSSL version to 1.0.1q
+     </item>
+     <item>
+      TLS support for SMTP servers (SMTPS, port 465)
+     </item>
+     <item>
+      Ability to check account settings within the account configuration
+     </item>
+     <item>
+      Serveral MorphOS specific fixes (thanks to henes)
+     </item>
+     <item>
+      DEBUGMODULES command line options supports now '?' as value to print all modules that have logging output (OS 4.1 for now)
+     </item>
+     <item>
+      Various bug fixes and internal improvements to simplify next development steps
+     </item>
+    </list>
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2016!
+   </text>
+
+   <text lang="de">
+    Die New Edition von SimpleMail wurde veröffentlicht (Binärdateien noch über SourceForge).
+    Version 0.42 kommt mit folgenden Änderungen:
+    <list>
+     <item>
+      OpenSSL auf 1.0.1q aktualisiert
+     </item>
+     <item>
+      Unterstützung für TLS auch für SMTP-Server (SMTPS, Port 465)
+     </item>
+     <item>
+      Kontoeinstellungen können jetzt direkt im Voreinstellungsdialog überprüft werden
+     </item>
+     <item>
+      Fehlerbereinigungen für MorphOS (henes)
+     </item>
+     <item>
+      Module mit Logging-Unterstützung können mit DEBUGMODULES=? angezeigt werden (zur Zeit nur unter OS 4.1)
+     </item>
+     <item>
+      Weitere Fehlerbereinigungen und interne Verbesserungen zur Vereinfachung der nächsten Entwicklungsschritte
+     </item>
+    </list>
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   </text>
+  </entry>
+
   <entry date="2014/12/24">
    <text lang="en">
     The Final Edition of SimpleMail on SourceForge has been released! Version
@@ -21,7 +76,7 @@
       to GitHub (https://github.com/sba1/simplemail)
      </item>
     </list>
-    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2014!
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2015!
    </text>
 
    <text lang="de">
@@ -52,7 +107,7 @@
      <item>Fixed several memory leaks</item>
     </list>
 
-    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2013!
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2014!
    </text>
    
    <text lang="de">

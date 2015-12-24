@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** transwndclass.c
-*/
+/**
+ * @file transwndclass.c
+ */
 
 #ifdef __AROS__
 #include <dos/dos.h>
@@ -522,6 +522,9 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	return start;
 }
 
+/**
+ * The Boopsi dispatcher for the transwnd class.
+ */
 STATIC MY_BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -541,7 +544,11 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 	return(DoSuperMethodA(cl, obj, msg));
 }
 
+/*****************************************************************************/
+
 struct MUI_CustomClass *CL_transwnd;
+
+/*****************************************************************************/
 
 int create_transwnd_class(VOID)
 {
@@ -554,6 +561,8 @@ int create_transwnd_class(VOID)
 	SM_DEBUGF(5,("FAILED! Create CL_transwnd\n",CL_transwnd));
 	SM_RETURN(0,"%ld");
 }
+
+/*****************************************************************************/
 
 VOID delete_transwnd_class(VOID)
 {

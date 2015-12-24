@@ -14,7 +14,13 @@
       TLS support for SMTP servers (SMTPS, port 465)
      </item>
      <item>
+      STARTTLS support for IMAP4 servers
+     </item>
+     <item>
       Ability to check account settings within the account configuration
+     </item>
+     <item>
+      Revised error window
      </item>
      <item>
       Serveral MorphOS specific fixes (thanks to henes)
@@ -40,7 +46,13 @@
       Unterstützung für TLS auch für SMTP-Server (SMTPS, Port 465)
      </item>
      <item>
+      STARTTLS-Unterstützung für IMAP4-Server
+     </item>
+     <item>
       Kontoeinstellungen können jetzt direkt im Voreinstellungsdialog überprüft werden
+     </item>
+     <item>
+      Überarbeitetes Fehleranzeigefenster
      </item>
      <item>
       Fehlerbereinigungen für MorphOS (henes)

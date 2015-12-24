@@ -1,7 +1,9 @@
 Version 0.42 (28th beta) - released on 2015/12/24
    - Updated OpenSSL version to 1.0.1q
    - TLS support for SMTP servers (SMTPS, port 465)
+   - STARTTLS support for IMAP4 servers
    - Ability to check account settings within the account configuration
+   - Revised error window
    - Serveral MorphOS specific fixes (thanks to henes)
    - DEBUGMODULES command line options supports now '?' as value to
      print all modules that have logging output (OS 4.x only)

@@ -55,7 +55,7 @@ $arosdate = "2011/02/26";
 
 <tr bgcolor="lightgray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$morphversion.'-morphos.lha?download">'."simplemail-$morphversion-morphos.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$morphversion.'-openssl-morphos.lha?download">'."simplemail-$morphversion-openssl-morphos.lha".'</A></td>';
   echo '<td align="center">'.$morphversion.'</td>';
   echo '<td align="center">'.$morphdate.'</td>';
 ?>

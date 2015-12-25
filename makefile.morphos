@@ -79,6 +79,7 @@ ARCHSRCS=\
 	popupmenuclass.c \
 	progmonwnd.c \
 	readwnd.c \
+	request.c \
 	searchwnd.c \
 	shutdownwnd.c \
 	smtoolbarclass.c \
@@ -86,10 +87,11 @@ ARCHSRCS=\
 	signaturecycleclass.c \
 	startupwnd.c \
 	statuswnd.c \
-	subthreads.c \
+	subthreads_amiga.c \
 	support.c \
 	sysprint.c \
 	tcpip.c \
+	timesupport.c \
 	transwndclass.c \
 	utf8stringclass.c \
 	vsnprintf.c

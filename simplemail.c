@@ -2604,7 +2604,7 @@ int simplemail_init(void)
 
 	if (!ssl_init())
 	{
-		SM_DEBUGF(1,("Couldn't initializte ssl subsystem!\n"));
+		SM_DEBUGF(1,("Couldn't initialize ssl subsystem!\n"));
 		goto out;
 	}
 

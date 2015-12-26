@@ -23,6 +23,8 @@
 #ifndef SM__AMIGASUPPORT_H
 #define SM__AMIGASUPPORT_H
 
+#include <dos/dos.h>
+
 void SecondsToString( char *buf, unsigned int seconds);
 void SecondsToStringLong( char *buf, unsigned int seconds);
 void SecondsToDateString( char *buf, unsigned int seconds);

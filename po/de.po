@@ -2,7 +2,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: SimpleMail 0.41\n"
+"Project-Id-Version: SimpleMail 0.43\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-24 10:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -641,7 +641,7 @@ msgstr "Senden"
 
 #: amiga-mui/configwnd.c:1231 amiga-mui/configwnd.c:1239
 msgid "None"
-msgstr ""
+msgstr "Nicht"
 
 #: amiga-mui/configwnd.c:1232
 msgid "STLS"
@@ -789,13 +789,13 @@ msgid ""
 "provider if unknown)."
 msgstr ""
 "Der Name des POP3- oder IMAP4-Servers von\n"
-"dem die Nachrichten herrunter geladen werden\n"
+"dem die Nachrichten herunter geladen werden\n"
 "(wird benötigt; fragen Sie Ihren Provider\n"
 "falls dieser unbekannt ist)."
 
 #: amiga-mui/configwnd.c:1470
 msgid "The port number. Usually 110"
-msgstr "Die Port Nummer. Gewöhnlich 110"
+msgstr "Die Port-Nummer. Gewöhnlich 110"
 
 #: amiga-mui/configwnd.c:1471 amiga-mui/configwnd.c:1480
 msgid ""
@@ -832,7 +832,7 @@ msgid ""
 "After successful downloading the mails should be deleted\n"
 "on the POP3 server."
 msgstr ""
-"Nachdem die Nachricht erfolgreich herruntergeladen wurde\n"
+"Nachdem die Nachricht erfolgreich heruntergeladen wurde\n"
 "wird sie vom POP3-Server gelöscht."
 
 #: amiga-mui/configwnd.c:1476
@@ -857,6 +857,8 @@ msgid ""
 "Choose how the security of the connection to the\n"
 "POP3 or IMAP server is established."
 msgstr ""
+"Definiert wie die Sicherheit der Verbindung zum\n"
+"POP3- oder IMAP-Server hergestellt wird."
 
 #: amiga-mui/configwnd.c:1479
 msgid ""
@@ -868,7 +870,7 @@ msgstr ""
 
 #: amiga-mui/configwnd.c:1481
 msgid "The port number. Usually 25"
-msgstr "Die Port Nummer. Gewöhnlich 25."
+msgstr "Die Port-Nummer. Gewöhnlich 25."
 
 #: amiga-mui/configwnd.c:1482
 msgid ""
@@ -899,6 +901,8 @@ msgid ""
 "Choose how the security of the connection to the\n"
 "SMTP server is established."
 msgstr ""
+"Definiert wie die Sicherheit der Verbindung zum\n"
+"SMTP-Server hergestellt wird."
 
 #: amiga-mui/configwnd.c:1486
 msgid ""
@@ -2042,7 +2046,7 @@ msgstr "Kompiliert aus %s mit Hilfe von gcc %s."
 
 #: amiga-mui/mainwnd.c:245
 msgid "No ssl support."
-msgstr ""
+msgstr "Kein SSL-Unterstützung."
 
 #: amiga-mui/mainwnd.c:256
 #, c-format
@@ -2571,7 +2575,7 @@ msgstr "Abbruch"
 
 #: amiga-mui/signaturecycleclass.c:167 amiga-mui/signaturecycleclass.c:345
 msgid "Without"
-msgstr ""
+msgstr "Ohne"
 
 #: amiga-mui/sysprint.c:62
 msgid "Failed while sending data to printer!"
@@ -2783,7 +2787,7 @@ msgstr "Login fehlgeschlagen!"
 
 #: imap.c:1326 imap.c:1553
 msgid "Authentication failed!"
-msgstr ""
+msgstr "Authentifizierung fehlgeschlagen!"
 
 #: imap.c:1330 imap.c:1394
 msgid "Reading folders..."
@@ -3096,7 +3100,7 @@ msgstr "Die Verbindung zum Sever %s konnte nicht hergestellt werden. %s."
 
 #: print.c:103
 msgid "Carbon Copy"
-msgstr ""
+msgstr "Durchschlag"
 
 #: print.c:207
 msgid "I/O-Error."
@@ -3221,24 +3225,34 @@ msgid ""
 "SHA1: %s\n"
 "SHA256: %s"
 msgstr ""
+"Fehler beim Überprüfen des Serverzertifikats\n"
+"%s\n"
+"\n"
+"%s\n"
+"\n"
+"%s\n"
+"SHA1: %s\n"
+"SHA256: %s"
 
 #: simplemail.c:2139
 msgid "Connect anyway|Trust always|Abort"
-msgstr ""
+msgstr "Trotzdem verbinden|Vertraue immer|Abbruch"
 
 #: simplemail.c:2139
 msgid "Not supported"
-msgstr ""
+msgstr "Nicht unterstützt"
 
 #: simplemail.c:2151
 msgid ""
 "In order to trust the server permanently,\n"
 "you must save the configuration."
 msgstr ""
+"Um dem Server permanent zu vertrauen,\n"
+"müssen Sie die Konfiguration speichern."
 
 #: simplemail.c:2351
 msgid "All mails downloaded completely"
-msgstr ""
+msgstr "Alle Nachrichten vollständig runtergeladen"
 
 #: simplemail.c:2398
 msgid "Downloading complete mails"
@@ -3316,7 +3330,7 @@ msgid ""
 "AUTH failed. User couldn't be authenticated. Please recheck your settings."
 msgstr ""
 "AUTH fehlgeschlagen. Benutzer konnte nicht authentifiziert werden. Bitte "
-"dieEinstellungen überprüfen."
+"die Einstellungen überprüfen."
 
 #. starts from 1
 #: smtp.c:848
@@ -3415,7 +3429,7 @@ msgstr "Angegebener Host konnte nicht gefunden werden"
 
 #: tcp.c:96
 msgid "Cannot locate host. Try again later"
-msgstr "Cann"
+msgstr "Kann Host nicht auffinden. Versuche es später noch einmal"
 
 #: tcp.c:97
 msgid "Unexpected server failure"
@@ -3423,7 +3437,7 @@ msgstr "Serverausfall"
 
 #: tcp.c:98
 msgid "No IP associated with name"
-msgstr "Keine IP Adresse für den Namen gefunden"
+msgstr "Keine IP-Adresse für den Namen gefunden"
 
 #: tcp.c:99
 msgid "The specified address is not available on this machine"

@@ -40,6 +40,7 @@ NONARCHSRCS=\
 	print.c \
 	progmon.c \
 	punycode.c \
+	ringbuffer.c \
 	signature.c \
 	simplemail.c \
 	smintl.c \

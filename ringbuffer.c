@@ -120,7 +120,8 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		while (rb->next_alloc <= rb->next_free && rb->next_alloc + size >= rb->next_free)
 		{
 			size_t free_size = *(size_t*)rb->next_free;
-			rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size, rb->userdata);
+			if (rb->free_callback)
+				rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size, rb->userdata);
 			rb->next_free += free_size + sizeof(size_t);
 		}
 

@@ -27,6 +27,7 @@ NONARCHSRCS=\
 	index_external.c \
 	index_naive.c \
 	lists.c \
+	logging.c \
 	mail.c \
 	mail_support.c \
 	mailinfo_extractor.c \

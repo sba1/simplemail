@@ -74,7 +74,6 @@ ringbuffer_t ringbuffer_create(size_t size, ringbuffer_free_callback_t free_call
 		ringbuffer_dispose(rb);
 		return NULL;
 	}
-	printf("mem@%p\n", rb->mem);
 	rb->size = size;
 	rb->next_alloc = rb->mem;
 	rb->memend = rb->mem + size;

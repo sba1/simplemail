@@ -86,3 +86,21 @@ void test_ringbuffer_three_entries_only_two_fit_initially(void)
 	CU_ASSERT(called == 2);
 	ringbuffer_dispose(rb);
 }
+
+/*****************************************************************************/
+
+/* @Test */
+void test_ringbuffer_three_entries_only_two_fit_initially_subsequent_frees(void)
+{
+	void *mem;
+	ringbuffer_t rb;
+	int called = 0;
+
+	CU_ASSERT((rb = ringbuffer_create(1000, test_ringbuffer_three_entries_only_two_fit_initially_free_callback, &called)) != NULL);
+	CU_ASSERT((ringbuffer_alloc(rb, 400)) != NULL);
+	CU_ASSERT((ringbuffer_alloc(rb, 500)) != NULL);
+	CU_ASSERT((ringbuffer_alloc(rb, 600)) != NULL);
+	CU_ASSERT((ringbuffer_alloc(rb, 600)) != NULL);
+	CU_ASSERT(called == 3);
+	ringbuffer_dispose(rb);
+}

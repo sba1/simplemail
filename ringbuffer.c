@@ -111,7 +111,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		 * element beforehand */
 		if (rb->next_alloc + sizeof(size_t) < rb->memend)
 		{
-			*(size_t*)rb->next_alloc = 0;
+			*(size_t*)rb->next_alloc = ~0;
 		}
 		rb->next_alloc = rb->mem;
 	}
@@ -124,7 +124,12 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 			rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size, rb->userdata);
 			rb->next_free += free_size + sizeof(size_t);
 		}
-		/* TODO: Wrap next_free if size is 0 */
+
+		/* Wrap next free */
+		if (*(size_t*)rb->next_free == ~0)
+		{
+			rb->next_free = rb->mem;
+		}
 	} else
 	{
 		rb->next_free = rb->next_alloc;

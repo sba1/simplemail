@@ -64,26 +64,41 @@ void test_ringbuffer_single_entry_that_does_not_fit(void)
 
 /*****************************************************************************/
 
+struct test_ringbuffer_three_entries_only_two_fit_initially_free_callback_data
+{
+	int num_expected_mem;
+	void *expected_mem[2];
+	int called;
+};
+
 static void test_ringbuffer_three_entries_only_two_fit_initially_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
 {
-	int *called = (int*)userdata;
-	*called = *called + 1;
-
-	printf("Free mem@%p\n", mem);
+	struct test_ringbuffer_three_entries_only_two_fit_initially_free_callback_data *data = (struct test_ringbuffer_three_entries_only_two_fit_initially_free_callback_data*)userdata;
+	data->called++;
+	if (data->num_expected_mem)
+	{
+		CU_ASSERT(mem == data->expected_mem[data->num_expected_mem - 1]);
+		data->num_expected_mem--;
+	}
 }
 
 /* @Test */
 void test_ringbuffer_three_entries_only_two_fit_initially(void)
 {
-	void *mem;
+	struct test_ringbuffer_three_entries_only_two_fit_initially_free_callback_data data = {0};
 	ringbuffer_t rb;
-	int called = 0;
+	void *mem[3];
 
-	CU_ASSERT((rb = ringbuffer_create(1000, test_ringbuffer_three_entries_only_two_fit_initially_free_callback, &called)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 400)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 500)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 600)) != NULL);
-	CU_ASSERT(called == 2);
+	CU_ASSERT((rb = ringbuffer_create(1000, test_ringbuffer_three_entries_only_two_fit_initially_free_callback, &data)) != NULL);
+	CU_ASSERT((mem[0] = ringbuffer_alloc(rb, 400)) != NULL);
+	CU_ASSERT((mem[1] = ringbuffer_alloc(rb, 500)) != NULL);
+
+	/* Next allocation should cause all items to be freed */
+	data.expected_mem[1] = mem[0];
+	data.expected_mem[0] = mem[1];
+	data.num_expected_mem = 2;
+	CU_ASSERT((mem[2] = ringbuffer_alloc(rb, 600)) != NULL);
+	CU_ASSERT(data.called == 2);
 	ringbuffer_dispose(rb);
 }
 
@@ -92,15 +107,26 @@ void test_ringbuffer_three_entries_only_two_fit_initially(void)
 /* @Test */
 void test_ringbuffer_three_entries_only_two_fit_initially_subsequent_frees(void)
 {
-	void *mem;
+	struct test_ringbuffer_three_entries_only_two_fit_initially_free_callback_data data = {0};
 	ringbuffer_t rb;
-	int called = 0;
+	void *mem[4];
 
-	CU_ASSERT((rb = ringbuffer_create(1000, test_ringbuffer_three_entries_only_two_fit_initially_free_callback, &called)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 400)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 500)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 600)) != NULL);
-	CU_ASSERT((ringbuffer_alloc(rb, 600)) != NULL);
-	CU_ASSERT(called == 3);
+	CU_ASSERT((rb = ringbuffer_create(1000, test_ringbuffer_three_entries_only_two_fit_initially_free_callback, &data)) != NULL);
+	CU_ASSERT((mem[0] = ringbuffer_alloc(rb, 400)) != NULL);
+	CU_ASSERT((mem[1] = ringbuffer_alloc(rb, 500)) != NULL);
+
+
+	/* Next allocation should cause all items to be freed */
+	data.expected_mem[1] = mem[0];
+	data.expected_mem[0] = mem[1];
+	data.num_expected_mem = 2;
+	CU_ASSERT((mem[2] = ringbuffer_alloc(rb, 600)) != NULL);
+
+	/* Next allocation should cause the previous item to be freed */
+	data.expected_mem[0] = mem[2];
+	data.num_expected_mem = 1;
+	CU_ASSERT((mem[3] = ringbuffer_alloc(rb, 600)) != NULL);
+
+	CU_ASSERT(data.called == 3);
 	ringbuffer_dispose(rb);
 }

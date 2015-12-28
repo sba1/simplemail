@@ -41,6 +41,7 @@
 #include "folder_search_thread.h"
 #include "imap_thread.h" /* imap_thread_xxx() */
 #include "lists.h"
+#include "logging.h"
 #include "mail.h"
 #include "mailinfo_extractor.h"
 #include "mbox.h"
@@ -2546,6 +2547,7 @@ void simplemail_deinit(void)
 
 	SM_LEAVE;
 
+	logg_dispose();
 	debug_deinit();
 }
 
@@ -2555,6 +2557,8 @@ int simplemail_init(void)
 {
 	if (!debug_init())
 		goto out;
+
+	logg_init();
 
 #ifdef ENABLE_NLS
 	setlocale(LC_ALL, "");

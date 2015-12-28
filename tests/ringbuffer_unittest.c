@@ -130,3 +130,35 @@ void test_ringbuffer_three_entries_only_two_fit_initially_subsequent_frees(void)
 	CU_ASSERT(data.called == 3);
 	ringbuffer_dispose(rb);
 }
+
+/*****************************************************************************/
+
+/* @Test */
+void test_ringbuffer_traversing(void)
+{
+	ringbuffer_t rb;
+	void *mem[16];
+	void *entry;
+	int count=0;
+	int i;
+	int last_payload;
+
+	CU_ASSERT((rb = ringbuffer_create(1000, NULL, NULL)) != NULL);
+
+	/* Depending on the actual implementation, this could evict one or more entries */
+	for (i=0; i < 11; i++)
+	{
+		CU_ASSERT((mem[i] = ringbuffer_alloc(rb, 100)) != NULL);
+		*((int*)mem[i]) = i;
+	}
+
+	entry = NULL;
+	while ((entry = ringbuffer_next(rb, entry)))
+	{
+		last_payload = *(int*)entry;
+		count++;
+	}
+	CU_ASSERT(count >= 8);
+	CU_ASSERT(last_payload == 10);
+	ringbuffer_dispose(rb);
+}

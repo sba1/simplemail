@@ -91,6 +91,20 @@ void ringbuffer_dispose(ringbuffer_t rb)
 	free(rb);
 }
 
+
+/**
+ * Free least recently used element and update data structure.
+ *
+ * @param rb the ringbuffer
+ */
+void ringbuffer_free_least_recently_allocated(ringbuffer_t rb)
+{
+	size_t free_size = *(size_t*) rb->next_free;
+	if (rb->free_callback)
+		rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size - sizeof(size_t), rb->userdata);
+	rb->next_free += free_size;
+}
+
 /*****************************************************************************/
 
 void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
@@ -108,36 +122,68 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 	{
 		/* New buffer doesn't fit in the remaining space, wrap, but "tag" the
 		 * element beforehand */
-		if (rb->next_alloc + sizeof(size_t) < rb->memend)
-		{
+		if (rb->next_alloc < rb->memend)
 			*(size_t*)rb->next_alloc = ~0;
-		}
 		rb->next_alloc = rb->mem;
 	}
 
 	if (rb->next_free)
 	{
-		while (rb->next_alloc <= rb->next_free && rb->next_alloc + size >= rb->next_free)
-		{
-			size_t free_size = *(size_t*)rb->next_free;
-			if (rb->free_callback)
-				rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size, rb->userdata);
-			rb->next_free += free_size + sizeof(size_t);
-		}
+		/* Free enough space */
+		while (rb->next_alloc <= rb->next_free && rb->next_alloc + size > rb->next_free)
+			ringbuffer_free_least_recently_allocated(rb);
 
 		/* Wrap next free */
 		if (*(size_t*)rb->next_free == ~0)
-		{
 			rb->next_free = rb->mem;
-		}
 	} else
 	{
+		/* Next alloc will soon be moved down */
 		rb->next_free = rb->next_alloc;
 	}
 
 	/* Remember truely occupied size */
 	*((size_t*)rb->next_alloc) = size;
 	addr = rb->next_alloc + sizeof(size_t);
-	rb->next_alloc = addr + size;
+	rb->next_alloc = addr + size - sizeof(size_t);
+
+	/* If next alloc matches next free, free another item */
+	if (rb->next_alloc == rb->next_free)
+	{
+		ringbuffer_free_least_recently_allocated(rb);
+
+		/* Wrap next free */
+		if (*(size_t*)rb->next_free == ~0)
+			rb->next_free = rb->mem;
+	}
 	return addr;
+}
+
+/*****************************************************************************/
+
+void *ringbuffer_next(ringbuffer_t rb, void *item)
+{
+	size_t size;
+	unsigned char *next;
+
+	if (!item) return rb->next_free + sizeof(size_t);
+
+	item = ((unsigned char*)item) - sizeof(size_t);
+
+	/* Determine next item */
+	size = *(size_t*)item;
+	next = ((unsigned char*)item) + size;
+
+	/* If this matches next alloc, it was the last one */
+	if (next == rb->next_alloc) return NULL;
+
+	/* Handle wrapping */
+	if (*(size_t*)next == ~0)
+	{
+		/* Item was final one */
+		item = rb->mem;
+		if (item == rb->next_alloc) return NULL;
+		return item + sizeof(size_t);
+	}
+	return next + sizeof(size_t);
 }

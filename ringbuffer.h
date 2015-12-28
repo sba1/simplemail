@@ -64,4 +64,12 @@ void ringbuffer_dispose(ringbuffer_t rb);
  */
 void *ringbuffer_alloc(ringbuffer_t rb, size_t size);
 
+/**
+ * Return the next ring buffer item of the given item.
+ *
+ * @param item the item of which the next one shall be returned or NULL for the
+ *  oldest one.
+ */
+void *ringbuffer_next(ringbuffer_t rb, void *item);
+
 #endif /* SM__RINGBUFFER_H */

@@ -40,6 +40,7 @@ TESTEXES=\
 	index_unittest \
 	index_external_unittest \
 	imap2_unittest \
+	logging_unittest \
 	mail_unittest \
 	pop3_unittest \
 	ringbuffer_unittest \

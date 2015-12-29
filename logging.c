@@ -29,6 +29,7 @@
 /*****************************************************************************/
 
 static ringbuffer_t logg_rb;
+static unsigned int logg_id;
 
 struct logg_s
 {
@@ -38,6 +39,7 @@ struct logg_s
 	const char *function;
 	char *text;
 	int line;
+	int id;
 };
 
 typedef struct logg_s *logg_t;
@@ -82,6 +84,7 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	logg->function = function;
 	logg->text = (char*)(logg + 1);
 	logg->line = line;
+	logg->id = logg_id++;
 	strcpy(logg->text, text);
 }
 

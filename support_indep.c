@@ -42,6 +42,17 @@
 
 /*****************************************************************************/
 
+void sm_get_current_time(unsigned int *seconds, unsigned int *mics)
+{
+	do
+	{
+		*seconds = sm_get_current_seconds();
+		*mics = sm_get_current_micros();
+	} while (sm_get_current_seconds() != *seconds);
+}
+
+/*****************************************************************************/
+
 int has_spaces(const char *str)
 {
 	char c;

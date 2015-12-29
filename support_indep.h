@@ -29,6 +29,14 @@
 #include <string.h>
 
 /**
+ * Return the current time in seconds and micro seconds.
+ *
+ * @param seconds where the seconds are stored.
+ * @param mics where the micro seconds are strored.
+ */
+void sm_get_current_time(unsigned int *seconds, unsigned int *mics);
+
+/**
  * Returns whether the given string has spaces.
  *
  * @param str

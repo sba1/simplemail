@@ -87,6 +87,24 @@ logg_t logg_next(logg_t current);
  */
 const char *logg_text(logg_t logg);
 
+/**
+ * Return the seconds part of the time stamp of the log entry.
+ *
+ * @param logg the logg entry
+ * @return the seconds
+ */
+unsigned int logg_seconds(logg_t logg);
+
+/**
+ * Return the milli seconds part of the time stamp of the log entry.
+ *
+ * @param logg the logg entry
+ * @return the milli seconds
+ */
+unsigned int logg_millis(logg_t logg);
+
 #define SM_LOG_INFO(level,text) do { static const char filename[] __attribute__((used, section("LOGMODULES"))) = "LOGMODULE:" __FILE__; logg(INFO, 0, __FILE__, __PRETTY_FUNCTION__, __LINE__, text);}} while (0)
+
+
 
 #endif

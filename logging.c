@@ -110,3 +110,17 @@ const char *logg_text(logg_t logg)
 {
 	return logg->text;
 }
+
+/*****************************************************************************/
+
+unsigned int logg_seconds(logg_t logg)
+{
+	return logg->seconds;
+}
+
+/*****************************************************************************/
+
+unsigned int logg_millis(logg_t logg)
+{
+	return logg->millis;
+}

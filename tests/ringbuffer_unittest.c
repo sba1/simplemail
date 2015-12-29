@@ -158,6 +158,7 @@ void test_ringbuffer_traversing(void)
 		last_payload = *(int*)entry;
 		count++;
 	}
+	CU_ASSERT(ringbuffer_entries(rb) == count);
 	CU_ASSERT(count >= 8);
 	CU_ASSERT(last_payload == 10);
 	ringbuffer_dispose(rb);

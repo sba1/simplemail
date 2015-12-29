@@ -161,6 +161,20 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 
 /*****************************************************************************/
 
+unsigned int ringbuffer_entries(ringbuffer_t rb)
+{
+	unsigned int num = 0;
+
+	void *item = NULL;
+
+	/* TODO: Update a ring buffer counter for each alloc and free */
+	while ((item = ringbuffer_next(rb, item)))
+		num++;
+	return num;
+}
+
+/*****************************************************************************/
+
 void *ringbuffer_next(ringbuffer_t rb, void *item)
 {
 	size_t size;

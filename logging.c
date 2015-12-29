@@ -30,7 +30,7 @@
 
 static ringbuffer_t logg_rb;
 
-typedef struct
+struct logg_s
 {
 	logging_severity_t severity;
 	int tid;
@@ -38,7 +38,9 @@ typedef struct
 	const char *function;
 	char *text;
 	int line;
-} *logg_t;
+};
+
+typedef struct logg_s *logg_t;
 
 /*****************************************************************************/
 
@@ -81,4 +83,11 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	logg->text = (char*)(logg + 1);
 	logg->line = line;
 	strcpy(logg->text, text);
+}
+
+/*****************************************************************************/
+
+logg_t logg_next(logg_t current)
+{
+	return ringbuffer_next(logg_rb, current);
 }

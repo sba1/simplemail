@@ -38,6 +38,8 @@ typedef enum
 	LAST, /* Special marker to indicate the end of the argument list */
 } logging_datatype_t;
 
+typedef struct logg_s *logg_t;
+
 /**
  * Initialize the log subsystem.
  *
@@ -66,6 +68,16 @@ void logg_dispose(void);
  */
 void logg(logging_severity_t severity, int tid, const char *filename, const char *function, int line,
 	const char *text, ...);
+
+/**
+ * Given the log entry, get the next one.
+ *
+ * @param current
+ * @return the next log entry or NULL if there are no more log entries.
+ *
+ * @note the pointer returned here may become invalid when logg() is called next.
+ */
+logg_t logg_next(logg_t current);
 
 
 #define SM_LOG_INFO(level,text) do { static const char filename[] __attribute__((used, section("LOGMODULES"))) = "LOGMODULE:" __FILE__; logg(INFO, 0, __FILE__, __PRETTY_FUNCTION__, __LINE__, text);}} while (0)

@@ -91,3 +91,10 @@ logg_t logg_next(logg_t current)
 {
 	return ringbuffer_next(logg_rb, current);
 }
+
+/*****************************************************************************/
+
+const char *logg_text(logg_t logg)
+{
+	return logg->text;
+}

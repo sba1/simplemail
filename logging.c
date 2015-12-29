@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "ringbuffer.h"
+#include "support_indep.h"
 
 /*****************************************************************************/
 
@@ -34,7 +35,9 @@ static unsigned int logg_id;
 struct logg_s
 {
 	logging_severity_t severity;
-	int tid;
+	unsigned short tid;
+	unsigned short millis;
+	unsigned int seconds;
 	const char *filename;
 	const char *function;
 	char *text;
@@ -71,12 +74,16 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 {
 	logg_t logg;
 	size_t size;
+	unsigned int seconds;
+	unsigned int mics;
 
 	if (!logg_rb) return;
 
 	size = sizeof(logg_t) + strlen(text) + 1;
 	if (!(logg = ringbuffer_alloc(logg_rb, size)))
 		return;
+
+	sm_get_current_time(&seconds, &mics);
 
 	logg->severity = severity;
 	logg->tid = tid;
@@ -85,6 +92,8 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	logg->text = (char*)(logg + 1);
 	logg->line = line;
 	logg->id = logg_id++;
+	logg->millis = mics / 1000;
+	logg->seconds = seconds;
 	strcpy(logg->text, text);
 }
 

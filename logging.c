@@ -49,10 +49,16 @@ typedef struct logg_s *logg_t;
 
 /*****************************************************************************/
 
+static void logg_rb_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
+{
+}
+
+/*****************************************************************************/
+
 int logg_init(void)
 {
 	/* Logging is optional */
-	logg_rb = ringbuffer_create(64*1024, NULL, NULL);
+	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);
 	return 1;
 }
 

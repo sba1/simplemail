@@ -603,8 +603,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 	/* get number of remote mails */
 	char *line;
 	char tag[20];
-	char send[200];
-	char buf[2048];
+	char buf[2048]; /* is used for sending and receiving */
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
@@ -652,9 +651,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(send,sizeof(send),"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
-			SM_DEBUGF(10,("Fetching remote mail array: %s",send));
-			tcp_write(conn,send,strlen(send));
+			sm_snprintf(buf,sizeof(buf),"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			SM_DEBUGF(10,("Fetching remote mail array: %s",buf));
+			tcp_write(conn,buf,strlen(buf));
 			tcp_flush(conn);
 
 			while ((line = tcp_readln(conn)))

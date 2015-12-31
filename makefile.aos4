@@ -85,6 +85,7 @@ CFLAGS = \
 	-mcrt=clib2\
 	-std=c11\
 	-Wdeclaration-after-statement\
+	-Wstack-usage=2048\
 	$(CFLAGS_PERMISSIVE)
 
 # Flags passed to gcc during linking

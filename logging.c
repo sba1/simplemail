@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+#include "lists.h"
 #include "ringbuffer.h"
 #include "support_indep.h"
 
@@ -51,26 +52,6 @@ typedef struct logg_s *logg_t;
 
 static void logg_rb_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
 {
-}
-
-/*****************************************************************************/
-
-int logg_init(void)
-{
-	/* Logging is optional */
-	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);
-	return 1;
-}
-
-/*****************************************************************************/
-
-void logg_dispose(void)
-{
-	if (logg_rb)
-	{
-		ringbuffer_dispose(logg_rb);
-		logg_rb = NULL;
-	}
 }
 
 /*****************************************************************************/
@@ -129,4 +110,58 @@ unsigned int logg_seconds(logg_t logg)
 unsigned int logg_millis(logg_t logg)
 {
 	return logg->millis;
+}
+
+/*****************************************************************************/
+
+struct logg_listener_s
+{
+	struct node node;
+	logg_update_callback_t callback;
+	void *userdata;
+};
+
+static struct list logg_update_listener_list;
+
+/*****************************************************************************/
+
+logg_listener_t logg_add_update_listener(logg_update_callback_t logg_update_callback, void *userdata)
+{
+	logg_listener_t l = malloc(sizeof(*l));
+	if (!l) return NULL;
+	memset(l, 0, sizeof(*l));
+
+	l->callback = logg_update_callback;
+	l->userdata = userdata;
+	list_insert_tail(&logg_update_listener_list, &l->node);
+	return l;
+}
+
+/*****************************************************************************/
+
+void logg_remove_update_listener(logg_listener_t listener)
+{
+	node_remove(&listener->node);
+	free(listener);
+}
+
+/*****************************************************************************/
+
+int logg_init(void)
+{
+	/* Logging is optional */
+	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);
+	list_init(&logg_update_listener_list);
+	return 1;
+}
+
+/*****************************************************************************/
+
+void logg_dispose(void)
+{
+	if (logg_rb)
+	{
+		ringbuffer_dispose(logg_rb);
+		logg_rb = NULL;
+	}
 }

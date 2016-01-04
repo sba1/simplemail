@@ -113,5 +113,29 @@ unsigned int logg_millis(logg_t logg);
 
 /*****************************************************************************/
 
+/**
+ * Function type for logging related update callbacks.
+ *
+ * @param userdata
+ */
+typedef void (*logg_update_callback_t)(void *userdata);
+
+typedef struct logg_listener_s *logg_listener_t;
+
+/**
+ * Add a new listener for receiving update notifications.
+ *
+ * @param logg_update_callback
+ * @param userdata
+ * @return the listner or NULL on a failure.
+ */
+logg_listener_t logg_add_update_listener(logg_update_callback_t logg_update_callback, void *userdata);
+
+/**
+ * Remove the given listener.
+ *
+ * @param listener
+ */
+void logg_remove_update_listener(logg_listener_t listener);
 
 #endif

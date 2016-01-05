@@ -31,7 +31,7 @@
 /*****************************************************************************/
 
 static ringbuffer_t logg_rb;
-static unsigned int logg_id;
+static unsigned int logg_next_id;
 
 struct logg_s
 {
@@ -43,7 +43,7 @@ struct logg_s
 	const char *function;
 	char *text;
 	int line;
-	int id;
+	unsigned int id;
 };
 
 typedef struct logg_s *logg_t;
@@ -78,7 +78,7 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	logg->function = function;
 	logg->text = (char*)(logg + 1);
 	logg->line = line;
-	logg->id = logg_id++;
+	logg->id = logg_next_id++;
 	logg->millis = mics / 1000;
 	logg->seconds = seconds;
 	strcpy(logg->text, text);
@@ -110,6 +110,13 @@ unsigned int logg_seconds(logg_t logg)
 unsigned int logg_millis(logg_t logg)
 {
 	return logg->millis;
+}
+
+/*****************************************************************************/
+
+unsigned int logg_id(logg_t logg)
+{
+	return logg->id;
 }
 
 /*****************************************************************************/

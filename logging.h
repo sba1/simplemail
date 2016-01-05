@@ -103,6 +103,14 @@ unsigned int logg_seconds(logg_t logg);
  */
 unsigned int logg_millis(logg_t logg);
 
+/**
+ * Returns the id of the log entry.
+ *
+ * @param logg
+ * @return the id.
+ */
+unsigned int logg_id(logg_t logg);
+
 /*****************************************************************************/
 
 #define SM_LOG_INFO(level,text) \

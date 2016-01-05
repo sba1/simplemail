@@ -50,42 +50,6 @@ typedef struct logg_s *logg_t;
 
 /*****************************************************************************/
 
-static void logg_rb_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
-{
-}
-
-/*****************************************************************************/
-
-void logg(logging_severity_t severity, int tid, const char *filename, const char *function, int line,
-	const char *text, ...)
-{
-	logg_t logg;
-	size_t size;
-	unsigned int seconds;
-	unsigned int mics;
-
-	if (!logg_rb) return;
-
-	size = sizeof(logg_t) + strlen(text) + 1;
-	if (!(logg = ringbuffer_alloc(logg_rb, size)))
-		return;
-
-	sm_get_current_time(&seconds, &mics);
-
-	logg->severity = severity;
-	logg->tid = tid;
-	logg->filename = filename;
-	logg->function = function;
-	logg->text = (char*)(logg + 1);
-	logg->line = line;
-	logg->id = logg_next_id++;
-	logg->millis = mics / 1000;
-	logg->seconds = seconds;
-	strcpy(logg->text, text);
-}
-
-/*****************************************************************************/
-
 logg_t logg_next(logg_t current)
 {
 	return ringbuffer_next(logg_rb, current);
@@ -150,6 +114,58 @@ void logg_remove_update_listener(logg_listener_t listener)
 {
 	node_remove(&listener->node);
 	free(listener);
+}
+
+/*****************************************************************************/
+
+static void logg_call_update_listener(void)
+{
+	logg_listener_t l = (logg_listener_t)list_first(&logg_update_listener_list);
+	while (l)
+	{
+		logg_listener_t n = (logg_listener_t)node_next(&l->node);
+		l->callback(l->userdata);
+		l = n;
+	}
+}
+
+/*****************************************************************************/
+
+static void logg_rb_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
+{
+	logg_call_update_listener();
+}
+
+/*****************************************************************************/
+
+void logg(logging_severity_t severity, int tid, const char *filename, const char *function, int line,
+	const char *text, ...)
+{
+	logg_t logg;
+	size_t size;
+	unsigned int seconds;
+	unsigned int mics;
+
+	if (!logg_rb) return;
+
+	size = sizeof(logg_t) + strlen(text) + 1;
+	if (!(logg = ringbuffer_alloc(logg_rb, size)))
+		return;
+
+	sm_get_current_time(&seconds, &mics);
+
+	logg->severity = severity;
+	logg->tid = tid;
+	logg->filename = filename;
+	logg->function = function;
+	logg->text = (char*)(logg + 1);
+	logg->line = line;
+	logg->id = logg_next_id++;
+	logg->millis = mics / 1000;
+	logg->seconds = seconds;
+	strcpy(logg->text, text);
+
+	logg_call_update_listener();
 }
 
 /*****************************************************************************/

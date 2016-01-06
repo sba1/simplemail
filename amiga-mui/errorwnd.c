@@ -34,6 +34,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "logging.h"
 #include "smintl.h"
 #include "support_indep.h"
 
@@ -46,6 +47,7 @@ struct error_node
 	struct node node;
 	char *text;
 	unsigned int date;
+	unsigned int id;
 };
 
 static struct list error_list;
@@ -173,6 +175,7 @@ void error_add_message(error_severity_t severity, char *msg)
 	if ((enode->text = mystrdup(msg)))
 	{
 		enode->date = sm_get_current_seconds();
+		enode->id = ~0;
 
 		set(text_list, MUIA_NList_Quiet, TRUE);
 		DoMethod(text_list, MUIM_NList_Clear);
@@ -185,6 +188,91 @@ void error_add_message(error_severity_t severity, char *msg)
 	} else free(enode);
 }
 
+/**
+ * Add the logg entry to the error list.
+ *
+ * @param l
+ */
+static void error_window_add_logg(logg_t l)
+{
+	struct error_node *node;
+
+	if (!(node = malloc(sizeof(*node))))
+		return;
+
+	memset(node, 0, sizeof(*node));
+	node->id = logg_id(l);
+	node->date = logg_seconds(l);
+	if (!(node->text = mystrdup(logg_text(l))))
+	{
+		free(node);
+		return;
+	}
+	list_insert_tail(&error_list, &node->node);
+}
+
+/**
+ * Update the error window log with the information of the logg.
+ */
+static void error_window_update_logg(void)
+{
+	struct error_node *enode;
+	logg_t l;
+
+	set(all_errors_list, MUIA_NList_Quiet, TRUE);
+	DoMethod(all_errors_list, MUIM_NList_Clear);
+
+	enode = (struct error_node*)list_first(&error_list);
+	l = logg_next(NULL);
+
+	while (enode && l)
+	{
+		struct error_node *cur = enode;
+
+		enode = (struct error_node*)node_next(&enode->node);
+
+		/* Keep no logg-ones (i.e., added via error_add_message()) */
+		if (cur->id == ~0) continue;
+
+		/* Keep id-matching one (they represent the same entry) */
+		if (cur->id == logg_id(l))
+		{
+			l = logg_next(l);
+			continue;
+		}
+
+		/* If id of the view log list is smaller it is an obsolete one,
+		 * remove it.
+		 */
+		if (cur->id < logg_id(l))
+		{
+			node_remove(&cur->node);
+			free(cur->text);
+			free(cur);
+			continue;
+		}
+	}
+
+	if (l)
+	{
+		/* Add the remaining logg entries */
+		do
+		{
+			error_window_add_logg(l);
+		} while((l = logg_next(l)));
+	}
+
+	/* Populate the view again */
+	enode = (struct error_node*)list_first(&error_list);
+	while (enode)
+	{
+		DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode, MUIV_NList_Insert_Bottom);
+		enode = (struct error_node*)node_next(&enode->node);
+	}
+
+	set(all_errors_list, MUIA_NList_Quiet, FALSE);
+}
+
 /*****************************************************************************/
 
 void error_window_open(void)
@@ -195,6 +283,8 @@ void error_window_open(void)
 
 		if (!error_wnd) return;
 	}
+
+	error_window_update_logg();
 
 	set(error_wnd, MUIA_Window_Open, TRUE);
 }

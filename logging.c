@@ -147,6 +147,7 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	unsigned int mics;
 
 	if (!logg_rb) return;
+	if (!text) return;
 
 	size = sizeof(logg_t) + strlen(text) + 1;
 	if (!(logg = ringbuffer_alloc(logg_rb, size)))

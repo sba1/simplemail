@@ -134,6 +134,19 @@ void test_ringbuffer_three_entries_only_two_fit_initially_subsequent_frees(void)
 /*****************************************************************************/
 
 /* @Test */
+void test_ringbuffer_empty_traversing(void)
+{
+	ringbuffer_t rb;
+
+	CU_ASSERT((rb = ringbuffer_create(1000, NULL, NULL)) != NULL);
+	CU_ASSERT((NULL == ringbuffer_next(rb, NULL)));
+
+	ringbuffer_dispose(rb);
+}
+
+/*****************************************************************************/
+
+/* @Test */
 void test_ringbuffer_traversing(void)
 {
 	ringbuffer_t rb;

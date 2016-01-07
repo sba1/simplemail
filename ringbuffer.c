@@ -180,7 +180,15 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 	size_t size;
 	unsigned char *next;
 
-	if (!item) return rb->next_free + sizeof(size_t);
+	if (!item)
+	{
+		if (!rb->next_free)
+		{
+			/* Ringbuffer is empty */
+			return NULL;
+		}
+		return rb->next_free + sizeof(size_t);
+	}
 
 	item = ((unsigned char*)item) - sizeof(size_t);
 

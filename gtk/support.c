@@ -202,7 +202,6 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 void tell_str(const char *str)
 {
 	printf("%s\n",str);
-	error_add_message(SEVERITY_ERROR, (char*)str);
 }
 
 /******************************************************************

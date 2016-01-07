@@ -55,8 +55,7 @@ static struct list error_list;
 static Object *error_wnd;
 static Object *all_errors_list;
 static Object *text_list;
-static Object *delete_button;
-static Object *close_button;
+static Object *clear_button;
 
 /**
  * Callback for selecting the currently displayed error message.
@@ -78,13 +77,11 @@ static void error_select(void)
 }
 
 /**
- * Delete all messages.
+ * Clear all messages.
  */
-static void delete_messages(void)
+static void error_window_clear(void)
 {
 	struct error_node *node;
-
-	set(error_wnd, MUIA_Window_Open, FALSE);
 
 	DoMethod(all_errors_list, MUIM_NList_Clear);
 	while ((node = (struct error_node *)list_remove_tail(&error_list)))
@@ -142,8 +139,7 @@ static void init_error(void)
 					End,
 				End,
 			Child, HGroup,
-				Child, delete_button = MakeButton("_Delete messages"),
-				Child, close_button = MakeButton("_Close window"),
+				Child, clear_button = MakeButton(_("_Clear")),
 				End,
 			End,
 		End;
@@ -152,8 +148,7 @@ static void init_error(void)
 	{
 		DoMethod(App, OM_ADDMEMBER, (ULONG)error_wnd);
 		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)delete_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_messages);
-		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(clear_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)clear_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_window_clear);
 		DoMethod(all_errors_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)all_errors_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
 	}
 }

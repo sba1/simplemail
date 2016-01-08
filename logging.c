@@ -83,6 +83,28 @@ unsigned int logg_id(logg_t logg)
 	return logg->id;
 }
 
+
+/*****************************************************************************/
+
+const char *logg_filename(logg_t logg)
+{
+	return logg->filename;
+}
+
+/*****************************************************************************/
+
+const char *logg_function(logg_t logg)
+{
+	return logg->function;
+}
+
+/*****************************************************************************/
+
+int logg_line(logg_t logg)
+{
+	return logg->line;
+}
+
 /*****************************************************************************/
 
 struct logg_listener_s

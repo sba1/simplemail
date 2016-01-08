@@ -111,6 +111,30 @@ unsigned int logg_millis(logg_t logg);
  */
 unsigned int logg_id(logg_t logg);
 
+/**
+ * Return the filename attribute of the logg entry.
+ *
+ * @param logg
+ * @return the filename attribute or NULL if it is empty.
+ */
+const char *logg_filename(logg_t logg);
+
+/**
+ * Return the function name attribute of the logg entry.
+ *
+ * @param logg
+ * @return the function name attribute.
+ */
+const char *logg_function(logg_t logg);
+
+/**
+ * Return the line number attribute of the logg entry,
+ *
+ * @param logg
+ * @return the line number attribute.
+ */
+int logg_line(logg_t logg);
+
 /*****************************************************************************/
 
 #define SM_LOG_INFO(level,text) \

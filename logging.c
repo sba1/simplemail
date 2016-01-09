@@ -33,16 +33,21 @@
 static ringbuffer_t logg_rb;
 static unsigned int logg_next_id;
 
+#if __STDC_VERSION__ >= 201112L
+_Static_assert(SEVERITY_LAST <= 4, "Please fix bit width of severity field in logg_s struct.");
+#endif
+
 struct logg_s
 {
-	logging_severity_t severity;
+	logging_severity_t severity:2;
+	unsigned int line:30;
+
 	unsigned short tid;
 	unsigned short millis;
 	unsigned int seconds;
 	const char *filename;
 	const char *function;
 	char *text;
-	int line;
 	unsigned int id;
 };
 

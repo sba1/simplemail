@@ -25,7 +25,8 @@
 typedef enum
 {
 	INFO,
-	ERROR
+	ERROR,
+	SEVERITY_LAST
 } logging_severity_t;
 
 typedef enum

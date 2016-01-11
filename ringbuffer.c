@@ -107,7 +107,7 @@ void ringbuffer_dispose(ringbuffer_t rb)
  *
  * @param rb the ringbuffer
  */
-void ringbuffer_free_least_recently_allocated(ringbuffer_t rb)
+static void ringbuffer_free_least_recently_allocated(ringbuffer_t rb)
 {
 	size_t free_size = *(size_t*) rb->next_free;
 	if (rb->free_callback)

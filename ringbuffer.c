@@ -30,6 +30,16 @@
 
 /*****************************************************************************/
 
+struct full_item
+{
+	/** The full size (payload plus this struct) */
+	size_t size;
+
+	/* Payload follows, we could use flexible arrays but SAS C won't support them */
+};
+
+/*****************************************************************************/
+
 struct ringbuffer
 {
 	/** First physical item in the ring buffer */
@@ -52,16 +62,6 @@ struct ringbuffer
 
 	/** User data */
 	void *userdata;
-};
-
-/*****************************************************************************/
-
-struct full_item
-{
-	/** The full size (payload plus this struct) */
-	size_t size;
-
-	/* Payload follows, we could use flexible arrays but SAS C won't support them */
 };
 
 /*****************************************************************************/
@@ -101,6 +101,48 @@ void ringbuffer_dispose(ringbuffer_t rb)
 	free(rb);
 }
 
+/**
+ * Given the address to the payload, return the full item
+ *
+ * @param item
+ */
+static struct full_item *get_full_item(void *payload)
+{
+	return &((struct full_item*)payload)[-1];
+}
+
+/**
+ * Given a full item, return the next one. But don't wrap.
+ *
+ * @param item
+ * @return
+ */
+static struct full_item *next_full_item(struct full_item *item)
+{
+	return (struct full_item*)(((unsigned char *)item) + item->size);
+}
+
+/**
+ * Given a full item, return the pointer to the payload.
+ *
+ * @param full_item
+ * @return
+ */
+static void *payload(struct full_item *full_item)
+{
+	return full_item + 1;
+}
+
+/**
+ * Simple function mainly to shorted casts.
+ *
+ * @param full_item
+ * @return
+ */
+static inline struct full_item *as_full_item(unsigned char *full_item)
+{
+	return (struct full_item*)full_item;
+}
 
 /**
  * Free least recently used element and update data structure.
@@ -109,9 +151,9 @@ void ringbuffer_dispose(ringbuffer_t rb)
  */
 static void ringbuffer_free_least_recently_allocated(ringbuffer_t rb)
 {
-	size_t free_size = *(size_t*) rb->next_free;
+	size_t free_size = as_full_item(rb->next_free)->size;
 	if (rb->free_callback)
-		rb->free_callback(rb, rb->next_free + sizeof(size_t), free_size - sizeof(size_t), rb->userdata);
+		rb->free_callback(rb, rb->next_free + sizeof(struct full_item), free_size - sizeof(struct full_item), rb->userdata);
 	rb->next_free += free_size;
 }
 
@@ -122,7 +164,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 	unsigned char *addr;
 
 	/* Up align the size */
-	size = (size + sizeof(size_t) + 4 - 1) & (~(4 - 1));
+	size = (size + sizeof(struct full_item) + 4 - 1) & (~(4 - 1));
 
 	/* Give up if size is larger than buffer */
 	if (size > rb->size)
@@ -133,7 +175,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		/* New buffer doesn't fit in the remaining space, wrap, but "tag" the
 		 * element beforehand */
 		if (rb->next_alloc < rb->memend)
-			*(size_t*)rb->next_alloc = ~0;
+			as_full_item(rb->next_alloc)->size = ~0;
 		rb->next_alloc = rb->mem;
 	}
 
@@ -144,7 +186,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 			ringbuffer_free_least_recently_allocated(rb);
 
 		/* Wrap next free */
-		if (*(size_t*)rb->next_free == ~0)
+		if (as_full_item(rb->next_free)->size == ~0)
 			rb->next_free = rb->mem;
 	} else
 	{
@@ -152,10 +194,10 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		rb->next_free = rb->next_alloc;
 	}
 
-	/* Remember truely occupied size */
-	*((size_t*)rb->next_alloc) = size;
-	addr = rb->next_alloc + sizeof(size_t);
-	rb->next_alloc = addr + size - sizeof(size_t);
+	/* Remember truly occupied size */
+	as_full_item(rb->next_alloc)->size = size;
+	addr = rb->next_alloc + sizeof(struct full_item);
+	rb->next_alloc = addr + size - sizeof(struct full_item);
 
 	/* If next alloc matches next free, free another item */
 	if (rb->next_alloc == rb->next_free)
@@ -163,7 +205,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		ringbuffer_free_least_recently_allocated(rb);
 
 		/* Wrap next free */
-		if (*(size_t*)rb->next_free == ~0)
+		if (as_full_item(rb->next_free)->size == ~0)
 			rb->next_free = rb->mem;
 	}
 	return addr;
@@ -185,40 +227,6 @@ unsigned int ringbuffer_entries(ringbuffer_t rb)
 
 /*****************************************************************************/
 
-/**
- * Given the address to the payload, return the full item
- *
- * @param item
- */
-static struct full_item *ringbuffer_get_full_item(void *item)
-{
-	return &((struct full_item*)item)[-1];
-}
-
-/**
- * Given a full item, return the next one. But don't wrap.
- *
- * @param item
- * @return
- */
-static struct full_item *ringbuffer_get_next_full_item(struct full_item *item)
-{
-	return (struct full_item*)(((unsigned char *)item) + item->size);
-}
-
-/**
- * Given a full item, return the pointer to the payload.
- *
- * @param full_item
- * @return
- */
-static void *ringbuffer_get_payload(struct full_item *full_item)
-{
-	return full_item + 1;
-}
-
-/*****************************************************************************/
-
 void *ringbuffer_next(ringbuffer_t rb, void *item)
 {
 	size_t size;
@@ -232,14 +240,14 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 			/* Ringbuffer is empty */
 			return NULL;
 		}
-		return rb->next_free + sizeof(size_t);
+		return rb->next_free + sizeof(struct full_item);
 	}
 
-	full_item = ringbuffer_get_full_item(item);
+	full_item = get_full_item(item);
 
 	/* Determine next item */
 	size = full_item->size;
-	next = ringbuffer_get_next_full_item(full_item);
+	next = next_full_item(full_item);
 
 	/* If this matches next alloc, it was the last one */
 	if ((unsigned char*)next == rb->next_alloc) return NULL;
@@ -250,7 +258,7 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 		/* Item was final one */
 		full_item = (struct full_item*)rb->mem;
 		if (full_item == (struct full_item*)rb->next_alloc) return NULL;
-		return ringbuffer_get_payload(full_item);
+		return payload(full_item);
 	}
-	return ringbuffer_get_payload(next);
+	return payload(next);
 }

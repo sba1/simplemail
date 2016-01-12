@@ -79,4 +79,12 @@ unsigned int ringbuffer_entries(ringbuffer_t rb);
  */
 void *ringbuffer_next(ringbuffer_t rb, void *item);
 
+/**
+ * Return the id of the given ring buffer item.
+ *
+ * @param item the iten of which the id shall be returned.
+ * @return
+ */
+unsigned int ringbuffer_entry_id(void *item);
+
 #endif /* SM__RINGBUFFER_H */

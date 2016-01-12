@@ -35,6 +35,7 @@ struct full_item
 	/** The full size (payload plus this struct) */
 	size_t size;
 
+	unsigned int id;
 	/* Payload follows, we could use flexible arrays but SAS C won't support them */
 };
 
@@ -56,6 +57,9 @@ struct ringbuffer
 
 	/** Item that can be freed next */
 	unsigned char *next_free;
+
+	/** Next id */
+	unsigned int next_id;
 
 	/** Free callback */
 	ringbuffer_free_callback_t free_callback;
@@ -196,6 +200,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 
 	/* Remember truly occupied size */
 	as_full_item(rb->next_alloc)->size = size;
+	as_full_item(rb->next_alloc)->id = rb->next_id++;
 	addr = rb->next_alloc + sizeof(struct full_item);
 	rb->next_alloc = addr + size - sizeof(struct full_item);
 
@@ -261,4 +266,11 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 		return payload(full_item);
 	}
 	return payload(next);
+}
+
+/*****************************************************************************/
+
+unsigned int ringbuffer_entry_id(void *item)
+{
+	return as_full_item(item)->id;
 }

@@ -234,7 +234,6 @@ unsigned int ringbuffer_entries(ringbuffer_t rb)
 
 void *ringbuffer_next(ringbuffer_t rb, void *item)
 {
-	size_t size;
 	struct full_item *next;
 	struct full_item *full_item;
 
@@ -251,7 +250,6 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 	full_item = get_full_item(item);
 
 	/* Determine next item */
-	size = full_item->size;
 	next = next_full_item(full_item);
 
 	/* If this matches next alloc, it was the last one */

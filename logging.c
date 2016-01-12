@@ -31,7 +31,6 @@
 /*****************************************************************************/
 
 static ringbuffer_t logg_rb;
-static unsigned int logg_next_id;
 
 #if __STDC_VERSION__ >= 201112L
 _Static_assert(SEVERITY_LAST <= 4, "Please fix bit width of severity field in logg_s struct.");
@@ -48,7 +47,6 @@ struct logg_s
 	const char *filename;
 	const char *function;
 	char *text;
-	unsigned int id;
 };
 
 typedef struct logg_s *logg_t;
@@ -85,7 +83,7 @@ unsigned int logg_millis(logg_t logg)
 
 unsigned int logg_id(logg_t logg)
 {
-	return logg->id;
+	return ringbuffer_entry_id(logg);
 }
 
 
@@ -188,7 +186,6 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	logg->function = function;
 	logg->text = (char*)(logg + 1);
 	logg->line = line;
-	logg->id = logg_next_id++;
 	logg->millis = mics / 1000;
 	logg->seconds = seconds;
 	strcpy(logg->text, text);

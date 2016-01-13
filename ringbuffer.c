@@ -268,6 +268,19 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 
 /*****************************************************************************/
 
+void *ringbuffer_get_entry_by_id(ringbuffer_t rb, unsigned int id)
+{
+	void *item = NULL;
+
+	while ((item = ringbuffer_next(rb, item)))
+	{
+		if (ringbuffer_entry_id(item) == id) break;
+	}
+	return item;
+}
+
+/*****************************************************************************/
+
 unsigned int ringbuffer_entry_id(void *item)
 {
 	return get_full_item(item)->id;

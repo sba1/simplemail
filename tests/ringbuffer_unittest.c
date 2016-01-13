@@ -176,3 +176,45 @@ void test_ringbuffer_traversing(void)
 	CU_ASSERT(last_payload == 10);
 	ringbuffer_dispose(rb);
 }
+
+/*****************************************************************************/
+
+/* @Test */
+void test_ringbuffer_get_entry_by_id(void)
+{
+	ringbuffer_t rb;
+	void *mem[2];
+	unsigned int id[2];
+	unsigned int max_id = 0;
+	int i;
+
+	CU_ASSERT((rb = ringbuffer_create(1000, NULL, NULL)) != NULL);
+
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, 0) == NULL);
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, 0x12345) == NULL);
+
+	for (i=0; i < 2; i++)
+	{
+		CU_ASSERT((mem[i] = ringbuffer_alloc(rb, 8)) != NULL);
+		id[i] = ringbuffer_entry_id(mem[i]);
+		if (id[i] > max_id) max_id = id[i];
+	}
+
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, id[0]) == mem[0]);
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, id[1]) == mem[1]);
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, max_id + 1) == NULL);
+
+	/* Now allocate new entries so that the existing ones are evicted.
+	 * TODO: Use the hook to make sure that they have been removed from the
+	 *  ringbuffer.
+	 */
+	for (i=0; i < 10; i++)
+	{
+		CU_ASSERT((ringbuffer_alloc(rb, 100)) != NULL);
+	}
+
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, id[0]) == NULL);
+	CU_ASSERT(ringbuffer_get_entry_by_id(rb, id[1]) == NULL);
+
+	ringbuffer_dispose(rb);
+}

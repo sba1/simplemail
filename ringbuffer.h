@@ -80,6 +80,15 @@ unsigned int ringbuffer_entries(ringbuffer_t rb);
 void *ringbuffer_next(ringbuffer_t rb, void *item);
 
 /**
+ * Find the ringbuffer entry with the associated id.
+ *
+ * @param rb the ringbuffer
+ * @param id the id to look for.
+ * @return the ringbuffer entry or NULL if no such id exits.
+ */
+void *ringbuffer_get_entry_by_id(ringbuffer_t rb, unsigned int id);
+
+/**
  * Return the id of the given ring buffer item.
  *
  * @param item the iten of which the id shall be returned.

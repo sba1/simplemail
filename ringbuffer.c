@@ -270,5 +270,5 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 
 unsigned int ringbuffer_entry_id(void *item)
 {
-	return as_full_item(item)->id;
+	return get_full_item(item)->id;
 }

@@ -32,6 +32,11 @@
 
 static ringbuffer_t logg_rb;
 
+/**
+ * All loggs with smaller id are ignored when browsing via logg_next().
+ */
+static unsigned int logg_start_id;
+
 #if __STDC_VERSION__ >= 201112L
 _Static_assert(SEVERITY_LAST <= 4, "Please fix bit width of severity field in logg_s struct.");
 #endif
@@ -53,8 +58,30 @@ typedef struct logg_s *logg_t;
 
 /*****************************************************************************/
 
+void logg_clear(void)
+{
+	unsigned int last_id;
+	logg_t logg = NULL;
+
+	while ((logg = logg_next(logg)))
+		last_id = logg_id(logg);
+	logg_start_id = last_id;
+}
+
+/*****************************************************************************/
+
 logg_t logg_next(logg_t current)
 {
+	if (!current)
+	{
+		logg_t first = ringbuffer_next(logg_rb, NULL);
+		while (first)
+		{
+			if (ringbuffer_entry_id(first) >= logg_start_id)
+				return first;
+		}
+		return NULL;
+	}
 	return ringbuffer_next(logg_rb, current);
 }
 

@@ -71,6 +71,11 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	const char *text, ...);
 
 /**
+ * Clears the logg.
+ */
+void logg_clear(void);
+
+/**
  * Given the log entry, get the next one.
  *
  * @param current

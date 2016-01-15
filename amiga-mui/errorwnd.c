@@ -205,7 +205,7 @@ static void error_window_clear(void)
 		if (node->text) free(node->text);
 		free(node);
 	}
-
+	logg_clear();
 }
 
 STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))

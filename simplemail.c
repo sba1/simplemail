@@ -2555,10 +2555,12 @@ void simplemail_deinit(void)
 
 int simplemail_init(void)
 {
+	logg_options_t logg_opts = {0};
+
 	if (!debug_init())
 		goto out;
 
-	logg_init();
+	logg_init(&logg_opts);
 
 #ifdef ENABLE_NLS
 	setlocale(LC_ALL, "");

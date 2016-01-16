@@ -41,12 +41,21 @@ typedef enum
 
 typedef struct logg_s *logg_t;
 
+typedef void (*logg_lock_callback_t)(void *userdata);
+typedef void (*logg_unlock_callback_t)(void *userdata);
+
+typedef struct
+{
+	logg_lock_callback_t lock;
+	logg_unlock_callback_t unlock;
+} logg_options_t;
+
 /**
  * Initialize the log subsystem.
  *
  * @return whether successful.
  */
-int logg_init(void);
+int logg_init(logg_options_t *options);
 
 /**
  * Shuts down the logging subsystem.

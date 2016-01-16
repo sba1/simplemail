@@ -222,7 +222,7 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 
 /*****************************************************************************/
 
-int logg_init(void)
+int logg_init(logg_options_t *options)
 {
 	/* Logging is optional */
 	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);

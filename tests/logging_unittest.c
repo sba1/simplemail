@@ -30,7 +30,7 @@
 /* @Test */
 void test_logging_init_and_dispose(void)
 {
-	CU_ASSERT(logg_init() == 1);
+	CU_ASSERT(logg_init(NULL) == 1);
 	logg_dispose();
 }
 
@@ -47,7 +47,7 @@ void test_logging_only_dispose(void)
 /* @Test */
 void test_one_entry(void)
 {
-	CU_ASSERT(logg_init() == 1);
+	CU_ASSERT(logg_init(NULL) == 1);
 	logg(INFO, 0, __FILE__,__PRETTY_FUNCTION__, __LINE__, "LOG", LAST);
 	logg_dispose();
 }

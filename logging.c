@@ -37,6 +37,11 @@ static ringbuffer_t logg_rb;
  */
 static unsigned int logg_start_id;
 
+/**
+ * The global logg options.
+ */
+static logg_options_t logg_options;
+
 #if __STDC_VERSION__ >= 201112L
 _Static_assert(SEVERITY_LAST <= 4, "Please fix bit width of severity field in logg_s struct.");
 #endif
@@ -55,6 +60,24 @@ struct logg_s
 };
 
 typedef struct logg_s *logg_t;
+
+/**
+ * Lock.
+ */
+static void logg_lock(void)
+{
+	if (logg_options.lock)
+		logg_options.lock(logg_options.userdata);
+}
+
+/**
+ * Unlock.
+ */
+static void logg_unlock(void)
+{
+	if (logg_options.unlock)
+		logg_options.unlock(logg_options.userdata);
+}
 
 /*****************************************************************************/
 
@@ -202,8 +225,12 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	if (!text) return;
 
 	size = sizeof(*logg) + strlen(text) + 1;
+	logg_lock();
 	if (!(logg = ringbuffer_alloc(logg_rb, size)))
+	{
+		logg_unlock();
 		return;
+	}
 
 	sm_get_current_time(&seconds, &mics);
 
@@ -218,6 +245,8 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 	strcpy(logg->text, text);
 
 	logg_call_update_listener();
+
+	logg_unlock();
 }
 
 /*****************************************************************************/
@@ -227,6 +256,7 @@ int logg_init(logg_options_t *options)
 	/* Logging is optional */
 	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);
 	list_init(&logg_update_listener_list);
+	logg_options = *options;
 	return 1;
 }
 

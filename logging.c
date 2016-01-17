@@ -256,7 +256,14 @@ int logg_init(logg_options_t *options)
 	/* Logging is optional */
 	logg_rb = ringbuffer_create(64*1024, logg_rb_free_callback, NULL);
 	list_init(&logg_update_listener_list);
-	logg_options = *options;
+
+	if (options)
+	{
+		logg_options = *options;
+	} else
+	{
+		memset(&logg_options, 0, sizeof(logg_options));
+	}
 	return 1;
 }
 

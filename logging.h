@@ -48,6 +48,7 @@ typedef struct
 {
 	logg_lock_callback_t lock;
 	logg_unlock_callback_t unlock;
+	void *userdata;
 } logg_options_t;
 
 /**

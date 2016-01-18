@@ -61,6 +61,9 @@ struct ringbuffer
 	/** Next id */
 	unsigned int next_id;
 
+	/** Id of the first item */
+	unsigned int first_id;
+
 	/** Free callback */
 	ringbuffer_free_callback_t free_callback;
 
@@ -158,6 +161,7 @@ static void ringbuffer_free_least_recently_allocated(ringbuffer_t rb)
 	size_t free_size = as_full_item(rb->next_free)->size;
 	if (rb->free_callback)
 		rb->free_callback(rb, rb->next_free + sizeof(struct full_item), free_size - sizeof(struct full_item), rb->userdata);
+	rb->first_id++;
 	rb->next_free += free_size;
 }
 

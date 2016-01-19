@@ -276,6 +276,11 @@ void *ringbuffer_get_entry_by_id(ringbuffer_t rb, unsigned int id)
 {
 	void *item = NULL;
 
+	if (id < rb->first_id)
+	{
+		return NULL;
+	}
+
 	while ((item = ringbuffer_next(rb, item)))
 	{
 		if (ringbuffer_entry_id(item) == id) break;

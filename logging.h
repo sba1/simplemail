@@ -91,7 +91,7 @@ void logg_clear(void);
  * @param current
  * @return the next log entry or NULL if there are no more log entries.
  *
- * @note the pointer returned here may become invalid when logg() is called next.
+ * @note this call blocks any logg() from other threads until it return NULL.
  */
 logg_t logg_next(logg_t current);
 

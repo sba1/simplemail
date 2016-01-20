@@ -95,17 +95,27 @@ void logg_clear(void)
 
 logg_t logg_next(logg_t current)
 {
+	logg_t next;
+
 	if (!current)
 	{
-		logg_t first = ringbuffer_next(logg_rb, NULL);
+		logg_t first;
+
+		logg_lock();
+
+		first = ringbuffer_next(logg_rb, NULL);
 		while (first)
 		{
 			if (ringbuffer_entry_id(first) >= logg_start_id)
 				return first;
 		}
+
+		logg_unlock();
 		return NULL;
 	}
-	return ringbuffer_next(logg_rb, current);
+	if (!(next = ringbuffer_next(logg_rb, current)))
+		logg_unlock();
+	return next;
 }
 
 /*****************************************************************************/
@@ -179,7 +189,9 @@ logg_listener_t logg_add_update_listener(logg_update_callback_t logg_update_call
 
 	l->callback = logg_update_callback;
 	l->userdata = userdata;
+	logg_lock();
 	list_insert_tail(&logg_update_listener_list, &l->node);
+	logg_unlock();
 	return l;
 }
 
@@ -187,7 +199,9 @@ logg_listener_t logg_add_update_listener(logg_update_callback_t logg_update_call
 
 void logg_remove_update_listener(logg_listener_t listener)
 {
+	logg_lock();
 	node_remove(&listener->node);
+	logg_unlock();
 	free(listener);
 }
 

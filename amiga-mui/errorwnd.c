@@ -36,6 +36,7 @@
 #include "lists.h"
 #include "logging.h"
 #include "smintl.h"
+#include "subthreads.h"
 #include "support_indep.h"
 
 #include "errorwnd.h"
@@ -170,7 +171,14 @@ static void error_select(void)
  */
 static void error_window_logg_update_callback(void *userdata)
 {
-	error_window_update_logg();
+	if (thread_get() != thread_get_main())
+	{
+		/* We could also use MUI to push the method */
+		thread_call_function_async(thread_get_main(), error_window_update_logg, 0);
+	} else
+	{
+		error_window_update_logg();
+	}
 }
 
 /**

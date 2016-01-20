@@ -208,6 +208,9 @@ static void logg_call_update_listener(void)
 
 static void logg_rb_free_callback(ringbuffer_t rb, void *mem, int size, void *userdata)
 {
+	/* No need to lock as this is only called as a consequence when calling the
+	 * logg() which already locked.
+	 */
 	logg_call_update_listener();
 }
 

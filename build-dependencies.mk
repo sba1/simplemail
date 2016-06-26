@@ -21,8 +21,8 @@ LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha
 
 $(LHA):
 	mkdir -p build-dependencies/lha
-	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i.orig.tar.gz
-	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i-10.3.diff.gz
+	cd build-dependencies/lha && wget -N http://archive.debian.org/debian-archive/debian/pool/non-free/l/lha/lha_1.14i.orig.tar.gz
+	cd build-dependencies/lha && wget -N http://archive.debian.org/debian-archive/debian/pool/non-free/l/lha/lha_1.14i-10.3.diff.gz
 	cd build-dependencies/lha && tar -xzf lha_1.14i.orig.tar.gz
 	cd build-dependencies/lha && zcat lha_1.14i-10.3.diff.gz | patch -p0
 	cd build-dependencies/lha/lha-1.14i.orig/ && make

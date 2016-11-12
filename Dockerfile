@@ -15,6 +15,7 @@ RUN if [ -n "$apt_proxy" ]; then echo 'Acquire::http { Proxy "'$apt_proxy'"; }' 
 RUN echo deb http://dl.bintray.com/sba1/adtools-deb / >>/etc/apt/sources.list
 
 RUN apt-get update
+RUN apt-get dist-upgrade
 RUN apt-get install -y --no-install-recommends \
 	lhasa \
 	libcunit1-dev \

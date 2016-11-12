@@ -1,10 +1,15 @@
 #
 # A simple docker file for building and unit testing
 #
+# Build with --build-arg="apt_proxy=$apt_proxy" for using an proxy for apt
+#
 
 # Our build requirements
 
 FROM debian:jessie
+
+ARG apt_proxy=""
+RUN if [ -n "$apt_proxy" ]; then echo 'Acquire::http { Proxy "'$apt_proxy'"; }' >>/etc/apt/apt.conf; fi
 
 # Add adtools repo
 RUN echo deb http://dl.bintray.com/sba1/adtools-deb / >>/etc/apt/sources.list

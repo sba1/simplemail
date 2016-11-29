@@ -555,7 +555,7 @@ int gui_init(void)
 
 					rc = sm_request(NULL,_("The charset configured for SimpleMail (%s) doesn't match\n"
 														"the system's default charset (%s)! How to proceed?"),
-													_("Change|Ignore once|Ignore always"),
+													_("Change|Ignore this time|Ignore always"),
 													user.config.default_codeset?user.config.default_codeset->name:_("Unknown"),
 													cs->name);
 

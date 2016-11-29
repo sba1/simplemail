@@ -18,8 +18,8 @@ Continuous Integration
 ----------------------
 
 For latest builds for AmigaOS 4.x please check https://sonumina.de/jenkins/job/simplemail/.
-This site's SHA1 fingerprint is ```5C 31 5A A3 AD C9 2A 79 CD 81 EC 0C 38 BA 4D 9A
-09 19 E5 13```
+This site's SHA1 fingerprint is ```54 13 2C 73 13 53 93 AF 1B 5F 1D 1C 0B F6 57 7C
+B9 53 30 5A```
 
 
 Building for AmigaOS 4.x

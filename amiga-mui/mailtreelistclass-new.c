@@ -690,6 +690,28 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 	return 1;
 }
 
+/**
+ * Return the index of the given mail_info in the entries array.
+ *
+ * @param data
+ * @param info
+ * @return the index or -1 if it could not been found.
+ */
+static int FindIndexOfMailInfo(struct MailTreelist_Data *data, struct mail_info *info)
+{
+	int i;
+
+	/* FIXME: We should use a companion data structure that allows faster access to this */
+
+	for (i=0;i<data->entries_num;i++)
+	{
+		if (info == data->entries[i]->mail_info)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
 
 /**
  * Calculate the dimensions of given mail info. Return whether a width of a column
@@ -1777,14 +1799,12 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							data->entries_active = -1;
 							if (tidata)
 							{
-								int i;
-								for (i=0;i<data->entries_num;i++)
+								int index;
+
+								index = FindIndexOfMailInfo(data, (struct mail_info*)tidata);
+								if (index >= 0)
 								{
-									if (tidata == (ULONG)data->entries[i]->mail_info)
-									{
-										data->entries_active = i;
-										break;
-									}
+									data->entries_active = index;
 								}
 							}
 							if (data->entries_active != old_active)
@@ -3074,17 +3094,13 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RemoveMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-	int i;
+	int index;
 
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->m);
+	if (index >= 0)
 	{
-		if (msg->m == data->entries[i]->mail_info)
-		{
-			MailTreelist_RemoveMailByPos(cl, obj, i);
-			break;
-		}
+		MailTreelist_RemoveMailByPos(cl, obj, index);
 	}
-
 	return 0;
 }
 
@@ -3157,19 +3173,14 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_ReplaceMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int index;
 
-	int i;
-
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->oldmail);
+	if (index >= 0)
 	{
-		if (data->entries[i]->mail_info == msg->oldmail)
-		{
-			data->entries[i]->mail_info = msg->newmail;
-			RefreshEntry(cl,obj,i);
-			break;
-		}
+		data->entries[index]->mail_info = msg->newmail;
+		RefreshEntry(cl,obj,index);
 	}
-
 	return 0;
 }
 

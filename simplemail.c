@@ -2332,6 +2332,7 @@ static struct progmon *downloading_partial_mail_progmon;
 static int simplemail_download_next_partial_mail(void);
 
 /**
+ * Callback that is invoked if a partial mail has been downloaded.
  *
  * @param m
  * @param userdata

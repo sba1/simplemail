@@ -3190,20 +3190,16 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RefreshMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-
-	int i;
+	int index;
 
 	/* Noop when not being between setup/cleanup phase */
 	if (!data->inbetween_setup)
 		return 0;
 
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->m);
+	if (index >= 0)
 	{
-		if (data->entries[i]->mail_info == msg->m)
-		{
-			RefreshEntry(cl,obj,i);
-			break;
-		}
+		RefreshEntry(cl,obj,index);
 	}
 
 	return 0;

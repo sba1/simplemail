@@ -84,7 +84,13 @@ void test_mail_info_create_from_file(void)
 
 	m = mail_info_create_from_file(filename);
 
-	CU_ASSERT(m != NULL);
+	CU_ASSERT_PTR_NOT_NULL(m);
+	CU_ASSERT_PTR_NOT_NULL(m->to_list);
+	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
+	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
+	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
+	CU_ASSERT_STRING_EQUAL(m->to_addr, "xyz@localhost");
+	CU_ASSERT_EQUAL(m->child_mail, 0);
 
 	mail_info_free(m);
 }

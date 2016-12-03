@@ -75,14 +75,23 @@ void test_mail_filenames_of_new_mails_are_unique(void)
 
 /*************************************************************/
 
-static unsigned char *filename = "test.eml";
-
-/* @Test */
+/* @Test
+ * @File "test.eml"
+ * {{{
+ * From: Test <abc@def.ghi>
+ * To:  xyz@localhost
+ * Subject: Test Subject
+ * X-Mailer: SimpleMail 0.38 (UNIX/GTK+) E-Mail Client (c) 2000-2011 by Hynek Schlawack and Sebastian Bauer
+ * Date: 00 Jan 1900 00:00:00 +0000
+ * Importance: low
+ *
+ * }}}
+ */
 void test_mail_info_create_from_file(void)
 {
 	struct mail_info *m;
 
-	m = mail_info_create_from_file(filename);
+	m = mail_info_create_from_file("test.eml");
 
 	CU_ASSERT_PTR_NOT_NULL(m);
 	CU_ASSERT_PTR_NOT_NULL(m->to_list);

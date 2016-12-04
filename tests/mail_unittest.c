@@ -94,12 +94,26 @@ void test_mail_info_create_from_file(void)
 	m = mail_info_create_from_file("test.eml");
 
 	CU_ASSERT_PTR_NOT_NULL(m);
-	CU_ASSERT_PTR_NOT_NULL(m->to_list);
-	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
-	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
 	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
+	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
+	CU_ASSERT_PTR_NOT_NULL(m->to_list);
+	CU_ASSERT_PTR_NULL(m->to_phrase);
 	CU_ASSERT_STRING_EQUAL(m->to_addr, "xyz@localhost");
+	CU_ASSERT_PTR_NULL(m->cc_list);
+	CU_ASSERT_PTR_NULL(m->pop3_server);
+	CU_ASSERT_PTR_NULL(m->reply_addr);
+	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
+	CU_ASSERT_PTR_NULL(m->message_id);
+	CU_ASSERT_PTR_NULL(m->message_reply_id);
+	CU_ASSERT_EQUAL(m->seconds, 0);
+	CU_ASSERT_EQUAL(m->received, 0);
+	CU_ASSERT_PTR_NULL(m->excerpt);
+	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
+	CU_ASSERT_EQUAL(m->reference_count, 0);
+	CU_ASSERT_EQUAL(m->to_be_freed, 0);
 	CU_ASSERT_EQUAL(m->child_mail, 0);
+	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
+	CU_ASSERT_PTR_NULL(m->next_thread_mail);
 
 	mail_info_free(m);
 }

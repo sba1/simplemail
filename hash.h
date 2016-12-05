@@ -70,8 +70,8 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename);
 void hash_table_clean(struct hash_table *ht);
 
 /**
- * Presists the hash table. Works only, if filename was given at
- * hash_table_init().
+ * Stores the hash table on the filesystem. This works only, if filename was
+ * given at hash_table_init().
  *
  * @param ht the hash table to store.
  */

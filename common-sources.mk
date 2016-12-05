@@ -50,6 +50,7 @@ NONARCHSRCS=\
 	ssl.c \
 	status.c \
 	string_lists.c \
+	string_pools.c \
 	support_indep.c \
 	taglines.c \
 	tcp.c \

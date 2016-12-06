@@ -2947,14 +2947,14 @@ int folder_save_index(struct folder *f)
 
 			if (m->to_list)
 			{
-				num_to = list_length(&m->to_list->list);
-				to_addr = (struct address*)list_first(&m->to_list->list);
+				num_to = address_list_length(m->to_list);
+				to_addr = address_list_first(m->to_list);
 			}
 
 			if (m->cc_list)
 			{
-				num_cc = list_length(&m->cc_list->list);
-				cc_addr = (struct address*)list_first(&m->cc_list->list);
+				num_cc = address_list_length(m->cc_list);
+				cc_addr = address_list_first(m->cc_list);
 			}
 
 			fwrite(&num_to,1,4,fh);
@@ -2975,7 +2975,7 @@ int folder_save_index(struct folder *f)
 				len += len_add;
 				if (!(len_add = fwrite_str(fh, to_addr->email))) break;
 				len += len_add;
-				to_addr = (struct address*)node_next(&to_addr->node);
+				to_addr = address_next(to_addr);
 			}
 
 			while (cc_addr)
@@ -2984,7 +2984,7 @@ int folder_save_index(struct folder *f)
 				len += len_add;
 				if (!(len_add = fwrite_str(fh, cc_addr->email))) break;
 				len += len_add;
-				cc_addr = (struct address*)node_next(&cc_addr->node);
+				cc_addr = address_next(cc_addr);
 			}
 
 			if (!(len_add = fwrite_str(fh, m->pop3_server))) break;

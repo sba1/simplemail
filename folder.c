@@ -546,18 +546,20 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 	return 1;
 }
 
-/******************************************************************
- This resets the indexuptodate field within the folders indexfile.
- Returns 0 on failure, else 1.
-
- This flag is an indication that the indexfile is not uptodate
- (does not reflect the contents of the folder)
-
- The use of this flags is, if if this flag is set and there are
- no pending mails the indexfile mustn't be read instead the whole
- directory must be rescanned. This should only happen if SimpleMail
- have not been shut down properly.
-*******************************************************************/
+/**
+ * Resets the indexuptodate field within the folders indexfile.
+ *
+ * This flag is an indication that the indexfile is not uptodate
+ * (does not reflect the contents of the folder)
+ *
+ * The use of this flags is, if if this flag is set and there are
+ * no pending mails the indexfile mustn't be read instead the whole
+ * directory must be rescanned. This should only happen if SimpleMail
+ * has not been shut down properly.
+ *
+ * @param folder the folder whose pending flag should be set.
+ * @return 0 on failure, else 1.
+ */
 static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 {
 	int rc = 0;
@@ -784,10 +786,12 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	return pos;
 }
 
-/******************************************************************
- Removes a mail from the given folder.
- (does not free it)
-*******************************************************************/
+/**
+ * Remove the given mail from the given folder. It does not free the mail.
+ *
+ * @param folder the folder in which the mail resides.
+ * @param mail the mail to be removed.
+ */
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail)
 {
 	int i;
@@ -2362,33 +2366,33 @@ static struct folder *folder_find_by_imap_account(struct account *ac)
 	return f;
 }
 
-/******************************************************************
- Returns the incoming folder
-*******************************************************************/
+/**
+ * @return the main incoming folder.
+ */
 struct folder *folder_incoming(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_INCOMING);
 }
 
-/******************************************************************
- Returns the outgoing folder
-*******************************************************************/
+/**
+ * @return the main outgoing folder.
+ */
 struct folder *folder_outgoing(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_OUTGOING);
 }
 
-/******************************************************************
- Returns the sent folder
-*******************************************************************/
+/**
+ * @return the main sent folder.
+ */
 struct folder *folder_sent(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_SENT);
 }
 
-/******************************************************************
- Returns the deleleted folder
-*******************************************************************/
+/**
+  * @return the main deleted folder.
+ */
 struct folder *folder_deleted(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_DELETED);

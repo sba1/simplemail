@@ -1210,103 +1210,130 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 
 /*****************************************************************************/
 
-int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
+/**
+ * Work horse for scanning a folder.
+ *
+ * @param folder_path
+ * @param folder_name
+ * @param mail_callback
+ * @param mail_callback_udata
+ * @param status_callback
+ */
+static void folder_rescan_really(const char *folder_path, const char *folder_name,
+	void (*mail_callback)(struct mail_info *m, void *udata), void *mail_callback_udata,
+	void (*status_callback)(const char *txt))
 {
 	DIR *dfd; /* directory descriptor */
-	struct dirent *dptr; /* dir entry */
 	char path[380];
 
-	folder_lock(folder);
+	struct dirent *dptr; /* dir entry */
+
+	struct string_list mail_filename_list;
+	struct string_node *snode;
+	int number_of_mails;
+	char buf[80];
+	unsigned int last_ticks;
+	unsigned int current_mail;
 
 	getcwd(path, sizeof(path));
-	if(chdir(folder->path) == -1)
+	if(chdir(folder_path) == -1)
 	{
-		folder_unlock(folder);
-		return 0;
+		return;
 	}
 
-	if ((dfd = opendir(SM_CURRENT_DIR)))
+	if (!(dfd = opendir(SM_CURRENT_DIR)))
+		goto out;
+
+	last_ticks = time_reference_ticks();
+
+	string_list_init(&mail_filename_list);
+	number_of_mails = 0;
+
+	if (status_callback)
 	{
-		struct string_list mail_filename_list;
-		struct string_node *snode;
-		int number_of_mails;
-		char buf[80];
-		unsigned int last_ticks;
-		unsigned int current_mail;
+		sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder_name);
+		status_callback(buf);
+	}
 
-		last_ticks = time_reference_ticks();
+	while ((dptr = readdir(dfd)) != NULL)
+	{
+		char *name = dptr->d_name;
 
-		free(folder->mail_info_array);
-		free(folder->sorted_mail_info_array);
+		if (name[0] == '.')
+			if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
 
-		folder->mail_info_array = folder->sorted_mail_info_array = NULL;
-		folder->mail_info_array_allocated = 0;
-		folder->num_mails = 0;
-		folder->new_mails = 0;
-		folder->unread_mails = 0;
+		string_list_insert_tail(&mail_filename_list, name);
+		number_of_mails++;
+	}
+	closedir(dfd);
 
-		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-		folder->num_index_mails = 0;
-		folder->partial_mails = 0;
-		folder->rescanning = 1;
-
-		string_list_init(&mail_filename_list);
-		number_of_mails = 0;
+	current_mail = 0;
+	while ((snode = string_list_remove_head(&mail_filename_list)))
+	{
+		struct mail_info *m;
 
 		if (status_callback)
 		{
-			sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder->name);
-			status_callback(buf);
-		}
-
-		while ((dptr = readdir(dfd)) != NULL)
-		{
-			char *name = dptr->d_name;
-
-			if (name[0] == '.')
-				if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
-
-			string_list_insert_tail(&mail_filename_list, name);
-			number_of_mails++;
-		}
-		closedir(dfd);
-
-		current_mail = 0;
-		while ((snode = string_list_remove_head(&mail_filename_list)))
-		{
-			struct mail_info *m;
-
-			if (status_callback)
+			if (time_ms_passed(last_ticks) > 500)
 			{
-				if (time_ms_passed(last_ticks) > 500)
-				{
-					sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
-					status_callback(buf);
-					last_ticks = time_reference_ticks();
-				}
+				sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
+				status_callback(buf);
+				last_ticks = time_reference_ticks();
 			}
-
-			if ((m = mail_info_create_from_file(snode->string)))
-				folder_add_mail(folder,m,0);
-
-			free(snode->string);
-			free(snode);
-
-			current_mail++;
-		}
-		folder->rescanning = 0;
-
-		if (status_callback)
-		{
-			sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder->name);
-			status_callback(buf);
 		}
 
-		folder_invalidate_indexfile(folder);
+		if ((m = mail_info_create_from_file(snode->string)))
+			mail_callback(m, mail_callback_udata);
+
+		free(snode->string);
+		free(snode);
+
+		current_mail++;
 	}
+
+	if (status_callback)
+	{
+		sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder_name);
+		status_callback(buf);
+	}
+out:
+	chdir(path);
+}
+
+/*****************************************************************************/
+
+static void folder_rescan_mail_callback(struct mail_info *m, void *udata)
+{
+	folder_add_mail((struct folder *)udata,m,0);
+}
+
+/*****************************************************************************/
+
+int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
+{
+	folder_lock(folder);
+
+	free(folder->mail_info_array);
+	free(folder->sorted_mail_info_array);
+
+	folder->mail_info_array = folder->sorted_mail_info_array = NULL;
+	folder->mail_info_array_allocated = 0;
+	folder->num_mails = 0;
+	folder->new_mails = 0;
+	folder->unread_mails = 0;
+
+	folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+	folder->num_index_mails = 0;
+	folder->partial_mails = 0;
+	folder->rescanning = 1;
+
+	folder_rescan_really(folder->path, folder->name, folder_rescan_mail_callback, folder, status_callback);
+
+	folder->rescanning = 0;
+
+	folder_invalidate_indexfile(folder);
 
 	folder_unlock(folder);
-	chdir(path);
 	return 1;
 }
 

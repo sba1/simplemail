@@ -103,6 +103,9 @@ struct coroutine_basic_context
 /**
  * Create a new scheduler for coroutines with a custom wait for event callback.
  *
+ * @param wait_for_event a function that is called for looking for new events. If
+ *  polling is set to 1, wait_for_event() should not block. Otherwise, wait_for_event()
+ *  may block.
  * @return the scheduler nor NULL for an error.
  */
 coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata);

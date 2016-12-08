@@ -452,7 +452,11 @@ void sm_put_on_serial_line(char *txt)
 	char c;
 	while ((c = *txt++))
 	{
+#ifdef __amigaos4__
+		RawPutChar(c);
+#else
 		kputc(c);
+#endif
 	}
 #else
 	char buf[800];

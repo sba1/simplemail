@@ -938,6 +938,28 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 
 /*****************************************************************************/
 
+static void thread_schedule_coroutine(coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	thread_t thread = thread_get();
+
+	if (thread->scheduler)
+	{
+		coroutine_add(thread->scheduler, coroutine, ctx);
+	} else
+	{
+		SM_DEBUGF(0, ("Coroutine called without a coroutine scheduler! This is a bug!\n"));
+	}
+}
+
+/*****************************************************************************/
+
+int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	return thread_call_function_async(thread, thread_schedule_coroutine, 2, coroutine, ctx);
+}
+
+/*****************************************************************************/
+
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	va_list argptr;
@@ -1016,6 +1038,8 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 		thread_t this_thread = thread_get();
 		struct MsgPort *this_thread_port = this_thread->thread_port;
 		if (millis < 0) millis = 0;
+
+		this_thread->scheduler = sched;
 
 		while (1)
 		{

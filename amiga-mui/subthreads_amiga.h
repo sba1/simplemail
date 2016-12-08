@@ -19,6 +19,8 @@
 #ifndef SM__SUBTHREADS_AMIGA_H
 #define SM__SUBTHREADS_AMIGA_H
 
+#include "coroutines.h"
+
 #ifndef EXEC_LISTS_H
 #include <exec/lists.h>
 #endif
@@ -61,6 +63,9 @@ struct thread_s
 	struct MsgPort *timer_port;
 	struct timerequest *timer_req;
 	struct MinList timer_request_list;
+
+	/* Coroutine support */
+	coroutine_scheduler_t scheduler;
 };
 
 /**

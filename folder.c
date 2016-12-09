@@ -1215,12 +1215,12 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
  *
  * @param folder_path
  * @param folder_name
- * @param mail_callback
+ * @param mail_callback function to be called for a new mail. Returns 1 on success, 0 otherwise.
  * @param mail_callback_udata
  * @param status_callback
  */
 static void folder_rescan_really(const char *folder_path, const char *folder_name,
-	void (*mail_callback)(struct mail_info *m, void *udata), void *mail_callback_udata,
+	int (*mail_callback)(struct mail_info *m, void *udata), void *mail_callback_udata,
 	void (*status_callback)(const char *txt))
 {
 	DIR *dfd; /* directory descriptor */
@@ -1234,6 +1234,8 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 	char buf[80];
 	unsigned int last_ticks;
 	unsigned int current_mail;
+
+	int create = 1;
 
 	getcwd(path, sizeof(path));
 	if(chdir(folder_path) == -1)
@@ -1282,8 +1284,10 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 			}
 		}
 
-		if ((m = mail_info_create_from_file(snode->string)))
-			mail_callback(m, mail_callback_udata);
+		if (create && (m = mail_info_create_from_file(snode->string)))
+		{
+			create = mail_callback(m, mail_callback_udata);
+		}
 
 		free(snode->string);
 		free(snode);
@@ -1302,9 +1306,10 @@ out:
 
 /*****************************************************************************/
 
-static void folder_rescan_mail_callback(struct mail_info *m, void *udata)
+static int folder_rescan_mail_callback(struct mail_info *m, void *udata)
 {
 	folder_add_mail((struct folder *)udata,m,0);
+	return 1;
 }
 
 /*****************************************************************************/

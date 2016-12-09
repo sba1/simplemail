@@ -1751,6 +1751,12 @@ int folder_remove(struct folder *f)
   	return 0;
   }
 
+	if (f->rescanning)
+	{
+		sm_request(NULL,_("Can't delete folder because it is currently being rescanned."),_("_Ok"));
+		return 0;
+	}
+
 	if (f->special == FOLDER_SPECIAL_NO)
 	{
 		struct folder_node *node = (struct folder_node*)list_first(&folder_list);

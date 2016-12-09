@@ -568,6 +568,14 @@ void folder_delete_all_indexfiles(void);
  */
 int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt));
 
+/**
+ * Rescan the given folder in an asychronous manner, i.e., index all mails in the folder.
+ *
+ * @param folder the folder to be rescanned.
+ * @param status_callback defines the function that is called for staus updates.
+ * @return 0 on failure, everything else on success.
+ */
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata), void *udata);
 
 /**
  * Adds a new folder that stores messages in the given path

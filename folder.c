@@ -32,6 +32,7 @@
 
 #include "account.h"
 #include "addresslist.h"
+#include "atcleanup.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
@@ -43,6 +44,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "status.h"
+#include "subthreads.h"
 #include "support_indep.h"
 
 #include "gui_main.h" /* gui_execute_arexx() */
@@ -1343,6 +1345,209 @@ int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt
 }
 
 /*****************************************************************************/
+
+/** Thread for various lengthy folder operations */
+static thread_t folder_thread;
+
+/*****************************************************************************/
+
+struct folder_thread_mail_callback_data
+{
+	int num_mails;
+	int mails_allocated;
+	struct mail_info **mails;
+};
+
+/*****************************************************************************/
+
+/**
+ * Callback that is invoked for each successfully read in mail.
+ *
+ * @param m the mail the has been read in.
+ * @param udata the user data.
+ * @return 0 if further processing should be aborter, else 1.
+ */
+static int folder_thread_mail_callback(struct mail_info *m, void *udata)
+{
+	struct folder_thread_mail_callback_data *data = udata;
+
+	if (thread_aborted())
+	{
+		return 0;
+	}
+
+	if (data->num_mails >= data->mails_allocated)
+	{
+		int new_mails_allocated = (data->mails_allocated * 2) + 8;
+		struct mail_info **new_mails = (struct mail_info**)realloc(data->mails, new_mails_allocated * sizeof(*new_mails));
+		if (!new_mails)
+		{
+			return 0;
+		}
+		data->mails = new_mails;
+		data->mails_allocated = new_mails_allocated;
+	}
+	data->mails[data->num_mails++] = m;
+	return 1;
+}
+
+/*****************************************************************************/
+
+/**
+ * Entry for the folder thread.
+ *
+ * @param udata
+ * @return
+ */
+static int folder_thread_entry(void *udata)
+{
+	coroutine_scheduler_t sched;
+
+	if (!(sched = coroutine_scheduler_new_custom(NULL, NULL)))
+		return 0;
+
+	if (thread_parent_task_can_contiue())
+	{
+		while (thread_wait(sched, NULL, NULL, 0));
+	}
+	coroutine_scheduler_dispose(sched);
+	return 0;
+}
+
+/*****************************************************************************/
+
+struct folder_thread_rescan_context
+{
+	struct coroutine_basic_context basic_context;
+
+	/* Input parameters */
+	char *folder_path;
+	void (*status_callback)(const char *txt);
+	void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata);
+	void *mail_infos_read_udata;
+
+	/* Actual context */
+	char *folder_name;
+	struct folder_thread_mail_callback_data udata;
+};
+
+/*****************************************************************************/
+
+/**
+ * Rescan the folder.
+ *
+ * @param ctx
+ * @return a coroutine return value.
+ */
+static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_context *ctx)
+{
+	struct folder_thread_rescan_context *c = (struct folder_thread_rescan_context*)ctx;
+
+	COROUTINE_BEGIN(c);
+
+	{
+		/* Retrieve name of the folder, set rescanning state and initialize context */
+		struct folder *f;
+
+		folders_lock();
+		if ((f = folder_find_by_path(c->folder_path)))
+		{
+			folder_lock(f);
+			c->folder_name = mystrdup(f->name);
+			f->rescanning = 1;
+			folder_unlock(f);
+		}
+		folders_unlock();
+
+		if (!f)
+		{
+			goto bailout;
+		}
+	}
+
+	folder_rescan_really(c->folder_path, c->folder_name, folder_thread_mail_callback, &c->udata, c->status_callback);
+
+	{
+		struct folder *f;
+		folders_lock();
+		if ((f = folder_find_by_path(c->folder_path)))
+		{
+			folder_lock(f);
+			f->rescanning = 0;
+			folder_unlock(f);
+		}
+		folders_unlock();
+
+		c->mail_infos_read(c->folder_path, c->udata.mails, c->udata.num_mails, c->mail_infos_read_udata);
+
+		free(c->udata.mails);
+	}
+
+bailout:
+	free(c->folder_path);
+	free(c->folder_name);
+
+	COROUTINE_END(c);
+}
+
+/*****************************************************************************/
+
+/**
+ * Function that is called when SimpleMail shuts down.
+ *
+ * @param udata
+ */
+static void folder_thread_cleanup(void *udata)
+{
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensure that the folder thread is running.
+ *
+ * @return 0 or 1, depending of the folder thread is up or not.
+ */
+static int folder_thread_ensure(void)
+{
+	if (!folder_thread)
+	{
+		if (!(folder_thread = thread_add("SimpleMail - Folder thread", folder_thread_entry, NULL)))
+		{
+			return 0;
+		}
+		atcleanup(folder_thread_cleanup, NULL);
+	}
+
+	return !!folder_thread;
+}
+/*****************************************************************************/
+
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata), void *udata)
+{
+	char *folder_path;
+	struct folder_thread_rescan_context *ctx;
+
+	if (!folder_thread_ensure())
+	{
+		return 0;
+	}
+
+	if (!(folder_path = mystrdup(folder->path)))
+	{
+		return 0;
+	}
+
+	if (!(ctx = (struct folder_thread_rescan_context*)malloc(sizeof(*ctx))))
+		return 0;
+	memset(ctx, 0, sizeof(*ctx));
+	ctx->folder_path = folder_path;
+	ctx->status_callback = status_callback;
+	ctx->mail_infos_read = mail_infos_read;
+	ctx->mail_infos_read_udata = udata;
+	thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context);
+	return 1;
+}
 
 /******************************************************************
  Reads the all mail infos in the given folder.

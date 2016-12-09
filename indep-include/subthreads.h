@@ -201,6 +201,18 @@ int thread_call_parent_function_async_string(R (*Func)(char *, A...), int argcou
 
 
 /**
+ * @brief Call a coroutine on the context of the given thread.
+ *
+ * The thread must run a coroutine scheduler.
+ *
+ * @param thread the thread
+ * @param coroutine the coroutine to execute
+ * @param ctx the initialized context that is used by the given coroutine.
+ * @return whether the submission of the coroutine call was successful.
+ */
+int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct coroutine_basic_context *ctx);
+
+/**
  * @brief Call the function synchronous in the context of the parent task.
  *
  * Also calls the timer_callback on the calling process context periodically.

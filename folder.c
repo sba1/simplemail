@@ -40,6 +40,7 @@
 #include "imap.h"
 #include "lists.h"
 #include "parse.h"
+#include "progmon.h"
 #include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -1425,6 +1426,7 @@ struct folder_thread_rescan_context
 	void (*status_callback)(const char *txt);
 	void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata);
 	void *mail_infos_read_udata;
+	struct progmon *pm;
 
 	/* Actual context */
 	char *folder_name;
@@ -1484,8 +1486,10 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 	}
 
 bailout:
+	c->pm->done(c->pm);
 	free(c->folder_path);
 	free(c->folder_name);
+	progmon_delete(c->pm);
 
 	COROUTINE_END(c);
 }
@@ -1545,8 +1549,21 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	ctx->status_callback = status_callback;
 	ctx->mail_infos_read = mail_infos_read;
 	ctx->mail_infos_read_udata = udata;
-	thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context);
-	return 1;
+	if ((ctx->pm = progmon_create()))
+	{
+		ctx->pm->begin(ctx->pm, 1, "Rescanning");
+	}
+
+	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
+	{
+		return 1;
+	} else
+	{
+		free(ctx->folder_path);
+		ctx->pm->done(ctx->pm);
+		progmon_delete(ctx->pm);
+	}
+	return 0;
 }
 
 /******************************************************************

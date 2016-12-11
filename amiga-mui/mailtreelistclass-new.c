@@ -3135,7 +3135,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 			else if (data->entries_active >= from) data->entries_active = from;
 		}
 
-		/* If the last element was selected, i could be indead > data->entries_num */
+		/* If the last element was selected, it could be indeed > data->entries_num */
 		if (i >= data->entries_num) break;
 		from = i;
 

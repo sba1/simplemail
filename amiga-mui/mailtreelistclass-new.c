@@ -2863,7 +2863,10 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	for (i=0;i<data->entries_num;i++)
 	{
 		if (data->entries[i])
+		{
+			mail_dereference(data->entries[i]->mail_info);
 			FreeListEntry(data,data->entries[i]);
+		}
 	}
 
 	SetListSize(data,0);
@@ -2935,6 +2938,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 			break;
 		}
 
+		mail_reference(m);
 		le->mail_info = m;
 
 		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD && data->entries_active == -1)
@@ -3016,6 +3020,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 	}
 
 	entry->mail_info = mail;
+	mail_reference(mail);
 	data->entries[after+1] = entry;
 	data->entries_num++;
 
@@ -3063,6 +3068,7 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	removed_active = pos == data->entries_active;
 
 	/* Free memory and move the following mails one position up, update number of entries */
+	mail_dereference(data->entries[pos]->mail_info);
 	FreeListEntry(data,data->entries[pos]);
 	memmove(&data->entries[pos],&data->entries[pos+1],sizeof(data->entries[0])*(data->entries_num - pos - 1));
 	data->entries_num--;
@@ -3125,7 +3131,11 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 
 		if (from != -1)
 		{
-			for (j=from;j<to;j++) FreeListEntry(data,data->entries[j]);
+			for (j=from;j<to;j++)
+			{
+				mail_dereference(data->entries[j]->mail_info);
+				FreeListEntry(data,data->entries[j]);
+			}
 			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(data->entries_num-to));
 
 			data->entries_num -= to - from;
@@ -3178,7 +3188,13 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 	index = FindIndexOfMailInfo(data, msg->oldmail);
 	if (index >= 0)
 	{
-		data->entries[index]->mail_info = msg->newmail;
+		struct mail_info *old_m = data->entries[index]->mail_info;
+		if (old_m != msg->newmail)
+		{
+			mail_dereference(old_m);
+			mail_reference(msg->newmail);
+			data->entries[index]->mail_info = msg->newmail;
+		}
 		RefreshEntry(cl,obj,index);
 	}
 	return 0;

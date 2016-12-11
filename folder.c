@@ -1317,18 +1317,31 @@ static int folder_rescan_mail_callback(struct mail_info *m, void *udata)
 
 /*****************************************************************************/
 
+/**
+ * Internal operation to dispose all mails of a folder.
+ *
+ * @param f
+ */
+static void folder_dispose_mails(struct folder *f)
+{
+	/* FIXME: We should also delete each mail */
+	free(f->mail_info_array);
+	free(f->sorted_mail_info_array);
+
+	f->mail_info_array = f->sorted_mail_info_array = NULL;
+	f->mail_info_array_allocated = 0;
+	f->num_mails = 0;
+	f->new_mails = 0;
+	f->unread_mails = 0;
+}
+
+/*****************************************************************************/
+
 int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
 {
 	folder_lock(folder);
 
-	free(folder->mail_info_array);
-	free(folder->sorted_mail_info_array);
-
-	folder->mail_info_array = folder->sorted_mail_info_array = NULL;
-	folder->mail_info_array_allocated = 0;
-	folder->num_mails = 0;
-	folder->new_mails = 0;
-	folder->unread_mails = 0;
+	folder_dispose_mails(folder);
 
 	folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 	folder->num_index_mails = 0;

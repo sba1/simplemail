@@ -1437,14 +1437,62 @@ struct folder_thread_rescan_context
 	/* Input parameters */
 	char *folder_path;
 	void (*status_callback)(const char *txt);
-	void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata);
-	void *mail_infos_read_udata;
+	void (*completed)(char *folder_path, void *udata);
+	void *completed_udata;
 	struct progmon *pm;
 
 	/* Actual context */
 	char *folder_name;
 	struct folder_thread_mail_callback_data udata;
 };
+
+/*****************************************************************************/
+
+
+/**
+ * Function that is called on the context of the main thread.
+ *
+ * @param folder_path
+ * @param m
+ * @param num_m
+ */
+static void folder_rescan_async_completed(struct folder_thread_rescan_context *ctx)
+{
+	struct folder *f;
+	int i;
+
+	char *folder_path;
+	struct mail_info **m;
+	int num_m;
+
+	folder_path = ctx->folder_path;
+	m = ctx->udata.mails;
+	num_m = ctx->udata.num_mails;
+
+	if (!(f = folder_find_by_path(folder_path)))
+		return;
+
+	folder_lock(f);
+	folder_dispose_mails(f);
+
+	f->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+	f->num_index_mails = 0;
+	f->partial_mails = 0;
+
+	folder_prepare_for_additional_mails(f, num_m);
+
+	for (i=0; i < num_m; i++)
+	{
+		folder_add_mail(f, m[i], 0);
+	}
+
+	folder_invalidate_indexfile(f);
+
+	f->rescanning = 0;
+	folder_unlock(f);
+
+	ctx->completed(folder_path, ctx->completed_udata);
+}
 
 /*****************************************************************************/
 
@@ -1493,7 +1541,8 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		}
 		folders_unlock();
 
-		c->mail_infos_read(c->folder_path, c->udata.mails, c->udata.num_mails, c->mail_infos_read_udata);
+		/* TODO: This should be asynchronous */
+		thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
 
 		free(c->udata.mails);
 	}
@@ -1538,9 +1587,10 @@ static int folder_thread_ensure(void)
 
 	return !!folder_thread;
 }
+
 /*****************************************************************************/
 
-int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*mail_infos_read)(char *folder_path, struct mail_info **m, int num_m, void *udata), void *udata)
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
 {
 	char *folder_path;
 	struct folder_thread_rescan_context *ctx;
@@ -1560,8 +1610,8 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->folder_path = folder_path;
 	ctx->status_callback = status_callback;
-	ctx->mail_infos_read = mail_infos_read;
-	ctx->mail_infos_read_udata = udata;
+	ctx->completed = completed;
+	ctx->completed_udata = udata;
 	if ((ctx->pm = progmon_create()))
 	{
 		ctx->pm->begin(ctx->pm, 1, "Rescanning");

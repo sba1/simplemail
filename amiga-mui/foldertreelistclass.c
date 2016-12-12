@@ -130,14 +130,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 
 			if (num != -1)
 			{
-				if(unread > 0)
-				{
-					sprintf(mails_buf,newm?(MUIX_PH "\33b%d"):(MUIX_PH "%d"),num);
-				}
-				else
-				{
-					sprintf(mails_buf,"%d",num);
-				}
+				sprintf(mails_buf,"%s%s%d", unread>0?MUIX_PH:"",newm>0?MUIX_B:"",num);
 				sprintf(new_buf,"%d",newm);
 				sprintf(unread_buf,"%d",unread);
 			}

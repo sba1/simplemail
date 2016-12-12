@@ -1517,7 +1517,6 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		{
 			folder_lock(f);
 			c->folder_name = mystrdup(f->name);
-			f->rescanning = 1;
 			folder_unlock(f);
 		}
 		folders_unlock();
@@ -1531,16 +1530,6 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 	folder_rescan_really(c->folder_path, c->folder_name, folder_thread_mail_callback, &c->udata, c->status_callback);
 
 	{
-		struct folder *f;
-		folders_lock();
-		if ((f = folder_find_by_path(c->folder_path)))
-		{
-			folder_lock(f);
-			f->rescanning = 0;
-			folder_unlock(f);
-		}
-		folders_unlock();
-
 		/* TODO: This should be asynchronous */
 		thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
 
@@ -1619,6 +1608,7 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 
 	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
 	{
+		folder->rescanning = 1;
 		return 1;
 	} else
 	{

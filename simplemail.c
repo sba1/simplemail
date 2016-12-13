@@ -2305,21 +2305,35 @@ void callback_save_all_indexfiles(void)
 
 /*****************************************************************************/
 
+void callback_rescan_folder_completed(char *folder_path,  void *udata)
+{
+	struct folder *f;
+
+	if (!(f = folder_find_by_path(folder_path)))
+		return;
+
+	if (main_get_folder() != f)
+		return;
+
+	app_busy();
+	main_set_folder_mails(f);
+	main_refresh_folder(f);
+	read_refresh_prevnext_button(f);
+	app_unbusy();
+}
+
+/*****************************************************************************/
+
 void callback_rescan_folder(void)
 {
 	struct folder *f = main_get_folder();
 	if (f)
 	{
-		app_busy();
-
 		/* Because this means deleting all mails we safely remove all found mails as it
 		 * could reference an old mail */
 		search_clear_results();
-		folder_rescan(f, status_set_status);
-		main_set_folder_mails(f);
+		folder_rescan_async(f, status_set_status, callback_rescan_folder_completed, NULL);
 		main_refresh_folder(f);
-		read_refresh_prevnext_button(f);
-		app_unbusy();
 	}
 }
 

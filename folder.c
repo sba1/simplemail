@@ -601,7 +601,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 
 	if (!folder->mail_infos_loaded)
 	{
-		/* No mail infos has been read. We could now load them now but
+		/* No mail infos has been read. We could load them now but
 		   instead we add the new mail to the pending mail array. This
 		   makes this operation a lot of faster and the overall operation
 		   of SimpleMail as well if this folder is not viewed (which is

@@ -732,6 +732,8 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 	if (mail->flags & MAIL_FLAGS_PARTIAL) folder->partial_mails++;
 
+	/* Disabled because slow, buggy, and not really used */
+#if 0
 	/* sort the mails for threads */
 	if (mail->message_id)
 	{
@@ -785,6 +787,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 			}
 		}
 	}
+#endif
 
 	return pos;
 }

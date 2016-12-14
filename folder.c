@@ -1224,10 +1224,12 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
  * @param mail_callback function to be called for a new mail. Returns 1 on success, 0 otherwise.
  * @param mail_callback_udata
  * @param status_callback
+ * @param pm the optional progress monitor. It should have 101 work units.
  */
 static void folder_rescan_really(const char *folder_path, const char *folder_name,
 	int (*mail_callback)(struct mail_info *m, void *udata), void *mail_callback_udata,
-	void (*status_callback)(const char *txt))
+	void (*status_callback)(const char *txt),
+	struct progmon *pm)
 {
 	DIR *dfd; /* directory descriptor */
 	char path[380];
@@ -1239,6 +1241,7 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 	int number_of_mails;
 	char buf[80];
 	unsigned int last_ticks;
+	unsigned int total_work_done = 0;
 	unsigned int current_mail;
 
 	int create = 1;
@@ -1261,6 +1264,10 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 	{
 		sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder_name);
 		status_callback(buf);
+		if (pm)
+		{
+			pm->working_on(pm, buf);
+		}
 	}
 
 	while ((dptr = readdir(dfd)) != NULL)
@@ -1275,17 +1282,40 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 	}
 	closedir(dfd);
 
+	if (pm)
+	{
+		pm->work(pm, 1);
+	}
+
 	current_mail = 0;
 	while ((snode = string_list_remove_head(&mail_filename_list)))
 	{
 		struct mail_info *m;
 
-		if (status_callback)
+		if (status_callback || pm)
 		{
 			if (time_ms_passed(last_ticks) > 500)
 			{
 				sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
-				status_callback(buf);
+				if (status_callback)
+				{
+					status_callback(buf);
+				}
+
+				if (pm)
+				{
+					int new_total_work_done;
+					int work;
+
+					new_total_work_done = current_mail * 100 / number_of_mails;;
+					if ((work = new_total_work_done - total_work_done) > 0)
+					{
+						pm->working_on(pm, buf);
+						pm->work(pm, work);
+
+						total_work_done = new_total_work_done;
+					}
+				}
 				last_ticks = time_reference_ticks();
 			}
 		}
@@ -1301,10 +1331,20 @@ static void folder_rescan_really(const char *folder_path, const char *folder_nam
 		current_mail++;
 	}
 
-	if (status_callback)
+	if (status_callback || pm)
 	{
 		sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder_name);
-		status_callback(buf);
+
+		if (status_callback)
+		{
+			status_callback(buf);
+		}
+
+		if (pm)
+		{
+			pm->working_on(pm, buf);
+			pm->work(pm, 100 - total_work_done);
+		}
 	}
 out:
 	chdir(path);
@@ -1351,7 +1391,7 @@ int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt
 	folder->partial_mails = 0;
 	folder->rescanning = 1;
 
-	folder_rescan_really(folder->path, folder->name, folder_rescan_mail_callback, folder, status_callback);
+	folder_rescan_really(folder->path, folder->name, folder_rescan_mail_callback, folder, status_callback, NULL);
 
 	folder->rescanning = 0;
 
@@ -1536,7 +1576,7 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		}
 	}
 
-	folder_rescan_really(c->folder_path, c->folder_name, folder_thread_mail_callback, &c->udata, c->status_callback);
+	folder_rescan_really(c->folder_path, c->folder_name, folder_thread_mail_callback, &c->udata, c->status_callback, c->pm);
 
 	{
 		/* TODO: This should be asynchronous */
@@ -1612,7 +1652,7 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	ctx->completed_udata = udata;
 	if ((ctx->pm = progmon_create()))
 	{
-		ctx->pm->begin(ctx->pm, 1, "Rescanning");
+		ctx->pm->begin(ctx->pm, 101, "Rescanning");
 	}
 
 	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))

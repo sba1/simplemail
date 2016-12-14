@@ -1492,6 +1492,12 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 	folder_invalidate_indexfile(f);
 
 	f->rescanning = 0;
+
+	if (f->to_be_saved)
+	{
+		folder_save_index(f);
+		f->to_be_saved = 0;
+	}
 	folder_unlock(f);
 
 	ctx->completed(folder_path, ctx->completed_udata);

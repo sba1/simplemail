@@ -3231,6 +3231,12 @@ int folder_save_index(struct folder *f)
 	if (!f->num_pending_mails && (!f->mail_infos_loaded || f->index_uptodate))
 		return 0;
 
+	if (f->rescanning)
+	{
+		f->to_be_saved = 1;
+		return 0;
+	}
+
 	append = !!f->num_pending_mails;
 
 	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))

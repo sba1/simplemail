@@ -69,6 +69,7 @@ struct folder
 	int mail_infos_loaded; /* 1 if the mailinfos has loaded */
 	int to_be_rescanned; /* 1 if the folder shall be rescanned */
 	int rescanning; /* 1, if the folder is currently being rescanned */
+	int to_be_saved; /* 1, if the index file should be saved but it couldn't be done */
 
 
 	int type; /* see below */

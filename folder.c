@@ -1844,8 +1844,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 	folder->index_uptodate = mail_infos_read;
 
-	if (!mail_infos_read)
-		folder_rescan(folder, status_set_status);
+	if (!mail_infos_read && !folder->rescanning)
+	{
+		folder_rescan_async(folder, NULL, callback_rescan_folder_completed, NULL);
+	}
 	return 1;
 }
 

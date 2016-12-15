@@ -619,6 +619,15 @@ void callback_delete_all_indexfiles(void);
 void callback_save_all_indexfiles(void);
 
 /**
+ * Callback suitable for folder_rescan_asynch to indicate an issued folder
+ * rescanning has been completed.
+ *
+ * @param folder_path the path folder that have been completed.
+ * @param udata unused
+ */
+void callback_rescan_folder_completed(char *folder_path,  void *udata);
+
+/**
  * Rescan the currently selected folder.
  */
 void callback_rescan_folder(void);

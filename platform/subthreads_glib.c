@@ -521,6 +521,18 @@ static gboolean thread_wait_timer_entry(gpointer udata)
 	return 1;
 }
 
+static gboolean thread_idle_entry(gpointer udata)
+{
+	/* TODO: We should block if no coroutine needs to be scheduled */
+	coroutine_scheduler_t sched = (coroutine_scheduler_t)udata;
+	if (sched)
+	{
+		coroutine_schedule_ready(sched);
+	}
+	return 1;
+}
+
+
 /*****************************************************************************/
 
 int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void *timer_data, int millis)
@@ -528,6 +540,7 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;
 	GSource *s = NULL;
+	GSource *idle_s;
 
 	SM_ENTER;
 
@@ -548,6 +561,12 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 		g_source_unref(s);
 	}
 
+	if (sched)
+	{
+		idle_s = g_idle_source_new();
+		g_source_set_callback(idle_s, thread_idle_entry, sched, NULL);
+		g_source_attach(idle_s, t->context);
+	}
 	g_main_loop_run(t->main_loop);
 
 	/* Destroy the timer if there was any */

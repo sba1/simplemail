@@ -30,6 +30,7 @@
 
 #include <glib.h>
 
+#include "coroutines.h"
 #include "debug.h"
 #include "lists.h"
 #include "support_indep.h"
@@ -61,6 +62,9 @@ struct thread_s
 
 	GMutex *mutex;
 	int aborted;
+
+	/* Coroutine support */
+	coroutine_scheduler_t scheduler;
 };
 
 static struct thread_s main_thread;
@@ -480,6 +484,28 @@ thread_t thread_get(void)
 
 /*****************************************************************************/
 
+static void thread_schedule_coroutine(coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	thread_t thread = thread_get();
+
+	if (thread->scheduler)
+	{
+		coroutine_add(thread->scheduler, coroutine, ctx);
+	} else
+	{
+		SM_DEBUGF(0, ("Coroutine called without a coroutine scheduler! This is a bug!\n"));
+	}
+}
+
+/*****************************************************************************/
+
+int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	return thread_call_function_async(thread, thread_schedule_coroutine, 2, coroutine, ctx);
+}
+
+/*****************************************************************************/
+
 struct thread_wait_timer_entry_data
 {
 	void (*timer_callback)(void*);
@@ -509,6 +535,8 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 
 	t = thread_get();
 
+	t->scheduler = sched;
+
 	data.timer_callback = (void (*)(void*))timer_callback;
 	data.timer_data = timer_data;
 
@@ -525,6 +553,8 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 	/* Destroy the timer if there was any */
 	if (timer_callback && s)
 		g_source_destroy(s);
+
+	t->scheduler = NULL;
 
 	SM_LEAVE;
 

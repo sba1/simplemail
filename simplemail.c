@@ -2324,6 +2324,13 @@ void callback_rescan_folder_completed(char *folder_path,  void *udata)
 
 /*****************************************************************************/
 
+void callback_refresh_folder(struct folder *f)
+{
+	main_refresh_folder(f);
+}
+
+/*****************************************************************************/
+
 void callback_rescan_folder(void)
 {
 	struct folder *f = main_get_folder();

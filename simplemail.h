@@ -628,6 +628,12 @@ void callback_save_all_indexfiles(void);
 void callback_rescan_folder_completed(char *folder_path,  void *udata);
 
 /**
+ * Refresh the given folder (only the folder, not its contents)
+ */
+
+void callback_refresh_folder(struct folder *f);
+
+/**
  * Rescan the currently selected folder.
  */
 void callback_rescan_folder(void);

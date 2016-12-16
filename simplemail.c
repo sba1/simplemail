@@ -2340,7 +2340,6 @@ void callback_rescan_folder(void)
 		 * could reference an old mail */
 		search_clear_results();
 		folder_rescan_async(f, status_set_status, callback_rescan_folder_completed, NULL);
-		main_refresh_folder(f);
 	}
 }
 

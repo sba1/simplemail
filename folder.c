@@ -1658,6 +1658,7 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
 	{
 		folder->rescanning = 1;
+		callback_refresh_folder(folder);
 		return 1;
 	} else
 	{

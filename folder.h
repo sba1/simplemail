@@ -561,15 +561,6 @@ void folder_save_all_indexfiles(void);
 void folder_delete_all_indexfiles(void);
 
 /**
- * Rescan the given folder, i.e., index all mails in the folder.
- *
- * @param folder the folder to be rescanned.
- * @param status_callback defines the function that is called for staus updates.
- * @return 0 on failure, everything else on success.
- */
-int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt));
-
-/**
  * Rescan the given folder in an asychronous manner, i.e., index all mails in the folder.
  *
  * @param folder the folder to be rescanned.

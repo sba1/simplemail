@@ -1352,14 +1352,6 @@ out:
 
 /*****************************************************************************/
 
-static int folder_rescan_mail_callback(struct mail_info *m, void *udata)
-{
-	folder_add_mail((struct folder *)udata,m,0);
-	return 1;
-}
-
-/*****************************************************************************/
-
 /**
  * Internal operation to dispose all mails of a folder.
  *
@@ -1376,29 +1368,6 @@ static void folder_dispose_mails(struct folder *f)
 	f->num_mails = 0;
 	f->new_mails = 0;
 	f->unread_mails = 0;
-}
-
-/*****************************************************************************/
-
-int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
-{
-	folder_lock(folder);
-
-	folder_dispose_mails(folder);
-
-	folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-	folder->num_index_mails = 0;
-	folder->partial_mails = 0;
-	folder->rescanning = 1;
-
-	folder_rescan_really(folder->path, folder->name, folder_rescan_mail_callback, folder, status_callback, NULL);
-
-	folder->rescanning = 0;
-
-	folder_invalidate_indexfile(folder);
-
-	folder_unlock(folder);
-	return 1;
 }
 
 /*****************************************************************************/

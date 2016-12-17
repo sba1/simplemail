@@ -1362,12 +1362,15 @@ static void folder_dispose_mails(struct folder *f)
 	/* FIXME: We should also delete each mail */
 	free(f->mail_info_array);
 	free(f->sorted_mail_info_array);
+	free(f->pending_mail_info_array);
 
-	f->mail_info_array = f->sorted_mail_info_array = NULL;
+	f->mail_info_array = f->sorted_mail_info_array = f->pending_mail_info_array = NULL;
 	f->mail_info_array_allocated = 0;
 	f->num_mails = 0;
 	f->new_mails = 0;
 	f->unread_mails = 0;
+	f->pending_mail_info_array_allocated = 0;
+	f->num_pending_mails = 0;
 }
 
 /*****************************************************************************/

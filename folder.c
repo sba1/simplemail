@@ -1518,7 +1518,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 /*****************************************************************************/
 
 /**
- * Rescan the folder.
+ * Rescan the folder. This function is callable from any context.
  *
  * @param ctx
  * @return a coroutine return value.

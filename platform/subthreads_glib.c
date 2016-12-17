@@ -280,6 +280,14 @@ void thread_abort(thread_t thread)
 
 /*****************************************************************************/
 
+void thread_signal(thread_t thread_to_signal)
+{
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
+}
+
+/*****************************************************************************/
+
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);

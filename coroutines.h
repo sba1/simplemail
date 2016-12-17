@@ -89,9 +89,9 @@ struct coroutine_basic_context
  * Insert a preemption point but don't continue until the given coroutine
  * is done.
  */
-#define COROUTINE_AWAIT_OTHER(context, other)\
+#define COROUTINE_AWAIT_OTHER(context, oth)\
 			context->basic_context.next_state = __LINE__;\
-			context->basic_context.other = other;\
+			context->basic_context.other = oth;\
 			return COROUTINE_WAIT;\
 		case __LINE__:\
 			context->basic_context.other = NULL;

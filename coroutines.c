@@ -85,6 +85,7 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 		return NULL;
 	coroutine->entry = entry;
 	coroutine->context = context;
+	context->scheduler = scheduler;
 	list_insert_tail(&scheduler->coroutines_ready_list.list, &coroutine->node);
 	return coroutine;
 }
@@ -107,6 +108,7 @@ void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		{
 			case	COROUTINE_DONE:
 					node_remove(&cor->node);
+					cor->context->scheduler = NULL;
 					list_insert_tail(&scheduler->finished_coroutines_list.list, &cor->node);
 					break;
 

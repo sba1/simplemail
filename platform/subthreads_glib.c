@@ -548,7 +548,7 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;
 	GSource *s = NULL;
-	GSource *idle_s;
+	GSource *idle_s = NULL;
 
 	SM_ENTER;
 

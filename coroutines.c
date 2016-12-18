@@ -92,7 +92,7 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 
 /*****************************************************************************/
 
-void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
+int coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 {
 	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_ready_list);
 	coroutine_t cor_next;
@@ -147,6 +147,7 @@ void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		}
 	}
 
+	return !!coroutines_list_first(&scheduler->coroutines_ready_list);
 }
 
 /**

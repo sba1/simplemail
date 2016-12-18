@@ -114,8 +114,9 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(corou
  * Execute the current set of ready coroutines.
  *
  * @param scheduler
+ * @return 0 if the ready queue is empty, 1 otherwise.
  */
-void coroutine_schedule_ready(coroutine_scheduler_t scheduler);
+int coroutine_schedule_ready(coroutine_scheduler_t scheduler);
 
 /**
  * Dispose the given scheduler. Does not check if there are any coroutines

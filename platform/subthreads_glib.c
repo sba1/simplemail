@@ -574,12 +574,16 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 		idle_s = g_idle_source_new();
 		g_source_set_callback(idle_s, thread_idle_entry, sched, NULL);
 		g_source_attach(idle_s, t->context);
+		g_source_unref(idle_s);
 	}
 	g_main_loop_run(t->main_loop);
 
 	/* Destroy the timer if there was any */
 	if (timer_callback && s)
 		g_source_destroy(s);
+
+	if (idle_s)
+		g_source_destroy(idle_s);
 
 	t->scheduler = NULL;
 

@@ -85,6 +85,7 @@ void test_folder_many_mails(void)
 	system("rm -Rf " MANY_EMAILS_PROFILE);
 	config_set_user_profile_directory(MANY_EMAILS_PROFILE);
 
+	CU_ASSERT(debug_init() != 0);
 	CU_ASSERT(progmon_init() != 0);
 	CU_ASSERT(init_threads() != 0);
 	CU_ASSERT(load_config() != 0);
@@ -119,4 +120,5 @@ void test_folder_many_mails(void)
 	free_config();
 	cleanup_threads();
 	progmon_deinit();
+	debug_deinit();
 }

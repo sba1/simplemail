@@ -1090,10 +1090,10 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 				FreeVec(tmsg);
 			}
 
-			/* And finally, schedule coroutines */
+			/* And finally, schedule coroutines until there are no left */
 			if (sched)
 			{
-				coroutine_schedule_ready(sched);
+				while (coroutine_schedule_ready(sched));
 			}
 
 			if (mask & SIGBREAKF_CTRL_C)

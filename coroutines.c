@@ -170,9 +170,7 @@ int coroutine_schedule(coroutine_scheduler_t scheduler)
 
 	coroutine_t cor, cor_next;
 
-	coroutine_schedule_ready(scheduler);
-
-	polling = !!list_first(&scheduler->coroutines_ready_list.list);
+	polling = coroutine_schedule_ready(scheduler);
 
 	if (scheduler->wait_for_event)
 	{

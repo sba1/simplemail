@@ -1258,7 +1258,6 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 	struct dirent *dptr; /* dir entry */
 	struct string_node *snode;
 
-	SM_DEBUGF(0, ("okay\n"));
 	COROUTINE_BEGIN(c);
 
 	c->create = 1;
@@ -1585,9 +1584,7 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 
 		if ((cor = coroutine_add(ctx->scheduler, folder_rescan_really, &rescan_ctx->basic_context)))
 		{
-			SM_DEBUGF(0, ("Waiting\n"));
 			COROUTINE_AWAIT_OTHER(c, cor);
-			SM_DEBUGF(0, ("Continue\n"));
 		}
 
 		free(rescan_ctx);

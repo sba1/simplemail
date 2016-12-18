@@ -1216,139 +1216,157 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 
 /*****************************************************************************/
 
-/**
- * Work horse for scanning a folder.
- *
- * @param folder_path
- * @param folder_name
- * @param mail_callback function to be called for a new mail. Returns 1 on success, 0 otherwise.
- * @param mail_callback_udata
- * @param status_callback
- * @param pm the optional progress monitor. It should have 101 work units.
- */
-static void folder_rescan_really(const char *folder_path, const char *folder_name,
-	int (*mail_callback)(struct mail_info *m, void *udata), void *mail_callback_udata,
-	void (*status_callback)(const char *txt),
-	struct progmon *pm)
+struct folder_rescan_really_context
 {
+	struct coroutine_basic_context basic_context;
+
+	/* Input parameters */
+
+	const char *folder_path;
+	const char *folder_name;
+
+	/** Function to be called for a new mail. Returns 1 on success, 0 otherwise. */
+	int (*mail_callback)(struct mail_info *m, void *udata);
+	void *mail_callback_udata;
+	void (*status_callback)(const char *txt);
+
+	/** the optional progress monitor. It should have 101 work units. */
+	struct progmon *pm;
+
+	/* Actual context */
 	DIR *dfd; /* directory descriptor */
 	char path[380];
 
-	struct dirent *dptr; /* dir entry */
-
 	struct string_list mail_filename_list;
-	struct string_node *snode;
 	int number_of_mails;
 	char buf[80];
 	unsigned int last_ticks;
-	unsigned int total_work_done = 0;
+	unsigned int total_work_done;// = 0;
 	unsigned int current_mail;
 
-	int create = 1;
+	int create;// = 1;
+};
 
-	getcwd(path, sizeof(path));
-	if(chdir(folder_path) == -1)
-	{
-		return;
-	}
+/**
+ * Work horse for scanning a folder.
+ *
+ * @return coroutine return status.
+ */
+static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *ctx)
+{
+	struct folder_rescan_really_context *c = (struct folder_rescan_really_context*)ctx;
+	struct dirent *dptr; /* dir entry */
+	struct string_node *snode;
 
-	if (!(dfd = opendir(SM_CURRENT_DIR)))
+	SM_DEBUGF(0, ("okay\n"));
+	COROUTINE_BEGIN(c);
+
+	c->create = 1;
+
+	getcwd(c->path, sizeof(c->path));
+	if (chdir(c->folder_path) == -1)
 		goto out;
 
-	last_ticks = time_reference_ticks();
+	if (!(c->dfd = opendir(SM_CURRENT_DIR)))
+		goto out;
 
-	string_list_init(&mail_filename_list);
-	number_of_mails = 0;
+	c->last_ticks = time_reference_ticks();
 
-	if (status_callback)
+	string_list_init(&c->mail_filename_list);
+	c->number_of_mails = 0;
+
+	if (c->status_callback)
 	{
-		sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder_name);
-		status_callback(buf);
-		if (pm)
+		sm_snprintf(c->buf,sizeof(c->buf),_("Scanning folder \"%s\""),c->folder_name);
+		c->status_callback(c->buf);
+		if (c->pm)
 		{
-			pm->working_on(pm, buf);
+			c->pm->working_on(c->pm, c->buf);
 		}
 	}
 
-	while ((dptr = readdir(dfd)) != NULL)
+	while ((dptr = readdir(c->dfd)) != NULL)
 	{
 		char *name = dptr->d_name;
 
 		if (name[0] == '.')
 			if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
 
-		string_list_insert_tail(&mail_filename_list, name);
-		number_of_mails++;
+		string_list_insert_tail(&c->mail_filename_list, name);
+		c->number_of_mails++;
 	}
-	closedir(dfd);
+	closedir(c->dfd);
 
-	if (pm)
+	if (c->pm)
 	{
-		pm->work(pm, 1);
+		c->pm->work(c->pm, 1);
 	}
 
-	current_mail = 0;
-	while ((snode = string_list_remove_head(&mail_filename_list)))
+	c->current_mail = 0;
+	while ((snode = string_list_remove_head(&c->mail_filename_list)))
 	{
 		struct mail_info *m;
 
-		if (status_callback || pm)
+		if (c->status_callback || c->pm)
 		{
-			if (time_ms_passed(last_ticks) > 500)
+			if (time_ms_passed(c->last_ticks) > 500)
 			{
-				sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
-				if (status_callback)
+				sm_snprintf(c->buf,sizeof(c->buf),_("Reading mail %ld of %ld"),c->current_mail,c->number_of_mails);
+				if (c->status_callback)
 				{
-					status_callback(buf);
+					c->status_callback(c->buf);
 				}
 
-				if (pm)
+				if (c->pm)
 				{
 					int new_total_work_done;
 					int work;
 
-					new_total_work_done = current_mail * 100 / number_of_mails;;
-					if ((work = new_total_work_done - total_work_done) > 0)
+					new_total_work_done = c->current_mail * 100 / c->number_of_mails;;
+					if ((work = new_total_work_done - c->total_work_done) > 0)
 					{
-						pm->working_on(pm, buf);
-						pm->work(pm, work);
+						c->pm->working_on(c->pm, c->buf);
+						c->pm->work(c->pm, work);
 
-						total_work_done = new_total_work_done;
+						c->total_work_done = new_total_work_done;
 					}
 				}
-				last_ticks = time_reference_ticks();
+				c->last_ticks = time_reference_ticks();
 			}
 		}
 
-		if (create && (m = mail_info_create_from_file(snode->string)))
+		if (c->create && (m = mail_info_create_from_file(snode->string)))
 		{
-			create = mail_callback(m, mail_callback_udata);
+			c->create = c->mail_callback(m, c->mail_callback_udata);
 		}
 
 		free(snode->string);
 		free(snode);
 
-		current_mail++;
+		c->current_mail++;
 	}
 
-	if (status_callback || pm)
+	if (c->status_callback || c->pm)
 	{
-		sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder_name);
+		sm_snprintf(c->buf,sizeof(c->buf),_("Folder \"%s\" scanned"),c->folder_name);
 
-		if (status_callback)
+		if (c->status_callback)
 		{
-			status_callback(buf);
+			c->status_callback(c->buf);
 		}
 
-		if (pm)
+		if (c->pm)
 		{
-			pm->working_on(pm, buf);
-			pm->work(pm, 100 - total_work_done);
+			c->pm->working_on(c->pm, c->buf);
+			c->pm->work(c->pm, 100 - c->total_work_done);
 		}
 	}
+
 out:
-	chdir(path);
+	(void)1;
+	COROUTINE_END(c);
 }
+
 
 /*****************************************************************************/
 
@@ -1459,6 +1477,9 @@ struct folder_thread_rescan_context
 	/* Actual context */
 	char *folder_name;
 	struct folder_thread_mail_callback_data udata;
+
+	/* Context of nested coroutine */
+	struct folder_rescan_really_context *rescan_ctx;
 };
 
 /*****************************************************************************/
@@ -1526,6 +1547,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_context *ctx)
 {
 	struct folder_thread_rescan_context *c = (struct folder_thread_rescan_context*)ctx;
+	struct folder_rescan_really_context *rescan_ctx = c->rescan_ctx;
 
 	COROUTINE_BEGIN(c);
 
@@ -1548,15 +1570,31 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		}
 	}
 
-	folder_rescan_really(c->folder_path, c->folder_name, folder_thread_mail_callback, &c->udata, c->status_callback, c->pm);
-
+	if ((rescan_ctx = c->rescan_ctx = malloc(sizeof(*rescan_ctx))))
 	{
-		/* TODO: This should be asynchronous */
-		thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
+		coroutine_t cor;
 
-		free(c->udata.mails);
+		memset(rescan_ctx, 0, sizeof(*rescan_ctx));
+
+		rescan_ctx->folder_path = c->folder_path;
+		rescan_ctx->folder_name = c->folder_name;
+		rescan_ctx->mail_callback= folder_thread_mail_callback;
+		rescan_ctx->mail_callback_udata = &c->udata;
+		rescan_ctx->status_callback = c->status_callback;
+		rescan_ctx->pm = c->pm;
+
+		if ((cor = coroutine_add(ctx->scheduler, folder_rescan_really, &rescan_ctx->basic_context)))
+		{
+			SM_DEBUGF(0, ("Waiting\n"));
+			COROUTINE_AWAIT_OTHER(c, cor);
+			SM_DEBUGF(0, ("Continue\n"));
+		}
+
+		free(rescan_ctx);
 	}
 
+	thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
+	free(c->udata.mails);
 bailout:
 	c->pm->done(c->pm);
 	free(c->folder_path);

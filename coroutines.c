@@ -144,7 +144,7 @@ int coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		f = coroutines_list_first(&scheduler->finished_coroutines_list);
 		while (f)
 		{
-			if ((f = cor->context->other))
+			if (f == cor->context->other)
 			{
 				/* Move from waiting to ready queue */
 				node_remove(&cor->node);

@@ -116,7 +116,6 @@ int coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		{
 			case	COROUTINE_DONE:
 					node_remove(&cor->node);
-					cor->context->scheduler = NULL;
 					list_insert_tail(&scheduler->finished_coroutines_list.list, &cor->node);
 					break;
 

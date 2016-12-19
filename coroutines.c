@@ -42,6 +42,14 @@ coroutine_t coroutines_list_first(struct coroutines_list *list)
 	return (coroutine_t)list_first(&list->list);
 }
 
+
+/*****************************************************************************/
+
+coroutine_t coroutines_list_remove_head(struct coroutines_list *list)
+{
+	return (coroutine_t)list_remove_head(&list->list);
+}
+
 /*****************************************************************************/
 
 coroutine_t coroutines_next(coroutine_t c)

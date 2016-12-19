@@ -50,6 +50,9 @@ static int sockets[2];
 /** List of all threads */
 static struct list thread_list;
 
+/** List of all finished threads */
+static struct list finished_thread_list;
+
 /** Mutex for accessing thread list */
 static GMutex *thread_list_mutex;
 
@@ -78,6 +81,7 @@ int init_threads(void)
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
 	list_init(&thread_list);
+	list_init(&finished_thread_list);
 	if (!(thread_list_mutex = g_mutex_new())) return 0;
 
 	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
@@ -150,6 +154,17 @@ void cleanup_threads(void)
 		g_main_loop_run(main_thread.main_loop);
 	}
 
+	g_mutex_lock(thread_list_mutex);
+	while ((t = (struct thread_s*)list_remove_head(&finished_thread_list)))
+	{
+		g_mutex_unlock(thread_list_mutex);
+
+		g_thread_join(t->thread);
+
+		g_mutex_lock(thread_list_mutex);
+	}
+	g_mutex_unlock(thread_list_mutex);
+
 	g_mutex_free(main_thread.mutex);
 	g_main_loop_unref(main_thread.main_loop);
 	g_main_context_unref(main_thread.context);
@@ -205,6 +220,7 @@ static gpointer thread_add_entry(gpointer udata)
 
 	g_mutex_lock(thread_list_mutex);
 	node_remove(&t->node);
+	list_insert_tail(&finished_thread_list, &t->node);
 	g_mutex_unlock(thread_list_mutex);
 
 	g_mutex_free(t->mutex);

@@ -1653,6 +1653,7 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	if (!(ctx = (struct folder_thread_rescan_context*)malloc(sizeof(*ctx))))
 		return 0;
 	memset(ctx, 0, sizeof(*ctx));
+	ctx->basic_context.free_after_done = 1;
 	ctx->folder_path = folder_path;
 	ctx->status_callback = status_callback;
 	ctx->completed = completed;

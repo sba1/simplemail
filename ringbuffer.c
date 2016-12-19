@@ -146,7 +146,7 @@ static void *payload(struct full_item *full_item)
  * @param full_item
  * @return
  */
-static inline struct full_item *as_full_item(unsigned char *full_item)
+static struct full_item *as_full_item(unsigned char *full_item)
 {
 	return (struct full_item*)full_item;
 }

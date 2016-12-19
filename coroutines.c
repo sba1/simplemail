@@ -156,10 +156,8 @@ int coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 	}
 
 	/* Finally, free coroutines that have been just finished */
-	cor = coroutines_list_first(&scheduler->finished_coroutines_list);
-	for (;cor;cor = cor_next)
+	while ((cor = (coroutine_t)coroutines_list_remove_head(&scheduler->finished_coroutines_list)))
 	{
-		cor_next =  coroutines_next(cor);
 		free(cor);
 	}
 

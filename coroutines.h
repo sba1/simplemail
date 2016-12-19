@@ -56,6 +56,9 @@ struct coroutine_basic_context
 	/** The scheduler that is responsible for this context */
 	coroutine_scheduler_t scheduler;
 
+	/** The context should be automatically freed when coroutine was done */
+	int free_after_done;
+
 	/** The state that will be executed next for this coroutine */
 	int next_state;
 

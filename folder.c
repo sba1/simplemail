@@ -427,7 +427,11 @@ static FILE *folder_open_indexfile(struct folder *f, const char *mode)
 	char cpath[256];
 
 	if (!f || !f->path) return 0;
-	if (f->special == FOLDER_SPECIAL_GROUP) return 0;
+	if (f->special == FOLDER_SPECIAL_GROUP)
+	{
+		SM_DEBUGF(5, ("Folder \"%s\" is a group. No index file support for now.\n"));
+		return 0;
+	}
 	if (!(path = mystrdup(f->path))) return 0;
 
 	*sm_path_part(path) = 0;

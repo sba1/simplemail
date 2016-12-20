@@ -153,7 +153,7 @@ int logg_line(logg_t logg);
 
 /*****************************************************************************/
 
-#define SM_LOG_INFO(level,text) \
+#define SM_LOG_TEXT(level,text) \
 	do { \
 		static const char filename[] __attribute__((used, section("LOGMODULES"))) = "LOGMODULE:" __FILE__;\
 		logg(INFO, 0, __FILE__, __PRETTY_FUNCTION__, __LINE__, text, LAST);\

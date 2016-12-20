@@ -83,7 +83,7 @@ static void logg_unlock(void)
 
 void logg_clear(void)
 {
-	unsigned int last_id;
+	unsigned int last_id = 0;
 	logg_t logg = NULL;
 
 	while ((logg = logg_next(logg)))

@@ -3398,7 +3398,7 @@ int folder_save_index(struct folder *f)
 		f->index_uptodate = 1;
 	} else
 	{
-		SM_DEBUGF(5,("Couldn't open %s for writing\n",f->path));
+		SM_DEBUGF(5,("Couldn't open index file for folder at path \"%s\" for writing\n",f->path));
 	}
 
 	return 1;

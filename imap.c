@@ -915,7 +915,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		/* Get the local mails */
 		if (!get_local_mail_array(folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 		{
-			folder_unlock(folder);
 			folders_unlock();
 			return 0;
 		}

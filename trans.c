@@ -385,10 +385,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.new_mail_arrived = trans_new_imap_mail_arrived;
 		imap_sync_options.callbacks.delete_mail_by_uid = trans_delete_mail_by_uid;
 
-		if (pop3_really_dl(&dl_options))
-		{
-			imap_synchronize_really(&imap_sync_options);
-		} else if (single_account)
+		if (pop3_really_dl(&dl_options) || single_account)
 		{
 			imap_synchronize_really(&imap_sync_options);
 		}

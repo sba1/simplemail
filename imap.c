@@ -37,6 +37,7 @@
 #include "codesets.h"
 #include "debug.h"
 #include "folder.h"
+#include "logging.h"
 #include "mail.h"
 #include "progmon.h"
 #include "qsort.h"
@@ -98,14 +99,21 @@ struct local_mail
 static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, int *num_of_mails_ptr, int *num_of_todel_mails_ptr)
 {
 	struct local_mail *local_mail_array;
-	int num_of_mails, num_of_todel_mails;
-	void *handle = NULL;
+	int num_of_mails = 0, num_of_todel_mails = 0;
 	int i,success = 0;
 
 	SM_ENTER;
 
 	folder_lock(folder);
-	folder_next_mail(folder,&handle);
+
+	if (!folder->mail_infos_loaded)
+	{
+		char buf[80];
+
+		sm_snprintf(buf, sizeof(buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
+		SM_LOG_TEXT(ERROR, buf);
+		goto bailout;
+	}
 
 	num_of_mails = folder->num_mails;
 	num_of_todel_mails = 0;
@@ -136,6 +144,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		*num_of_mails_ptr = num_of_mails;
 		*num_of_todel_mails_ptr = num_of_todel_mails;
 	}
+bailout:
 	folder_unlock(folder);
 
 	SM_DEBUGF(20, ("num_of_mails=%d, num_of_todel_mails=%d\n", num_of_mails, num_of_todel_mails));

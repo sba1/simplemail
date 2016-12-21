@@ -1305,7 +1305,7 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 	{
 		char *name = dptr->d_name;
 
-		if (folder_is_filename_mail(name))
+		if (!folder_is_filename_mail(name))
 			continue;
 
 		string_list_insert_tail(&c->mail_filename_list, name);

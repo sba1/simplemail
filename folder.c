@@ -1220,6 +1220,19 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 
 /*****************************************************************************/
 
+int folder_is_filename_mail(const char *fn)
+{
+	if (fn[0] != '.')
+		return 1;
+
+	if (strcmp(".",fn) && strcmp("..",fn) && strcmp(".config", fn) && strcmp(".index", fn))
+		return 1;
+
+	return 0;
+}
+
+/*****************************************************************************/
+
 struct folder_rescan_really_context
 {
 	struct coroutine_basic_context basic_context;
@@ -1292,8 +1305,8 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 	{
 		char *name = dptr->d_name;
 
-		if (name[0] == '.')
-			if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
+		if (folder_is_filename_mail(name))
+			continue;
 
 		string_list_insert_tail(&c->mail_filename_list, name);
 		c->number_of_mails++;

@@ -297,6 +297,14 @@ struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *file
 struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 
 /**
+ * Perform a simple check if the given filename is really a mail.
+ *
+ * @param fn the name to check
+ * @return 1 if name fits a mail.
+ */
+int folder_is_filename_mail(const char *fn);
+
+/**
  * Sets the imap folder lists of a given folders. The list elements
  * are copied.
  *

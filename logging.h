@@ -144,6 +144,14 @@ const char *logg_filename(logg_t logg);
 const char *logg_function(logg_t logg);
 
 /**
+ * Return the severity of the logg entry.
+ *
+ * @param logg
+ * @return the severity
+ */
+logging_severity_t *logg_severity(logg_t logg);
+
+/**
  * Return the line number attribute of the logg entry,
  *
  * @param logg

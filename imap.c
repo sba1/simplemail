@@ -107,6 +107,8 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	struct string_list filename_list;
 	int use_filename_list = 0;
 
+	char logg_buf[80];
+
 	SM_ENTER;
 
 	string_list_init(&filename_list);
@@ -124,9 +126,8 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		SM_DEBUGF(10, ("Scanning folder \"%s\" for mails", folder->path));
 		if (!(dfd = opendir(folder->path)))
 		{
-			char buf[80];
-			sm_snprintf(buf, sizeof(buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
-			SM_LOG_TEXT(ERROR, buf);
+			sm_snprintf(logg_buf, sizeof(logg_buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
+			SM_LOG_TEXT(ERROR, logg_buf);
 			goto bailout;
 		}
 
@@ -204,6 +205,9 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	}
 bailout:
 	folder_unlock(folder);
+
+	sm_snprintf(logg_buf, sizeof(logg_buf), "Folder \"%s\" has %ld local mails, %d are scheduled for deletion", folder->name, num_of_mails, num_of_todel_mails);
+	logg(INFO, 0, __FILE__, NULL, 0, logg_buf, LAST);
 
 	SM_DEBUGF(20, ("num_of_mails=%d, num_of_todel_mails=%d\n", num_of_mails, num_of_todel_mails));
 	SM_RETURN(success,"%d");
@@ -603,6 +607,9 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
 		args->set_status(status_buf);
 		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
+
+		sm_snprintf(status_buf, sizeof(status_buf), "Folder with path \"%s\" has %d remote mails", args->path, num_of_remote_mails);
+		logg(INFO, 0, __FILE__, NULL, 0, status_buf, LAST);
 
 		rm->uid_next = uid_next;
 		rm->uid_validity = uid_validity;
@@ -1864,6 +1871,12 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						callbacks->new_mails_arrived(filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
 						while (filename_current)
 							free(filename_ptrs[--filename_current]);
+					}
+
+					{
+						char buf[80];
+						sm_snprintf(buf, sizeof(buf), "%d mails downloaded after %d ms to folder \"%s\"", downloaded_mails, time_ms_passed(total_download_ticks), local_folder->path);
+						logg(INFO, 0, __FILE__, NULL, 0, buf, LAST);
 					}
 
 					SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));

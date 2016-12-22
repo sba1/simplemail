@@ -49,6 +49,7 @@ struct error_node
 	char *text;
 	unsigned int date;
 	unsigned int id;
+	logging_severity_t severity;
 };
 
 static struct list error_list;
@@ -75,6 +76,7 @@ static void error_window_add_logg(logg_t l)
 	memset(node, 0, sizeof(*node));
 	node->id = logg_id(l);
 	node->date = logg_seconds(l);
+	node->severity = logg_severity(l);
 	if (!(node->text = mystrdup(logg_text(l))))
 	{
 		free(node);
@@ -222,11 +224,13 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	if (!error)
 	{
 		msg->strings[0] = _("Time");
-		msg->strings[1] = _("Message");
+		msg->strings[1] = _("Severity");
+		msg->strings[2] = _("Message");
 		return;
 	}
 	msg->strings[0] = sm_get_time_str(error->date);
-	msg->strings[1] = error->text;
+	msg->strings[1] = error->severity==INFO?"I":"E";
+	msg->strings[2] = error->text;
 }
 
 /**
@@ -249,7 +253,7 @@ static void init_error(void)
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, all_errors_list = NListObject,
-					MUIA_NList_Format, ",",
+					MUIA_NList_Format, ",,",
 					MUIA_NList_DisplayHook2, &error_display_hook,
 					MUIA_NList_Title, TRUE,
 					End,

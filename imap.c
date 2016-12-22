@@ -1739,6 +1739,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
 				struct imap_get_remote_mails_args args = {0};
+				int empty_folder = 0;
 
 				utf8 msg[80];
 
@@ -1895,12 +1896,12 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
 						if (!imap_server->keep_orphans)
-							rm = imap_get_remote_mails(NULL, &args);
+							rm = imap_get_remote_mails(&empty_folder, &args);
 						else
 							rm = NULL;
 					}
 
-					if (rm)
+					if (rm || empty_folder)
 					{
 						if (!imap_server->keep_orphans)
 						{
@@ -1910,15 +1911,21 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 							args.local_mail_array = local_mail_array;
 							args.num_of_local_mails = num_of_local_mails;
-							args.remote_mail_array = rm->remote_mail_array;
-							args.num_remote_mails = rm->num_of_remote_mail;
+							if (rm)
+							{
+								args.remote_mail_array = rm->remote_mail_array;
+								args.num_remote_mails = rm->num_of_remote_mail;
+							}
 							args.imap_server = imap_server;
 							args.imap_folder = imap_folder;
 							args.delete_mail_by_uid = callbacks->delete_mail_by_uid;
 
 							imap_delete_orphan_messages(&args);
 						}
-						imap_free_remote_mailbox(rm);
+						if (rm)
+						{
+							imap_free_remote_mailbox(rm);
+						}
 					}
 				}
 

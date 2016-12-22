@@ -28,6 +28,7 @@
 #include "imap.h"
 
 #include <ctype.h>
+#include <dirent.h> /* unix dir stuff */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -102,36 +103,93 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	int num_of_mails = 0, num_of_todel_mails = 0;
 	int i,success = 0;
 
+	/* Will house the names of mails in case there was no index of the folder loaded */
+	struct string_list filename_list;
+	int use_filename_list = 0;
+
 	SM_ENTER;
+
+	string_list_init(&filename_list);
 
 	folder_lock(folder);
 
 	if (!folder->mail_infos_loaded)
 	{
-		char buf[80];
+		/* No mail infos have been loaded, as we only need the filenames
+		 * we just scan the directory rather than issuing a full rescan.
+		 */
+		DIR *dfd;
+		struct dirent *dptr;
 
-		sm_snprintf(buf, sizeof(buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
-		SM_LOG_TEXT(ERROR, buf);
-		goto bailout;
+		SM_DEBUGF(10, ("Scanning folder \"%s\" for mails", folder->path));
+		if (!(dfd = opendir(folder->path)))
+		{
+			char buf[80];
+			sm_snprintf(buf, sizeof(buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
+			SM_LOG_TEXT(ERROR, buf);
+			goto bailout;
+		}
+
+		use_filename_list = 1;
+		while ((dptr = readdir(dfd)) != NULL)
+		{
+			char *name = dptr->d_name;
+
+			if (!folder_is_filename_mail(name))
+				continue;
+
+			string_list_insert_tail(&filename_list, name);
+			num_of_mails++;
+		}
+		closedir(dfd);
+	} else
+	{
+		num_of_mails = folder->num_mails;
 	}
-
-	num_of_mails = folder->num_mails;
 	num_of_todel_mails = 0;
+
+	SM_DEBUGF(10, ("%d mails in folder", num_of_mails));
 
 	if ((local_mail_array = (struct local_mail *)malloc(sizeof(*local_mail_array) * num_of_mails)))
 	{
-		/* fill in the uids of the mails */
-		for (i=0;i < num_of_mails;i++)
+		if (use_filename_list)
 		{
-			if (folder->mail_info_array[i] && folder->mail_info_array[i]->filename[0] == 'u')
+			struct string_node *sn;
+
+			i = 0;
+			sn = string_list_first(&filename_list);
+			while (sn)
 			{
-				local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
-				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
-				num_of_todel_mails += !!local_mail_array[i].todel;
-			} else
+				const char *fn = sn->string;
+				if (fn[0] == 'u' || fn[0] == 'U' || fn[0] == 'd' || fn[0] == 'D')
+				{
+					local_mail_array[i].uid = atoi(fn + 1);
+					local_mail_array[i].todel = fn[0] == 'd' || fn[0] == 'D';
+					num_of_todel_mails += !!local_mail_array[i].todel;
+				} else
+				{
+					local_mail_array[i].uid = 0;
+					local_mail_array[i].todel = 0;
+				}
+				sn = (struct string_node*)node_next(&sn->node);
+				i++;
+			}
+			string_list_clear(&filename_list);
+		} else
+		{
+			/* fill in the uids of the mails */
+			for (i=0;i < num_of_mails;i++)
 			{
-				local_mail_array[i].uid = 0;
-				local_mail_array[i].todel = 0;
+				if (folder->mail_info_array[i] && folder->mail_info_array[i]->filename[0] == 'u')
+				{
+					local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
+					local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
+					num_of_todel_mails += !!local_mail_array[i].todel;
+				} else
+				{
+					local_mail_array[i].uid = 0;
+					local_mail_array[i].todel = 0;
+				}
 			}
 		}
 

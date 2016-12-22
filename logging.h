@@ -149,7 +149,7 @@ const char *logg_function(logg_t logg);
  * @param logg
  * @return the severity
  */
-logging_severity_t *logg_severity(logg_t logg);
+logging_severity_t logg_severity(logg_t logg);
 
 /**
  * Return the line number attribute of the logg entry,

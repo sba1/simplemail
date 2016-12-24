@@ -161,6 +161,10 @@ int logg_line(logg_t logg);
 
 /*****************************************************************************/
 
+#ifndef __PRETTY_FUNCTION__
+#define __PRETTY_FUNCTION__ __FUNC__
+#endif
+
 #define SM_LOG_TEXT(level,text) \
 	do { \
 		static const char filename[] __attribute__((used, section("LOGMODULES"))) = "LOGMODULE:" __FILE__;\

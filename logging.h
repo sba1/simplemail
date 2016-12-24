@@ -161,7 +161,7 @@ int logg_line(logg_t logg);
 
 /*****************************************************************************/
 
-#ifndef __PRETTY_FUNCTION__
+#ifndef __GNUC__
 #define __PRETTY_FUNCTION__ __FUNC__
 #endif
 

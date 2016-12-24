@@ -2,6 +2,50 @@
 
 <news>
 
+  <entry date="2016/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released (binaries still on SourceForge)! Version
+    0.43 comes with following changes:
+    <list>
+     <item>
+      Updated OpenSSL version to 1.0.1u
+     </item>
+     <item>
+      Folder rescanning now longer blocks UI
+     </item>
+     <item>
+      Replaced Error window by more general Logging window
+     </item>
+     <item>
+      Several bug fixes
+     </item>
+    </list>
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2016!
+   </text>
+
+  <entry date="2016/12/24">
+   <text lang="de">
+    Eine neue Version von SimpleMail wurde veröffentlicht (Binärdateien über SourceForge).
+    Version 0.43 kommt mit folgenden Änderungen:
+    <list>
+     <item>
+      OpenSSL auf 1.0.1u aktualisiert
+     </item>
+     <item>
+      Das Neueinlesen von Ordnern blockiert nicht mehr die Benutzeroberfläche
+      Folder rescanning now longer blocks UI
+     </item>
+     <item>
+      Error-Fenster wurde durch ein Logging-Fenster ersetzt und zeigt zusätzliche
+      Informationen an.
+     </item>
+     <item>
+      Einige Bugs wurden behoben.
+     </item>
+    </list>
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   </text>
+
   <entry date="2015/12/24">
    <text lang="en">
     The New Edition of SimpleMail has been released (binaries still on SourceForge)! Version

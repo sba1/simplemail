@@ -2319,9 +2319,12 @@ static char *folder_config_get_imap_path(char *folder_path)
 	return NULL;
 }
 
-/******************************************************************
- Load the configuration for the folder
-*******************************************************************/
+/**
+ * Load the configuration for the folder.
+ *
+ * @param f the folder for which the configuration shall be loaded.
+ * @return success or not.
+ */
 static int folder_config_load(struct folder *f)
 {
 	char buf[256];

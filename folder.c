@@ -39,6 +39,7 @@
 #include "filter.h"
 #include "imap.h"
 #include "lists.h"
+#include "mail_support.h"
 #include "parse.h"
 #include "progmon.h"
 #include "qsort.h"
@@ -114,66 +115,6 @@ static int mail_compare_to(const struct mail_info *arg1, const struct mail_info 
 	int rc = utf8stricmp(mail_info_get_to(arg1),mail_info_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
-}
-
-/*****************************************************************************/
-
-char *mail_get_compare_subject(char *subj)
-{
-	char *p;
-	int brackets = 0;
-
-	/* Move the pointer beyond all []'s and Re's */
-	if (subj)
-	{
-		while ((*subj))
-		{
-			if (*subj == '[')
-			{
-				subj++;
-				brackets++;
-				continue;
-			} else if (*subj == ']')
-			{
-				subj++;
-				brackets--;
-				continue;
-			}
-			if (!brackets)
-			{
-				/* check for space or tab */
-				if (*subj == ' ')
-				{
-					subj++;
-					continue;
-				} else if (*subj == '\t')
-				{
-					subj++;
-					continue;
-				} else if (*subj == '-' || *subj == ')')
-				{
-					/* this is for smilies in the subject -> :-), :) */
-					subj++;
-					continue;
-				}
-				/*
-				** check for ':' in the next 10 chars because it could be "Re:", "AW:", "fwd:",
-  	    ** "Re[12]:", and so on
-				*/
-				if ((p = strchr(subj, ':')))
-				{
-					if ((p-subj) < 10)
-					{
-						subj = ++p;
-						continue;
-					}
-				}
-				break;
-			}
-			subj++;
-		}
-	}
-	return subj;
 }
 
 /**

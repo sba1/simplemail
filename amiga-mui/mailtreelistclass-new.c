@@ -51,6 +51,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "mailinfo_extractor.h"
+#include "mail_support.h"
 #include "smintl.h"
 #include "simplemail.h"
 #include "support_indep.h"

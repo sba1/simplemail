@@ -823,12 +823,4 @@ int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
  */
 int mail_matches_filter(struct folder *folder, struct mail_info *m, struct filter *filter);
 
-/**
- * Given a subject line, return a subject line that can be used for comparing.
- *
- * @param subj the string that should be transformed
- * @return the transformed string
- */
-char *mail_get_compare_subject(char *subj);
-
 #endif

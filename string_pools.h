@@ -33,6 +33,15 @@ struct string_pool;
 struct string_pool *string_pool_create(void);
 
 /**
+ * Save the string pool to the given file.
+ *
+ * @param sp the string pool whose contents shall be saved.
+ * @param filename the name of the file to which the pool shall be saved.
+ * @return whether this operation was successful or not.
+ */
+int string_pool_save(struct string_pool *sp, char *filename);
+
+/**
  * Delete the given string pool and all of the associated memory.
  * Note that any reference will be no longer valid after this call.
  *

@@ -71,6 +71,39 @@ struct string_pool *string_pool_create(void)
 
 /*****************************************************************************/
 
+
+int string_pool_save(struct string_pool *sp, char *filename)
+{
+	FILE *fh;
+	int i;
+	int ver = 0;
+
+	if (!(fh = fopen(filename, "wb")))
+		return 0;
+
+	fwrite("SMSP",1,4,fh);
+	fwrite(&ver,1,4,fh);
+	fwrite(&sp->total_ref_count,1,4,fh);
+
+	for (i=0; i < sp->total_ref_count; i++)
+	{
+		int c = sp->ref_strings[i].count;
+		char *str = sp->ref_strings[i].str;
+		const char pad[] =  {0,0,0};
+
+		int l = strlen(str);
+		fwrite(&c, 1, sizeof(c), fh);
+		fwrite(&l, 1, sizeof(l), fh);
+		fwrite(str, 1, l, fh);
+		fwrite(pad, 1, 3 - l % 4, fh);
+	}
+
+	fclose(fh);
+	return 1;
+}
+
+/*****************************************************************************/
+
 void string_pool_delete(struct string_pool *p)
 {
 	unsigned int i;

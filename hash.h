@@ -86,7 +86,8 @@ void hash_table_store(struct hash_table *ht);
 void hash_table_clear(struct hash_table *ht);
 
 /**
- * Insert a new entry into the hash table.
+ * Insert a new entry into the hash table. Ownership of the string is given
+ * to the hashtable and will be freed via free() when no longer needed.
  *
  * @param ht
  * @param string

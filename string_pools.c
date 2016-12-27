@@ -83,9 +83,9 @@ int string_pool_save(struct string_pool *sp, char *filename)
 
 	fwrite("SMSP",1,4,fh);
 	fwrite(&ver,1,4,fh);
-	fwrite(&sp->total_ref_count,1,4,fh);
+	fwrite(&sp->ref_strings_num,1,4,fh);
 
-	for (i=0; i < sp->total_ref_count; i++)
+	for (i=0; i < sp->ref_strings_num; i++)
 	{
 		int c = sp->ref_strings[i].count;
 		char *str = sp->ref_strings[i].str;
@@ -106,12 +106,8 @@ int string_pool_save(struct string_pool *sp, char *filename)
 
 void string_pool_delete(struct string_pool *p)
 {
-	unsigned int i;
+	/* Will also free the strings */
 	hash_table_clean(&p->ht);
-	for (i=0; i < p->ref_strings_num; i++)
-	{
-		free(p->ref_strings[i].str);
-	}
 	free(p->ref_strings);
 	free(p);
 }
@@ -155,6 +151,7 @@ int string_pool_ref(struct string_pool *p, char *string)
 		p->ref_strings[p->id_next].count = 0;
 		p->ref_strings[p->id_next].str = dupped_string;
 		p->id_next++;
+		p->ref_strings_num++;
 	}
 	p->ref_strings[he->data].count++;
 	return he->data;

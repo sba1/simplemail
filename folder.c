@@ -46,6 +46,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "status.h"
+#include "string_pools.h"
 #include "subthreads.h"
 #include "support_indep.h"
 
@@ -3241,10 +3242,27 @@ static int folder_save_index_header(struct folder *f, FILE *fh)
 
 /*****************************************************************************/
 
+static int string_pool_put_address_list(struct string_pool *sp, struct address_list *al)
+{
+	struct address *addr;
+
+	addr = address_list_first(al);
+	while (addr)
+	{
+		string_pool_ref(sp, addr->email);
+		string_pool_ref(sp, addr->realname);
+		addr = address_next(addr);
+	}
+	return 1;
+}
+
+/*****************************************************************************/
+
 int folder_save_index(struct folder *f)
 {
 	FILE *fh;
 	int append;
+	struct string_pool *sp;
 
 	if (!f->num_pending_mails && (!f->mail_infos_loaded || f->index_uptodate))
 		return 0;
@@ -3256,6 +3274,37 @@ int folder_save_index(struct folder *f)
 	}
 
 	append = !!f->num_pending_mails;
+	sp = NULL;
+
+	if (!append && f->mail_info_array)
+	{
+		char *sp_name;
+
+		if ((sp_name = malloc(strlen(f->path) + 12)))
+		{
+			strcpy(sp_name, f->path);
+			strcat(sp_name, ".index.sp");
+
+			if ((sp = string_pool_create()))
+			{
+				int i;
+
+				for (i=0; i < f->num_mails; i++)
+				{
+					struct mail_info *m = f->mail_info_array[i];
+
+					if (m->from_addr) string_pool_ref(sp, m->from_addr);
+					if (m->from_phrase) string_pool_ref(sp, m->from_phrase);
+					if (m->to_list) string_pool_put_address_list(sp, m->to_list);
+					if (m->cc_list) string_pool_put_address_list(sp, m->cc_list);
+					if (m->reply_addr) string_pool_ref(sp, m->reply_addr);
+					if (m->pop3_server) string_pool_ref(sp, m->pop3_server);
+				}
+				string_pool_save(sp, sp_name);
+			}
+			free(sp_name);
+		}
+	}
 
 	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))
 	{
@@ -3360,6 +3409,11 @@ int folder_save_index(struct folder *f)
 	} else
 	{
 		SM_DEBUGF(5,("Couldn't open index file for folder at path \"%s\" for writing\n",f->path));
+	}
+
+	if (sp)
+	{
+		string_pool_delete(sp);
 	}
 
 	return 1;

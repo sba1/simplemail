@@ -3147,9 +3147,10 @@ void folder_delete_deleted(void)
  *
  * @param fh
  * @param str
+ * @param sp the optional string pool that can be used to get the string id.
  * @return
  */
-static int fwrite_str(FILE *fh, char *str)
+static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 {
 	if (str)
 	{
@@ -3349,40 +3350,40 @@ int folder_save_index(struct folder *f)
 			fwrite(&num_to,1,4,fh);
 			fwrite(&num_cc,1,4,fh);
 
-			if (!(len_add = fwrite_str(fh, (char*)m->subject))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->subject, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->filename))) break;
+			if (!(len_add = fwrite_str(fh, m->filename, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, (char*)m->from_phrase))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->from_phrase, sp))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->from_addr, sp))) break;
 			len += len_add;
 
 			while (to_addr)
 			{
-				if (!(len_add = fwrite_str(fh, to_addr->realname))) break;
+				if (!(len_add = fwrite_str(fh, to_addr->realname, sp))) break;
 				len += len_add;
-				if (!(len_add = fwrite_str(fh, to_addr->email))) break;
+				if (!(len_add = fwrite_str(fh, to_addr->email, sp))) break;
 				len += len_add;
 				to_addr = address_next(to_addr);
 			}
 
 			while (cc_addr)
 			{
-				if (!(len_add = fwrite_str(fh, cc_addr->realname))) break;
+				if (!(len_add = fwrite_str(fh, cc_addr->realname, sp))) break;
 				len += len_add;
-				if (!(len_add = fwrite_str(fh, cc_addr->email))) break;
+				if (!(len_add = fwrite_str(fh, cc_addr->email, sp))) break;
 				len += len_add;
 				cc_addr = address_next(cc_addr);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server))) break;
+			if (!(len_add = fwrite_str(fh, m->pop3_server, sp))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_id, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_reply_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_reply_id, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->reply_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->reply_addr, sp))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */

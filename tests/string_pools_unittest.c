@@ -29,8 +29,9 @@
 /* @Test */
 void test_string_pool(void)
 {
-	struct string_pool *p;
+	struct string_pool *p, *p2;
 	char *dup_hallo_0 = strdup("Hallo0");
+	int ret;
 
 	p = string_pool_create();
 
@@ -46,6 +47,18 @@ void test_string_pool(void)
 	CU_ASSERT_STRING_EQUAL(string_pool_get(p, 0), "Hallo0");
 	CU_ASSERT_STRING_EQUAL(string_pool_get(p, 1), "Hallo1");
 
+	string_pool_save(p, "/tmp/simplemail.sp");
+
+	p2 = string_pool_create();
+
+	CU_ASSERT_PTR_NOT_NULL(p2);
+
+	ret = string_pool_load(p2, "/tmp/simplemail.sp");
+	CU_ASSERT_EQUAL(ret, 1);
+	CU_ASSERT_STRING_EQUAL(string_pool_get(p2, 0), "Hallo0");
+	CU_ASSERT_STRING_EQUAL(string_pool_get(p2, 1), "Hallo1");
+
+	string_pool_delete(p2);
 	string_pool_delete(p);
 	free(dup_hallo_0);
 }

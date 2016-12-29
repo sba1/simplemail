@@ -33,6 +33,15 @@ struct string_pool;
 struct string_pool *string_pool_create(void);
 
 /**
+ * Load the string pool from the given file.
+ *
+ * @param sp the string pool that should be populated
+ * @param filename the name from where to load the contents.
+ * @return whether this operation was successful or not
+ */
+int string_pool_load(struct string_pool *sp, char *filename);
+
+/**
  * Save the string pool to the given file.
  *
  * @param sp the string pool whose contents shall be saved.

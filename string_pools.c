@@ -75,6 +75,83 @@ struct string_pool *string_pool_create(void)
 
 /*****************************************************************************/
 
+static int string_pool_ensure_space(struct string_pool *p, int wanted_size)
+{
+	unsigned int new_ref_strings_allocated;
+	struct ref_string *new_ref_strings;
+
+	if (p->ref_strings_allocated <= wanted_size && p->ref_strings)
+		return 1;
+
+	new_ref_strings_allocated = (wanted_size+1)*2;
+
+	if (!(new_ref_strings = realloc(p->ref_strings, new_ref_strings_allocated * sizeof(*new_ref_strings))))
+		return 0;
+
+	p->ref_strings_allocated = new_ref_strings_allocated;
+	p->ref_strings = new_ref_strings;
+
+	return 1;
+}
+
+/*****************************************************************************/
+
+int string_pool_load(struct string_pool *sp, char *filename)
+{
+	FILE *fh;
+	char buf[128];
+	int rc = 0;
+	int num_of_strings;
+	int ver;
+	int i;
+
+	if (!(fh = fopen(filename, "rb")))
+		return 0;
+
+	fread(buf, 1, 4, fh);
+	if (strncmp("SMSP",buf,4))
+		goto bailout;
+	if (fread(&ver, 1, 4, fh) != 4)
+		goto bailout;
+	if (ver != string_pool_version)
+		goto bailout;
+	if (fread(&num_of_strings, 1, 4, fh) != 4)
+		goto bailout;
+
+	for (i=0; i < num_of_strings; i++)
+	{
+		unsigned int c;
+		int l;
+		char *s;
+		int pos;
+
+		if (fread(&c, 1, 4, fh) != 4)
+			goto bailout;
+		if (fread(&l, 1, 4, fh) != 4)
+			goto bailout;
+		if (!(s = malloc(l+1)))
+			goto bailout;
+		if (fread(s, 1, l, fh) != l)
+			goto bailout;
+		s[l] = 0;
+		fseek(fh, 3 - l % 4, SEEK_CUR);
+
+		pos = sp->total_ref_count;
+
+		if (!string_pool_ensure_space(sp, pos + 1))
+			goto bailout;
+		hash_table_insert(&sp->ht, s, i);
+		sp->ref_strings[pos].count = c;
+		sp->ref_strings[pos].str = s;
+		sp->total_ref_count = pos + 1;
+	}
+	rc = 1;
+bailout:
+	fclose(fh);
+	return rc;
+}
+
+/*****************************************************************************/
 
 int string_pool_save(struct string_pool *sp, char *filename)
 {

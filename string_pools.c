@@ -87,7 +87,7 @@ int string_pool_save(struct string_pool *sp, char *filename)
 
 	for (i=0; i < sp->ref_strings_num; i++)
 	{
-		int c = sp->ref_strings[i].count;
+		unsigned int c = sp->ref_strings[i].count;
 		char *str = sp->ref_strings[i].str;
 		const char pad[] =  {0,0,0};
 

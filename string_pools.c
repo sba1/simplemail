@@ -31,6 +31,10 @@
 
 /*****************************************************************************/
 
+static const int string_pool_version = 0;
+
+/*****************************************************************************/
+
 struct ref_string
 {
 	char *str;
@@ -76,13 +80,12 @@ int string_pool_save(struct string_pool *sp, char *filename)
 {
 	FILE *fh;
 	int i;
-	int ver = 0;
 
 	if (!(fh = fopen(filename, "wb")))
 		return 0;
 
 	fwrite("SMSP",1,4,fh);
-	fwrite(&ver,1,4,fh);
+	fwrite(&string_pool_version,1,4,fh);
 	fwrite(&sp->ref_strings_num,1,4,fh);
 
 	for (i=0; i < sp->ref_strings_num; i++)

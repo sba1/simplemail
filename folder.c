@@ -3256,6 +3256,25 @@ static int string_pool_put_address_list(struct string_pool *sp, struct address_l
 	}
 	return 1;
 }
+/*****************************************************************************/
+
+/**
+ * Returns the filename of the string pool that belongs to the index.
+ *
+ * @param f
+ * @return the name of the folder that needs to be freed via free().
+ */
+static char *folder_get_string_pool_name(struct folder *f)
+{
+	char *sp_name;
+
+	if ((sp_name = malloc(strlen(f->path) + 12)))
+	{
+		strcpy(sp_name, f->path);
+		strcat(sp_name, ".index.sp");
+	}
+	return sp_name;
+}
 
 /*****************************************************************************/
 
@@ -3281,11 +3300,8 @@ int folder_save_index(struct folder *f)
 	{
 		char *sp_name;
 
-		if ((sp_name = malloc(strlen(f->path) + 12)))
+		if ((sp_name = folder_get_string_pool_name(f)))
 		{
-			strcpy(sp_name, f->path);
-			strcat(sp_name, ".index.sp");
-
 			if ((sp = string_pool_create()))
 			{
 				int i;

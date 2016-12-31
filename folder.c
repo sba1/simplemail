@@ -362,10 +362,13 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 	if (str)
 	{
 		int len;
+		unsigned char upper, lower;
 		int strl = strlen(str);
 
-		if (fputc((strl/256)%256,fh)==EOF) return 0;
-		if (fputc(strl%256,fh)==EOF) return 0;
+		upper = (strl/256)%256;
+		lower = strl%256;
+		if (fputc(upper,fh)==EOF) return 0;
+		if (fputc(lower,fh)==EOF) return 0;
 
 		len = fwrite(str,1,strl,fh);
 		if (len == strl) return len + 2;

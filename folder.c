@@ -1907,7 +1907,6 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							}
 						}
 
-nosp:
 						if (folder->num_pending_mails)
 						{
 							/* Add pending mails (i.e., mails that have been added
@@ -1924,6 +1923,9 @@ nosp:
 							folder->index_uptodate = 0;
 							return 1;
 						}
+
+nosp:
+						(void)1;
 					} else
 					{
 						folder->num_index_mails = num_mails;

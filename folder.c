@@ -1732,6 +1732,94 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	return 0;
 }
 
+/**
+ * Read the next mail info from the index.
+ *
+ * @param fh the file handle of the index file.
+ * @param sp the string pool that is used to resolve string references.
+ * @return the mail info or NULL when something failed.
+ */
+static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct string_pool *sp)
+{
+	struct mail_info *m;
+	int num_to = 0;
+	int num_cc = 0;
+
+	if (fread(&num_to,1,4,fh) != 4) return NULL;
+	if (fread(&num_cc,1,4,fh) != 4) return NULL;
+
+	if ((m = mail_info_create()))
+	{
+		int first = 1;
+
+		m->subject = (utf8*)fread_str(fh, sp);
+		m->filename = fread_str(fh, sp);
+		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
+		m->from_addr = fread_str_no_null(fh, sp);
+
+		/* Read the to list */
+		if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
+			list_init(&m->to_list->list);
+
+		while (num_to--)
+		{
+			char *realname = fread_str_no_null(fh, sp);
+			char *email = fread_str_no_null(fh, sp);
+			struct address *addr;
+
+			if (first)
+			{
+				m->to_phrase = (utf8*)mystrdup(realname);
+				m->to_addr = mystrdup(email);
+				first = 0;
+			}
+
+			if (m->to_list)
+			{
+				if ((addr = (struct address*)malloc(sizeof(struct address))))
+				{
+					addr->realname = realname;
+					addr->email = email;
+					list_insert_tail(&m->to_list->list, &addr->node);
+				} /* should free realname and email on failure */
+			}
+		}
+
+		/* Read the cc list */
+		if ((m->cc_list = (struct address_list*)malloc(sizeof(struct address_list))))
+			list_init(&m->cc_list->list);
+
+		while (num_cc--)
+		{
+			char *realname = fread_str_no_null(fh, sp);
+			char *email = fread_str_no_null(fh, sp);
+			struct address *addr;
+
+			if (m->cc_list)
+			{
+				if ((addr = (struct address*)malloc(sizeof(struct address))))
+				{
+					addr->realname = realname;
+					addr->email = email;
+					list_insert_tail(&m->cc_list->list, &addr->node);
+				} /* should free realname and email on failure */
+			}
+		}
+
+		m->pop3_server = fread_str_no_null(fh, sp);
+		m->message_id = fread_str_no_null(fh, sp);
+		m->message_reply_id = fread_str_no_null(fh, sp);
+		m->reply_addr = fread_str_no_null(fh, sp);
+
+		fseek(fh,ftell(fh)%2,SEEK_CUR);
+		fread(&m->size,1,sizeof(m->size),fh);
+		fread(&m->seconds,1,sizeof(m->seconds),fh);
+		fread(&m->received,1,sizeof(m->received),fh);
+		fread(&m->flags,1,sizeof(m->flags),fh);
+	}
+	return m;
+}
+
 /******************************************************************
  Reads the all mail infos in the given folder.
  TODO: Get rid of readdir and friends
@@ -1800,80 +1888,9 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						while (num_mails-- && !feof(fh))
 						{
 							struct mail_info *m;
-							int num_to = 0;
-							int num_cc = 0;
 
-							if (fread(&num_to,1,4,fh) != 4) break;
-							if (fread(&num_cc,1,4,fh) != 4) break;
-
-							if ((m = mail_info_create()))
+							if ((m = folder_read_mail_info_from_index(fh, sp)))
 							{
-								int first = 1;
-
-								m->subject = (utf8*)fread_str(fh, sp);
-								m->filename = fread_str(fh, sp);
-								m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
-								m->from_addr = fread_str_no_null(fh, sp);
-
-								/* Read the to list */
-								if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
-									list_init(&m->to_list->list);
-
-								while (num_to--)
-								{
-									char *realname = fread_str_no_null(fh, sp);
-									char *email = fread_str_no_null(fh, sp);
-									struct address *addr;
-
-									if (first)
-									{
-										m->to_phrase = (utf8*)mystrdup(realname);
-										m->to_addr = mystrdup(email);
-										first = 0;
-									}
-
-									if (m->to_list)
-									{
-										if ((addr = (struct address*)malloc(sizeof(struct address))))
-										{
-											addr->realname = realname;
-											addr->email = email;
-											list_insert_tail(&m->to_list->list, &addr->node);
-										} /* should free realname and email on failure */
-									}
-								}
-
-								/* Read the cc list */
-								if ((m->cc_list = (struct address_list*)malloc(sizeof(struct address_list))))
-									list_init(&m->cc_list->list);
-
-								while (num_cc--)
-								{
-									char *realname = fread_str_no_null(fh, sp);
-									char *email = fread_str_no_null(fh, sp);
-									struct address *addr;
-
-									if (m->cc_list)
-									{
-										if ((addr = (struct address*)malloc(sizeof(struct address))))
-										{
-											addr->realname = realname;
-											addr->email = email;
-											list_insert_tail(&m->cc_list->list, &addr->node);
-										} /* should free realname and email on failure */
-									}
-								}
-
-								m->pop3_server = fread_str_no_null(fh, sp);
-								m->message_id = fread_str_no_null(fh, sp);
-								m->message_reply_id = fread_str_no_null(fh, sp);
-								m->reply_addr = fread_str_no_null(fh, sp);
-
-								fseek(fh,ftell(fh)%2,SEEK_CUR);
-								fread(&m->size,1,sizeof(m->size),fh);
-								fread(&m->seconds,1,sizeof(m->seconds),fh);
-								fread(&m->received,1,sizeof(m->received),fh);
-								fread(&m->flags,1,sizeof(m->flags),fh);
 								mail_identify_status(m);
 
 								m->flags &= ~MAIL_FLAGS_NEW;

@@ -1901,6 +1901,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 nosp:
 						if (folder->num_pending_mails)
 						{
+							/* Add pending mails (i.e., mails that have been added
+							 * prior the loading of the folder) now */
 							for (i=0;i<folder->num_pending_mails;i++)
 								folder_add_mail(folder,folder->pending_mail_info_array[i],0);
 							folder->num_pending_mails = 0;

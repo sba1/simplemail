@@ -348,8 +348,8 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 }
 
 
-static char *fread_str(FILE *fh);
-static char *fread_str_no_null(FILE *fh);
+static char *fread_str(FILE *fh, struct string_pool *sp);
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp);
 static int folder_config_load(struct folder *f);
 
 /**
@@ -1701,7 +1701,12 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 					if (!only_num_mails)
 					{
+						struct string_pool *sp;
+
 						int i;
+
+						if (!(sp = string_pool_create()))
+							goto nosp;
 
 						folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 						mail_infos_read = 1;
@@ -1727,10 +1732,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							{
 								int first = 1;
 
-								m->subject = (utf8*)fread_str(fh);
-								m->filename = fread_str(fh);
-								m->from_phrase = (utf8*)fread_str_no_null(fh);
-								m->from_addr = fread_str_no_null(fh);
+								m->subject = (utf8*)fread_str(fh, sp);
+								m->filename = fread_str(fh, sp);
+								m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
+								m->from_addr = fread_str_no_null(fh, sp);
 
 								/* Read the to list */
 								if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
@@ -1738,8 +1743,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 								while (num_to--)
 								{
-									char *realname = fread_str_no_null(fh);
-									char *email = fread_str_no_null(fh);
+									char *realname = fread_str_no_null(fh, sp);
+									char *email = fread_str_no_null(fh, sp);
 									struct address *addr;
 
 									if (first)
@@ -1766,8 +1771,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 								while (num_cc--)
 								{
-									char *realname = fread_str_no_null(fh);
-									char *email = fread_str_no_null(fh);
+									char *realname = fread_str_no_null(fh, sp);
+									char *email = fread_str_no_null(fh, sp);
 									struct address *addr;
 
 									if (m->cc_list)
@@ -1781,10 +1786,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 									}
 								}
 
-								m->pop3_server = fread_str_no_null(fh);
-								m->message_id = fread_str_no_null(fh);
-								m->message_reply_id = fread_str_no_null(fh);
-								m->reply_addr = fread_str_no_null(fh);
+								m->pop3_server = fread_str_no_null(fh, sp);
+								m->message_id = fread_str_no_null(fh, sp);
+								m->message_reply_id = fread_str_no_null(fh, sp);
+								m->reply_addr = fread_str_no_null(fh, sp);
 
 								fseek(fh,ftell(fh)%2,SEEK_CUR);
 								fread(&m->size,1,sizeof(m->size),fh);
@@ -1798,6 +1803,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							}
 						}
 
+nosp:
 						if (folder->num_pending_mails)
 						{
 							for (i=0;i<folder->num_pending_mails;i++)
@@ -3192,7 +3198,7 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
  * @param fh
  * @return
  */
-static char *fread_str(FILE *fh)
+static char *fread_str(FILE *fh, struct string_pool *sp)
 {
 	unsigned char a;
 	char *txt;
@@ -3218,7 +3224,7 @@ static char *fread_str(FILE *fh)
  * @param fh
  * @return
  */
-static char *fread_str_no_null(FILE *fh)
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
 {
 	unsigned char a;
 	char *txt;

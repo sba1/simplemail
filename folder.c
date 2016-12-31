@@ -353,6 +353,24 @@ static char *fread_str_no_null(FILE *fh);
 static int folder_config_load(struct folder *f);
 
 /**
+ * Returns the filename of the string pool that belongs to the index.
+ *
+ * @param f
+ * @return the name of the folder that needs to be freed via free().
+ */
+static char *folder_get_string_pool_name(struct folder *f)
+{
+	char *sp_name;
+
+	if ((sp_name = malloc(strlen(f->path) + 12)))
+	{
+		strcpy(sp_name, f->path);
+		strcat(sp_name, ".index.sp");
+	}
+	return sp_name;
+}
+
+/**
  * Opens the indexfile of the given folder and return the filehandle.
  *
  * @param f the folder for which the index file should be opened.
@@ -3255,25 +3273,6 @@ static int string_pool_put_address_list(struct string_pool *sp, struct address_l
 		addr = address_next(addr);
 	}
 	return 1;
-}
-/*****************************************************************************/
-
-/**
- * Returns the filename of the string pool that belongs to the index.
- *
- * @param f
- * @return the name of the folder that needs to be freed via free().
- */
-static char *folder_get_string_pool_name(struct folder *f)
-{
-	char *sp_name;
-
-	if ((sp_name = malloc(strlen(f->path) + 12)))
-	{
-		strcpy(sp_name, f->path);
-		strcat(sp_name, ".index.sp");
-	}
-	return sp_name;
 }
 
 /*****************************************************************************/

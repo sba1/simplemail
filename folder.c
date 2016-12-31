@@ -348,8 +348,86 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 }
 
 
-static char *fread_str(FILE *fh, struct string_pool *sp);
-static char *fread_str_no_null(FILE *fh, struct string_pool *sp);
+/**
+ * Writes a string into a filehandle. Returns 0 for an error else
+ * the number of bytes which has been written (at least two).
+ *
+ * @param fh
+ * @param str
+ * @param sp the optional string pool that can be used to get the string id.
+ * @return
+ */
+static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
+{
+	if (str)
+	{
+		int len;
+		int strl = strlen(str);
+
+		if (fputc((strl/256)%256,fh)==EOF) return 0;
+		if (fputc(strl%256,fh)==EOF) return 0;
+
+		len = fwrite(str,1,strl,fh);
+		if (len == strl) return len + 2;
+	}
+	fputc(0,fh);
+	fputc(0,fh);
+	return 2;
+}
+
+/**
+ * Reads a string from a filehandle. It is allocated with malloc().
+ *
+ * @param fh
+ * @return
+ */
+static char *fread_str(FILE *fh, struct string_pool *sp)
+{
+	unsigned char a;
+	char *txt;
+	int len;
+
+	a = fgetc(fh);
+	len = a << 8;
+	a = fgetc(fh);
+	len += a;
+
+	if ((txt = (char*)malloc(len+1)))
+	{
+		fread(txt,1,len,fh);
+		txt[len]=0;
+	}
+	return txt;
+}
+
+/**
+ * Reads a string from a file handle. It is allocated with malloc().
+ * Returns NULL if the string has an length of 0.
+ *
+ * @param fh
+ * @return
+ */
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
+{
+	unsigned char a;
+	char *txt;
+	int len;
+
+	a = fgetc(fh);
+	len = a << 8;
+	a = fgetc(fh);
+	len += a;
+
+	if (!len) return NULL;
+
+	if ((txt = (char*)malloc(len+1)))
+	{
+		fread(txt,1,len,fh);
+		txt[len]=0;
+	}
+	return txt;
+}
+
 static int folder_config_load(struct folder *f);
 
 /**
@@ -3163,86 +3241,6 @@ void folder_delete_deleted(void)
 	if (!folder_attempt_lock(f)) return;
 	folder_delete_mails(f);
 	folder_unlock(f);
-}
-
-/**
- * Writes a string into a filehandle. Returns 0 for an error else
- * the number of bytes which has been written (at least two).
- *
- * @param fh
- * @param str
- * @param sp the optional string pool that can be used to get the string id.
- * @return
- */
-static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
-{
-	if (str)
-	{
-		int len;
-		int strl = strlen(str);
-
-		if (fputc((strl/256)%256,fh)==EOF) return 0;
-		if (fputc(strl%256,fh)==EOF) return 0;
-
-		len = fwrite(str,1,strl,fh);
-		if (len == strl) return len + 2;
-	}
-	fputc(0,fh);
-	fputc(0,fh);
-	return 2;
-}
-
-/**
- * Reads a string from a filehandle. It is allocated with malloc().
- *
- * @param fh
- * @return
- */
-static char *fread_str(FILE *fh, struct string_pool *sp)
-{
-	unsigned char a;
-	char *txt;
-	int len;
-
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
-
-	if ((txt = (char*)malloc(len+1)))
-	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
-	}
-	return txt;
-}
-
-/**
- * Reads a string from a file handle. It is allocated with malloc().
- * Returns NULL if the string has an length of 0.
- *
- * @param fh
- * @return
- */
-static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
-{
-	unsigned char a;
-	char *txt;
-	int len;
-
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
-
-	if (!len) return NULL;
-
-	if ((txt = (char*)malloc(len+1)))
-	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
-	}
-	return txt;
 }
 
 /**

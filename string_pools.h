@@ -92,4 +92,14 @@ void string_pool_deref_by_id(struct string_pool *p, int id);
  */
 char *string_pool_get(struct string_pool *p, int id);
 
+/**
+ * Return the id of the given string of -1 if the string is not contained.
+ *
+ * @param p the string pool
+ * @param string the string
+ * @return the id or -1 of the string is not contained
+ */
+int string_pool_get_id(struct string_pool *p, const char *string);
+
+
 #endif

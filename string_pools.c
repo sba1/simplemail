@@ -262,3 +262,15 @@ char *string_pool_get(struct string_pool *p, int id)
 {
 	return p->ref_strings[id].str;
 }
+
+/*****************************************************************************/
+
+int string_pool_get_id(struct string_pool *p, const char *string)
+{
+	struct hash_entry *he = hash_table_lookup(&p->ht, string);
+	if (!he)
+	{
+		return -1;
+	}
+	return he->data;
+}

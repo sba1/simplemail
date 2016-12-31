@@ -260,6 +260,10 @@ void string_pool_deref_by_id(struct string_pool *p, int id)
 
 char *string_pool_get(struct string_pool *p, int id)
 {
+	if (id < 0 || id >= p->total_ref_count)
+	{
+		return NULL;
+	}
 	return p->ref_strings[id].str;
 }
 

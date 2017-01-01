@@ -37,7 +37,7 @@
 struct hash_bucket
 {
 	struct hash_bucket *next;
-	struct hash_entry entry;
+	struct hash_entry *entry;
 };
 
 /*****************************************************************************/
@@ -51,6 +51,22 @@ unsigned long sdbm(const unsigned char *str)
 		hash = c + (hash << 6) + (hash << 16) - hash;
 
 	return hash;
+}
+
+/*****************************************************************************/
+
+static struct hash_entry *hash_table_new_entry(void)
+{
+	return (struct hash_entry*)malloc(sizeof(struct hash_entry));
+}
+
+/*****************************************************************************/
+
+static void hash_table_free_entry(struct hash_entry *entry)
+{
+	if (!entry) return;
+	if (entry->string) free((char*)entry->string);
+	free(entry);
 }
 
 /*****************************************************************************/
@@ -122,25 +138,35 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 
 /*****************************************************************************/
 
+static void hash_table_deinit(struct hash_table *ht)
+{
+	int i;
+
+	for (i=0;i<ht->size;i++)
+	{
+		struct hash_bucket *hb = &ht->table[i];
+		hash_table_free_entry(hb->entry);
+
+		hb = hb->next;
+		while (hb)
+		{
+			struct hash_bucket *thb = hb->next;
+			hash_table_free_entry(hb->entry);
+			free(hb);
+			hb = thb;
+		}
+	}
+}
+
+/*****************************************************************************/
+
 void hash_table_clear(struct hash_table *ht)
 {
 	unsigned int i, size, mem_size;
 
 	if (ht->table)
 	{
-		for (i=0;i<ht->size;i++)
-		{
-			struct hash_bucket *hb = &ht->table[i];
-			if (hb->entry.string) free((void*)hb->entry.string);
-			hb = hb->next;
-			while (hb)
-			{
-				struct hash_bucket *thb = hb->next;
-				free((void*)hb->entry.string);
-				free(hb);
-				hb = thb;
-			}
-		}
+		hash_table_deinit(ht);
 		ht->data = 0;
 
 		size = ht->size;
@@ -157,19 +183,8 @@ void hash_table_clean(struct hash_table *ht)
 
 	if (ht->table)
 	{
-		for (i=0;i<ht->size;i++)
-		{
-			struct hash_bucket *hb = &ht->table[i];
-			if (hb->entry.string) free((void*)hb->entry.string);
-			hb = hb->next;
-			while (hb)
-			{
-				struct hash_bucket *thb = hb->next;
-				free((void*)hb->entry.string);
-				free(hb);
-				hb = thb;
-			}
-		}
+		hash_table_deinit(ht);
+
 		free(ht->table);
 		ht->table = NULL;
 		ht->data = 0;
@@ -188,21 +203,25 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 
 	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
-	if (!hb->entry.string)
+	if (hb->entry)
 	{
-		hb->entry.string = string;
-		hb->entry.data = data;
-		return &hb->entry;
+		if (!(nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket))))
+		{
+			return NULL;
+		}
+
+		*nhb = *hb;
+		hb->next = nhb;
 	}
 
-	nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket));
-	if (!nhb) return NULL;
+	if (!(hb->entry = hash_table_new_entry()))
+	{
+		return NULL;
+	}
 
-	*nhb = *hb;
-	hb->next = nhb;
-	hb->entry.string = string;
-	hb->entry.data = data;
-	return &hb->entry;
+	hb->entry->string = string;
+	hb->entry->data = data;
+	return hb->entry;
 }
 
 /*****************************************************************************/
@@ -216,11 +235,11 @@ struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string)
 	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
 
-	if (!hb->entry.string) return NULL;
+	if (!hb->entry) return NULL;
 
 	while (hb)
 	{
-		if (!strcmp(hb->entry.string,string)) return &hb->entry;
+		if (!strcmp(hb->entry->string,string)) return hb->entry;
 		hb = hb->next;
 	}
 
@@ -267,8 +286,8 @@ void hash_table_call_for_each_entry(struct hash_table *ht, void (*func)(struct h
 		struct hash_bucket *hb = &ht->table[i];
 		while (hb)
 		{
-			if (hb->entry.string)
-				func(&hb->entry,data);
+			if (hb->entry)
+				func(hb->entry,data);
 			hb = hb->next;
 		}
 	}

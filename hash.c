@@ -34,6 +34,14 @@
 
 /*****************************************************************************/
 
+struct hash_bucket
+{
+	struct hash_bucket *next;
+	struct hash_entry entry;
+};
+
+/*****************************************************************************/
+
 unsigned long sdbm(const unsigned char *str)
 {
 	unsigned long hash = 0;

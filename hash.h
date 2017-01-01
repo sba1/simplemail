@@ -18,16 +18,11 @@
 #ifndef SM__HASH_H
 #define SM__HASH_H
 
+/** An entry within the table */
 struct hash_entry
 {
 	const char *string;
 	unsigned int data;
-};
-
-struct hash_bucket
-{
-	struct hash_bucket *next;
-	struct hash_entry entry;
 };
 
 struct hash_table
@@ -38,7 +33,7 @@ struct hash_table
 	unsigned int data;
 	const char *filename;
 
-	struct hash_bucket *table;
+	struct hash_bucket *table; /* contains the actual entries, but is opaque */
 };
 
 /**
@@ -92,7 +87,7 @@ void hash_table_clear(struct hash_table *ht);
  * @param ht
  * @param string
  * @param data
- * @return
+ * @return the hash entry.
  */
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data);
 

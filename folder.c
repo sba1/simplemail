@@ -56,7 +56,7 @@
 #include "support.h"
 #include "timesupport.h"
 
-#define FOLDER_INDEX_VERSION 7
+#define FOLDER_INDEX_VERSION 8
 
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
 
@@ -361,17 +361,38 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 {
 	if (str)
 	{
+		int sp_id;
 		int len;
 		unsigned char upper, lower;
 		int strl = strlen(str);
 
-		upper = (strl/256)%256;
-		lower = strl%256;
-		if (fputc(upper,fh)==EOF) return 0;
-		if (fputc(lower,fh)==EOF) return 0;
+		/* We only support up to 32767 characters */
+		if (strl > (1<<15))
+		{
+			return 0;
+		}
 
-		len = fwrite(str,1,strl,fh);
-		if (len == strl) return len + 2;
+		sp_id = sp?string_pool_get_id(sp, str):-1;
+		if (sp_id != -1)
+		{
+			upper = (sp_id >> 24) & 0x7f;
+			upper |= 1<<7; /* string pool ref mark */
+			lower = sp_id & 0xff;
+
+			if (fputc(upper,fh)==EOF) return 0;
+			if (fputc((sp_id >> 16) & 0xff, fh)==EOF) return 0;
+			if (fputc((sp_id >> 8) & 0xff, fh)==EOF) return 0;
+			if (fputc(lower,fh)==EOF) return 0;
+		} else
+		{
+			upper = (strl/256)%256;
+			lower = strl%256;
+			if (fputc(upper,fh)==EOF) return 0;
+			if (fputc(lower,fh)==EOF) return 0;
+
+			len = fwrite(str,1,strl,fh);
+			if (len == strl) return len + 2;
+		}
 	}
 	fputc(0,fh);
 	fputc(0,fh);
@@ -382,23 +403,54 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
  * Reads a string from a filehandle. It is allocated with malloc().
  *
  * @param fh
+ * @param sp
+ * @param zero_is_null if set to 1, NULL is returned for 0 length strings.
+ *  Otherwise, an empty string is allocated.
  * @return
  */
-static char *fread_str(FILE *fh, struct string_pool *sp)
+static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
 {
-	unsigned char a;
+	unsigned char upper;
 	char *txt;
-	int len;
 
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
+	txt = NULL;
 
-	if ((txt = (char*)malloc(len+1)))
+	upper = fgetc(fh);
+	if (upper & (1<<7))
 	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
+		/* It's a string pool ref */
+		int sp_id;
+		unsigned char m2, m1, lower;
+		char *src_txt;
+
+		m2 = fgetc(fh);
+		m1 = fgetc(fh);
+		lower = fgetc(fh);
+
+		sp_id = ((upper & 0x7f) << 24) | (m2 << 16) | (m1 << 8) | lower;
+		src_txt = string_pool_get(sp, sp_id);
+		if (src_txt && (txt = malloc(strlen(src_txt) + 1)))
+		{
+			strcpy(txt, src_txt);
+		}
+	} else
+	{
+		int len;
+
+		len = upper << 8;
+		upper = fgetc(fh);
+		len += upper;
+
+		if (zero_is_null && !len)
+		{
+			return NULL;
+		}
+
+		if ((txt = (char*)malloc(len+1)))
+		{
+			fread(txt,1,len,fh);
+			txt[len]=0;
+		}
 	}
 	return txt;
 }
@@ -412,23 +464,7 @@ static char *fread_str(FILE *fh, struct string_pool *sp)
  */
 static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
 {
-	unsigned char a;
-	char *txt;
-	int len;
-
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
-
-	if (!len) return NULL;
-
-	if ((txt = (char*)malloc(len+1)))
-	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
-	}
-	return txt;
+	return fread_str(fh, sp, 1);
 }
 
 static int folder_config_load(struct folder *f);
@@ -1755,8 +1791,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	{
 		int first = 1;
 
-		m->subject = (utf8*)fread_str(fh, sp);
-		m->filename = fread_str(fh, sp);
+		m->subject = (utf8*)fread_str(fh, sp, 0);
+		m->filename = fread_str(fh, sp, 0);
 		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
 		m->from_addr = fread_str_no_null(fh, sp);
 

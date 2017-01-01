@@ -43,9 +43,6 @@ struct ref_string
 
 struct string_pool
 {
-	/** Number of total references */
-	int total_ref_count;
-
 	struct ref_string *ref_strings;
 	unsigned int ref_strings_num;
 	unsigned int ref_strings_allocated;
@@ -136,14 +133,14 @@ int string_pool_load(struct string_pool *sp, char *filename)
 		s[l] = 0;
 		fseek(fh, 3 - l % 4, SEEK_CUR);
 
-		pos = sp->total_ref_count;
+		pos = sp->ref_strings_num;
 
 		if (!string_pool_ensure_space(sp, pos + 1))
 			goto bailout;
 		hash_table_insert(&sp->ht, s, i);
 		sp->ref_strings[pos].count = c;
 		sp->ref_strings[pos].str = s;
-		sp->total_ref_count = pos + 1;
+		sp->ref_strings_num = pos + 1;
 	}
 	rc = 1;
 bailout:
@@ -260,7 +257,7 @@ void string_pool_deref_by_id(struct string_pool *p, int id)
 
 char *string_pool_get(struct string_pool *p, int id)
 {
-	if (id < 0 || id >= p->total_ref_count)
+	if (id < 0 || id >= p->ref_strings_num)
 	{
 		return NULL;
 	}

@@ -72,5 +72,9 @@ void test_whether_hash_works(void)
 
 	CU_ASSERT_EQUAL(i, 10000);
 
+	/* Clearing before clean is not necessary but this is a test so we do
+	 * this redundant call.
+	 */
+	hash_table_clear(&ht);
 	hash_table_clean(&ht);
 }

@@ -25,6 +25,12 @@
 
 /*****************************************************************************/
 
+static void test_hash_callback(struct hash_entry *entry, void *data)
+{
+	int *num = (int*)data;
+	*num = *num + 1;
+}
+
 /* @Test */
 void test_whether_hash_works(void)
 {
@@ -59,6 +65,12 @@ void test_whether_hash_works(void)
 		CU_ASSERT_STRING_EQUAL(he->string, str);
 		CU_ASSERT_EQUAL(he->data, i);
 	}
+
+	/* Test wheter we can iterate over the elements */
+	i = 0;
+	hash_table_call_for_each_entry(&ht, test_hash_callback, &i);
+
+	CU_ASSERT_EQUAL(i, 10000);
 
 	hash_table_clean(&ht);
 }

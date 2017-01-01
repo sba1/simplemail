@@ -162,7 +162,7 @@ static void hash_table_deinit(struct hash_table *ht)
 
 void hash_table_clear(struct hash_table *ht)
 {
-	unsigned int i, size, mem_size;
+	unsigned int size, mem_size;
 
 	if (ht->table)
 	{
@@ -179,8 +179,6 @@ void hash_table_clear(struct hash_table *ht)
 
 void hash_table_clean(struct hash_table *ht)
 {
-	unsigned int i;
-
 	if (ht->table)
 	{
 		hash_table_deinit(ht);

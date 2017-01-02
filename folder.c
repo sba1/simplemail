@@ -69,6 +69,9 @@ static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
 
+/* the global string pool for the folder */
+static struct string_pool *folder_spool;
+
 /**
  * Compare two mails with respect to their status.
  *
@@ -4454,6 +4457,12 @@ int init_folders(void)
 	if (!(folders_semaphore = thread_create_semaphore()))
 		return 0;
 
+	if (!(folder_spool = string_pool_create()))
+	{
+		thread_dispose_semaphore(folders_semaphore);
+		return 0;
+	}
+
 	list_init(&folder_list);
 
 	folder_traverse_order_file(init_folders_traverse_orders_callback,NULL);
@@ -4567,6 +4576,8 @@ void del_folders(void)
 
 	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
 		folder_node_dispose(node);
+
+	string_pool_delete(folder_spool);
 }
 
 /*****************************************************************************/

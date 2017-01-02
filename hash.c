@@ -73,20 +73,33 @@ static void hash_table_free_entry(struct hash_entry *entry)
 
 /**
  * Sets the number of bits used to identify a primary bucket.
+ * Enlarging an existing hash table is supported.
  *
  * @param ht
  * @param bits
- * @return
+ * @return 1 on success, 0 on failure.
  */
 static int hash_table_set_bits(struct hash_table *ht, int bits)
 {
 	unsigned int size;
 	unsigned int mem_size;
+	unsigned int mask;
 	struct hash_bucket *table;
 
 	if (!bits)
 	{
 		return 0;
+	}
+
+	if (bits < 4)
+	{
+		bits = 4;
+	}
+
+	if (ht->table != NULL && bits <= ht->bits)
+	{
+		/* We support only the enlargement of the table for now */
+		return 1;
 	}
 
 	if (bits > 30)
@@ -96,12 +109,77 @@ static int hash_table_set_bits(struct hash_table *ht, int bits)
 
 	size = 1 << bits;
 	mem_size = size*sizeof(struct hash_bucket);
+	mask = size - 1;
 	if (!(table = (struct hash_bucket*)malloc(mem_size)))
 		return 0;
 	memset(table,0,mem_size);
 
+	if (ht->table != NULL)
+	{
+		unsigned int num_occupied_buckets = 0;
+
+		int i;
+
+		/* If the table is already populated, we need to adjust existing elements again */
+		for (i=0;i<ht->size;i++)
+		{
+			struct hash_bucket *hb = &ht->table[i];
+			if (hb->entry)
+			{
+				int secondary_bucket = 0;
+
+				while (hb)
+				{
+					/* Data for old hash table size */
+					struct hash_bucket *nhb;
+					struct hash_entry *e;
+
+					/* Data for the new hash table size */
+					struct hash_bucket *new_hb;
+					struct hash_entry *new_e;
+					int new_index;
+
+					e =  hb->entry;
+					nhb = hb->next;
+
+					new_index = sdbm(hb->entry->string) & mask;
+					new_hb = &table[new_index];
+					new_e = new_hb->entry;
+
+					if (new_e)
+					{
+						/* There is already something at this index. Note that
+						 * the entry must have originally been in a secondary
+						 * bucket as we can only enlarge the hash table in
+						 * powers of two.
+						 */
+						*hb = *new_hb;
+						new_hb->next = hb;
+					} else
+					{
+						if (secondary_bucket)
+						{
+							/* Entry was contained in a secondary bucket but is
+							 * now a primary one. So we have to free the
+							 * secondary bucket now.
+							 */
+							free(hb);
+						}
+						num_occupied_buckets++;
+					}
+					new_hb->entry = e;
+
+					hb = nhb;
+					secondary_bucket = 1;
+				}
+			}
+		}
+		ht->num_occupied_buckets = num_occupied_buckets;
+		free(ht->table);
+	}
+
 	ht->bits = bits;
-	ht->mask = size - 1;
+	ht->mask = mask;
 	ht->size = size;
 	ht->table = table;
 
@@ -114,11 +192,11 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 {
 	FILE *fh;
 
+	memset(ht, 0, sizeof(*ht));
+
 	if (!hash_table_set_bits(ht, bits))
 		return 0;
 
-	ht->num_entries = 0;
-	ht->num_occupied_buckets = 0;
 	ht->filename = filename;
 
 	if (filename)
@@ -216,7 +294,6 @@ void hash_table_clean(struct hash_table *ht)
 	}
 }
 
-
 /*****************************************************************************/
 
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data)
@@ -226,6 +303,13 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 	struct hash_bucket *hb,*nhb;
 
 	if (!string) return NULL;
+
+	if (ht->num_entries >= ht->size / 4 * 3)
+	{
+		/* Load factor larger than about 0.75, re-adjust */
+		if (!hash_table_set_bits(ht, ht->bits + 1))
+			return NULL;
+	}
 
 	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];

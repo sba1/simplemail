@@ -142,7 +142,7 @@ static int hash_table_set_bits(struct hash_table *ht, int bits)
 					e =  hb->entry;
 					nhb = hb->next;
 
-					new_index = sdbm(hb->entry->string) & mask;
+					new_index = sdbm((unsigned char*)hb->entry->string) & mask;
 					new_hb = &table[new_index];
 					new_e = new_hb->entry;
 

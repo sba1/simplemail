@@ -62,7 +62,7 @@ struct string_pool *string_pool_create(void)
 		return NULL;
 	}
 	memset(p, 0, sizeof(*p));
-	if (!(hash_table_init(&p->ht, 12, NULL)))
+	if (!(hash_table_init(&p->ht, 9, NULL)))
 	{
 		free(p);
 		return NULL;

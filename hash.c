@@ -65,7 +65,7 @@ static struct hash_entry *hash_table_new_entry(void)
 static void hash_table_free_entry(struct hash_entry *entry)
 {
 	if (!entry) return;
-	if (entry->string) free((char*)entry->string);
+	free((char*)entry->string);
 	free(entry);
 }
 

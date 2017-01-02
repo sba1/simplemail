@@ -94,6 +94,8 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 	ht->mask = size - 1;
 	ht->size = size;
 	ht->table = table;
+	ht->num_entries = 0;
+	ht->num_occupied_buckets = 0;
 	ht->filename = filename;
 
 	if (filename)
@@ -156,6 +158,8 @@ static void hash_table_deinit(struct hash_table *ht)
 			hb = thb;
 		}
 	}
+	ht->num_entries = 0;
+	ht->num_occupied_buckets = 0;
 }
 
 /*****************************************************************************/
@@ -195,13 +199,15 @@ void hash_table_clean(struct hash_table *ht)
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data)
 {
 	unsigned int index;
+	int secondary_bucket;
 	struct hash_bucket *hb,*nhb;
 
 	if (!string) return NULL;
 
 	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
-	if (hb->entry)
+
+	if ((secondary_bucket = !!hb->entry))
 	{
 		if (!(nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket))))
 		{
@@ -219,6 +225,10 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 
 	hb->entry->string = string;
 	hb->entry->data = data;
+
+	/* Update counts */
+	ht->num_entries++;
+	ht->num_occupied_buckets += !secondary_bucket;
 	return hb->entry;
 }
 

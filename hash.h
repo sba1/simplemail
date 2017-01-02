@@ -31,6 +31,8 @@ struct hash_table
 	unsigned int mask; /* The bit mask for accessing the elements */
 	unsigned int size; /* Size of the hash table */
 	unsigned int data;
+	unsigned int num_entries; /* Total number of entries managed by this table */
+	unsigned int num_occupied_buckets; /* Total number of occupied primary buckets */
 	const char *filename;
 
 	struct hash_bucket *table; /* contains the actual entries, but is opaque */

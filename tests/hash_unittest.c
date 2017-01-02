@@ -52,6 +52,9 @@ void test_whether_hash_works(void)
 		hash_table_insert(&ht, dup, i);
 	}
 
+	CU_ASSERT_EQUAL(ht.num_entries, 10000);
+	CU_ASSERT(ht.num_occupied_buckets <= 10000);
+
 	/* Check if we can find them again */
 	for (i=0;i < 10000; i++)
 	{

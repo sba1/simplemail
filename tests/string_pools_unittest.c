@@ -59,6 +59,9 @@ void test_string_pool(void)
 	CU_ASSERT_STRING_EQUAL(string_pool_get(p2, 1), "Hallo1");
 	CU_ASSERT_EQUAL(string_pool_get_id(p2, "Hallo1"), 1);
 
+	string_pool_deref_by_str(p2, "Hallo1");
+	CU_ASSERT_EQUAL(string_pool_get_id(p2, "Hallo1"), -1);
+
 	string_pool_delete(p2);
 	string_pool_delete(p);
 	free(dup_hallo_0);

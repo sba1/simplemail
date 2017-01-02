@@ -243,7 +243,7 @@ void string_pool_deref_by_str(struct string_pool *p, char *string)
 	{
 		return;
 	}
-	p->ref_strings[he->data].count--;
+	string_pool_deref_by_id(p, he->data);
 }
 
 /*****************************************************************************/
@@ -261,6 +261,10 @@ char *string_pool_get(struct string_pool *p, int id)
 	{
 		return NULL;
 	}
+	if (p->ref_strings[id].count == 0)
+	{
+		return NULL;
+	}
 	return p->ref_strings[id].str;
 }
 
@@ -269,9 +273,18 @@ char *string_pool_get(struct string_pool *p, int id)
 int string_pool_get_id(struct string_pool *p, const char *string)
 {
 	struct hash_entry *he = hash_table_lookup(&p->ht, string);
+	int id;
+
 	if (!he)
 	{
 		return -1;
 	}
-	return he->data;
+
+	id =  he->data;
+	if (p->ref_strings[id].count == 0)
+	{
+		return -1;
+	}
+
+	return id;
 }

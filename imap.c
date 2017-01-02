@@ -676,8 +676,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 {
 	/* get number of remote mails */
 	char *line;
-	char tag[20];
-	char buf[2048]; /* is used for sending and receiving */
+	char tag[16];
+	char *buf; /* is used for sending and receiving */
+	const int buf_size = 2048;
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
@@ -709,6 +710,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		return NULL;
 	}
 
+	if (!(buf = malloc(buf_size)))
+		goto bailout;
+
 	if (!uid_start) uid_end = 0;
 	else if (!uid_end) uid_start = 0;
 
@@ -725,7 +729,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(buf,sizeof(buf),"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			sm_snprintf(buf,buf_size,"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			SM_DEBUGF(10,("Fetching remote mail array: %s",buf));
 			tcp_write(conn,buf,strlen(buf));
 			tcp_flush(conn);
@@ -733,10 +737,10 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 			while ((line = tcp_readln(conn)))
 			{
 				SM_DEBUGF(10,("Server: %s",line));
-				line = imap_get_result(line,buf,sizeof(buf));
+				line = imap_get_result(line,buf,buf_size);
 				if (!mystricmp(buf,tag))
 				{
-					line = imap_get_result(line,buf,sizeof(buf));
+					line = imap_get_result(line,buf,buf_size);
 					if (!mystricmp(buf,"OK")) success = 1;
 					break;
 				} else
@@ -844,6 +848,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 	{
 		if (empty_folder) *empty_folder = 1;
 	}
+bailout:
 	if (!success)
 	{
 		free(remote_mail_array);
@@ -854,6 +859,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		rm->remote_mail_array = remote_mail_array;
 		rm->num_of_remote_mail = num_of_remote_mails;
 	}
+	free(buf);
 	SM_RETURN(rm, "%p");
 	return rm;
 }

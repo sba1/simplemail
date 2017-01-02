@@ -71,20 +71,30 @@ static void hash_table_free_entry(struct hash_entry *entry)
 
 /*****************************************************************************/
 
-int hash_table_init(struct hash_table *ht, int bits, const char *filename)
+/**
+ * Sets the number of bits used to identify a primary bucket.
+ *
+ * @param ht
+ * @param bits
+ * @return
+ */
+static int hash_table_set_bits(struct hash_table *ht, int bits)
 {
-	FILE *fh;
-	int i;
 	unsigned int size;
 	unsigned int mem_size;
 	struct hash_bucket *table;
 
-	if (!bits) return 0;
+	if (!bits)
+	{
+		return 0;
+	}
 
-	size = 2;
-	for (i=1;i<bits;i++)
-		size <<= 1;
+	if (bits > 30)
+	{
+		return 0;
+	}
 
+	size = 1 << bits;
 	mem_size = size*sizeof(struct hash_bucket);
 	if (!(table = (struct hash_bucket*)malloc(mem_size)))
 		return 0;
@@ -94,6 +104,19 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 	ht->mask = size - 1;
 	ht->size = size;
 	ht->table = table;
+
+	return 1;
+}
+
+/*****************************************************************************/
+
+int hash_table_init(struct hash_table *ht, int bits, const char *filename)
+{
+	FILE *fh;
+
+	if (!hash_table_set_bits(ht, bits))
+		return 0;
+
 	ht->num_entries = 0;
 	ht->num_occupied_buckets = 0;
 	ht->filename = filename;

@@ -1792,8 +1792,6 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 	if ((m = mail_info_create()))
 	{
-		int first = 1;
-
 		m->subject = (utf8*)fread_str(fh, sp, 0);
 		m->filename = fread_str(fh, sp, 0);
 		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
@@ -1808,13 +1806,6 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 			char *realname = fread_str_no_null(fh, sp);
 			char *email = fread_str_no_null(fh, sp);
 			struct address *addr;
-
-			if (first)
-			{
-				m->to_phrase = (utf8*)mystrdup(realname);
-				m->to_addr = mystrdup(email);
-				first = 0;
-			}
 
 			if (m->to_list)
 			{

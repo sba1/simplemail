@@ -1401,27 +1401,52 @@ char *mail_get_from_address(struct mail_info *mail)
 
 /*****************************************************************************/
 
-utf8 *mail_get_to_phrase(struct mail_info *mail)
+static struct address *mail_get_first_address(struct address_list *al)
 {
-	return mail->to_phrase;
+	struct address *a;
+
+	if (!al) return NULL;
+	if (!(a = address_list_first(al)))
+		return NULL;
+	return a;
 }
 
 /*****************************************************************************/
 
-utf8 *mail_get_to_addr(struct mail_info *mail)
+utf8 *mail_get_to_phrase(const struct mail_info *mail)
 {
-	return mail->to_addr;
+	struct address *a;
+
+	if ((a = mail_get_first_address(mail->to_list)))
+		return a->realname;
+	return NULL;
+}
+
+/*****************************************************************************/
+
+utf8 *mail_get_to_addr(const struct mail_info *mail)
+{
+	struct address *a;
+
+	if ((a = mail_get_first_address(mail->to_list)))
+		return a->email;
+	return NULL;
 }
 
 /*****************************************************************************/
 
 char *mail_get_to_address(struct mail_info *mail)
 {
-	char *buf = malloc(mystrlen(mail->to_phrase) + mystrlen(mail->to_addr)+10);
-	if (buf)
+	char *buf;
+	utf8 *phrase = mail_get_to_phrase(mail);
+	utf8 *addr = mail_get_to_addr(mail);
+
+	if (!addr) addr = "";
+
+	if ((buf = malloc(mystrlen(phrase) + mystrlen(addr)+10)))
 	{
-		if (mail->to_phrase) sprintf(buf,"%s <%s>",mail->to_phrase,mail->to_addr);
-		else strcpy(buf,mail->to_addr?mail->to_addr:(utf8*)"");
+		if (phrase) sprintf(buf,"%s <%s>",phrase,addr);
+		else strcpy(buf,addr);
 	}
 	return buf;
 }
@@ -1620,15 +1645,16 @@ int mail_process_headers(struct mail_complete *mail)
 
 			case HEADER_TO:
 			{
-				int more;
-				extract_name_from_address(buf,(char**)&mail->info->to_phrase,(char**)&mail->info->to_addr,&more);
-				if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
-
-				mail->info->to_list = address_list_create(buf);
+				/* TODO: We should query the address book for the realname -> addr correspondence */
+				if ((mail->info->to_list = address_list_create(buf)))
+				{
+					if (address_list_length(mail->info->to_list) > 1)
+						mail->info->flags |= MAIL_FLAGS_GROUP;
+				}
 
 				/* for display optimization */
-				if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
-				if (isascii7(mail->info->to_addr)) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
+				if (isascii7(mail_get_to_phrase(mail->info))) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
+				if (isascii7(mail_get_to_addr(mail->info))) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
 			}
 			break;
 
@@ -1903,7 +1929,7 @@ int mail_process_headers(struct mail_complete *mail)
 		}
 	}
 
-	if (!mail->info->to_phrase && !mail->info->to_addr && !mail->info->cc_list)
+	if (!mail->info->to_list && !mail->info->cc_list)
 		mail->info->flags |= MAIL_FLAGS_NORCPT;
 
 	if (!mail->content_type || !mail->content_subtype)
@@ -2416,8 +2442,6 @@ void mail_info_free(struct mail_info *info)
 	free(info->subject);
 	free(info->from_phrase);
 	free(info->from_addr);
-	free(info->to_phrase);
-	free(info->to_addr);
 	if (info->to_list) address_list_free(info->to_list);
 	if (info->cc_list) address_list_free(info->cc_list);
 	free(info->reply_addr);

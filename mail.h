@@ -119,8 +119,6 @@ struct mail_info
 	int flags;						/* see below */
 	utf8 *from_phrase;  	/* decoded "From" field, might be NULL if no phrase was defined */
 	utf8 *from_addr;			/* the email address */
-	utf8 *to_phrase;			/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
-	utf8 *to_addr;				/* the email address, only a single one */
 	struct address_list *to_list; /* a list of all TO'ed receivers (if any) */
 	struct address_list *cc_list; /* a list of all CC'ed receivers (if any) */
 	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
@@ -211,7 +209,7 @@ struct mail_complete
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
 
 #define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
-#define mail_info_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
+#define mail_info_get_to(x) (mail_get_to_phrase(x)?mail_get_to_phrase(x):mail_get_to_addr(x))
 
 /**
  * Creates a mail info, initialize it to default values.
@@ -305,7 +303,7 @@ char *mail_get_from_address(struct mail_info *mail);
  * @param mail
  * @return the phrase or NULL if no such information exists.
  */
-utf8 *mail_get_to_phrase(struct mail_info *mail);
+utf8 *mail_get_to_phrase(const struct mail_info *mail);
 
 /**
  * Returns the first to addr of the mail.
@@ -313,7 +311,7 @@ utf8 *mail_get_to_phrase(struct mail_info *mail);
  * @param mail
  * @return the address or NULL if no such information exists.
  */
-utf8 *mail_get_to_addr(struct mail_info *mail);
+utf8 *mail_get_to_addr(const struct mail_info *mail);
 
 /**
  * Returns the first "to" name and address (name <address>) of the mail.

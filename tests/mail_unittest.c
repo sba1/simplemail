@@ -290,8 +290,8 @@ void test_mail_compose_new_with_attachment_can_be_read_again(void)
 
 	CU_ASSERT(m->info->from_phrase != NULL);
 	CU_ASSERT(m->info->from_addr != NULL);
-	CU_ASSERT(m->info->to_phrase != NULL);
-	CU_ASSERT(m->info->to_addr != NULL);
+	CU_ASSERT(mail_get_to_phrase(m->info) != NULL);
+	CU_ASSERT(mail_get_to_addr(m->info) != NULL);
 
 	CU_ASSERT_STRING_EQUAL(m->info->from_phrase, "Sebastian Bauer");
 	CU_ASSERT_STRING_EQUAL(m->info->from_addr, "mail@sebastianbauer.info");

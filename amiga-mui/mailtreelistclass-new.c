@@ -536,12 +536,12 @@ STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 		is_ascii7 = 1;
 	} else
 	{
-		if ((txt = (char*)m->to_phrase))
+		if ((txt = (char*)mail_get_to_phrase(m)))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ASCII7);
 
 		if (!txt)
 		{
-			if ((txt = m->to_addr))
+			if ((txt = mail_get_to_addr(m)))
 				is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ADDR_ASCII7);
 		}
 

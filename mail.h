@@ -298,6 +298,22 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 char *mail_get_from_address(struct mail_info *mail);
 
 /**
+ * Returns the first to phrase (real name) of the mail.
+ *
+ * @param mail
+ * @return the phrase or NULL if no such information exists.
+ */
+utf8 *mail_get_to_phrase(struct mail_info *mail);
+
+/**
+ * Returns the first to addr of the mail.
+ *
+ * @param mail
+ * @return the address or NULL if no such information exists.
+ */
+utf8 *mail_get_to_addr(struct mail_info *mail);
+
+/**
  * Returns the first "to" name and address (name <address>) of the mail.
  *
  * @param mail

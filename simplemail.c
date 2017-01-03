@@ -363,8 +363,8 @@ void callback_get_address(void)
 
 		if (folder_get_type(f) == FOLDER_TYPE_SEND)
 		{
-			phrase = mail->to_phrase;
-			addr = mail->to_addr;
+			phrase = mail_get_to_phrase(mail);
+			addr = mail_get_to_addr(mail);
 		} else
 		{
 			phrase = mail->from_phrase;

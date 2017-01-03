@@ -1401,6 +1401,20 @@ char *mail_get_from_address(struct mail_info *mail)
 
 /*****************************************************************************/
 
+utf8 *mail_get_to_phrase(struct mail_info *mail)
+{
+	return mail->to_phrase;
+}
+
+/*****************************************************************************/
+
+utf8 *mail_get_to_addr(struct mail_info *mail)
+{
+	return mail->to_addr;
+}
+
+/*****************************************************************************/
+
 char *mail_get_to_address(struct mail_info *mail)
 {
 	char *buf = malloc(mystrlen(mail->to_phrase) + mystrlen(mail->to_addr)+10);

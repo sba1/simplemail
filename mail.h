@@ -292,8 +292,10 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 
 /**
  * Returns the "from" name and address (name <address>) of the mail.
+ * Memory must be freed via free() when no longer needed.
+ *
  * @param mail
- * @return
+ * @return the string in the mentioned format or NULL.
  */
 char *mail_get_from_address(struct mail_info *mail);
 

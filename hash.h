@@ -33,6 +33,7 @@ struct hash_table
 	unsigned int data;
 	unsigned int num_entries; /* Total number of entries managed by this table */
 	unsigned int num_occupied_buckets; /* Total number of occupied primary buckets */
+	unsigned int entry_size; /* size in bytes for each entry */
 	const char *filename;
 
 	struct hash_bucket *table; /* contains the actual entries, but is opaque */
@@ -46,7 +47,7 @@ struct hash_table
 unsigned long sdbm(const unsigned char *str);
 
 /**
- * Initialize the given hash table with space for 2^bits entries.
+ * Initialize the given hash table with an initial for space for 2^bits entries.
  *
  * @param ht the hash table to initialize.
  * @param bits the number of bits used to identify a bucket.
@@ -56,6 +57,21 @@ unsigned long sdbm(const unsigned char *str);
  * @return 1 on success, 0 otherwise.
  */
 int hash_table_init(struct hash_table *ht, int bits, const char *filename);
+
+/**
+ * Initialize the given hash table with an initial for space for 2^bits entries
+ * with each entry occupied entry_size bytes. The size must be at least
+ * sizeof(hash_entry).
+ *
+ * @param ht the hash table to initialize.
+ * @param bits the number of bits used to identify a bucket.
+ * @param entry_size size of the entry. At least sizeof(struct hash_entry).
+ * @param filename defines the name of the file that is associated to this hash.
+ *  If the file exists, the hash table is initialized with the contents of the
+ *  file.
+ * @return 1 on success, 0 otherwise.
+ */
+int hash_table_init_with_size(struct hash_table *ht, int bits, int entry_size, const char *filename);
 
 /**
  * Gives back all resources occupied by the given hash table (excluding the

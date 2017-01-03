@@ -31,6 +31,7 @@ DOVECOT_PREFIX = ./
 SIMPLEMAIL_LIB  = simplemail
 
 TESTEXES=\
+	addressbook_unittest \
 	boyermoore_unittest \
 	codesets_unittest \
 	configuration_unittest \

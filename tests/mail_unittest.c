@@ -97,8 +97,8 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
 	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
 	CU_ASSERT_PTR_NOT_NULL(m->to_list);
-	CU_ASSERT_PTR_NULL(m->to_phrase);
-	CU_ASSERT_STRING_EQUAL(m->to_addr, "xyz@localhost");
+	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
+	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
 	CU_ASSERT_PTR_NULL(m->cc_list);
 	CU_ASSERT_PTR_NULL(m->pop3_server);
 	CU_ASSERT_PTR_NULL(m->reply_addr);
@@ -295,8 +295,8 @@ void test_mail_compose_new_with_attachment_can_be_read_again(void)
 
 	CU_ASSERT_STRING_EQUAL(m->info->from_phrase, "Sebastian Bauer");
 	CU_ASSERT_STRING_EQUAL(m->info->from_addr, "mail@sebastianbauer.info");
-	CU_ASSERT_STRING_EQUAL(m->info->to_phrase, "Sebastian Bauer");
-	CU_ASSERT_STRING_EQUAL(m->info->to_addr, "mail@sebastianbauer.info");
+	CU_ASSERT_STRING_EQUAL(mail_get_to_phrase(m->info), "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m->info), "mail@sebastianbauer.info");
 
 	mail_read_contents(".", m);
 
@@ -366,7 +366,7 @@ void test_mail_create_for(void)
 	CU_ASSERT(m->info != NULL);
 
 	CU_ASSERT(strcmp(m->info->from_addr,"abcd@zzzzuuuu.qq.qq") == 0);
-	CU_ASSERT(strcmp(m->info->to_addr,"test@abcd.deg.def") == 0);
+	CU_ASSERT(strcmp(mail_get_to_addr(m->info),"test@abcd.deg.def") == 0);
 
 	mail_complete_free(m);
 }

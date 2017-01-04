@@ -761,7 +761,7 @@ void init_addressbook(void)
 
 /*****************************************************************************/
 
-void cleanup_addressbook(void)
+void addressbook_clear(void)
 {
 	struct addressbook_entry_new *entry;
 	struct addressbook_group *group;
@@ -773,6 +773,14 @@ void cleanup_addressbook(void)
 		addressbook_free_group(group);
 
 	hash_table_clear(&address_hash);
+}
+
+/*****************************************************************************/
+
+void cleanup_addressbook(void)
+{
+	addressbook_clear();
+	hash_table_clean(&address_hash);
 }
 
 /**
@@ -1075,7 +1083,7 @@ int addressbook_import_file(char *filename, int append)
 		filename = allocated_filename;
 	}
 
-	if (!append) cleanup_addressbook();
+	if (!append) addressbook_clear();
 
 	switch (addressbook_get_type(filename))
 	{

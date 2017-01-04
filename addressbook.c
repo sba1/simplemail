@@ -31,6 +31,7 @@
 
 #include "configuration.h"
 #include "debug.h"
+#include "hash.h"
 #include "http.h"
 #include "parse.h"
 #include "smintl.h"
@@ -43,10 +44,28 @@
 static struct list group_list;
 static struct list address_list;
 
+/** Maps email addresses to addressbook entries */
+static struct hash_table address_hash;
+
 static struct list yamimport_group_list;
 
 static void snailphonecpy(struct address_snail_phone *dest, struct address_snail_phone *src);
 static void freesnailphone(struct address_snail_phone *dest);
+
+/*****************************************************************************/
+
+struct address_hash_entry
+{
+	struct hash_entry e;
+
+	/**
+	 * Number of addressbook entries associated to the email address. Ideally
+	 * this is only one, but we support ambiguous ones.
+	 */
+	int num_abe;
+	int num_abe_allocated;
+	struct addressbook_entry_new **abe;
+};
 
 /******************* Group *****************/
 
@@ -137,6 +156,56 @@ struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_gro
 
 /***************** Entry ********************/
 
+/**
+ * Hash the given address book entry.
+ *
+ * @param e the entry to be hashed.
+ */
+static void addressbook_hash_entry(struct addressbook_entry_new *e)
+{
+	int num_email_addresses;
+	int i;
+
+	num_email_addresses = array_length(e->email_array);
+
+	for (i=0; i < num_email_addresses; i++)
+	{
+		struct address_hash_entry *he;
+		char *email = e->email_array[i];
+
+		if (!(he = (struct address_hash_entry*)hash_table_lookup(&address_hash, email)))
+		{
+			if ((he = (struct address_hash_entry*)hash_table_insert(&address_hash, email, 0)))
+			{
+				if (!(he->abe = malloc(sizeof(*he->abe)*4)))
+					goto out;
+
+				he->num_abe_allocated = 4;
+				he->num_abe = 0;
+			}
+		}
+
+		if (he && he->abe)
+		{
+			if (he->num_abe + 1 == he->num_abe_allocated)
+			{
+				int new_num_abe_allocated = he->num_abe_allocated*3/2;
+				struct addressbook_entry_new **new_abe;
+
+				if (!(new_abe = realloc(he->abe, new_num_abe_allocated*sizeof(*new_abe))))
+					goto out;
+
+				he->abe = new_abe;
+				he->num_abe_allocated = new_num_abe_allocated;
+			}
+
+			he->abe[he->num_abe++] = e;
+		}
+out:
+		(void)1;
+	}
+}
+
 /*****************************************************************************/
 
 struct addressbook_entry_new *addressbook_first_entry(void)
@@ -186,7 +255,11 @@ struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook
 struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook_entry_new *entry)
 {
 	if ((entry = addressbook_duplicate_entry_new(entry)))
+	{
 		list_insert_tail(&address_list, &entry->node);
+
+		addressbook_hash_entry(entry);
+	}
 	return entry;
 }
 
@@ -412,6 +485,7 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 				*entry = xml_context.current_entry;
 				memset(&xml_context.current_entry,0,sizeof(xml_context.current_entry));
 				list_insert_tail(&address_list,&entry->node);
+				addressbook_hash_entry(entry);
 			}
 		}
 	} else if (!mystricmp("newgroup",el))
@@ -582,6 +656,7 @@ void init_addressbook(void)
 
 	list_init(&group_list);
 	list_init(&address_list);
+	hash_table_init_with_size(&address_hash, 8, sizeof(struct address_hash_entry), NULL);
 
 	addressbook_load();
 
@@ -696,6 +771,8 @@ void cleanup_addressbook(void)
 
 	while ((group = (struct addressbook_group*)list_remove_tail(&group_list)))
 		addressbook_free_group(group);
+
+	hash_table_clear(&address_hash);
 }
 
 /**
@@ -858,6 +935,8 @@ static int yam_import_entries(FILE *fp)
 					newperson->group_array = array_add_string(newperson->group_array,grp->name);
 					grp = (struct addressbook_group*)node_next(&grp->node);
 				}
+
+				addressbook_hash_entry(newperson);
 			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{

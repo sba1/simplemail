@@ -544,11 +544,15 @@ int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char *
 	thread_lock_semaphore(sem);
 	if ((from_addr = to_check_mail->from_addr))
 	{
-		if (array_contains(white,from_addr))
+		if (array_contains(white,from_addr)) {
+			thread_unlock_semaphore(sem);
 			return 0;
+        }
 
-		if (array_contains(black,from_addr))
+		if (array_contains(black,from_addr)) {
+			thread_unlock_semaphore(sem);
 			return 1;
+        }
 	}
 
 	rc = spam_is_mail_spam_using_statistics(folder_path,to_check_mail);

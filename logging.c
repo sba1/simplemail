@@ -46,21 +46,6 @@ static logg_options_t logg_options;
 _Static_assert(SEVERITY_LAST <= 4, "Please fix bit width of severity field in logg_s struct.");
 #endif
 
-struct logg_s
-{
-	logging_severity_t severity:2;
-	unsigned int line:30;
-
-	unsigned short tid;
-	unsigned short millis;
-	unsigned int seconds;
-	const char *filename;
-	const char *function;
-	char *text;
-};
-
-typedef struct logg_s *logg_t;
-
 /**
  * Lock.
  */

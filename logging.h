@@ -39,6 +39,19 @@ typedef enum
 	LAST, /* Special marker to indicate the end of the argument list */
 } logging_datatype_t;
 
+struct logg_s
+{
+	logging_severity_t severity:2;
+	unsigned int line:30;
+
+	unsigned short tid;
+	unsigned short millis;
+	unsigned int seconds;
+	const char *filename;
+	const char *function;
+	char *text;
+};
+
 typedef struct logg_s *logg_t;
 
 typedef void (*logg_lock_callback_t)(void *userdata);

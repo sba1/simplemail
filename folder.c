@@ -1793,8 +1793,9 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 	if ((m = mail_info_create()))
 	{
-		m->subject = (utf8*)fread_str(fh, sp, 0);
-		m->filename = fread_str(fh, sp, 0);
+		m->subject = (utf8*)fread_str(fh, NULL, 0);
+		m->filename = fread_str(fh, NULL, 0);
+
 		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
 		m->from_addr = fread_str_no_null(fh, sp);
 

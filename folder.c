@@ -386,6 +386,7 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 			if (fputc((sp_id >> 16) & 0xff, fh)==EOF) return 0;
 			if (fputc((sp_id >> 8) & 0xff, fh)==EOF) return 0;
 			if (fputc(lower,fh)==EOF) return 0;
+			return 4;
 		} else
 		{
 			upper = (strl/256)%256;

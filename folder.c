@@ -454,6 +454,9 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
 		{
 			fread(txt,1,len,fh);
 			txt[len]=0;
+		} else
+		{
+			fseek(fh, len, SEEK_CUR);
 		}
 	}
 	return txt;

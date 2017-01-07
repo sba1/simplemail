@@ -191,7 +191,7 @@ struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_gro
 /**
  * Initializes the addressbook
  */
-void init_addressbook(void);
+int init_addressbook(void);
 
 /**
  * Cleanups the addressbook. Oposite of init_addressbook().

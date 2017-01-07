@@ -34,7 +34,8 @@ void test_addressbook_simple(void)
 	config_set_user_profile_directory("test-profile");
 
 	CU_ASSERT_EQUAL(load_config(), 1);
-	init_addressbook();
+	CU_ASSERT_EQUAL(init_addressbook(), 1);
+
 	cleanup_addressbook();
 	free_config();
 }

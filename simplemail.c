@@ -2615,7 +2615,11 @@ int simplemail_init(void)
 	}
 
 	load_config();
-	init_addressbook();
+	if (!init_addressbook())
+	{
+		SM_DEBUGF(1,("Couldn't initialize addressbook!\n"));
+		goto out;
+	}
 
 	if (!init_folders())
 	{

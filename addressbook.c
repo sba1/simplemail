@@ -650,18 +650,21 @@ SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 
 /*****************************************************************************/
 
-void init_addressbook(void)
+int init_addressbook(void)
 {
 	struct addressbook_entry_new *entry;
 
 	list_init(&group_list);
 	list_init(&address_list);
-	hash_table_init_with_size(&address_hash, 8, sizeof(struct address_hash_entry), NULL);
+	if (!hash_table_init_with_size(&address_hash, 8, sizeof(struct address_hash_entry), NULL))
+	{
+		return 0;
+	}
 
 	addressbook_load();
 
 	if (user.config.dont_add_default_addresses)
-		return;
+		return 1;
 
 	/* Add the very important email addresses, in case they are not yet within the
    * addressbook */
@@ -757,6 +760,7 @@ void init_addressbook(void)
 			entry->alias = mystrdup("Henes");
 		}
 	}
+	return 1;
 }
 
 /*****************************************************************************/

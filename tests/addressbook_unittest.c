@@ -50,6 +50,12 @@ void test_addressbook_simple(void)
 	/* Because it is a duplicate, the addresses should not match (only the contents) */
 	CU_ASSERT(new_ab.realname != ab->realname);
 	CU_ASSERT_STRING_EQUAL(new_ab.realname, ab->realname);
+	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
+
+	ab = addressbook_find_entry_by_realname("AB CD");
+	CU_ASSERT(new_ab.realname != ab->realname);
+	CU_ASSERT_STRING_EQUAL(new_ab.realname, ab->realname);
+	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
 
 	cleanup_addressbook();
 	free_config();

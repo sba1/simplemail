@@ -39,6 +39,7 @@ void test_addressbook_simple(void)
 	CU_ASSERT_EQUAL(load_config(), 1);
 	CU_ASSERT_EQUAL(init_addressbook(), 1);
 
+	new_ab.alias = "cd";
 	new_ab.realname = "AB CD";
 	new_ab.email_array = emails;
 
@@ -49,13 +50,24 @@ void test_addressbook_simple(void)
 	CU_ASSERT_PTR_NOT_NULL(ab);
 	/* Because it is a duplicate, the addresses should not match (only the contents) */
 	CU_ASSERT(new_ab.realname != ab->realname);
+	CU_ASSERT(new_ab.alias != ab->alias);
 	CU_ASSERT_STRING_EQUAL(new_ab.realname, ab->realname);
 	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
+	CU_ASSERT_STRING_EQUAL(new_ab.alias, ab->alias);
 
 	ab = addressbook_find_entry_by_realname("AB CD");
 	CU_ASSERT(new_ab.realname != ab->realname);
+	CU_ASSERT(new_ab.alias != ab->alias);
 	CU_ASSERT_STRING_EQUAL(new_ab.realname, ab->realname);
 	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
+	CU_ASSERT_STRING_EQUAL(new_ab.alias, ab->alias);
+
+	ab = addressbook_find_entry_by_alias("cd");
+	CU_ASSERT(new_ab.realname != ab->realname);
+	CU_ASSERT(new_ab.alias != ab->alias);
+	CU_ASSERT_STRING_EQUAL(new_ab.realname, ab->realname);
+	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
+	CU_ASSERT_STRING_EQUAL(new_ab.alias, ab->alias);
 
 	cleanup_addressbook();
 	free_config();

@@ -33,6 +33,8 @@
 #include "debug.h"
 #include "hash.h"
 #include "http.h"
+#include "index.h"
+#include "index_naive.h"
 #include "parse.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -46,6 +48,9 @@ static struct list address_list;
 
 /** Maps email addresses to addressbook entries */
 static struct hash_table address_hash;
+
+/** Maps all kind of information */
+static struct index *address_index;
 
 static struct list yamimport_group_list;
 
@@ -661,6 +666,13 @@ int init_addressbook(void)
 		return 0;
 	}
 
+
+	if (!(address_index = index_create(&index_naive, NULL)))
+	{
+		hash_table_clean(&address_hash);
+		return 0;
+	}
+
 	addressbook_load();
 
 	if (user.config.dont_add_default_addresses)
@@ -776,6 +788,7 @@ void addressbook_clear(void)
 	while ((group = (struct addressbook_group*)list_remove_tail(&group_list)))
 		addressbook_free_group(group);
 
+	index_dispose(address_index);
 	hash_table_clear(&address_hash);
 }
 

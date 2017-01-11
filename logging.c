@@ -59,8 +59,6 @@ struct logg_s
 	char *text;
 };
 
-typedef struct logg_s *logg_t;
-
 /**
  * Lock.
  */

@@ -181,7 +181,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 			/* fill in the uids of the mails */
 			for (i=0;i < num_of_mails;i++)
 			{
-				if (folder->mail_info_array[i] && folder->mail_info_array[i]->filename[0] == 'u')
+				if (folder->mail_info_array[i] && (folder->mail_info_array[i]->filename[0] == 'u' || folder->mail_info_array[i]->filename[0] == 'U' || folder->mail_info_array[i]->filename[0] == 'd' || folder->mail_info_array[i]->filename[0] == 'D'))
 				{
 					local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
 					local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
@@ -846,7 +846,12 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		}
 	} else
 	{
-		if (empty_folder) *empty_folder = 1;
+		if (empty_folder) {
+			*empty_folder = 1;
+
+			// Assume success if the folder is empty
+			success = 1;
+		}
 	}
 bailout:
 	if (!success)

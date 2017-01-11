@@ -3202,7 +3202,7 @@ msgstr "Impossible de créer un fichier temporaire."
 
 #: simplemail.c:116
 msgid "Unable to save the active mail.\n"
-msgstr "Impossible d'enregistrer un mail actif."
+msgstr "Impossible d'enregistrer un mail actif.\n"
 
 #: simplemail.c:250 simplemail.c:288
 msgid "Cannot delete mails, because folder is in use.\n"

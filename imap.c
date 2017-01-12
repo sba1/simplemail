@@ -162,10 +162,11 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 			while (sn)
 			{
 				const char *fn = sn->string;
-				if (fn[0] == 'u' || fn[0] == 'U' || fn[0] == 'd' || fn[0] == 'D')
+				int todel = mail_is_marked_as_deleted_by_filename(fn);
+				if (fn[0] == 'u' || fn[0] == 'U' || todel)
 				{
 					local_mail_array[i].uid = atoi(fn + 1);
-					local_mail_array[i].todel = fn[0] == 'd' || fn[0] == 'D';
+					local_mail_array[i].todel = todel;
 					num_of_todel_mails += !!local_mail_array[i].todel;
 				} else
 				{
@@ -182,11 +183,12 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 			for (i=0;i < num_of_mails;i++)
 			{
 				const char *fn = folder->mail_info_array[i]?folder->mail_info_array[i]->filename:"";
+				int todel = mail_is_marked_as_deleted_by_filename(fn);
 
-				if (fn[0] == 'u' || fn[0] == 'U' || fn[0] == 'd' || fn[0] == 'D')
+				if (fn[0] == 'u' || fn[0] == 'U' || todel)
 				{
 					local_mail_array[i].uid = atoi(fn + 1);
-					local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
+					local_mail_array[i].todel = todel;
 					num_of_todel_mails += !!local_mail_array[i].todel;
 				} else
 				{

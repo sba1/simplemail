@@ -354,6 +354,15 @@ char *mail_get_replyto_address(struct mail_info *mail);
 void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt);
 
 /**
+ * Checks whether a mail with the given filename is marked as deleted
+ * (on IMAP folders).
+ *
+ * @param filename the filename under which the mail is stored.
+ * @return whether as marked to be deleted or not.
+ */
+int mail_is_marked_as_deleted_by_filename(const char *fn);
+
+/**
  * Returns whether a mail is marked as deleted (on IMAP folders).
  *
  * @param mail

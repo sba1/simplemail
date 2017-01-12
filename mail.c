@@ -505,9 +505,16 @@ char *mail_get_new_name(int status)
 
 /*****************************************************************************/
 
+int mail_is_marked_as_deleted_by_filename(const char *fn)
+{
+	return fn[0] == 'd' || fn[0] =='D';
+}
+
+/*****************************************************************************/
+
 int mail_is_marked_as_deleted(struct mail_info *mail)
 {
-	return (*mail->filename == 'd') || (*mail->filename == 'D');
+	return mail_is_marked_as_deleted_by_filename(mail->filename);
 }
 
 /*****************************************************************************/

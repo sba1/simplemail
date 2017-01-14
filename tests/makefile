@@ -32,6 +32,7 @@ SIMPLEMAIL_LIB  = simplemail
 
 TESTEXES=\
 	addressbook_unittest \
+	arrays_unittest \
 	boyermoore_unittest \
 	codesets_unittest \
 	configuration_unittest \

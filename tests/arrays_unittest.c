@@ -38,6 +38,10 @@ void test_arrays(void)
 	CU_ASSERT_EQUAL(array_add(&a, (void*)2), 1);
 	CU_ASSERT_EQUAL(array_add(&a, (void*)3), 2);
 
+	CU_ASSERT_EQUAL(array_get(&a, 0), 1);
+	CU_ASSERT_EQUAL(array_get(&a, 1), 2);
+	CU_ASSERT_EQUAL(array_get(&a, 2), 3);
+
 	array_deinit(&a);
 }
 

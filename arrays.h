@@ -55,5 +55,12 @@ void array_deinit(struct array *array);
  */
 int array_add(struct array *array, void *elm);
 
+/**
+ * Returns the element at the given index.
+ *
+ * @param array
+ * @param idx
+ */
+void *array_get(struct array *array, int idx);
 
 #endif

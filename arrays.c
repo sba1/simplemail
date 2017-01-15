@@ -59,3 +59,10 @@ int array_add(struct array *array, void *el)
 	array->els[array->num_el] = el;
 	return array->num_el++;
 }
+
+/*****************************************************************************/
+
+void *array_get(struct array *array, int idx)
+{
+	return array->els[idx];
+}

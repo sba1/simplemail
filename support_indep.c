@@ -841,11 +841,8 @@ static int qsort_utf8stricmp_callback(const void *a, const void *b)
     return utf8stricmp((const char *)*(char **)a, (const char *)*(char **)b);
 }
 
-/**
- * Sorts the given string array in a case-insenstive manner.
- *
- * @param string_array
- */
+/*****************************************************************************/
+
 void array_sort_uft8(char **string_array)
 {
 	int len;

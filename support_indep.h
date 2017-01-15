@@ -372,6 +372,13 @@ char **array_duplicate(char **rcp);
 char **array_duplicate_parsed(char **str, int flags);
 
 /**
+ * Sorts the given string array in a case-insenstive manner.
+ *
+ * @param string_array
+ */
+void array_sort_uft8(char **string_array);
+
+/**
  * Frees an array of strings. Safe to call this with NULL pointer.
  *
  * @param string_array

@@ -24,6 +24,7 @@
 #include <CUnit/Basic.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "progmon.h"
 

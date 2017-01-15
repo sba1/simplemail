@@ -554,7 +554,7 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 	bnode *tmp = bnode_create(idx);
 
 	if (!bnode_read_block(idx, tmp, block))
-		return;
+		return -1;
 
 	if (!tmp->leaf)
 		count += count_index(idx, tmp->lchild, level + 1);
@@ -566,9 +566,17 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 
 		e = bnode_get_ith_element_of_node(idx, tmp, i);
 		if (!tmp->leaf)
-			count += count_index_leaves(idx, e->internal.gchild, level + 1);
-		else
+		{
+			int c = count_index_leaves(idx, e->internal.gchild, level + 1);
+			if (c == -1)
+			{
+				return -1;
+			}
+			count += c;
+		} else
+		{
 			count++;
+		}
 	}
 
 	bnode_free(idx, tmp);

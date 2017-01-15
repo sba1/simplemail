@@ -33,7 +33,11 @@
 #include "ssl.h"
 #include "subthreads.h"
 
-#ifdef USE_OPENSSL
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+#pragma message "OpenSSL may be too new. Check the code!"
+#endif
+
+#if defined(USE_OPENSSL) && OPENSSL_VERSION_NUMBER < 0x10100000
 static semaphore_t lock_semaphores[CRYPTO_NUM_LOCKS];
 
 static void ssl_get_thread_id(CRYPTO_THREADID *id)
@@ -58,7 +62,7 @@ static void ssl_locking_callback(int mode,int type,const char *file,int line)
  */
 void ssl_cleanup(void)
 {
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) && OPENSSL_VERSION_NUMBER < 0x10100000
 	int i;
 	for (i = 0; i < CRYPTO_NUM_LOCKS; i++)
 		thread_dispose_semaphore(lock_semaphores[i]);
@@ -70,7 +74,7 @@ void ssl_cleanup(void)
  */
 int ssl_init(void)
 {
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) && OPENSSL_VERSION_NUMBER < 0x10100000
 	/* see https://www.openssl.org/docs/crypto/threads.html */
 	int i;
 	for (i = 0; i < CRYPTO_NUM_LOCKS; i++)

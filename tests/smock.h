@@ -155,7 +155,7 @@ static void _mock_returns(const char *func, intptr_t rc, int always)
 /**
  * Clean up function.
  */
-static inline mock_clean(void)
+static inline void mock_clean(void)
 {
 	struct mock_entry *e, *n;
 

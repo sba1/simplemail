@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -28,6 +29,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
+#include "progmon.h"
 #include "request.h"
 #include "simplemail.h"
 #include "status.h"

@@ -66,3 +66,46 @@ void *array_get(struct array *array, int idx)
 {
 	return array->els[idx];
 }
+
+/*****************************************************************************/
+
+int iarray_init(struct iarray *array)
+{
+	memset(array,0,sizeof(*array));
+	return 1;
+}
+
+
+/*****************************************************************************/
+
+void iarray_deinit(struct iarray *array)
+{
+	free(array->els);
+}
+
+/*****************************************************************************/
+
+int iarray_add(struct iarray *array, int elm)
+{
+	if (array->num_el == array->num_el_allocated)
+	{
+		int new_num_el_allocated = array->num_el_allocated * 3 / 4 + 4;
+		void *new_els = realloc(array->els, new_num_el_allocated * sizeof(void*));
+		if (!new_els)
+		{
+			return -1;
+		}
+		array->els = new_els;
+		array->num_el_allocated = new_num_el_allocated;
+	}
+
+	array->els[array->num_el] = elm;
+	return array->num_el++;
+}
+
+/*****************************************************************************/
+
+int iarray_get(struct iarray *array, int idx)
+{
+	return array->els[idx];
+}

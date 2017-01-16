@@ -63,4 +63,40 @@ int array_add(struct array *array, void *elm);
  */
 void *array_get(struct array *array, int idx);
 
+/*****************************************************************************/
+
+struct iarray
+{
+	int num_el;
+	int num_el_allocated;
+	int *els;
+};
+
+int iarray_init(struct iarray *array);
+
+/**
+ * Deinitialized the array. All memory directly associated with the array
+ * is given back. The array itself it is not affected.
+ *
+ * @param array
+ */
+void iarray_deinit(struct iarray *array);
+
+/**
+ * Add an element to the end of the array.
+ *
+ * @param array
+ * @param elm
+ * @return the position of the array or -1 on the failure case.
+ */
+int iarray_add(struct iarray *array, int elm);
+
+/**
+ * Returns the element at the given index.
+ *
+ * @param array
+ * @param idx
+ */
+int iarray_get(struct iarray *array, int idx);
+
 #endif

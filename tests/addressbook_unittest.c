@@ -69,6 +69,8 @@ void test_addressbook_simple(void)
 	CU_ASSERT_STRING_EQUAL(new_ab.email_array[0], emails[0]);
 	CU_ASSERT_STRING_EQUAL(new_ab.alias, ab->alias);
 
+	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB"), " CD");
+
 	cleanup_addressbook();
 	free_config();
 }

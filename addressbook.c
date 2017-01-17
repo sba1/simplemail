@@ -180,7 +180,9 @@ static void addressbook_hash_entry(struct addressbook_entry_new *e)
 
 		if (!(he = (struct address_hash_entry*)hash_table_lookup(&address_hash, email)))
 		{
-			if ((he = (struct address_hash_entry*)hash_table_insert(&address_hash, email, 0)))
+			char *dup_email = mystrdup(email);
+
+			if ((dup_email && (he = (struct address_hash_entry*)hash_table_insert(&address_hash, dup_email, 0))))
 			{
 				if (!(he->abe = malloc(sizeof(*he->abe)*4)))
 					goto out;

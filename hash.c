@@ -261,7 +261,14 @@ static void hash_table_deinit(struct hash_table *ht)
 	for (i=0;i<ht->size;i++)
 	{
 		struct hash_bucket *hb = &ht->table[i];
+
+		if (!hb->entry)
+		{
+			continue;
+		}
+
 		hash_table_free_entry(ht, hb->entry);
+		hb->entry = NULL;
 
 		hb = hb->next;
 		while (hb)

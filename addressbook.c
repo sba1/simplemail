@@ -779,6 +779,16 @@ int init_addressbook(void)
 
 /*****************************************************************************/
 
+static void addressbook_free_hash_entry(struct hash_entry *entry, void *data)
+{
+	struct address_hash_entry *ahe = (struct address_hash_entry*)entry;
+	free(ahe->abe);
+	ahe->num_abe = ahe->num_abe_allocated = 0;
+}
+
+
+/*****************************************************************************/
+
 void addressbook_clear(void)
 {
 	struct addressbook_entry_new *entry;
@@ -791,6 +801,8 @@ void addressbook_clear(void)
 		addressbook_free_group(group);
 
 	index_dispose(address_index);
+
+	hash_table_call_for_each_entry(&address_hash, addressbook_free_hash_entry, NULL);
 	hash_table_clear(&address_hash);
 }
 

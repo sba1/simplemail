@@ -80,6 +80,7 @@ void test_addressbook_simple(void)
 	CU_ASSERT_STRING_EQUAL(new_ab.alias, ab->alias);
 
 	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB"), " CD");
+	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB CE"), "");
 
 	cleanup_addressbook();
 	free_config();

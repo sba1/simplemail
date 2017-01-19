@@ -75,7 +75,7 @@ struct addressbook_entry_new
 	int dob_month; /* month of birth */
 	int dob_year; /* year of birth */
 
-	int sex; /* 0 unspecifed, 1 female, 2 male */
+	int sex; /* 0 unspecified, 1 female, 2 male */
 
 	char **email_array; /* NULL terminated array of emails (use array_xxx() functions) */
 	char **group_array; /* NULL terminated array of names of groups (use array_xxx() functions) */

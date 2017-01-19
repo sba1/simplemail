@@ -314,5 +314,48 @@ char *addressbook_download_portrait(char *email);
  */
 char *addressbook_complete_address(char *address);
 
+/*****************************************************************************/
+
+typedef enum
+{
+	ACNT_GROUP,
+	ACNT_ALIAS,
+	ACNT_REALNAME,
+	ACNT_EMAIL
+} addressbook_completion_node_type;
+
+struct addressbook_completion_list
+{
+	struct list l;
+
+	/** Defines if the completion list is complete */
+	int complete;
+};
+
+struct addressbook_completion_node
+{
+	struct node n;
+
+	addressbook_completion_node_type type;
+
+	/** The complete string */
+	char *complete;
+};
+
+/**
+ * Completes an groupname/alias/realname/e-mail address of the addressbook
+ *
+ * @param address
+ * @return
+ */
+struct addressbook_completion_list *addressbook_complete_address_full(char *address);
+
+/**
+ * Frees the list returned by addressbook_complete_address_full().
+ *
+ * @param cl
+ */
+void addressbook_completion_list_free(struct addressbook_completion_list *cl);
+
 #endif
 

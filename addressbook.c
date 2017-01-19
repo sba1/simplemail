@@ -1664,3 +1664,94 @@ char *addressbook_complete_address(char *address)
 	return NULL;
 }
 
+/*****************************************************************************/
+
+int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete)
+{
+	struct addressbook_completion_node *acn;
+
+	if (!(acn = malloc(sizeof(*acn))))
+		return 0;
+	memset(acn, 0, sizeof(*acn));
+	acn->type = type;
+	acn->complete = complete;
+	list_insert_tail(&cl->l, &acn->n);
+	return 1;
+}
+
+/*****************************************************************************/
+
+void addressbook_completion_list_free(struct addressbook_completion_list *cl)
+{
+	struct addressbook_completion_node *n;
+	while ((n = (struct addressbook_completion_node *)list_remove_tail(&cl->l)))
+		free(n);
+	free(cl);
+}
+
+/*****************************************************************************/
+
+struct addressbook_completion_list *addressbook_complete_address_full(char *address)
+{
+	struct addressbook_completion_list *cl;
+
+	if (!(cl = malloc(sizeof(*cl))))
+		return NULL;
+	list_init(&cl->l);
+
+	{
+		int al = strlen(address);
+		struct addressbook_entry_new *entry;
+		struct addressbook_group *group;
+
+		/* find matching group */
+		group = addressbook_first_group();
+		while (group)
+		{
+			if (!utf8stricmp_len(group->name,address,al))
+			{
+				addressbook_completion_list_add(cl, ACNT_GROUP, group->name);
+			}
+			group = addressbook_next_group(group);
+		}
+
+		/* find matching realname  */
+		entry = addressbook_first_entry();
+		while (entry)
+		{
+			if (!utf8stricmp_len(entry->realname,address,al))
+			{
+				addressbook_completion_list_add(cl, ACNT_REALNAME, entry->realname);
+			}
+			entry = addressbook_next_entry(entry);
+		}
+
+		/* try if there exists a matching alias */
+		entry = addressbook_first_entry();
+		while (entry)
+		{
+			if (!utf8stricmp_len(entry->alias,address,al))
+			{
+				addressbook_completion_list_add(cl, ACNT_ALIAS, entry->alias);
+			}
+			entry = addressbook_next_entry(entry);
+		}
+
+		/* addresses */
+		entry = addressbook_first_entry();
+		while (entry)
+		{
+			int i;
+
+			for (i=0; i < array_length(entry->email_array); i++)
+			{
+				if (!mystrnicmp(entry->email_array[i],address,al))
+				{
+					addressbook_completion_list_add(cl, ACNT_EMAIL, entry->email_array[i]);
+				}
+			}
+			entry = addressbook_next_entry(entry);
+		}
+	}
+	return cl;
+}

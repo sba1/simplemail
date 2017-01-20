@@ -37,6 +37,9 @@ void test_addressbook_simple(void)
 	struct addressbook_entry_new *ab2;
 	char *emails[] = {"abc@defgh.ijk", NULL};
 	char *emails2[] = {"cde@abc.dd", NULL};
+	struct addressbook_completion_list *cl;
+	struct addressbook_completion_node *cn;
+
 	config_set_user_profile_directory("test-profile");
 
 	CU_ASSERT_EQUAL(load_config(), 1);
@@ -81,6 +84,27 @@ void test_addressbook_simple(void)
 
 	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB"), " CD");
 	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB CE"), "");
+
+	cl = addressbook_complete_address_full("AB");
+	CU_ASSERT_PTR_NOT_NULL(cl);
+
+	cn = addressbook_completion_list_first(cl);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CD");
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CE");
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "abc@defgh.ijk");
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NULL(cn);
 
 	cleanup_addressbook();
 	free_config();

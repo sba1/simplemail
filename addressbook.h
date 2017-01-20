@@ -357,5 +357,27 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
  */
 void addressbook_completion_list_free(struct addressbook_completion_list *cl);
 
+/**
+ * Return the first addressbook completion entry of the given list.
+ *
+ * @param cl
+ * @return
+ */
+static inline struct addressbook_completion_node *addressbook_completion_list_first(struct addressbook_completion_list *cl)
+{
+	return (struct addressbook_completion_node *)list_first(&cl->l);
+}
+
+/**
+ * Return the next addressbook completion entrs of the given node.
+ *
+ * @param n
+ * @return
+ */
+static inline struct addressbook_completion_node *addressbook_completion_node_next(struct addressbook_completion_node *n)
+{
+	return (struct addressbook_completion_node*)node_next(&n->n);
+}
+
 #endif
 

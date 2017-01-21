@@ -47,6 +47,28 @@ void test_utf8len(void)
 /*******************************************************/
 
 /* @Test */
+void test_utf8stricmp(void)
+{
+	CU_ASSERT_EQUAL(utf8stricmp("ößAF","ößaf"),0);
+	CU_ASSERT_EQUAL(utf8stricmp("abcd","abCd"),0);
+	CU_ASSERT(utf8stricmp("abcd","abc") > 0);
+	CU_ASSERT(utf8stricmp("mßabcd","Nßabcd") < 0);
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_utf8stricmp_len(void)
+{
+	CU_ASSERT_EQUAL(utf8stricmp_len("ößAF","ößaf",4),0);
+	CU_ASSERT_EQUAL(utf8stricmp_len("abcd","abCd",4),0);
+	CU_ASSERT(utf8stricmp_len("abcd","abc",3) == 0);
+	CU_ASSERT(utf8stricmp_len("mßabcd","Nßabcd", 1) < 0);
+}
+
+/*******************************************************/
+
+/* @Test */
 void test_codeset(void)
 {
 	struct codeset *cs;

@@ -31,9 +31,9 @@
 /* @Test */
 void test_isascii7(void)
 {
-	CU_ASSERT(isascii7("ascii7")!=0);
-	CU_ASSERT(isascii7("")!=0);
-	CU_ASSERT(isascii7("ö")==0);
+	CU_ASSERT_NOT_EQUAL(isascii7("ascii7"),0);
+	CU_ASSERT_NOT_EQUAL(isascii7(""),0);
+	CU_ASSERT_EQUAL(isascii7("ö"),0);
 }
 
 /*******************************************************/
@@ -41,7 +41,7 @@ void test_isascii7(void)
 /* @Test */
 void test_utf8len(void)
 {
-	CU_ASSERT(utf8len("ö")==1);
+	CU_ASSERT_EQUAL(utf8len("ö"),1);
 }
 
 /*******************************************************/

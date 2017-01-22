@@ -73,6 +73,10 @@ void test_utf8match(void)
 {
 	CU_ASSERT(utf8match("TextTextText", "xe") == 1);
 	CU_ASSERT(utf8match("TextTextText", "tz") == 0);
+	CU_ASSERT(utf8match("TextTextText", "TTT") == 1);
+	CU_ASSERT(utf8match("TextTextText", "eee") == 1);
+	CU_ASSERT(utf8match("TextTextText", "eeee") == 0);
+	CU_ASSERT(utf8match("TextTextText", "eTx") == 1);
 }
 
 /*******************************************************/

@@ -234,6 +234,18 @@ int utf8stricmp(const char *str1, const char *str2);
 int utf8stricmp_len(const char *str1, const char *str2, int len);
 
 /**
+ * Tries to match needle against haystack. A needle matches if it is a substring
+ * of the haystack or, more generally, if the sequence of characters in the
+ * substring can be found in the haystack with possible additional characters.
+ * For instances, "158" matches "12345678".
+ *
+ * @param haystack
+ * @param needle
+ * @return 1, if matched
+ */
+int utf8match(const char *haystack, const char *needle);
+
+/**
  * Converts a utf8 encoded character to its lower case equivalent.
  *
  * @param str defines the source character

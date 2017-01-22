@@ -69,6 +69,15 @@ void test_utf8stricmp_len(void)
 /*******************************************************/
 
 /* @Test */
+void test_utf8match(void)
+{
+	CU_ASSERT(utf8match("TextTextText", "xe") == 1);
+	CU_ASSERT(utf8match("TextTextText", "tz") == 0);
+}
+
+/*******************************************************/
+
+/* @Test */
 void test_codeset(void)
 {
 	struct codeset *cs;

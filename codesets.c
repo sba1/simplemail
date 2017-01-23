@@ -1746,16 +1746,20 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 	}
 	return 0;
 }
+
 /*****************************************************************************/
 
-static int utf8match_simple(const char *haystack, int haystack_len, const char *needle, int needle_len)
+int utf8match(const char *haystack, const char *needle)
 {
+	int i, j;
+	int needle_len;
+	int haystack_len;
+
 	unsigned char hc;
 	unsigned char nc;
-	int i, j;
 
-	if (*haystack != *needle)
-		return 0;
+	haystack_len = strlen(haystack);
+	needle_len = strlen(needle);
 
 	i = 0;
 	j = 0;
@@ -1774,25 +1778,6 @@ static int utf8match_simple(const char *haystack, int haystack_len, const char *
 	if (j == needle_len)
 	{
 		return 1;
-	}
-	return 0;
-}
-
-/*****************************************************************************/
-
-int utf8match(const char *haystack, const char *needle)
-{
-	int i;
-	int needle_len;
-	int haystack_len;
-
-	haystack_len = strlen(haystack);
-	needle_len = strlen(needle);
-
-	for (i=0; i < haystack_len; i++)
-	{
-		if (utf8match_simple(haystack+i,haystack_len-i, needle, needle_len))
-			return 1;
 	}
 	return 0;
 }

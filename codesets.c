@@ -1749,7 +1749,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 
 /*****************************************************************************/
 
-int utf8match(const char *haystack, const char *needle)
+int utf8match(const char *haystack, const char *needle, match_mask_t *match_mask)
 {
 	int i, j;
 	int needle_len;
@@ -1765,18 +1765,43 @@ int utf8match(const char *haystack, const char *needle)
 	j = 0;
 	while (i < haystack_len && j < needle_len)
 	{
+		int match;
+
 		hc = haystack[i];
 		nc = needle[j];
 
-		if (hc == nc)
+		if (match = (hc == nc))
 		{
 			j++;
 		}
+
+		if (match_mask)
+		{
+			unsigned int match_pos;
+
+			match_pos = match_bitmask_pos(i);
+			if (match)
+			{
+				match_mask[match_pos] |= match_bitmask(i);
+			} else
+			{
+				match_mask[match_pos] &= ~match_bitmask(i);
+			}
+		}
+
 		i++;
 	}
 
 	if (j == needle_len)
 	{
+		if (match_mask)
+		{
+			/* Make sure that the remaining relevant positions are cleared */
+			for (;i < haystack_len; i++)
+			{
+				match_mask[match_bitmask_pos(i)] &= ~match_bitmask(i);
+			}
+		}
 		return 1;
 	}
 	return 0;

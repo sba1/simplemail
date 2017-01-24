@@ -233,6 +233,43 @@ int utf8stricmp(const char *str1, const char *str2);
  */
 int utf8stricmp_len(const char *str1, const char *str2, int len);
 
+typedef unsigned int match_mask_t;
+
+#define MATCH_MASK_T_BYTES sizeof(match_mask_t)
+
+/**
+ * Return the bitmask of teh bit corresponding to the given pos.
+ *
+ * @param pos
+ * @return
+ */
+static inline match_mask_t match_bitmask(unsigned int pos)
+{
+	return (match_mask_t)1 << (MATCH_MASK_T_BYTES - 1 - pos % MATCH_MASK_T_BYTES);
+}
+
+/**
+ * Return the actual position of the bitmask for the given position.
+ *
+ * @param pos
+ * @return
+ */
+static inline unsigned int match_bitmask_pos(unsigned pos)
+{
+	return pos / MATCH_MASK_T_BYTES;
+}
+
+/**
+ * Return the size occupied by a match bitmask representing len characters.
+ *
+ * @param len
+ * @return
+ */
+static inline unsigned int match_bitmask_size(int len)
+{
+	return (len + MATCH_MASK_T_BYTES - 1) / MATCH_MASK_T_BYTES;
+}
+
 /**
  * Tries to match needle against haystack. A needle matches if it is a substring
  * of the haystack or, more generally, if the sequence of characters in the
@@ -241,9 +278,13 @@ int utf8stricmp_len(const char *str1, const char *str2, int len);
  *
  * @param haystack
  * @param needle
+ * @param match_mask bitmask that must be at large as match_bitmask_size(strlen(haystack)).
+ *  Here the match mask is written, i.e., an 1 at bit position i, if position i matches, 0
+ *  otherwise.
+ *
  * @return 1, if matched
  */
-int utf8match(const char *haystack, const char *needle);
+int utf8match(const char *haystack, const char *needle, match_mask_t *match_mask);
 
 /**
  * Converts a utf8 encoded character to its lower case equivalent.

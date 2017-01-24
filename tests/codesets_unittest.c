@@ -68,15 +68,64 @@ void test_utf8stricmp_len(void)
 
 /*******************************************************/
 
+static int check_match_mask(const char *expected, match_mask_t *actual)
+{
+	int i;
+	int l = strlen(expected);
+
+	for (i=0; i < l; i++)
+	{
+		unsigned int mp = match_bitmask_pos(i);
+
+		if (expected[i] == '1')
+		{
+			if (!(actual[mp] & match_bitmask(i)))
+			{
+				printf("expected 1 at %d (mp=%d, actual=%x)\n", i, mp, actual[mp]);
+				return 0;
+			}
+		} else
+		{
+			if (actual[mp] & match_bitmask(i))
+			{
+				printf("expected 0 at %d\n", i);
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 /* @Test */
 void test_utf8match(void)
 {
-	CU_ASSERT(utf8match("TextTextText", "xe") == 1);
-	CU_ASSERT(utf8match("TextTextText", "tz") == 0);
-	CU_ASSERT(utf8match("TextTextText", "TTT") == 1);
-	CU_ASSERT(utf8match("TextTextText", "eee") == 1);
-	CU_ASSERT(utf8match("TextTextText", "eeee") == 0);
-	CU_ASSERT(utf8match("TextTextText", "eTx") == 1);
+	const char *txt = "TextTextText";
+	int txt_len = strlen(txt);
+	match_mask_t m[txt_len/sizeof(match_mask_t)+1];
+
+	memset(&m, 0, txt_len/sizeof(match_mask_t)+1);
+
+	CU_ASSERT(utf8match(txt, "xe", NULL) == 1);
+	CU_ASSERT(utf8match(txt, "xe", m) == 1);
+	CU_ASSERT(check_match_mask("001001000000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "tz", NULL) == 0);
+	CU_ASSERT(utf8match(txt, "tz", m) == 0);
+
+	CU_ASSERT(utf8match(txt, "TTT", NULL) == 1);
+	CU_ASSERT(utf8match(txt, "TTT", m) == 1);
+	CU_ASSERT(check_match_mask("100010001000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "eee", NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eee", m) == 1);
+	CU_ASSERT(check_match_mask("010001000100", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "eeee", NULL) == 0);
+	CU_ASSERT(utf8match(txt, "eeee", m) == 0);
+
+	CU_ASSERT(utf8match(txt, "eTx", NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eTx", m) == 1);
+	CU_ASSERT(check_match_mask("010010100000", m) == 1);
 }
 
 /*******************************************************/

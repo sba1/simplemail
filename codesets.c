@@ -1770,7 +1770,7 @@ int utf8match(const char *haystack, const char *needle, match_mask_t *match_mask
 		hc = haystack[i];
 		nc = needle[j];
 
-		if (match = (hc == nc))
+		if ((match = (hc == nc)))
 		{
 			j++;
 		}

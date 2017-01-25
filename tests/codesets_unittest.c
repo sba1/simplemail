@@ -105,26 +105,26 @@ void test_utf8match(void)
 
 	memset(&m, 0, txt_len/sizeof(match_mask_t)+1);
 
-	CU_ASSERT(utf8match(txt, "xe", NULL) == 1);
-	CU_ASSERT(utf8match(txt, "xe", m) == 1);
+	CU_ASSERT(utf8match(txt, "xe", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "xe", 0, m) == 1);
 	CU_ASSERT(check_match_mask("001001000000", m) == 1);
 
-	CU_ASSERT(utf8match(txt, "tz", NULL) == 0);
-	CU_ASSERT(utf8match(txt, "tz", m) == 0);
+	CU_ASSERT(utf8match(txt, "tz", 0, NULL) == 0);
+	CU_ASSERT(utf8match(txt, "tz", 0, m) == 0);
 
-	CU_ASSERT(utf8match(txt, "TTT", NULL) == 1);
-	CU_ASSERT(utf8match(txt, "TTT", m) == 1);
+	CU_ASSERT(utf8match(txt, "TTT", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "TTT", 0, m) == 1);
 	CU_ASSERT(check_match_mask("100010001000", m) == 1);
 
-	CU_ASSERT(utf8match(txt, "eee", NULL) == 1);
-	CU_ASSERT(utf8match(txt, "eee", m) == 1);
+	CU_ASSERT(utf8match(txt, "eee", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eee", 0, m) == 1);
 	CU_ASSERT(check_match_mask("010001000100", m) == 1);
 
-	CU_ASSERT(utf8match(txt, "eeee", NULL) == 0);
-	CU_ASSERT(utf8match(txt, "eeee", m) == 0);
+	CU_ASSERT(utf8match(txt, "eeee", 0, NULL) == 0);
+	CU_ASSERT(utf8match(txt, "eeee", 0, m) == 0);
 
-	CU_ASSERT(utf8match(txt, "eTx", NULL) == 1);
-	CU_ASSERT(utf8match(txt, "eTx", m) == 1);
+	CU_ASSERT(utf8match(txt, "eTx", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eTx", 0, m) == 1);
 	CU_ASSERT(check_match_mask("010010100000", m) == 1);
 }
 

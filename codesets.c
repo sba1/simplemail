@@ -1749,7 +1749,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 
 /*****************************************************************************/
 
-int utf8match(const char *haystack, const char *needle, match_mask_t *match_mask)
+int utf8match(const char *haystack, const char *needle, int case_sensitive, match_mask_t *match_mask)
 {
 	int i, j;
 	int needle_len;

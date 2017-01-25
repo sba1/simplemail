@@ -1751,7 +1751,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 
 int utf8match(const char *haystack, const char *needle, int case_sensitive, match_mask_t *match_mask)
 {
-	int i, j;
+	int h, n;
 	int needle_len;
 	int haystack_len;
 
@@ -1761,45 +1761,65 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 	haystack_len = strlen(haystack);
 	needle_len = strlen(needle);
 
-	i = 0;
-	j = 0;
-	while (i < haystack_len && j < needle_len)
+	h = 0;
+	n = 0;
+	while (h < haystack_len && n < needle_len)
 	{
 		int match;
+		int hbytes;
+		int nbytes;
 
-		hc = haystack[i];
-		nc = needle[j];
+		match = 0;
+		hc = haystack[h];
+		nc = needle[n];
 
-		if ((match = (hc == nc)))
+		hbytes = trailingBytesForUTF8[hc];
+		nbytes = trailingBytesForUTF8[nc];
+
+		if (hc == nc && hbytes == nbytes)
 		{
-			j++;
+			int i;
+
+			match = 1;
+
+			for (i=0; i < hbytes; i++)
+			{
+				if (haystack[i+1] != needle[i+1])
+					match = 0;
+			}
+		}
+		match = hc == nc;
+
+		if (match)
+		{
+			n += nbytes + 1;
 		}
 
 		if (match_mask)
 		{
 			unsigned int match_pos;
 
-			match_pos = match_bitmask_pos(i);
+			match_pos = match_bitmask_pos(h);
 			if (match)
 			{
-				match_mask[match_pos] |= match_bitmask(i);
+				match_mask[match_pos] |= match_bitmask(h);
 			} else
 			{
-				match_mask[match_pos] &= ~match_bitmask(i);
+				match_mask[match_pos] &= ~match_bitmask(h);
 			}
 		}
 
-		i++;
+		h += hbytes + 1;
 	}
 
-	if (j == needle_len)
+	if (n == needle_len)
 	{
 		if (match_mask)
 		{
 			/* Make sure that the remaining relevant positions are cleared */
-			for (;i < haystack_len; i++)
+			for (;h < haystack_len; h++)
 			{
-				match_mask[match_bitmask_pos(i)] &= ~match_bitmask(i);
+				match_mask[match_bitmask_pos(h)] &= ~match_bitmask(h);
 			}
 		}
 		return 1;

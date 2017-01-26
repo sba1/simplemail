@@ -1788,7 +1788,6 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 					match = 0;
 			}
 		}
-		match = hc == nc;
 
 		if (match)
 		{

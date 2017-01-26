@@ -1776,16 +1776,28 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 		hbytes = trailingBytesForUTF8[hc];
 		nbytes = trailingBytesForUTF8[nc];
 
-		if (hc == nc && hbytes == nbytes)
+		if (hbytes == nbytes)
 		{
-			int i;
-
-			match = 1;
-
-			for (i=0; i < hbytes; i++)
+			if (hc == nc)
 			{
-				if (haystack[i+1] != needle[i+1])
-					match = 0;
+				int i;
+
+				match = 1;
+
+				for (i=0; i < hbytes; i++)
+				{
+					if (haystack[i+1] != needle[i+1])
+						match = 0;
+				}
+			} else
+			{
+				if (hbytes == 0 && case_sensitive)
+				{
+					if (tolower(hc) == tolower(nc))
+					{
+						match = 1;
+					}
+				}
 			}
 		}
 

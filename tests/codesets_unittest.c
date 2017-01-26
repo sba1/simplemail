@@ -126,6 +126,8 @@ void test_utf8match(void)
 	CU_ASSERT(utf8match(txt, "eTx", 0, NULL) == 1);
 	CU_ASSERT(utf8match(txt, "eTx", 0, m) == 1);
 	CU_ASSERT(check_match_mask("010010100000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "TTTT", 1, NULL) == 1);
 }
 
 /*******************************************************/

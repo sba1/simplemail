@@ -1504,6 +1504,23 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 
 /*****************************************************************************/
 
+static inline int utf8cmp_single(unsigned char *a, unsigned char *b)
+{
+	int d;
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	if ((d = a[0] - b[0])) return d;
+	if ((d = a[1] - b[1])) return d;
+	if ((d = a[2] - b[2])) return d;
+	if ((d = a[3] - b[3])) return d;
+	return 0;
+#else
+	return (*((unsigned int *)a) - *((unsigned int *)b));
+#endif
+}
+
+/*****************************************************************************/
+
 int utf8tolower(const char *str, char *dest)
 {
 	unsigned char ch[4] = {0,0,0,0};
@@ -1527,13 +1544,13 @@ int utf8tolower(const char *str, char *dest)
 	}
 
 	ch[3-bytes] = c;
-	for (i=bytes-1;i>=0;i--) /* TODO: Fix this bug!*/
+	for (i=bytes-1;i>=0;i--)
 	{
 		if (!(ch[3-i] = *str++))
 			return 0;
 	}
 
-	BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch)),uc);
+	BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),utf8cmp_single(utf8_tolower_table[m].from, ch),uc);
 
 	if (uc)
 		memcpy(dest, uc->to + 3 - bytes, bytes + 1);

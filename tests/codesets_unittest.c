@@ -47,6 +47,17 @@ void test_utf8len(void)
 /*******************************************************/
 
 /* @Test */
+void test_utf8tolower(void)
+{
+	char dest[7] = {0};
+
+	CU_ASSERT_EQUAL(utf8tolower("Ö", dest), 2);
+	CU_ASSERT_STRING_EQUAL(dest, "ö");
+}
+
+/*******************************************************/
+
+/* @Test */
 void test_utf8stricmp(void)
 {
 	CU_ASSERT_EQUAL(utf8stricmp("ößAF","ößaf"),0);

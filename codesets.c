@@ -1816,6 +1816,23 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 					}
 				}
 			}
+
+			if (!match && case_sensitive && hbytes > 0)
+			{
+				unsigned char hchars[6] = {0};
+				unsigned char nchars[6] = {0};
+				int hl, nl;
+
+				if ((hl = utf8tolower(&haystack[h], hchars)) > 0 &&
+					(nl = utf8tolower(&needle[n], nchars)) > 0)
+				{
+					if (hl == nl)
+					{
+						match = memcmp(hchars, nchars, nl) == 0;
+					}
+				}
+
+			}
 		}
 
 		if (match)

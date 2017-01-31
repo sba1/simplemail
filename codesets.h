@@ -278,14 +278,14 @@ static inline unsigned int match_bitmask_size(int len)
  *
  * @param haystack
  * @param needle
- * @param case_sensitive
+ * @param case_insensitive
  * @param match_mask bitmask that must be at large as match_bitmask_size(utf8len(haystack)).
  *  Here the match mask is written, i.e., an 1 at bit position i, if position i matches, 0
  *  otherwise. Note that these are true utf8 character positions.
  *
  * @return 1, if matched
  */
-int utf8match(const char *haystack, const char *needle, int case_sensitive, match_mask_t *match_mask);
+int utf8match(const char *haystack, const char *needle, int case_insensitive, match_mask_t *match_mask);
 
 /**
  * Converts a utf8 encoded character to its lower case equivalent.

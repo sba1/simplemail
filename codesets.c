@@ -1766,7 +1766,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 
 /*****************************************************************************/
 
-int utf8match(const char *haystack, const char *needle, int case_sensitive, match_mask_t *match_mask)
+int utf8match(const char *haystack, const char *needle, int case_insensitive, match_mask_t *match_mask)
 {
 	int h, n;
 	int needle_len;
@@ -1808,7 +1808,7 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 				}
 			} else
 			{
-				if (hbytes == 0 && case_sensitive)
+				if (hbytes == 0 && case_insensitive)
 				{
 					if (tolower(hc) == tolower(nc))
 					{
@@ -1817,7 +1817,7 @@ int utf8match(const char *haystack, const char *needle, int case_sensitive, matc
 				}
 			}
 
-			if (!match && case_sensitive && hbytes > 0)
+			if (!match && case_insensitive && hbytes > 0)
 			{
 				unsigned char hchars[6] = {0};
 				unsigned char nchars[6] = {0};

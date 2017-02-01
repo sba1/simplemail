@@ -1708,7 +1708,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		group = addressbook_first_group();
 		while (group)
 		{
-			if (!utf8stricmp_len(group->name,address,al))
+			if (group->name && utf8match(group->name, address, 1, NULL))
 			{
 				addressbook_completion_list_add(cl, ACNT_GROUP, group->name);
 			}
@@ -1719,7 +1719,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		entry = addressbook_first_entry();
 		while (entry)
 		{
-			if (!utf8stricmp_len(entry->realname,address,al))
+			if (entry->realname && utf8match(entry->realname, address, 1, NULL))
 			{
 				addressbook_completion_list_add(cl, ACNT_REALNAME, entry->realname);
 			}
@@ -1730,7 +1730,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		entry = addressbook_first_entry();
 		while (entry)
 		{
-			if (!utf8stricmp_len(entry->alias,address,al))
+			if (entry->alias && utf8match(entry->alias, address, 1, NULL))
 			{
 				addressbook_completion_list_add(cl, ACNT_ALIAS, entry->alias);
 			}
@@ -1745,7 +1745,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 
 			for (i=0; i < array_length(entry->email_array); i++)
 			{
-				if (!mystrnicmp(entry->email_array[i],address,al))
+				if (utf8match(entry->email_array[i], address, 1, NULL))
 				{
 					addressbook_completion_list_add(cl, ACNT_EMAIL, entry->email_array[i]);
 				}

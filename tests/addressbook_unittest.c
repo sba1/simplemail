@@ -43,6 +43,8 @@ void test_addressbook_simple(void)
 	config_set_user_profile_directory("test-profile");
 
 	CU_ASSERT_EQUAL(load_config(), 1);
+
+	user.config.dont_add_default_addresses = 1;
 	CU_ASSERT_EQUAL(init_addressbook(), 1);
 
 	new_ab.alias = "cd";
@@ -102,6 +104,11 @@ void test_addressbook_simple(void)
 	CU_ASSERT_PTR_NOT_NULL(cn);
 	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "abc@defgh.ijk");
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "cde@abc.dd");
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NULL(cn);

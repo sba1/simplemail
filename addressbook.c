@@ -1666,7 +1666,7 @@ char *addressbook_complete_address(char *address)
 
 /*****************************************************************************/
 
-int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete)
+static int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete)
 {
 	struct addressbook_completion_node *acn;
 

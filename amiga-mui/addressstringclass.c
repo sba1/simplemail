@@ -48,7 +48,7 @@
 
 /**
  * Returns a malloced() sting for the address start (this what should
- * be completed). The comma is identied as a separator.
+ * be completed). The comma is identified as a separator.
  *
  * @param contents the entire
  * @param pos the completion anchor

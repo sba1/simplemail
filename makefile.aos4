@@ -35,12 +35,21 @@ SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
 SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
 SSL_LIB = -lssl -lcrypto
 else
+ifdef USE_AMISSL4
+OBJSDIRSUFFIX = amissl4
+TARGETSUFFIX =
+SSL_FLAGS = -DUSE_AMISSL3
+SSL_INC = -I "$(AMISSL4_INCLUDE)"
+SSL_LINK =
+SSL_LIB =
+else
 OBJSDIRSUFFIX = amissl
 TARGETSUFFIX =
 SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL_INCLUDE)"
 SSL_LINK =
 SSL_LIB =
+endif
 endif
 
 # COMMITID, COMMITS, and VERSION_TAG macros
@@ -194,6 +203,9 @@ endif
 envs: $(BUILD-DEPENDENCIES)
 ifndef AMISSL_INCLUDE
 	$(error Please create a AMISSL_INCLUDE environment variable)
+endif
+ifndef AMISSL4_INCLUDE
+	$(error Please create a AMISSL4_INCLUDE environment variable)
 endif
 ifndef NET_INCLUDE
 	$(error Please create a NET_INCLUDE environment variable)

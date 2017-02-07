@@ -35,18 +35,18 @@ SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
 SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
 SSL_LIB = -lssl -lcrypto
 else
-ifdef USE_AMISSL4
-OBJSDIRSUFFIX = amissl4
-TARGETSUFFIX =
-SSL_FLAGS = -DUSE_AMISSL3
-SSL_INC = -I "$(AMISSL4_INCLUDE)"
-SSL_LINK =
-SSL_LIB =
-else
+ifdef USE_AMISSL3
 OBJSDIRSUFFIX = amissl
 TARGETSUFFIX =
 SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL_INCLUDE)"
+SSL_LINK =
+SSL_LIB =
+else
+OBJSDIRSUFFIX = amissl4
+TARGETSUFFIX =
+SSL_FLAGS = -DUSE_AMISSL3
+SSL_INC = -I "$(AMISSL4_INCLUDE)"
 SSL_LINK =
 SSL_LIB =
 endif

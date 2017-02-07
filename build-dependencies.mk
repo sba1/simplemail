@@ -10,7 +10,7 @@ else
 OPENSSL_DEPENDENCY=
 endif
 
-.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done .netinclude-done $(OPENSSL_DEPENDENCY)
+.build-dependencies-done: .amissl-done .amissl4-done .expat-done .mui-done .openurl-done .netinclude-done $(OPENSSL_DEPENDENCY)
 	touch $@
 
 LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha

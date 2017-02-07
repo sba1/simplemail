@@ -133,6 +133,10 @@ ifndef AMISSL_INCLUDE
 AMISSL_INCLUDE=build-dependencies/amissl/include/include_h
 endif
 
+ifndef AMISSL4_INCLUDE
+AMISSL4_INCLUDE=build-dependencies/amissl4/AmiSSL/Developer/include
+endif
+
 ifndef NET_INCLUDE
 NET_INCLUDE=build-dependencies/SDK/Include/netinclude
 endif

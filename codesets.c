@@ -1506,9 +1506,9 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 
 static inline int utf8cmp_single(unsigned char *a, unsigned char *b)
 {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	int d;
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	if ((d = a[0] - b[0])) return d;
 	if ((d = a[1] - b[1])) return d;
 	if ((d = a[2] - b[2])) return d;
@@ -1819,8 +1819,8 @@ int utf8match(const char *haystack, const char *needle, int case_insensitive, ma
 
 			if (!match && case_insensitive && hbytes > 0)
 			{
-				unsigned char hchars[6] = {0};
-				unsigned char nchars[6] = {0};
+				char hchars[6] = {0};
+				char nchars[6] = {0};
 				int hl, nl;
 
 				if ((hl = utf8tolower(&haystack[h], hchars)) > 0 &&

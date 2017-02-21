@@ -387,7 +387,7 @@ static void bnode_clear_elements(struct index_external *idx, bnode *n, int start
 static void dump_node_children(struct index_external *idx, bnode *node, const char *prefix)
 {
 	int i;
-	printf("%s: ", prefix, node->lchild);
+	printf("%s (%d): ", prefix, node->lchild);
 	for (i=0;i<node->num_elements;i++)
 	{
 		struct bnode_element *be;

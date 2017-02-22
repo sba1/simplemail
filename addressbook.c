@@ -1709,7 +1709,6 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 	}
 
 	{
-		int al = strlen(address);
 		struct addressbook_entry_new *entry;
 		struct addressbook_group *group;
 

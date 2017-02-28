@@ -340,6 +340,9 @@ struct addressbook_completion_node
 
 	/** The complete string */
 	char *complete;
+
+	/** Match mask */
+	match_mask_t *match_mask;
 };
 
 /**

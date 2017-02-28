@@ -1666,7 +1666,7 @@ char *addressbook_complete_address(char *address)
 
 /*****************************************************************************/
 
-static int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete)
+static int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete, match_mask_t *m)
 {
 	struct addressbook_completion_node *acn;
 
@@ -1675,6 +1675,10 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 	memset(acn, 0, sizeof(*acn));
 	acn->type = type;
 	acn->complete = complete;
+	if (m)
+	{
+		/* FIXME: Copy */
+	}
 	list_insert_tail(&cl->l, &acn->n);
 	return 1;
 }
@@ -1687,6 +1691,31 @@ void addressbook_completion_list_free(struct addressbook_completion_list *cl)
 	while ((n = (struct addressbook_completion_node *)list_remove_tail(&cl->l)))
 		free(n);
 	free(cl);
+}
+
+/*****************************************************************************/
+
+static void addressbook_test_and_add_match(
+	struct addressbook_completion_list *cl, addressbook_completion_node_type type,
+	char *haystack, const char *needle,
+	match_mask_t **pm, int *pm_len)
+{
+	int l;
+	match_mask_t *m = *pm;
+	int m_len = *pm_len;
+
+	if (!haystack)
+		return;
+
+	l = strlen(haystack);
+
+	if (l > m_len)
+		m = NULL;
+
+	if (utf8match(haystack, needle, 1, m))
+	{
+		addressbook_completion_list_add(cl, type, haystack, m);
+	}
 }
 
 /*****************************************************************************/
@@ -1716,15 +1745,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		group = addressbook_first_group();
 		while (group)
 		{
-			if (group->name)
-			{
-				int gl = strlen(group->name);
-
-				if (utf8match(group->name, address, 1, gl<m_len?m:NULL))
-				{
-					addressbook_completion_list_add(cl, ACNT_GROUP, group->name);
-				}
-			}
+			addressbook_test_and_add_match(cl, ACNT_GROUP, group->name, address, &m, &m_len);
 			group = addressbook_next_group(group);
 		}
 
@@ -1732,15 +1753,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		entry = addressbook_first_entry();
 		while (entry)
 		{
-			if (entry->realname)
-			{
-				int rl = strlen(entry->realname);
-
-				if (utf8match(entry->realname, address, 1, rl<m_len?m:NULL))
-				{
-					addressbook_completion_list_add(cl, ACNT_REALNAME, entry->realname);
-				}
-			}
+			addressbook_test_and_add_match(cl, ACNT_REALNAME, entry->realname, address, &m, &m_len);
 			entry = addressbook_next_entry(entry);
 		}
 
@@ -1748,15 +1761,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		entry = addressbook_first_entry();
 		while (entry)
 		{
-			if (entry->alias)
-			{
-				int al = strlen(entry->alias);
-
-				if (utf8match(entry->alias, address, 1, al<m_len?m:NULL))
-				{
-					addressbook_completion_list_add(cl, ACNT_ALIAS, entry->alias);
-				}
-			}
+			addressbook_test_and_add_match(cl, ACNT_ALIAS, entry->alias, address, &m, &m_len);
 			entry = addressbook_next_entry(entry);
 		}
 
@@ -1768,11 +1773,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 
 			for (i=0; i < array_length(entry->email_array); i++)
 			{
-				int el = strlen(entry->email_array[i]);
-				if (utf8match(entry->email_array[i], address, 1, el<m_len?m:NULL))
-				{
-					addressbook_completion_list_add(cl, ACNT_EMAIL, entry->email_array[i]);
-				}
+				addressbook_test_and_add_match(cl, ACNT_EMAIL, entry->email_array[i], address, &m, &m_len);
 			}
 			entry = addressbook_next_entry(entry);
 		}

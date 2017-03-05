@@ -1666,6 +1666,15 @@ char *addressbook_complete_address(char *address)
 
 /*****************************************************************************/
 
+/**
+ * Create and add a new completion list entry.
+ *
+ * @param cl the list where to add.
+ * @param type the type of the completion-
+ * @param complete the complete string.
+ * @param m the mask that contains at least utf8len(complete) bits or NULL. The mask will be duplicated.
+ * @return 1 on success, else 0.
+ */
 static int addressbook_completion_list_add(struct addressbook_completion_list *cl, addressbook_completion_node_type type, char *complete, match_mask_t *m)
 {
 	struct addressbook_completion_node *acn;
@@ -1677,7 +1686,11 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 	acn->complete = complete;
 	if (m)
 	{
-		/* FIXME: Copy */
+		int l = utf8len(complete);
+		if ((acn->match_mask = malloc(match_bitmask_size(l))))
+		{
+			memcpy(acn->match_mask, m, match_bitmask_size(l));
+		}
 	}
 	list_insert_tail(&cl->l, &acn->n);
 	return 1;

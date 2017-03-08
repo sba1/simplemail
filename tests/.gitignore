@@ -1,3 +1,4 @@
+*.d
 *.o
 *_table.c
 *_unittest

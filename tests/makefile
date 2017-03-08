@@ -74,7 +74,7 @@ gen/%_unittest_table.c: %_unittest.c
 	# Generate simple stubs from error log
 	perl gen-stubs.pl <test-objs/$@error >gen/$@stubs.c
 	# Finally, compile again
-	$(CC) gen/$@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"gen/$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
+	$(CC) -MMD -MP gen/$@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"gen/$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
 all: files $(TESTEXES) memleaks
@@ -222,4 +222,4 @@ $(foreach testexe,$(TESTEXES), \
 )
 
 # Now include dependencies, but don't fail if they are not available
--include $(OBJS:.o=.d)
+-include $(OBJS:.o=.d) $(addsuffix .d,$(TESTEXES))

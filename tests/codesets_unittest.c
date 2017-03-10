@@ -26,7 +26,7 @@
 
 #include "codesets.h"
 
-#include "common.c"
+#include "test-common.c"
 
 /*******************************************************/
 

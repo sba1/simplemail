@@ -26,6 +26,8 @@
 #include "addressbook.h"
 #include "configuration.h"
 
+#include "test-common.c"
+
 /*****************************************************************************/
 
 /* @Test */
@@ -94,21 +96,25 @@ void test_addressbook_simple(void)
 	CU_ASSERT_PTR_NOT_NULL(cn);
 	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CD");
+	CU_ASSERT(check_match_mask("11000", cn->match_mask) == 1);
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NOT_NULL(cn);
 	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CE");
+	CU_ASSERT(check_match_mask("11000", cn->match_mask) == 1);
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NOT_NULL(cn);
 	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "abc@defgh.ijk");
+	CU_ASSERT(check_match_mask("1100000000000", cn->match_mask) == 1);
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NOT_NULL(cn);
 	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "cde@abc.dd");
+	CU_ASSERT(check_match_mask("00001100000", cn->match_mask) == 1);
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NULL(cn);

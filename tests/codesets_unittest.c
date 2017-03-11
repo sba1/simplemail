@@ -116,6 +116,10 @@ void test_utf8match(void)
 	CU_ASSERT(utf8match("Ö", "Ö", 0, NULL) == 1);
 	CU_ASSERT(utf8match("ö", "Ö", 0, NULL) == 0);
 	CU_ASSERT(utf8match("ö", "Ö", 1, NULL) == 1);
+
+	CU_ASSERT(utf8match("cde@abc.dd", "AB", 1, m));
+	CU_ASSERT(check_match_mask("0000110000", m) == 1);
+
 }
 
 /*******************************************************/

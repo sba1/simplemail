@@ -267,7 +267,7 @@ static inline unsigned int match_bitmask_pos(unsigned pos)
  */
 static inline unsigned int match_bitmask_size(int len)
 {
-	return (len + MATCH_MASK_T_BYTES - 1) / MATCH_MASK_T_BYTES;
+	return (len + MATCH_MASK_T_BYTES - 1) / MATCH_MASK_T_BYTES * MATCH_MASK_T_BYTES;
 }
 
 /**

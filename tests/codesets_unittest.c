@@ -83,7 +83,7 @@ void test_utf8stricmp_len(void)
 void test_match_mask_t(void)
 {
 	CU_ASSERT_EQUAL(match_bitmask(0), 8);
-	CU_ASSERT_EQUAL(match_bitmask_size(29), 8);
+	CU_ASSERT_EQUAL(match_bitmask_size(29), 32);
 	CU_ASSERT_EQUAL(match_bitmask_pos(0), 0);
 	CU_ASSERT_EQUAL(match_bitmask_pos(4), 1);
 	CU_ASSERT_EQUAL(match_bitmask_pos(8), 2);

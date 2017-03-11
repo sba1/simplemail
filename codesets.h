@@ -238,7 +238,7 @@ typedef unsigned int match_mask_t;
 #define MATCH_MASK_T_BYTES sizeof(match_mask_t)
 
 /**
- * Return the bitmask of teh bit corresponding to the given pos.
+ * Return the bitmask of the bit corresponding to the given pos.
  *
  * @param pos
  * @return

@@ -236,6 +236,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len);
 typedef unsigned int match_mask_t;
 
 #define MATCH_MASK_T_BYTES sizeof(match_mask_t)
+#define MATCH_MASK_T_BITS (MATCH_MASK_T_BYTES*8)
 
 /**
  * Return the bitmask of the bit corresponding to the given pos.
@@ -245,7 +246,7 @@ typedef unsigned int match_mask_t;
  */
 static inline match_mask_t match_bitmask(unsigned int pos)
 {
-	return (match_mask_t)1 << (MATCH_MASK_T_BYTES - 1 - pos % MATCH_MASK_T_BYTES);
+	return (match_mask_t)1 << (MATCH_MASK_T_BITS - 1 - pos % MATCH_MASK_T_BITS);
 }
 
 /**
@@ -256,7 +257,7 @@ static inline match_mask_t match_bitmask(unsigned int pos)
  */
 static inline unsigned int match_bitmask_pos(unsigned pos)
 {
-	return pos / MATCH_MASK_T_BYTES;
+	return pos / MATCH_MASK_T_BITS;
 }
 
 /**
@@ -267,7 +268,7 @@ static inline unsigned int match_bitmask_pos(unsigned pos)
  */
 static inline unsigned int match_bitmask_size(int len)
 {
-	return (len + MATCH_MASK_T_BYTES - 1) / MATCH_MASK_T_BYTES * MATCH_MASK_T_BYTES;
+	return (len + MATCH_MASK_T_BITS - 1) / MATCH_MASK_T_BITS * MATCH_MASK_T_BYTES;
 }
 
 /**

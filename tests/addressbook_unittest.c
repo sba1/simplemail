@@ -119,6 +119,8 @@ void test_addressbook_simple(void)
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NULL(cn);
 
+	addressbook_completion_list_free(cl);
+
 	cleanup_addressbook();
 	free_config();
 }

@@ -1702,7 +1702,10 @@ void addressbook_completion_list_free(struct addressbook_completion_list *cl)
 {
 	struct addressbook_completion_node *n;
 	while ((n = (struct addressbook_completion_node *)list_remove_tail(&cl->l)))
+	{
+		free(n->match_mask);
 		free(n);
+	}
 	free(cl);
 }
 

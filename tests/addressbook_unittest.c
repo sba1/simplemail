@@ -89,6 +89,8 @@ void test_addressbook_simple(void)
 	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB"), " CD");
 	CU_ASSERT_STRING_EQUAL(addressbook_complete_address("AB CE"), "");
 
+	/************************************************************************/
+
 	cl = addressbook_complete_address_full("AB");
 	CU_ASSERT_PTR_NOT_NULL(cl);
 
@@ -115,6 +117,40 @@ void test_addressbook_simple(void)
 	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
 	CU_ASSERT_STRING_EQUAL(cn->complete, "cde@abc.dd");
 	CU_ASSERT(check_match_mask("00001100000", cn->match_mask) == 1);
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NULL(cn);
+
+	addressbook_completion_list_free(cl);
+
+	/************************************************************************/
+
+	cl = addressbook_complete_address_full("BC");
+	CU_ASSERT_PTR_NOT_NULL(cl);
+
+	cn = addressbook_completion_list_first(cl);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CD");
+	CU_ASSERT(check_match_mask("01010", cn->match_mask) == 1);
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_REALNAME);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "AB CE");
+	CU_ASSERT(check_match_mask("01010", cn->match_mask) == 1);
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "abc@defgh.ijk");
+	CU_ASSERT(check_match_mask("0110000000000", cn->match_mask) == 1);
+
+	cn = addressbook_completion_node_next(cn);
+	CU_ASSERT_PTR_NOT_NULL(cn);
+	CU_ASSERT_EQUAL(cn->type, ACNT_EMAIL);
+	CU_ASSERT_STRING_EQUAL(cn->complete, "cde@abc.dd");
+	CU_ASSERT(check_match_mask("00000110000", cn->match_mask) == 1);
 
 	cn = addressbook_completion_node_next(cn);
 	CU_ASSERT_PTR_NULL(cn);

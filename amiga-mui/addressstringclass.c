@@ -87,7 +87,6 @@ static char *get_address_start(char *contents, int pos)
 
 struct MatchWindow_Data
 {
-	int dummy;
 	Object *str;
 	Object *list;
 };

@@ -54,7 +54,7 @@
  * @param pos the completion anchor
  * @return the string that should be completed
  */
-static char *get_address_start(char *contents, int pos)
+static char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
 {
 	char *buf;
 	int start_pos = pos;
@@ -115,7 +115,7 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 		char *addr_start;
 		char *complete;
 
-		if ((addr_start = get_address_start(contents, buf_pos)))
+		if ((addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos)))
 		{
 			if (entry->is_group)
 			{
@@ -443,7 +443,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 					int buf_pos = utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 					char *addr_start;
 
-					if ((addr_start = get_address_start(contents,buf_pos)))
+					if ((addr_start = sm_get_to_be_completed_address_from_line(contents,buf_pos)))
 					{
 						char *completed;
 
@@ -655,7 +655,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	int buf_pos =  utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 	char *addr_start;
 
-	addr_start = get_address_start(contents, buf_pos);
+	addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos);
 
 	if (data->match_wnd)
 	{

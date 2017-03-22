@@ -37,6 +37,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "debug.h"
+#include "support_indep.h"
 
 #include "addressstringclass.h"
 #include "addressentrylistclass.h"
@@ -45,43 +46,6 @@
 #include "compiler.h"
 #include "muistuff.h"
 #include "utf8stringclass.h"
-
-/**
- * Returns a malloced() sting for the address start (this what should
- * be completed). The comma is identified as a separator.
- *
- * @param contents the entire
- * @param pos the completion anchor
- * @return the string that should be completed
- */
-static char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
-{
-	char *buf;
-	int start_pos = pos;
-
-	if (start_pos && contents[start_pos] == ',')
-		start_pos--;
-
-	while (start_pos)
-	{
-		if (contents[start_pos] == ',')
-		{
-			start_pos++;
-			break;
-		}
-		start_pos--;
-	}
-
-	while (start_pos < pos && contents[start_pos]==' ')
-		start_pos++;
-
-	buf = malloc(pos - start_pos + 1);
-	if (!buf) return NULL;
-	strncpy(buf,&contents[start_pos],pos - start_pos);
-	buf[pos-start_pos]=0;
-
-	return buf;
-}
 
 /*****************************************************************************/
 

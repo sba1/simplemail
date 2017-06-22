@@ -866,7 +866,7 @@ msgid ""
 "The name of the so called SMTP server which is responsible\n"
 "to send your e-Mails."
 msgstr ""
-"Der Name des SMTP-Servers über den sie Ihre Nachrichten\n"
+"Der Name des SMTP-Servers über den Sie Ihre Nachrichten\n"
 "verschicken wollen (fragen Sie Ihren Provider/Freemailer)."
 
 #: amiga-mui/configwnd.c:1484
@@ -2951,7 +2951,7 @@ msgid ""
 "before creating new mails"
 msgstr ""
 "Es wurde noch kein Absender wurde eingegeben.\n"
-"Bitte erstellen sie erst ein oder mehrere Konten."
+"Bitte erstellen Sie erst ein oder mehrere Konten."
 
 #: mail.c:3001
 msgid ""
@@ -3504,7 +3504,7 @@ msgstr "Nicht spezifiziert"
 #~ msgstr ""
 #~ "Wenn aktiviert, versucht SimpleMail die Verbindung sicher zu machen.\n"
 #~ "Dies ist nicht bei allen Servern möglich - sollten\n"
-#~ "also Probleme auftreten, deaktivieren sie diese Option bitte."
+#~ "also Probleme auftreten, deaktivieren Sie diese Option bitte."
 
 #~ msgid ""
 #~ "Activate this if you want a secure connection\n"

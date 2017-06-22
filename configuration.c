@@ -116,10 +116,10 @@ static int init_config(void)
 		phrase->addresses = mystrdup(".de");
 		phrase->write_welcome = mystrdup("Hallo,\\n");
 		phrase->write_welcome_repicient = mystrdup("Hallo %v\\n");
-		phrase->write_closing = mystrdup("Gruss,");
+		phrase->write_closing = mystrdup("Gruß");
 		phrase->reply_welcome = mystrdup("Hallo %f,\\n");
 		phrase->reply_intro = mystrdup("Am %d schriebst Du:");
-		phrase->reply_close = mystrdup("Gruss,");
+		phrase->reply_close = mystrdup("Gruß");
 		phrase->forward_initial = mystrdup("*** Start der weitergeleiteten Nachricht ***\\n\\nDatum: %d %t\\nVon: %n <%e>\\nBetreff: %s\\n\\n--- Weitergeleitete Nachricht folgt ---\\n\\n");
 		phrase->forward_finish = mystrdup("*** Ende der weitergeleiteten Nachricht ***\\n");
 	}

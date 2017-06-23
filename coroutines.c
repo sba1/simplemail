@@ -42,6 +42,14 @@ coroutine_t coroutines_list_first(struct coroutines_list *list)
 	return (coroutine_t)list_first(&list->list);
 }
 
+
+/*****************************************************************************/
+
+coroutine_t coroutines_list_remove_head(struct coroutines_list *list)
+{
+	return (coroutine_t)list_remove_head(&list->list);
+}
+
 /*****************************************************************************/
 
 coroutine_t coroutines_next(coroutine_t c)
@@ -85,13 +93,14 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 		return NULL;
 	coroutine->entry = entry;
 	coroutine->context = context;
+	context->scheduler = scheduler;
 	list_insert_tail(&scheduler->coroutines_ready_list.list, &coroutine->node);
 	return coroutine;
 }
 
 /*****************************************************************************/
 
-void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
+int coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 {
 	coroutine_t cor = coroutines_list_first(&scheduler->coroutines_ready_list);
 	coroutine_t cor_next;
@@ -134,7 +143,7 @@ void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		f = coroutines_list_first(&scheduler->finished_coroutines_list);
 		while (f)
 		{
-			if ((f = cor->context->other))
+			if (f == cor->context->other)
 			{
 				/* Move from waiting to ready queue */
 				node_remove(&cor->node);
@@ -145,6 +154,17 @@ void coroutine_schedule_ready(coroutine_scheduler_t scheduler)
 		}
 	}
 
+	/* Finally, free coroutines that have been just finished */
+	while ((cor = (coroutine_t)coroutines_list_remove_head(&scheduler->finished_coroutines_list)))
+	{
+		if (cor->context->free_after_done)
+		{
+			free(cor->context);
+		}
+		free(cor);
+	}
+
+	return !!coroutines_list_first(&scheduler->coroutines_ready_list);
 }
 
 /**
@@ -167,9 +187,7 @@ int coroutine_schedule(coroutine_scheduler_t scheduler)
 
 	coroutine_t cor, cor_next;
 
-	coroutine_schedule_ready(scheduler);
-
-	polling = !!list_first(&scheduler->coroutines_ready_list.list);
+	polling = coroutine_schedule_ready(scheduler);
 
 	if (scheduler->wait_for_event)
 	{

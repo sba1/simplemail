@@ -209,6 +209,17 @@ utf8 *address_list_to_utf8_codeset_safe(struct address_list *list, struct codese
 }
 
 /**
+ * Return the number of address entries that are contained within the address list.
+ * @param list the list whose number of entries should be returned.
+ * @return the number of entries.
+ */
+
+int address_list_length(struct address_list *list)
+{
+	return list_length(&list->list);
+}
+
+/**
  * Returns the first address in the given address list.
  *
  * @param list

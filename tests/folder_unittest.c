@@ -24,7 +24,34 @@
 #include <CUnit/Basic.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
+#include "progmon.h"
+
+#include "mainwnd.h"
+#include "progmonwnd.h"
+
+/*************************************************************/
+
+void main_hide_progress(void)
+{
+}
+
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
+}
+
+/*****************************************************************************/
+
+void main_refresh_folder(struct folder *folder)
+{
+}
+
+/*****************************************************************************/
+
+void progmonwnd_update(int force)
+{
+}
 
 /*************************************************************/
 
@@ -44,6 +71,11 @@ void test_folder(void)
 
 #define MANY_EMAILS_PROFILE "/tmp/sm-many-emails-profile"
 
+static void test_folder_many_mails_rescan_completed(char *folder_path, void *udata)
+{
+	thread_abort(thread_get());
+}
+
 /* @Test */
 void test_folder_many_mails(void)
 {
@@ -54,6 +86,9 @@ void test_folder_many_mails(void)
 	system("rm -Rf " MANY_EMAILS_PROFILE);
 	config_set_user_profile_directory(MANY_EMAILS_PROFILE);
 
+	CU_ASSERT(debug_init() != 0);
+	CU_ASSERT(progmon_init() != 0);
+	CU_ASSERT(init_threads() != 0);
 	CU_ASSERT(load_config() != 0);
 	CU_ASSERT(codesets_init() != 0);
 	CU_ASSERT(init_folders() != 0);
@@ -76,10 +111,15 @@ void test_folder_many_mails(void)
 		fclose(fp);
 	}
 
-	CU_ASSERT(folder_rescan(folder_incoming(), NULL) != 0);
+	CU_ASSERT(folder_rescan_async(folder_incoming(), NULL, test_folder_many_mails_rescan_completed, NULL) != 0);
+	thread_wait(NULL, NULL, NULL, 0);
+
 	CU_ASSERT(folder_save_index(folder_incoming()) != 0);
 
 	del_folders();
 	codesets_cleanup();
 	free_config();
+	cleanup_threads();
+	progmon_deinit();
+	debug_deinit();
 }

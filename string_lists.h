@@ -70,7 +70,7 @@ void string_list_insert_tail_node(struct string_list *list, struct string_node *
  * @return the newly created node that has just been inserted or NULL on memory
  *  failure.
  */
-struct string_node *string_list_insert_tail(struct string_list *list, char *string);
+struct string_node *string_list_insert_tail(struct string_list *list, const char *string);
 
 /**
  * Remove the head from the given string list.

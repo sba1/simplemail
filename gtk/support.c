@@ -117,7 +117,7 @@ int sm_add_part(char *drawer, const char *filename, int buf_size)
 /******************************************************************
  Return the file component of a path
 *******************************************************************/
-char *sm_file_part(char *filename)
+char *sm_file_part_nonconst(char *filename)
 {
 	int filename_len = strlen(filename);
 	if (!filename_len) return filename;
@@ -202,7 +202,6 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 void tell_str(const char *str)
 {
 	printf("%s\n",str);
-	error_add_message(SEVERITY_ERROR, (char*)str);
 }
 
 /******************************************************************

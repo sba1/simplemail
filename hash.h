@@ -18,16 +18,11 @@
 #ifndef SM__HASH_H
 #define SM__HASH_H
 
+/** An entry within the table */
 struct hash_entry
 {
 	const char *string;
 	unsigned int data;
-};
-
-struct hash_bucket
-{
-	struct hash_bucket *next;
-	struct hash_entry entry;
 };
 
 struct hash_table
@@ -36,9 +31,12 @@ struct hash_table
 	unsigned int mask; /* The bit mask for accessing the elements */
 	unsigned int size; /* Size of the hash table */
 	unsigned int data;
+	unsigned int num_entries; /* Total number of entries managed by this table */
+	unsigned int num_occupied_buckets; /* Total number of occupied primary buckets */
+	unsigned int entry_size; /* size in bytes for each entry */
 	const char *filename;
 
-	struct hash_bucket *table;
+	struct hash_bucket *table; /* contains the actual entries, but is opaque */
 };
 
 /**
@@ -49,7 +47,7 @@ struct hash_table
 unsigned long sdbm(const unsigned char *str);
 
 /**
- * Initialize the given hash table with space for 2^bits entries.
+ * Initialize the given hash table with an initial for space for 2^bits entries.
  *
  * @param ht the hash table to initialize.
  * @param bits the number of bits used to identify a bucket.
@@ -61,6 +59,21 @@ unsigned long sdbm(const unsigned char *str);
 int hash_table_init(struct hash_table *ht, int bits, const char *filename);
 
 /**
+ * Initialize the given hash table with an initial for space for 2^bits entries
+ * with each entry occupied entry_size bytes. The size must be at least
+ * sizeof(hash_entry).
+ *
+ * @param ht the hash table to initialize.
+ * @param bits the number of bits used to identify a bucket.
+ * @param entry_size size of the entry. At least sizeof(struct hash_entry).
+ * @param filename defines the name of the file that is associated to this hash.
+ *  If the file exists, the hash table is initialized with the contents of the
+ *  file.
+ * @return 1 on success, 0 otherwise.
+ */
+int hash_table_init_with_size(struct hash_table *ht, int bits, int entry_size, const char *filename);
+
+/**
  * Gives back all resources occupied by the given hash table (excluding the
  * memory directly pointed to ht). The hash table can be no longer used after
  * this call returned.
@@ -70,8 +83,8 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename);
 void hash_table_clean(struct hash_table *ht);
 
 /**
- * Presists the hash table. Works only, if filename was given at
- * hash_table_init().
+ * Stores the hash table on the filesystem. This works only, if filename was
+ * given at hash_table_init().
  *
  * @param ht the hash table to store.
  */
@@ -86,12 +99,13 @@ void hash_table_store(struct hash_table *ht);
 void hash_table_clear(struct hash_table *ht);
 
 /**
- * Insert a new entry into the hash table.
+ * Insert a new entry into the hash table. Ownership of the string is given
+ * to the hashtable and will be freed via free() when no longer needed.
  *
  * @param ht
  * @param string
  * @param data
- * @return
+ * @return the hash entry.
  */
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data);
 

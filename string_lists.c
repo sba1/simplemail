@@ -45,7 +45,7 @@ struct string_node *string_list_remove_tail(struct string_list *list)
 
 /*****************************************************************************/
 
-struct string_node *string_list_insert_tail(struct string_list *list, char *string)
+struct string_node *string_list_insert_tail(struct string_list *list, const char *string)
 {
 	struct string_node *node = (struct string_node*)malloc(sizeof(struct string_node));
 	if (node)

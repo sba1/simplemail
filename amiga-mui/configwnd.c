@@ -455,7 +455,10 @@ static void account_load(void)
 		nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
 		setcheckmark(account_recv_active_check,account->pop->active);
 		SetAttrs(account_recv_delete_check,MUIA_Selected, account->pop->del, MUIA_Disabled, account->recv_type, TAG_DONE);
-		set(account_recv_apop_cycle,MUIA_Cycle_Active,account->pop->apop);
+		SetAttrs(account_recv_apop_cycle,
+							MUIA_Cycle_Active,account->pop->apop,
+							MUIA_Disabled, account->recv_type,
+							TAG_DONE);
 		nnset(account_recv_secure_cycle,MUIA_Cycle_Active,recv_security);
 		setcheckmark(account_recv_avoid_check,account->pop->nodupl);
 		nnset(account_send_server_string, MUIA_String_Contents, account->smtp->name);

@@ -843,7 +843,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("Check Single Account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Show Window"), NULL, 0, 0, NULL},
-		{NM_SUB, N_("Error..."), NULL, 0, 0, (APTR)MENU_PROJECT_SHOW_WINDOW_ERROR},
+		{NM_SUB, N_("Logging..."), NULL, 0, 0, (APTR)MENU_PROJECT_SHOW_WINDOW_ERROR},
 		{NM_SUB, N_("Progress..."), NULL, 0, 0, (APTR)MENU_PROJECT_SHOW_WINDOW_PROGESS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},

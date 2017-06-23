@@ -37,6 +37,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "debug.h"
+#include "support_indep.h"
 
 #include "addressstringclass.h"
 #include "addressentrylistclass.h"
@@ -46,48 +47,10 @@
 #include "muistuff.h"
 #include "utf8stringclass.h"
 
-/**
- * Returns a malloced() sting for the address start (this what should
- * be completed). The comma is identied as a separator.
- *
- * @param contents the entire
- * @param pos the completion anchor
- * @return the string that should be completed
- */
-static char *get_address_start(char *contents, int pos)
-{
-	char *buf;
-	int start_pos = pos;
-
-	if (start_pos && contents[start_pos] == ',')
-		start_pos--;
-
-	while (start_pos)
-	{
-		if (contents[start_pos] == ',')
-		{
-			start_pos++;
-			break;
-		}
-		start_pos--;
-	}
-
-	while (start_pos < pos && contents[start_pos]==' ')
-		start_pos++;
-
-	buf = malloc(pos - start_pos + 1);
-	if (!buf) return NULL;
-	strncpy(buf,&contents[start_pos],pos - start_pos);
-	buf[pos-start_pos]=0;
-
-	return buf;
-}
-
 /*****************************************************************************/
 
 struct MatchWindow_Data
 {
-	int dummy;
 	Object *str;
 	Object *list;
 };
@@ -116,7 +79,7 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 		char *addr_start;
 		char *complete;
 
-		if ((addr_start = get_address_start(contents, buf_pos)))
+		if ((addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos)))
 		{
 			if (entry->is_group)
 			{
@@ -444,7 +407,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 					int buf_pos = utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 					char *addr_start;
 
-					if ((addr_start = get_address_start(contents,buf_pos)))
+					if ((addr_start = sm_get_to_be_completed_address_from_line(contents,buf_pos)))
 					{
 						char *completed;
 
@@ -656,7 +619,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	int buf_pos =  utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 	char *addr_start;
 
-	addr_start = get_address_start(contents, buf_pos);
+	addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos);
 
 	if (data->match_wnd)
 	{

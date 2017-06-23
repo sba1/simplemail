@@ -12,7 +12,7 @@ my $file_contents;
 print "struct unit_test unit_tests[] = {\n";
 
 $file_contents = <STDIN>;
-while ($file_contents =~ m/\@Test\s*\*\/\s*.*void\s+([^\(]+)/g)
+while ($file_contents =~ m/\@Test[\s\S]*?\*\/\s*.*void\s+([^\(]+)\(/g)
 {
 	my$test_funcname;
 	$test_funcname = $1;

@@ -491,7 +491,7 @@ static void person_window_ok(struct Person_Data **pdata)
 	if (addresses) free(addresses);
 
 	/* update the internal addressbook */
-	cleanup_addressbook();
+	addressbook_clear();
 	addressbookwnd_store();
 	main_build_addressbook();
 }
@@ -1183,7 +1183,7 @@ static void group_window_ok(struct Group_Data **pdata)
 	group_window_close(pdata);
 
 	/* update the internal addressbook */
-	cleanup_addressbook();
+	addressbook_clear();
 	addressbookwnd_store();
 	main_build_addressbook();
 
@@ -1300,7 +1300,7 @@ void addressbookwnd_store(void)
  */
 static void addressbookwnd_save_pressed(void)
 {
-	cleanup_addressbook();
+	addressbook_clear();
 	addressbookwnd_store();
 	addressbook_save();
 }
@@ -1381,7 +1381,7 @@ static void addressbookwnd_rem_group(void)
 		DoMethod(group_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 
 		/* update the internal addressbook */
-		cleanup_addressbook();
+		addressbook_clear();
 		addressbookwnd_store();
 		main_build_addressbook();
 	}
@@ -1419,7 +1419,7 @@ static void addressbookwnd_remove_person(void)
 	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Selected);
 
 	/* update the internal addressbook */
-	cleanup_addressbook();
+	addressbook_clear();
 	addressbookwnd_store();
 	main_build_addressbook();
 }

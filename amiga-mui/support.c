@@ -41,6 +41,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h"
+#include "logging.h"
 
 #include "amigasupport.h"
 #include "errorwnd.h"
@@ -451,7 +452,11 @@ void sm_put_on_serial_line(char *txt)
 	char c;
 	while ((c = *txt++))
 	{
+#ifdef __amigaos4__
+		RawPutChar(c);
+#else
 		kputc(c);
+#endif
 	}
 #else
 	char buf[800];
@@ -476,7 +481,7 @@ void sm_put_on_serial_line(char *txt)
 
 void tell_str(const char *str)
 {
-	error_add_message(SEVERITY_ERROR, _(str));
+	logg(ERROR, 0, NULL, NULL, 0, _(str), LAST);
 }
 
 /*****************************************************************************/

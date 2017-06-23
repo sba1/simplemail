@@ -95,6 +95,14 @@ void coroutines_list_init(struct coroutines_list *list);
 coroutine_t coroutines_list_first(struct coroutines_list *list);
 
 /**
+ * Remove the first element of the given coroutine list and return it.
+ *
+ * @param list the coroutines list.
+ * @return the formerly first element or NULL if the list was empty.
+ */
+coroutine_t coroutines_list_remove_head(struct coroutines_list *list);
+
+/**
  * Returns the next coroutine within the same list.
  *
  * @param c the coroutine whose successor shall be determined

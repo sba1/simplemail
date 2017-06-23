@@ -119,8 +119,6 @@ struct mail_info
 	int flags;						/* see below */
 	utf8 *from_phrase;  	/* decoded "From" field, might be NULL if no phrase was defined */
 	utf8 *from_addr;			/* the email address */
-	utf8 *to_phrase;			/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
-	utf8 *to_addr;				/* the email address, only a single one */
 	struct address_list *to_list; /* a list of all TO'ed receivers (if any) */
 	struct address_list *cc_list; /* a list of all CC'ed receivers (if any) */
 	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
@@ -137,12 +135,13 @@ struct mail_info
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
 	unsigned short reference_count; /* number of additional references to this object */
-	unsigned short to_be_freed;
+	unsigned char to_be_freed;
 
 	/* for mail threads */
+	unsigned char child_mail;									/* is a child mail */
+
 	struct mail_info *sub_thread_mail;	/* one more level */
 	struct mail_info *next_thread_mail;	/* the same level */
-	int child_mail;									/* is a child mail */
 
 };
 
@@ -210,7 +209,7 @@ struct mail_complete
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
 
 #define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
-#define mail_info_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
+#define mail_info_get_to(x) (mail_get_to_phrase(x)?mail_get_to_phrase(x):mail_get_to_addr(x))
 
 /**
  * Creates a mail info, initialize it to default values.
@@ -291,10 +290,28 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 
 /**
  * Returns the "from" name and address (name <address>) of the mail.
+ * Memory must be freed via free() when no longer needed.
+ *
  * @param mail
- * @return
+ * @return the string in the mentioned format or NULL.
  */
 char *mail_get_from_address(struct mail_info *mail);
+
+/**
+ * Returns the first to phrase (real name) of the mail.
+ *
+ * @param mail
+ * @return the phrase or NULL if no such information exists.
+ */
+utf8 *mail_get_to_phrase(const struct mail_info *mail);
+
+/**
+ * Returns the first to addr of the mail.
+ *
+ * @param mail
+ * @return the address or NULL if no such information exists.
+ */
+utf8 *mail_get_to_addr(const struct mail_info *mail);
 
 /**
  * Returns the first "to" name and address (name <address>) of the mail.
@@ -335,6 +352,15 @@ char *mail_get_replyto_address(struct mail_info *mail);
  * @return
  */
 void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt);
+
+/**
+ * Checks whether a mail with the given filename is marked as deleted
+ * (on IMAP folders).
+ *
+ * @param filename the filename under which the mail is stored.
+ * @return whether as marked to be deleted or not.
+ */
+int mail_is_marked_as_deleted_by_filename(const char *fn);
 
 /**
  * Returns whether a mail is marked as deleted (on IMAP folders).

@@ -114,6 +114,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 			int num = folder_number_of_mails(folder);
 			int unread = folder_number_of_unread_mails(folder);
 			int newm = folder_number_of_new_mails(folder);
+			int busy = folder->rescanning;
 			APTR image;
 
 			switch (folder->special)
@@ -129,14 +130,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 
 			if (num != -1)
 			{
-				if(unread > 0)
-				{
-					sprintf(mails_buf,newm?(MUIX_PH "\33b%d"):(MUIX_PH "%d"),num);
-				}
-				else
-				{
-					sprintf(mails_buf,"%d",num);
-				}
+				sprintf(mails_buf,"%s%s%d", unread>0?MUIX_PH:"",newm>0?MUIX_B:"",num);
 				sprintf(new_buf,"%d",newm);
 				sprintf(unread_buf,"%d",unread);
 			}
@@ -147,7 +141,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 				unread_buf[0] = 0;
 			}
 
-			sprintf(data->name_buf,"\33O[%08lx]%s",(ULONG)image,newm?"\33b":"");
+			sprintf(data->name_buf,"\33O[%08lx]%s%s",(ULONG)image,newm?"\33b":"",busy?MUIX_I:"");
 			if (folder->name)
 			{
 				int cur_len = strlen(data->name_buf);

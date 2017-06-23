@@ -42,6 +42,48 @@
 
 /*****************************************************************************/
 
+void sm_get_current_time(unsigned int *seconds, unsigned int *mics)
+{
+	do
+	{
+		*seconds = sm_get_current_seconds();
+		*mics = sm_get_current_micros();
+	} while (sm_get_current_seconds() != *seconds);
+}
+
+/*****************************************************************************/
+
+char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
+{
+	char *buf;
+	int start_pos = pos;
+
+	if (start_pos && contents[start_pos] == ',')
+		start_pos--;
+
+	while (start_pos)
+	{
+		if (contents[start_pos] == ',')
+		{
+			start_pos++;
+			break;
+		}
+		start_pos--;
+	}
+
+	while (start_pos < pos && contents[start_pos]==' ')
+		start_pos++;
+
+	buf = malloc(pos - start_pos + 1);
+	if (!buf) return NULL;
+	strncpy(buf,&contents[start_pos],pos - start_pos);
+	buf[pos-start_pos]=0;
+
+	return buf;
+}
+
+/*****************************************************************************/
+
 int has_spaces(const char *str)
 {
 	char c;
@@ -830,11 +872,8 @@ static int qsort_utf8stricmp_callback(const void *a, const void *b)
     return utf8stricmp((const char *)*(char **)a, (const char *)*(char **)b);
 }
 
-/**
- * Sorts the given string array in a case-insenstive manner.
- *
- * @param string_array
- */
+/*****************************************************************************/
+
 void array_sort_uft8(char **string_array)
 {
 	int len;

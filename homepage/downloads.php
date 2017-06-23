@@ -1,7 +1,7 @@
 <?php
 
-$version = "0.42";
-$date = "2015/12/24";
+$version = "0.43";
+$date = "2016/12/24";
 
 $morphversion = "0.42";
 $morphdate = "2015/12/24";

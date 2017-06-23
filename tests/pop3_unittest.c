@@ -28,6 +28,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
+#include "progmon.h"
 #include "request.h"
 #include "simplemail.h"
 #include "status.h"

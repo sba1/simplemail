@@ -10,7 +10,7 @@ else
 OPENSSL_DEPENDENCY=
 endif
 
-.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done .netinclude-done $(OPENSSL_DEPENDENCY)
+.build-dependencies-done: .amissl-done .amissl4-done .expat-done .mui-done .openurl-done .netinclude-done $(OPENSSL_DEPENDENCY)
 	touch $@
 
 LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha
@@ -21,8 +21,8 @@ LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha
 
 $(LHA):
 	mkdir -p build-dependencies/lha
-	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i.orig.tar.gz
-	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i-10.3.diff.gz
+	cd build-dependencies/lha && wget -N http://archive.debian.org/debian-archive/debian/pool/non-free/l/lha/lha_1.14i.orig.tar.gz
+	cd build-dependencies/lha && wget -N http://archive.debian.org/debian-archive/debian/pool/non-free/l/lha/lha_1.14i-10.3.diff.gz
 	cd build-dependencies/lha && tar -xzf lha_1.14i.orig.tar.gz
 	cd build-dependencies/lha && zcat lha_1.14i-10.3.diff.gz | patch -p0
 	cd build-dependencies/lha/lha-1.14i.orig/ && make
@@ -38,6 +38,14 @@ ifndef AMISSL_INCLUDE
 	mkdir -p build-dependencies/amissl
 	cd build-dependencies/amissl && wget -N http://www.heightanxiety.com/AmiSSL/AmiSSL-3.5-SDK.lha
 	cd build-dependencies/amissl && $(LHA) xf AmiSSL-3.5-SDK.lha
+endif
+	touch $@
+
+.amissl4-done: $(LHA)
+ifndef AMISSL4_INCLUDE
+	mkdir -p build-dependencies/amissl4
+	cd build-dependencies/amissl4 && wget -N https://github.com/jens-maus/amissl/releases/download/4.0/AmiSSL-4.0.lha
+	cd build-dependencies/amissl4 && $(LHA) xf AmiSSL-4.0.lha
 endif
 	touch $@
 
@@ -123,6 +131,10 @@ endif
 
 ifndef AMISSL_INCLUDE
 AMISSL_INCLUDE=build-dependencies/amissl/include/include_h
+endif
+
+ifndef AMISSL4_INCLUDE
+AMISSL4_INCLUDE=build-dependencies/amissl4/AmiSSL/Developer/include
 endif
 
 ifndef NET_INCLUDE

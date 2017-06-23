@@ -8,4 +8,12 @@
 int mailncpy(char *dest, const char *src, int n);
 char *quote_text(char *src, int len);
 
+/**
+ * Given a subject line, return a subject line that can be used for comparing.
+ *
+ * @param subj the string that should be transformed
+ * @return the transformed string
+ */
+char *mail_get_compare_subject(char *subj);
+
 #endif

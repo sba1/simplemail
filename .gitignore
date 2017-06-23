@@ -4,6 +4,7 @@
 *.rej
 *.uaem
 .amissl-done
+.amissl4-done
 .build-dependencies-done
 .cproject
 .csettings

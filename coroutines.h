@@ -56,6 +56,9 @@ struct coroutine_basic_context
 	/** The scheduler that is responsible for this context */
 	coroutine_scheduler_t scheduler;
 
+	/** The context should be automatically freed when coroutine was done */
+	int free_after_done;
+
 	/** The state that will be executed next for this coroutine */
 	int next_state;
 
@@ -89,9 +92,9 @@ struct coroutine_basic_context
  * Insert a preemption point but don't continue until the given coroutine
  * is done.
  */
-#define COROUTINE_AWAIT_OTHER(context, other)\
+#define COROUTINE_AWAIT_OTHER(context, oth)\
 			context->basic_context.next_state = __LINE__;\
-			context->basic_context.other = other;\
+			context->basic_context.other = oth;\
 			return COROUTINE_WAIT;\
 		case __LINE__:\
 			context->basic_context.other = NULL;
@@ -103,6 +106,9 @@ struct coroutine_basic_context
 /**
  * Create a new scheduler for coroutines with a custom wait for event callback.
  *
+ * @param wait_for_event a function that is called for looking for new events. If
+ *  polling is set to 1, wait_for_event() should not block. Otherwise, wait_for_event()
+ *  may block.
  * @return the scheduler nor NULL for an error.
  */
 coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(coroutine_scheduler_t sched, int poll, void *udata), void *udata);
@@ -111,8 +117,9 @@ coroutine_scheduler_t coroutine_scheduler_new_custom(int (*wait_for_event)(corou
  * Execute the current set of ready coroutines.
  *
  * @param scheduler
+ * @return 0 if the ready queue is empty, 1 otherwise.
  */
-void coroutine_schedule_ready(coroutine_scheduler_t scheduler);
+int coroutine_schedule_ready(coroutine_scheduler_t scheduler);
 
 /**
  * Dispose the given scheduler. Does not check if there are any coroutines

@@ -51,6 +51,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "mailinfo_extractor.h"
+#include "mail_support.h"
 #include "smintl.h"
 #include "simplemail.h"
 #include "support_indep.h"
@@ -535,12 +536,12 @@ STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 		is_ascii7 = 1;
 	} else
 	{
-		if ((txt = (char*)m->to_phrase))
+		if ((txt = (char*)mail_get_to_phrase(m)))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ASCII7);
 
 		if (!txt)
 		{
-			if ((txt = m->to_addr))
+			if ((txt = mail_get_to_addr(m)))
 				is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ADDR_ASCII7);
 		}
 
@@ -690,6 +691,28 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 	return 1;
 }
 
+/**
+ * Return the index of the given mail_info in the entries array.
+ *
+ * @param data
+ * @param info
+ * @return the index or -1 if it could not been found.
+ */
+static int FindIndexOfMailInfo(struct MailTreelist_Data *data, struct mail_info *info)
+{
+	int i;
+
+	/* FIXME: We should use a companion data structure that allows faster access to this */
+
+	for (i=0;i<data->entries_num;i++)
+	{
+		if (info == data->entries[i]->mail_info)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
 
 /**
  * Calculate the dimensions of given mail info. Return whether a width of a column
@@ -1777,14 +1800,12 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							data->entries_active = -1;
 							if (tidata)
 							{
-								int i;
-								for (i=0;i<data->entries_num;i++)
+								int index;
+
+								index = FindIndexOfMailInfo(data, (struct mail_info*)tidata);
+								if (index >= 0)
 								{
-									if (tidata == (ULONG)data->entries[i]->mail_info)
-									{
-										data->entries_active = i;
-										break;
-									}
+									data->entries_active = index;
 								}
 							}
 							if (data->entries_active != old_active)
@@ -2843,7 +2864,10 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	for (i=0;i<data->entries_num;i++)
 	{
 		if (data->entries[i])
+		{
+			mail_dereference(data->entries[i]->mail_info);
 			FreeListEntry(data,data->entries[i]);
+		}
 	}
 
 	SetListSize(data,0);
@@ -2915,6 +2939,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 			break;
 		}
 
+		mail_reference(m);
 		le->mail_info = m;
 
 		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD && data->entries_active == -1)
@@ -2996,6 +3021,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 	}
 
 	entry->mail_info = mail;
+	mail_reference(mail);
 	data->entries[after+1] = entry;
 	data->entries_num++;
 
@@ -3043,6 +3069,7 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	removed_active = pos == data->entries_active;
 
 	/* Free memory and move the following mails one position up, update number of entries */
+	mail_dereference(data->entries[pos]->mail_info);
 	FreeListEntry(data,data->entries[pos]);
 	memmove(&data->entries[pos],&data->entries[pos+1],sizeof(data->entries[0])*(data->entries_num - pos - 1));
 	data->entries_num--;
@@ -3074,17 +3101,13 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RemoveMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-	int i;
+	int index;
 
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->m);
+	if (index >= 0)
 	{
-		if (msg->m == data->entries[i]->mail_info)
-		{
-			MailTreelist_RemoveMailByPos(cl, obj, i);
-			break;
-		}
+		MailTreelist_RemoveMailByPos(cl, obj, index);
 	}
-
 	return 0;
 }
 
@@ -3109,7 +3132,11 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 
 		if (from != -1)
 		{
-			for (j=from;j<to;j++) FreeListEntry(data,data->entries[j]);
+			for (j=from;j<to;j++)
+			{
+				mail_dereference(data->entries[j]->mail_info);
+				FreeListEntry(data,data->entries[j]);
+			}
 			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(data->entries_num-to));
 
 			data->entries_num -= to - from;
@@ -3119,7 +3146,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 			else if (data->entries_active >= from) data->entries_active = from;
 		}
 
-		/* If the last element was selected, i could be indead > data->entries_num */
+		/* If the last element was selected, it could be indeed > data->entries_num */
 		if (i >= data->entries_num) break;
 		from = i;
 
@@ -3157,19 +3184,20 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_ReplaceMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int index;
 
-	int i;
-
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->oldmail);
+	if (index >= 0)
 	{
-		if (data->entries[i]->mail_info == msg->oldmail)
+		struct mail_info *old_m = data->entries[index]->mail_info;
+		if (old_m != msg->newmail)
 		{
-			data->entries[i]->mail_info = msg->newmail;
-			RefreshEntry(cl,obj,i);
-			break;
+			mail_dereference(old_m);
+			mail_reference(msg->newmail);
+			data->entries[index]->mail_info = msg->newmail;
 		}
+		RefreshEntry(cl,obj,index);
 	}
-
 	return 0;
 }
 
@@ -3179,20 +3207,16 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RefreshMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-
-	int i;
+	int index;
 
 	/* Noop when not being between setup/cleanup phase */
 	if (!data->inbetween_setup)
 		return 0;
 
-	for (i=0;i<data->entries_num;i++)
+	index = FindIndexOfMailInfo(data, msg->m);
+	if (index >= 0)
 	{
-		if (data->entries[i]->mail_info == msg->m)
-		{
-			RefreshEntry(cl,obj,i);
-			break;
-		}
+		RefreshEntry(cl,obj,index);
 	}
 
 	return 0;

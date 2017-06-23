@@ -28,6 +28,7 @@
 #include "imap.h"
 
 #include <ctype.h>
+#include <dirent.h> /* unix dir stuff */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,7 @@
 #include "codesets.h"
 #include "debug.h"
 #include "folder.h"
+#include "logging.h"
 #include "mail.h"
 #include "progmon.h"
 #include "qsort.h"
@@ -84,6 +86,30 @@ struct local_mail
 };
 
 /**
+ * Set the local mail array entry for the given entry.
+ *
+ * @param local_mail_array
+ * @param i
+ * @param fn
+ * @return whether the mail is scheduled to be deleted or not.
+ */
+static int set_local_mail_array_entry(struct local_mail *local_mail_array, int i, const char *fn)
+{
+	int todel = mail_is_marked_as_deleted_by_filename(fn);
+
+	if (fn[0] == 'u' || fn[0] == 'U' || todel)
+	{
+		local_mail_array[i].uid = atoi(fn + 1);
+		local_mail_array[i].todel = todel;
+	} else
+	{
+		local_mail_array[i].uid = 0;
+		local_mail_array[i].todel = 0;
+	}
+	return todel;
+}
+
+/**
  * Returns the local mail array of a given folder. 0 for failure (does not
  * change the contents of the ptrs in that case). Free the array with free()
  * as soon as no longer needed. The mail array is sorted according to the uid
@@ -98,32 +124,83 @@ struct local_mail
 static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, int *num_of_mails_ptr, int *num_of_todel_mails_ptr)
 {
 	struct local_mail *local_mail_array;
-	int num_of_mails, num_of_todel_mails;
-	void *handle = NULL;
+	int num_of_mails = 0, num_of_todel_mails = 0;
 	int i,success = 0;
+
+	/* Will house the names of mails in case there was no index of the folder loaded */
+	struct string_list filename_list;
+	int use_filename_list = 0;
+
+	char logg_buf[80];
 
 	SM_ENTER;
 
-	folder_lock(folder);
-	folder_next_mail(folder,&handle);
+	string_list_init(&filename_list);
 
-	num_of_mails = folder->num_mails;
+	folder_lock(folder);
+
+	if (!folder->mail_infos_loaded)
+	{
+		/* No mail infos have been loaded, as we only need the filenames
+		 * we just scan the directory rather than issuing a full rescan.
+		 */
+		DIR *dfd;
+		struct dirent *dptr;
+
+		SM_DEBUGF(10, ("Scanning folder \"%s\" for mails", folder->path));
+		if (!(dfd = opendir(folder->path)))
+		{
+			sm_snprintf(logg_buf, sizeof(logg_buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);
+			SM_LOG_TEXT(ERROR, logg_buf);
+			goto bailout;
+		}
+
+		use_filename_list = 1;
+		while ((dptr = readdir(dfd)) != NULL)
+		{
+			char *name = dptr->d_name;
+
+			if (!folder_is_filename_mail(name))
+				continue;
+
+			string_list_insert_tail(&filename_list, name);
+			num_of_mails++;
+		}
+		closedir(dfd);
+	} else
+	{
+		num_of_mails = folder->num_mails;
+	}
 	num_of_todel_mails = 0;
+
+	SM_DEBUGF(10, ("%d mails in folder", num_of_mails));
 
 	if ((local_mail_array = (struct local_mail *)malloc(sizeof(*local_mail_array) * num_of_mails)))
 	{
-		/* fill in the uids of the mails */
-		for (i=0;i < num_of_mails;i++)
+		if (use_filename_list)
 		{
-			if (folder->mail_info_array[i] && folder->mail_info_array[i]->filename[0] == 'u')
+			struct string_node *sn;
+
+			i = 0;
+			sn = string_list_first(&filename_list);
+			while (sn)
 			{
-				local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
-				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
-				num_of_todel_mails += !!local_mail_array[i].todel;
-			} else
+				const char *fn = sn->string;
+
+				num_of_todel_mails += set_local_mail_array_entry(local_mail_array, i, fn);
+
+				sn = (struct string_node*)node_next(&sn->node);
+				i++;
+			}
+			string_list_clear(&filename_list);
+		} else
+		{
+			/* fill in the uids of the mails */
+			for (i=0;i < num_of_mails;i++)
 			{
-				local_mail_array[i].uid = 0;
-				local_mail_array[i].todel = 0;
+				const char *fn = folder->mail_info_array[i]?folder->mail_info_array[i]->filename:"";
+
+				num_of_todel_mails += set_local_mail_array_entry(local_mail_array, i, fn);
 			}
 		}
 
@@ -136,7 +213,11 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		*num_of_mails_ptr = num_of_mails;
 		*num_of_todel_mails_ptr = num_of_todel_mails;
 	}
+bailout:
 	folder_unlock(folder);
+
+	sm_snprintf(logg_buf, sizeof(logg_buf), "Folder \"%s\" has %ld local mails, %d are scheduled for deletion", folder->name, num_of_mails, num_of_todel_mails);
+	logg(INFO, 0, __FILE__, NULL, 0, logg_buf, LAST);
 
 	SM_DEBUGF(20, ("num_of_mails=%d, num_of_todel_mails=%d\n", num_of_mails, num_of_todel_mails));
 	SM_RETURN(success,"%d");
@@ -537,6 +618,9 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 		args->set_status(status_buf);
 		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
 
+		sm_snprintf(status_buf, sizeof(status_buf), "Folder with path \"%s\" has %d remote mails", args->path, num_of_remote_mails);
+		logg(INFO, 0, __FILE__, NULL, 0, status_buf, LAST);
+
 		rm->uid_next = uid_next;
 		rm->uid_validity = uid_validity;
 		rm->num_of_remote_mail = num_of_remote_mails;
@@ -602,9 +686,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 {
 	/* get number of remote mails */
 	char *line;
-	char tag[20];
-	char send[200];
-	char buf[2048];
+	char tag[16];
+	char *buf; /* is used for sending and receiving */
+	const int buf_size = 2048;
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
@@ -636,6 +720,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		return NULL;
 	}
 
+	if (!(buf = malloc(buf_size)))
+		goto bailout;
+
 	if (!uid_start) uid_end = 0;
 	else if (!uid_end) uid_start = 0;
 
@@ -652,18 +739,18 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(send,sizeof(send),"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
-			SM_DEBUGF(10,("Fetching remote mail array: %s",send));
-			tcp_write(conn,send,strlen(send));
+			sm_snprintf(buf,buf_size,"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			SM_DEBUGF(10,("Fetching remote mail array: %s",buf));
+			tcp_write(conn,buf,strlen(buf));
 			tcp_flush(conn);
 
 			while ((line = tcp_readln(conn)))
 			{
 				SM_DEBUGF(10,("Server: %s",line));
-				line = imap_get_result(line,buf,sizeof(buf));
+				line = imap_get_result(line,buf,buf_size);
 				if (!mystricmp(buf,tag))
 				{
-					line = imap_get_result(line,buf,sizeof(buf));
+					line = imap_get_result(line,buf,buf_size);
 					if (!mystricmp(buf,"OK")) success = 1;
 					break;
 				} else
@@ -769,8 +856,14 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		}
 	} else
 	{
-		if (empty_folder) *empty_folder = 1;
+		if (empty_folder) {
+			*empty_folder = 1;
+
+			// Assume success if the folder is empty
+			success = 1;
+		}
 	}
+bailout:
 	if (!success)
 	{
 		free(remote_mail_array);
@@ -781,6 +874,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 		rm->remote_mail_array = remote_mail_array;
 		rm->num_of_remote_mail = num_of_remote_mails;
 	}
+	free(buf);
 	SM_RETURN(rm, "%p");
 	return rm;
 }
@@ -907,7 +1001,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		/* Get the local mails */
 		if (!get_local_mail_array(folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 		{
-			folder_unlock(folder);
 			folders_unlock();
 			return 0;
 		}
@@ -1667,6 +1760,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
 				struct imap_get_remote_mails_args args = {0};
+				int empty_folder = 0;
 
 				utf8 msg[80];
 
@@ -1801,6 +1895,12 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 							free(filename_ptrs[--filename_current]);
 					}
 
+					{
+						char buf[80];
+						sm_snprintf(buf, sizeof(buf), "%d mails downloaded after %d ms to folder \"%s\"", downloaded_mails, time_ms_passed(total_download_ticks), local_folder->path);
+						logg(INFO, 0, __FILE__, NULL, 0, buf, LAST);
+					}
+
 					SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));
 
 					/* Finally, inform controller about new uids */
@@ -1817,12 +1917,12 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
 						if (!imap_server->keep_orphans)
-							rm = imap_get_remote_mails(NULL, &args);
+							rm = imap_get_remote_mails(&empty_folder, &args);
 						else
 							rm = NULL;
 					}
 
-					if (rm)
+					if (rm || empty_folder)
 					{
 						if (!imap_server->keep_orphans)
 						{
@@ -1832,15 +1932,21 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 							args.local_mail_array = local_mail_array;
 							args.num_of_local_mails = num_of_local_mails;
-							args.remote_mail_array = rm->remote_mail_array;
-							args.num_remote_mails = rm->num_of_remote_mail;
+							if (rm)
+							{
+								args.remote_mail_array = rm->remote_mail_array;
+								args.num_remote_mails = rm->num_of_remote_mail;
+							}
 							args.imap_server = imap_server;
 							args.imap_folder = imap_folder;
 							args.delete_mail_by_uid = callbacks->delete_mail_by_uid;
 
 							imap_delete_orphan_messages(&args);
 						}
-						imap_free_remote_mailbox(rm);
+						if (rm)
+						{
+							imap_free_remote_mailbox(rm);
+						}
 					}
 				}
 

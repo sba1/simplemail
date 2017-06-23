@@ -235,7 +235,7 @@ STATIC ULONG AddressGroupList_DragDrop(struct IClass *cl,Object *obj,struct MUIP
 		DoMethod(address_list, MUIM_NList_Redraw, MUIV_NList_Redraw_All);
 
 		/* TODO: Do this via a notify */
-		cleanup_addressbook();
+		addressbook_clear();
 		addressbookwnd_store();
 	}
 

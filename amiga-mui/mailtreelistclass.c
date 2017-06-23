@@ -161,11 +161,11 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_inf
 			ascii7 = 1;
 		} else
 		{
-			field = mail->to_phrase;
+			field = mail_get_to_phrase(mail);
 			ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ASCII7);
 			if (!field)
 			{
-				field = mail->to_addr;
+				field = mail_get_to_addr(mail);
 				ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ADDR_ASCII7);
 			}
 		}

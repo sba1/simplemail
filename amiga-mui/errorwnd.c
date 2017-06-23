@@ -34,7 +34,9 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "logging.h"
 #include "smintl.h"
+#include "subthreads.h"
 #include "support_indep.h"
 
 #include "errorwnd.h"
@@ -46,6 +48,8 @@ struct error_node
 	struct node node;
 	char *text;
 	unsigned int date;
+	unsigned int id;
+	logging_severity_t severity;
 };
 
 static struct list error_list;
@@ -53,8 +57,95 @@ static struct list error_list;
 static Object *error_wnd;
 static Object *all_errors_list;
 static Object *text_list;
-static Object *delete_button;
-static Object *close_button;
+static Object *clear_button;
+
+static logg_listener_t error_logg_listener;
+
+/**
+ * Add the logg entry to the error list.
+ *
+ * @param l
+ */
+static void error_window_add_logg(logg_t l)
+{
+	struct error_node *node;
+
+	if (!(node = malloc(sizeof(*node))))
+		return;
+
+	memset(node, 0, sizeof(*node));
+	node->id = logg_id(l);
+	node->date = logg_seconds(l);
+	node->severity = logg_severity(l);
+	if (!(node->text = mystrdup(logg_text(l))))
+	{
+		free(node);
+		return;
+	}
+	list_insert_tail(&error_list, &node->node);
+}
+
+/**
+ * Update the error window log with the information of the logg.
+ */
+static void error_window_update_logg(void)
+{
+	struct error_node *enode;
+	logg_t l;
+
+	set(all_errors_list, MUIA_NList_Quiet, TRUE);
+	DoMethod(all_errors_list, MUIM_NList_Clear);
+
+	enode = (struct error_node*)list_first(&error_list);
+	l = logg_next(NULL);
+
+	while (enode && l)
+	{
+		struct error_node *cur = enode;
+
+		enode = (struct error_node*)node_next(&enode->node);
+
+		/* Keep no logg-ones (i.e., added via error_add_message()) */
+		if (cur->id == ~0) continue;
+
+		/* Keep id-matching one (they represent the same entry) */
+		if (cur->id == logg_id(l))
+		{
+			l = logg_next(l);
+			continue;
+		}
+
+		/* If id of the view log list is smaller it is an obsolete one,
+		 * remove it.
+		 */
+		if (cur->id < logg_id(l))
+		{
+			node_remove(&cur->node);
+			free(cur->text);
+			free(cur);
+			continue;
+		}
+	}
+
+	if (l)
+	{
+		/* Add the remaining logg entries */
+		do
+		{
+			error_window_add_logg(l);
+		} while((l = logg_next(l)));
+	}
+
+	/* Populate the view again */
+	enode = (struct error_node*)list_first(&error_list);
+	while (enode)
+	{
+		DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode, MUIV_NList_Insert_Bottom);
+		enode = (struct error_node*)node_next(&enode->node);
+	}
+
+	set(all_errors_list, MUIA_NList_Quiet, FALSE);
+}
 
 /**
  * Callback for selecting the currently displayed error message.
@@ -76,13 +167,47 @@ static void error_select(void)
 }
 
 /**
- * Delete all messages.
+ * Called whenever the logg is updated.
+ *
+ * @param userdata
  */
-static void delete_messages(void)
+static void error_window_logg_update_callback(void *userdata)
+{
+	if (thread_get() != thread_get_main())
+	{
+		/* We could also use MUI to push the method */
+		thread_call_function_async(thread_get_main(), error_window_update_logg, 0);
+	} else
+	{
+		error_window_update_logg();
+	}
+}
+
+/**
+ * Callback that is called when the window open state changes.
+ */
+static void error_window_open_state(void)
+{
+	BOOL error_window_open;
+
+	error_window_open = xget(error_wnd, MUIA_Window_Open);
+
+	if (error_window_open && !error_logg_listener)
+	{
+		error_logg_listener = logg_add_update_listener(error_window_logg_update_callback, NULL);
+	} else if (!error_window_open && error_logg_listener)
+	{
+		logg_remove_update_listener(error_logg_listener);
+		error_logg_listener = NULL;
+	}
+}
+
+/**
+ * Clear all messages.
+ */
+static void error_window_clear(void)
 {
 	struct error_node *node;
-
-	set(error_wnd, MUIA_Window_Open, FALSE);
 
 	DoMethod(all_errors_list, MUIM_NList_Clear);
 	while ((node = (struct error_node *)list_remove_tail(&error_list)))
@@ -90,7 +215,7 @@ static void delete_messages(void)
 		if (node->text) free(node->text);
 		free(node);
 	}
-
+	logg_clear();
 }
 
 STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
@@ -99,11 +224,13 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	if (!error)
 	{
 		msg->strings[0] = _("Time");
-		msg->strings[1] = _("Message");
+		msg->strings[1] = _("Severity");
+		msg->strings[2] = _("Message");
 		return;
 	}
 	msg->strings[0] = sm_get_time_str(error->date);
-	msg->strings[1] = error->text;
+	msg->strings[1] = error->severity==INFO?"I":"E";
+	msg->strings[2] = error->text;
 }
 
 /**
@@ -121,12 +248,12 @@ static void init_error(void)
 
 	error_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('E','R','R','O'),
-    MUIA_Window_Title, "SimpleMail - Error",
+    MUIA_Window_Title, "SimpleMail - Logging and Errors",
     WindowContents, VGroup,
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, all_errors_list = NListObject,
-					MUIA_NList_Format, ",",
+					MUIA_NList_Format, ",PREPARSE="MUIX_C",",
 					MUIA_NList_DisplayHook2, &error_display_hook,
 					MUIA_NList_Title, TRUE,
 					End,
@@ -140,8 +267,7 @@ static void init_error(void)
 					End,
 				End,
 			Child, HGroup,
-				Child, delete_button = MakeButton("_Delete messages"),
-				Child, close_button = MakeButton("_Close window"),
+				Child, clear_button = MakeButton(_("_Clear")),
 				End,
 			End,
 		End;
@@ -149,40 +275,11 @@ static void init_error(void)
 	if (error_wnd)
 	{
 		DoMethod(App, OM_ADDMEMBER, (ULONG)error_wnd);
+		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_Open, MUIV_EveryTime, (ULONG)error_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_window_open_state);
 		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)delete_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_messages);
-		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(clear_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)clear_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_window_clear);
 		DoMethod(all_errors_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)all_errors_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
 	}
-}
-
-/*****************************************************************************/
-
-void error_add_message(error_severity_t severity, char *msg)
-{
-	struct error_node *enode;
-
-	if (!error_wnd)
-	{
-		init_error();
-		if (!error_wnd) return;
-	}
-	if (!(enode = (struct error_node*)malloc(sizeof(struct error_node))))
-		return;
-
-	if ((enode->text = mystrdup(msg)))
-	{
-		enode->date = sm_get_current_seconds();
-
-		set(text_list, MUIA_NList_Quiet, TRUE);
-		DoMethod(text_list, MUIM_NList_Clear);
-		DoMethod(text_list, MUIM_NList_InsertSingleWrap, (ULONG)enode->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
-		set(text_list, MUIA_NList_Quiet, FALSE);
-
-		list_insert_tail(&error_list, &enode->node);
-
-		DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode, MUIV_NList_Insert_Bottom);
-	} else free(enode);
 }
 
 /*****************************************************************************/
@@ -195,6 +292,8 @@ void error_window_open(void)
 
 		if (!error_wnd) return;
 	}
+
+	error_window_update_logg();
 
 	set(error_wnd, MUIA_Window_Open, TRUE);
 }

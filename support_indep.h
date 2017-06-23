@@ -29,6 +29,24 @@
 #include <string.h>
 
 /**
+ * Return the current time in seconds and micro seconds.
+ *
+ * @param seconds where the seconds are stored.
+ * @param mics where the micro seconds are strored.
+ */
+void sm_get_current_time(unsigned int *seconds, unsigned int *mics);
+
+/**
+ * Returns a malloced() sting for the address start (this what should
+ * be completed). The comma is identified as a separator.
+ *
+ * @param contents the entire
+ * @param pos the completion anchor
+ * @return the string that should be completed
+ */
+char *sm_get_to_be_completed_address_from_line(char *contents, int pos);
+
+/**
  * Returns whether the given string has spaces.
  *
  * @param str
@@ -362,6 +380,13 @@ char **array_duplicate(char **rcp);
  * @return
  */
 char **array_duplicate_parsed(char **str, int flags);
+
+/**
+ * Sorts the given string array in a case-insenstive manner.
+ *
+ * @param string_array
+ */
+void array_sort_uft8(char **string_array);
 
 /**
  * Frees an array of strings. Safe to call this with NULL pointer.

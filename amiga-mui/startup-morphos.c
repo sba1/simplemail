@@ -320,6 +320,11 @@ LONG WaitSelect(LONG nfds, void *readfds, void *writefds, void *exeptfds, void *
 	return stub_WaitSelect(nfds, readfds, writefds, exeptfds, timeout, maskp);
 }
 
+int select(int p1, fd_set * p2, fd_set * p3, fd_set * p4, struct timeval * p5)
+{
+    return WaitSelect(p1, p2, p3, p4, p5, NULL);
+}
+
 LONG Dup2Socket(LONG fd1, LONG fd2)
 {
 	return stub_Dup2Socket(fd1, fd2);

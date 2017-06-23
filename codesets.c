@@ -1504,6 +1504,23 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 
 /*****************************************************************************/
 
+static inline int utf8cmp_single(unsigned char *a, unsigned char *b)
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	int d;
+
+	if ((d = a[0] - b[0])) return d;
+	if ((d = a[1] - b[1])) return d;
+	if ((d = a[2] - b[2])) return d;
+	if ((d = a[3] - b[3])) return d;
+	return 0;
+#else
+	return (*((unsigned int *)a) - *((unsigned int *)b));
+#endif
+}
+
+/*****************************************************************************/
+
 int utf8tolower(const char *str, char *dest)
 {
 	unsigned char ch[4] = {0,0,0,0};
@@ -1527,13 +1544,13 @@ int utf8tolower(const char *str, char *dest)
 	}
 
 	ch[3-bytes] = c;
-	for (i=bytes-1;i>=0;i--) /* TODO: Fix this bug!*/
+	for (i=bytes-1;i>=0;i--)
 	{
 		if (!(ch[3-i] = *str++))
 			return 0;
 	}
 
-	BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch)),uc);
+	BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),utf8cmp_single(utf8_tolower_table[m].from, ch),uc);
 
 	if (uc)
 		memcpy(dest, uc->to + 3 - bytes, bytes + 1);
@@ -1743,6 +1760,114 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 				return 1;
 			}
 		}
+	}
+	return 0;
+}
+
+/*****************************************************************************/
+
+int utf8match(const char *haystack, const char *needle, int case_insensitive, match_mask_t *match_mask)
+{
+	int h, n;
+	int needle_len;
+	int haystack_len;
+
+	unsigned char hc;
+	unsigned char nc;
+
+	haystack_len = strlen(haystack);
+	needle_len = strlen(needle);
+
+	h = 0;
+	n = 0;
+	while (h < haystack_len && n < needle_len)
+	{
+		int match;
+		int hbytes;
+		int nbytes;
+
+		match = 0;
+		hc = haystack[h];
+		nc = needle[n];
+
+		hbytes = trailingBytesForUTF8[hc];
+		nbytes = trailingBytesForUTF8[nc];
+
+		if (hbytes == nbytes)
+		{
+			if (hc == nc)
+			{
+				int i;
+
+				match = 1;
+
+				for (i=0; i < hbytes; i++)
+				{
+					if (haystack[i+1] != needle[i+1])
+						match = 0;
+				}
+			} else
+			{
+				if (hbytes == 0 && case_insensitive)
+				{
+					if (tolower(hc) == tolower(nc))
+					{
+						match = 1;
+					}
+				}
+			}
+
+			if (!match && case_insensitive && hbytes > 0)
+			{
+				char hchars[6] = {0};
+				char nchars[6] = {0};
+				int hl, nl;
+
+				if ((hl = utf8tolower(&haystack[h], hchars)) > 0 &&
+					(nl = utf8tolower(&needle[n], nchars)) > 0)
+				{
+					if (hl == nl)
+					{
+						match = memcmp(hchars, nchars, nl) == 0;
+					}
+				}
+
+			}
+		}
+
+		if (match)
+		{
+			n += nbytes + 1;
+		}
+
+		if (match_mask)
+		{
+			unsigned int match_pos;
+
+			match_pos = match_bitmask_pos(h);
+			if (match)
+			{
+				match_mask[match_pos] |= match_bitmask(h);
+			} else
+			{
+				match_mask[match_pos] &= ~match_bitmask(h);
+			}
+		}
+
+		h += hbytes + 1;
+	}
+
+	if (n == needle_len)
+	{
+		if (match_mask)
+		{
+			/* Make sure that the remaining relevant positions are cleared */
+			for (;h < haystack_len; h++)
+			{
+				match_mask[match_bitmask_pos(h)] &= ~match_bitmask(h);
+			}
+		}
+		return 1;
 	}
 	return 0;
 }

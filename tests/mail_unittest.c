@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -25,6 +26,7 @@
 
 #include "codesets.h"
 #include "mail.h"
+#include "support.h"
 #include "support_indep.h"
 
 /*************************************************************/
@@ -75,16 +77,45 @@ void test_mail_filenames_of_new_mails_are_unique(void)
 
 /*************************************************************/
 
-static unsigned char *filename = "test.eml";
-
-/* @Test */
+/* @Test
+ * @File "test.eml"
+ * {{{
+ * From: Test <abc@def.ghi>
+ * To:  xyz@localhost
+ * Subject: Test Subject
+ * X-Mailer: SimpleMail 0.38 (UNIX/GTK+) E-Mail Client (c) 2000-2011 by Hynek Schlawack and Sebastian Bauer
+ * Date: 00 Jan 1900 00:00:00 +0000
+ * Importance: low
+ *
+ * }}}
+ */
 void test_mail_info_create_from_file(void)
 {
 	struct mail_info *m;
 
-	m = mail_info_create_from_file(filename);
+	m = mail_info_create_from_file("test.eml");
 
-	CU_ASSERT(m != NULL);
+	CU_ASSERT_PTR_NOT_NULL(m);
+	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
+	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
+	CU_ASSERT_PTR_NOT_NULL(m->to_list);
+	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
+	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
+	CU_ASSERT_PTR_NULL(m->cc_list);
+	CU_ASSERT_PTR_NULL(m->pop3_server);
+	CU_ASSERT_PTR_NULL(m->reply_addr);
+	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
+	CU_ASSERT_PTR_NULL(m->message_id);
+	CU_ASSERT_PTR_NULL(m->message_reply_id);
+	CU_ASSERT_EQUAL(m->seconds, 0);
+	CU_ASSERT_EQUAL(m->received, 0);
+	CU_ASSERT_PTR_NULL(m->excerpt);
+	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
+	CU_ASSERT_EQUAL(m->reference_count, 0);
+	CU_ASSERT_EQUAL(m->to_be_freed, 0);
+	CU_ASSERT_EQUAL(m->child_mail, 0);
+	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
+	CU_ASSERT_PTR_NULL(m->next_thread_mail);
 
 	mail_info_free(m);
 }
@@ -261,13 +292,13 @@ void test_mail_compose_new_with_attachment_can_be_read_again(void)
 
 	CU_ASSERT(m->info->from_phrase != NULL);
 	CU_ASSERT(m->info->from_addr != NULL);
-	CU_ASSERT(m->info->to_phrase != NULL);
-	CU_ASSERT(m->info->to_addr != NULL);
+	CU_ASSERT(mail_get_to_phrase(m->info) != NULL);
+	CU_ASSERT(mail_get_to_addr(m->info) != NULL);
 
 	CU_ASSERT_STRING_EQUAL(m->info->from_phrase, "Sebastian Bauer");
 	CU_ASSERT_STRING_EQUAL(m->info->from_addr, "mail@sebastianbauer.info");
-	CU_ASSERT_STRING_EQUAL(m->info->to_phrase, "Sebastian Bauer");
-	CU_ASSERT_STRING_EQUAL(m->info->to_addr, "mail@sebastianbauer.info");
+	CU_ASSERT_STRING_EQUAL(mail_get_to_phrase(m->info), "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m->info), "mail@sebastianbauer.info");
 
 	mail_read_contents(".", m);
 
@@ -337,7 +368,7 @@ void test_mail_create_for(void)
 	CU_ASSERT(m->info != NULL);
 
 	CU_ASSERT(strcmp(m->info->from_addr,"abcd@zzzzuuuu.qq.qq") == 0);
-	CU_ASSERT(strcmp(m->info->to_addr,"test@abcd.deg.def") == 0);
+	CU_ASSERT(strcmp(mail_get_to_addr(m->info),"test@abcd.deg.def") == 0);
 
 	mail_complete_free(m);
 }

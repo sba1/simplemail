@@ -34,6 +34,18 @@
 
 /*****************************************************************************/
 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+
+/*****************************************************************************/
+
+struct hash_bucket
+{
+	struct hash_bucket *next;
+	struct hash_entry *entry;
+};
+
+/*****************************************************************************/
+
 unsigned long sdbm(const unsigned char *str)
 {
 	unsigned long hash = 0;
@@ -47,29 +59,150 @@ unsigned long sdbm(const unsigned char *str)
 
 /*****************************************************************************/
 
-int hash_table_init(struct hash_table *ht, int bits, const char *filename)
+static struct hash_entry *hash_table_new_entry(struct hash_table *ht)
 {
-	FILE *fh;
-	int i;
+	return (struct hash_entry*)malloc(ht->entry_size);
+}
+
+/*****************************************************************************/
+
+static void hash_table_free_entry(struct hash_table *ht, struct hash_entry *entry)
+{
+	if (!entry) return;
+	free((char*)entry->string);
+	free(entry);
+}
+
+/*****************************************************************************/
+
+/**
+ * Sets the number of bits used to identify a primary bucket.
+ * Enlarging an existing hash table is supported.
+ *
+ * @param ht
+ * @param bits
+ * @return 1 on success, 0 on failure.
+ */
+static int hash_table_set_bits(struct hash_table *ht, int bits)
+{
 	unsigned int size;
 	unsigned int mem_size;
+	unsigned int mask;
 	struct hash_bucket *table;
 
-	if (!bits) return 0;
+	if (!bits)
+	{
+		return 0;
+	}
 
-	size = 2;
-	for (i=1;i<bits;i++)
-		size <<= 1;
+	if (bits < 4)
+	{
+		bits = 4;
+	}
 
+	if (ht->table != NULL && bits <= ht->bits)
+	{
+		/* We support only the enlargement of the table for now */
+		return 1;
+	}
+
+	if (bits > 30)
+	{
+		return 0;
+	}
+
+	size = 1 << bits;
 	mem_size = size*sizeof(struct hash_bucket);
+	mask = size - 1;
 	if (!(table = (struct hash_bucket*)malloc(mem_size)))
 		return 0;
 	memset(table,0,mem_size);
 
+	if (ht->table != NULL)
+	{
+		unsigned int num_occupied_buckets = 0;
+
+		int i;
+
+		/* If the table is already populated, we need to adjust existing elements again */
+		for (i=0;i<ht->size;i++)
+		{
+			struct hash_bucket *hb = &ht->table[i];
+			if (hb->entry)
+			{
+				int secondary_bucket = 0;
+
+				while (hb)
+				{
+					/* Data for old hash table size */
+					struct hash_bucket *nhb;
+					struct hash_entry *e;
+
+					/* Data for the new hash table size */
+					struct hash_bucket *new_hb;
+					struct hash_entry *new_e;
+					int new_index;
+
+					e =  hb->entry;
+					nhb = hb->next;
+
+					new_index = sdbm((unsigned char*)hb->entry->string) & mask;
+					new_hb = &table[new_index];
+					new_e = new_hb->entry;
+
+					if (new_e)
+					{
+						/* There is already something at this index. Note that
+						 * the entry must have originally been in a secondary
+						 * bucket as we can only enlarge the hash table in
+						 * powers of two.
+						 */
+						*hb = *new_hb;
+						new_hb->next = hb;
+					} else
+					{
+						if (secondary_bucket)
+						{
+							/* Entry was contained in a secondary bucket but is
+							 * now a primary one. So we have to free the
+							 * secondary bucket now.
+							 */
+							free(hb);
+						}
+						num_occupied_buckets++;
+					}
+					new_hb->entry = e;
+
+					hb = nhb;
+					secondary_bucket = 1;
+				}
+			}
+		}
+		ht->num_occupied_buckets = num_occupied_buckets;
+		free(ht->table);
+	}
+
 	ht->bits = bits;
-	ht->mask = size - 1;
+	ht->mask = mask;
 	ht->size = size;
 	ht->table = table;
+
+	return 1;
+}
+
+/*****************************************************************************/
+
+int hash_table_init_with_size(struct hash_table *ht, int bits, int entry_size, const char *filename)
+{
+	FILE *fh;
+
+	memset(ht, 0, sizeof(*ht));
+
+	ht->entry_size = MAX(sizeof(struct hash_entry), entry_size);
+
+	if (!hash_table_set_bits(ht, bits))
+		return 0;
+
 	ht->filename = filename;
 
 	if (filename)
@@ -114,25 +247,51 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 
 /*****************************************************************************/
 
+int hash_table_init(struct hash_table *ht, int bits, const char *filename)
+{
+	return hash_table_init_with_size(ht, bits, sizeof(struct hash_entry), filename);
+}
+
+/*****************************************************************************/
+
+static void hash_table_deinit(struct hash_table *ht)
+{
+	int i;
+
+	for (i=0;i<ht->size;i++)
+	{
+		struct hash_bucket *hb = &ht->table[i];
+
+		if (!hb->entry)
+		{
+			continue;
+		}
+
+		hash_table_free_entry(ht, hb->entry);
+		hb->entry = NULL;
+
+		hb = hb->next;
+		while (hb)
+		{
+			struct hash_bucket *thb = hb->next;
+			hash_table_free_entry(ht, hb->entry);
+			free(hb);
+			hb = thb;
+		}
+	}
+	ht->num_entries = 0;
+	ht->num_occupied_buckets = 0;
+}
+
+/*****************************************************************************/
+
 void hash_table_clear(struct hash_table *ht)
 {
-	unsigned int i, size, mem_size;
+	unsigned int size, mem_size;
 
 	if (ht->table)
 	{
-		for (i=0;i<ht->size;i++)
-		{
-			struct hash_bucket *hb = &ht->table[i];
-			if (hb->entry.string) free((void*)hb->entry.string);
-			hb = hb->next;
-			while (hb)
-			{
-				struct hash_bucket *thb = hb->next;
-				free((void*)hb->entry.string);
-				free(hb);
-				hb = thb;
-			}
-		}
+		hash_table_deinit(ht);
 		ht->data = 0;
 
 		size = ht->size;
@@ -145,56 +304,59 @@ void hash_table_clear(struct hash_table *ht)
 
 void hash_table_clean(struct hash_table *ht)
 {
-	unsigned int i;
-
 	if (ht->table)
 	{
-		for (i=0;i<ht->size;i++)
-		{
-			struct hash_bucket *hb = &ht->table[i];
-			if (hb->entry.string) free((void*)hb->entry.string);
-			hb = hb->next;
-			while (hb)
-			{
-				struct hash_bucket *thb = hb->next;
-				free((void*)hb->entry.string);
-				free(hb);
-				hb = thb;
-			}
-		}
+		hash_table_deinit(ht);
+
 		free(ht->table);
 		ht->table = NULL;
 		ht->data = 0;
 	}
 }
 
-
 /*****************************************************************************/
 
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data)
 {
 	unsigned int index;
+	int secondary_bucket;
 	struct hash_bucket *hb,*nhb;
 
 	if (!string) return NULL;
 
-	index = sdbm((const unsigned char*)string) & ht->mask;
-	hb = &ht->table[index];
-	if (!hb->entry.string)
+	if (ht->num_entries >= ht->size / 4 * 3)
 	{
-		hb->entry.string = string;
-		hb->entry.data = data;
-		return &hb->entry;
+		/* Load factor larger than about 0.75, re-adjust */
+		if (!hash_table_set_bits(ht, ht->bits + 1))
+			return NULL;
 	}
 
-	nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket));
-	if (!nhb) return NULL;
+	index = sdbm((const unsigned char*)string) & ht->mask;
+	hb = &ht->table[index];
 
-	*nhb = *hb;
-	hb->next = nhb;
-	hb->entry.string = string;
-	hb->entry.data = data;
-	return &hb->entry;
+	if ((secondary_bucket = !!hb->entry))
+	{
+		if (!(nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket))))
+		{
+			return NULL;
+		}
+
+		*nhb = *hb;
+		hb->next = nhb;
+	}
+
+	if (!(hb->entry = hash_table_new_entry(ht)))
+	{
+		return NULL;
+	}
+
+	hb->entry->string = string;
+	hb->entry->data = data;
+
+	/* Update counts */
+	ht->num_entries++;
+	ht->num_occupied_buckets += !secondary_bucket;
+	return hb->entry;
 }
 
 /*****************************************************************************/
@@ -208,11 +370,11 @@ struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string)
 	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
 
-	if (!hb->entry.string) return NULL;
+	if (!hb->entry) return NULL;
 
 	while (hb)
 	{
-		if (!strcmp(hb->entry.string,string)) return &hb->entry;
+		if (!strcmp(hb->entry->string,string)) return hb->entry;
 		hb = hb->next;
 	}
 
@@ -259,8 +421,8 @@ void hash_table_call_for_each_entry(struct hash_table *ht, void (*func)(struct h
 		struct hash_bucket *hb = &ht->table[i];
 		while (hb)
 		{
-			if (hb->entry.string)
-				func(&hb->entry,data);
+			if (hb->entry)
+				func(hb->entry,data);
 			hb = hb->next;
 		}
 	}

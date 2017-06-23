@@ -1,3 +1,10 @@
+Version 0.43 (29th beta) - released on 2016/12/24
+   - Updated OpenSSL version to 1.0.1u
+   - Building mail index no longer blocks UI
+   - Reading mail index is now much faster
+   - Replaced Error window by more general Logging window
+   - Several bug fixes
+
 Version 0.42 (28th beta) - released on 2015/12/24
    - Updated OpenSSL version to 1.0.1q
    - TLS support for SMTP servers (SMTPS, port 465)

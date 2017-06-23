@@ -240,7 +240,7 @@ int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *uda
 		info.name = pm->name;
 		info.work = pm->work;
 		info.work_done = pm->work_done;
-		info.working_on = pm->working_on;
+		info.working_on = pm->working_on?pm->working_on:"Unknown";
 		info.cancelable = !!pm->cancel_callback;
 
 		callback(&info,udata);

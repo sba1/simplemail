@@ -387,7 +387,7 @@ static void bnode_clear_elements(struct index_external *idx, bnode *n, int start
 static void dump_node_children(struct index_external *idx, bnode *node, const char *prefix)
 {
 	int i;
-	printf("%s: ", prefix, node->lchild);
+	printf("%s (%d): ", prefix, node->lchild);
 	for (i=0;i<node->num_elements;i++)
 	{
 		struct bnode_element *be;
@@ -554,7 +554,7 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 	bnode *tmp = bnode_create(idx);
 
 	if (!bnode_read_block(idx, tmp, block))
-		return;
+		return -1;
 
 	if (!tmp->leaf)
 		count += count_index(idx, tmp->lchild, level + 1);
@@ -566,9 +566,17 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 
 		e = bnode_get_ith_element_of_node(idx, tmp, i);
 		if (!tmp->leaf)
-			count += count_index_leaves(idx, e->internal.gchild, level + 1);
-		else
+		{
+			int c = count_index_leaves(idx, e->internal.gchild, level + 1);
+			if (c == -1)
+			{
+				return -1;
+			}
+			count += c;
+		} else
+		{
 			count++;
+		}
 	}
 
 	bnode_free(idx, tmp);

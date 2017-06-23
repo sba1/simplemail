@@ -18,5 +18,33 @@ Continuous Integration
 ----------------------
 
 For latest builds for AmigaOS 4.x please check https://sonumina.de/jenkins/job/simplemail/.
-This site's SHA1 fingerprint is ```56 C7 52 5C 26 DB CE 89 AF 1D 20 EC AE 30 96 E8
-88 D5 5B CA```
+This site's SHA1 fingerprint is ```E5 7A 7E 48 FE 4C BC 36 1D A8 D9 EE 1B 43 04 C6
+10 B8 FF 81```
+
+
+Building for AmigaOS 4.x
+------------------------
+
+The build process for AmigaOS 4.x uses gcc. For building the AmigaOS 4.x variant, use:
+
+```
+ $ make -f makefile.aos4
+```
+
+If you want the variant with statically linked OpenSSL use
+
+```
+ $ make -f makefile.aos4 USE_OPENSSL=1
+```
+
+
+Building for AmigaOS 3.x
+------------------------
+
+The build process for AmigaOS 3.x currently uses SAS C. Building is as easy as typing
+
+```
+ 1.> smake
+```
+
+in the shell.

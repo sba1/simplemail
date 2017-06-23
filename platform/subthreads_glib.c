@@ -30,6 +30,7 @@
 
 #include <glib.h>
 
+#include "coroutines.h"
 #include "debug.h"
 #include "lists.h"
 #include "support_indep.h"
@@ -49,6 +50,9 @@ static int sockets[2];
 /** List of all threads */
 static struct list thread_list;
 
+/** List of all finished threads */
+static struct list finished_thread_list;
+
 /** Mutex for accessing thread list */
 static GMutex *thread_list_mutex;
 
@@ -61,6 +65,9 @@ struct thread_s
 
 	GMutex *mutex;
 	int aborted;
+
+	/* Coroutine support */
+	coroutine_scheduler_t scheduler;
 };
 
 static struct thread_s main_thread;
@@ -74,6 +81,7 @@ int init_threads(void)
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
 	list_init(&thread_list);
+	list_init(&finished_thread_list);
 	if (!(thread_list_mutex = g_mutex_new())) return 0;
 
 	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
@@ -146,6 +154,17 @@ void cleanup_threads(void)
 		g_main_loop_run(main_thread.main_loop);
 	}
 
+	g_mutex_lock(thread_list_mutex);
+	while ((t = (struct thread_s*)list_remove_head(&finished_thread_list)))
+	{
+		g_mutex_unlock(thread_list_mutex);
+
+		g_thread_join(t->thread);
+
+		g_mutex_lock(thread_list_mutex);
+	}
+	g_mutex_unlock(thread_list_mutex);
+
 	g_mutex_free(main_thread.mutex);
 	g_main_loop_unref(main_thread.main_loop);
 	g_main_context_unref(main_thread.context);
@@ -201,6 +220,7 @@ static gpointer thread_add_entry(gpointer udata)
 
 	g_mutex_lock(thread_list_mutex);
 	node_remove(&t->node);
+	list_insert_tail(&finished_thread_list, &t->node);
 	g_mutex_unlock(thread_list_mutex);
 
 	g_mutex_free(t->mutex);
@@ -272,6 +292,14 @@ void thread_abort(thread_t thread)
 	thread->aborted = 1;
 	g_mutex_unlock(thread->mutex);
 	g_main_context_invoke(thread->context, thread_abort_entry, thread);
+}
+
+/*****************************************************************************/
+
+void thread_signal(thread_t thread_to_signal)
+{
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 }
 
 /*****************************************************************************/
@@ -480,6 +508,28 @@ thread_t thread_get(void)
 
 /*****************************************************************************/
 
+static void thread_schedule_coroutine(coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	thread_t thread = thread_get();
+
+	if (thread->scheduler)
+	{
+		coroutine_add(thread->scheduler, coroutine, ctx);
+	} else
+	{
+		SM_DEBUGF(0, ("Coroutine called without a coroutine scheduler! This is a bug!\n"));
+	}
+}
+
+/*****************************************************************************/
+
+int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct coroutine_basic_context *ctx)
+{
+	return thread_call_function_async(thread, thread_schedule_coroutine, 2, coroutine, ctx);
+}
+
+/*****************************************************************************/
+
 struct thread_wait_timer_entry_data
 {
 	void (*timer_callback)(void*);
@@ -495,6 +545,18 @@ static gboolean thread_wait_timer_entry(gpointer udata)
 	return 1;
 }
 
+static gboolean thread_idle_entry(gpointer udata)
+{
+	/* TODO: We should block if no coroutine needs to be scheduled */
+	coroutine_scheduler_t sched = (coroutine_scheduler_t)udata;
+	if (sched)
+	{
+		coroutine_schedule_ready(sched);
+	}
+	return 1;
+}
+
+
 /*****************************************************************************/
 
 int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void *timer_data, int millis)
@@ -502,12 +564,15 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;
 	GSource *s = NULL;
+	GSource *idle_s = NULL;
 
 	SM_ENTER;
 
 	memset(&data, 0, sizeof(data));
 
 	t = thread_get();
+
+	t->scheduler = sched;
 
 	data.timer_callback = (void (*)(void*))timer_callback;
 	data.timer_data = timer_data;
@@ -520,11 +585,23 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 		g_source_unref(s);
 	}
 
+	if (sched)
+	{
+		idle_s = g_idle_source_new();
+		g_source_set_callback(idle_s, thread_idle_entry, sched, NULL);
+		g_source_attach(idle_s, t->context);
+		g_source_unref(idle_s);
+	}
 	g_main_loop_run(t->main_loop);
 
 	/* Destroy the timer if there was any */
 	if (timer_callback && s)
 		g_source_destroy(s);
+
+	if (idle_s)
+		g_source_destroy(idle_s);
+
+	t->scheduler = NULL;
 
 	SM_LEAVE;
 

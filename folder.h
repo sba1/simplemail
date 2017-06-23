@@ -69,6 +69,7 @@ struct folder
 	int mail_infos_loaded; /* 1 if the mailinfos has loaded */
 	int to_be_rescanned; /* 1 if the folder shall be rescanned */
 	int rescanning; /* 1, if the folder is currently being rescanned */
+	int to_be_saved; /* 1, if the index file should be saved but it couldn't be done */
 
 
 	int type; /* see below */
@@ -294,6 +295,14 @@ struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *file
  * @return
  */
 struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
+
+/**
+ * Perform a simple check if the given filename is really a mail.
+ *
+ * @param fn the name to check
+ * @return 1 if name fits a mail.
+ */
+int folder_is_filename_mail(const char *fn);
 
 /**
  * Sets the imap folder lists of a given folders. The list elements
@@ -560,14 +569,13 @@ void folder_save_all_indexfiles(void);
 void folder_delete_all_indexfiles(void);
 
 /**
- * Rescan the given folder, i.e., index all mails in the folder.
+ * Rescan the given folder in an asychronous manner, i.e., index all mails in the folder.
  *
  * @param folder the folder to be rescanned.
  * @param status_callback defines the function that is called for staus updates.
  * @return 0 on failure, everything else on success.
  */
-int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt));
-
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata);
 
 /**
  * Adds a new folder that stores messages in the given path
@@ -814,13 +822,5 @@ int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
  * @todo misplaced in this module. Needs a rework
  */
 int mail_matches_filter(struct folder *folder, struct mail_info *m, struct filter *filter);
-
-/**
- * Given a subject line, return a subject line that can be used for comparing.
- *
- * @param subj the string that should be transformed
- * @return the transformed string
- */
-char *mail_get_compare_subject(char *subj);
 
 #endif

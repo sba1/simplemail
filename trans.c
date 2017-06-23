@@ -385,10 +385,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.new_mail_arrived = trans_new_imap_mail_arrived;
 		imap_sync_options.callbacks.delete_mail_by_uid = trans_delete_mail_by_uid;
 
-		if (pop3_really_dl(&dl_options))
-		{
-			imap_synchronize_really(&imap_sync_options);
-		} else if (single_account)
+		if (pop3_really_dl(&dl_options) || single_account)
 		{
 			imap_synchronize_really(&imap_sync_options);
 		}
@@ -407,6 +404,34 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 	while ((imap = (struct imap_server*)list_remove_tail(&imap_list)))
 		imap_free(imap);
 
+	free(msg);
+	return 1;
+}
+
+/*****************************************************************************/
+
+/**
+ * Submit download message.
+ *
+ * @param msg download message to submit
+ * @return whether message has been submitted.
+ */
+static int mails_dl_common(int called_by_auto, struct account *ac)
+{
+	struct mails_dl_msg *msg;
+	if (!(msg = malloc(sizeof(*msg))))
+		return 0;
+
+	memset(msg, 0, sizeof(*msg));
+	msg->called_by_auto = called_by_auto;
+	msg->iconified = main_is_iconified();
+	msg->single_account = ac;
+
+	if (!thread_start(THREAD_FUNCTION(&mails_dl_entry),msg))
+	{
+		free(msg);
+		return 0;
+	}
 	return 1;
 }
 
@@ -414,19 +439,14 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 
 int mails_dl(int called_by_auto)
 {
-	struct mails_dl_msg msg = {0};
-	msg.called_by_auto = called_by_auto;
-	msg.iconified = main_is_iconified();
-	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
+	return mails_dl_common(called_by_auto, NULL);
 }
 
 /*****************************************************************************/
 
 int mails_dl_single_account(struct account *ac)
 {
-	struct mails_dl_msg msg = {0};
-	msg.single_account = ac;
-	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
+	return mails_dl_common(0, ac);
 }
 
 /*****************************************************************************/

@@ -26,14 +26,16 @@
 
 #include "codesets.h"
 
+#include "test-common.c"
+
 /*******************************************************/
 
 /* @Test */
 void test_isascii7(void)
 {
-	CU_ASSERT(isascii7("ascii7")!=0);
-	CU_ASSERT(isascii7("")!=0);
-	CU_ASSERT(isascii7("ö")==0);
+	CU_ASSERT_NOT_EQUAL(isascii7("ascii7"),0);
+	CU_ASSERT_NOT_EQUAL(isascii7(""),0);
+	CU_ASSERT_EQUAL(isascii7("ö"),0);
 }
 
 /*******************************************************/
@@ -41,7 +43,94 @@ void test_isascii7(void)
 /* @Test */
 void test_utf8len(void)
 {
-	CU_ASSERT(utf8len("ö")==1);
+	CU_ASSERT_EQUAL(utf8len("ö"),1);
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_utf8tolower(void)
+{
+	char dest[7] = {0};
+
+	CU_ASSERT_EQUAL(utf8tolower("Ö", dest), 2);
+	CU_ASSERT_STRING_EQUAL(dest, "ö");
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_utf8stricmp(void)
+{
+	CU_ASSERT_EQUAL(utf8stricmp("ößAF","ößaf"),0);
+	CU_ASSERT_EQUAL(utf8stricmp("abcd","abCd"),0);
+	CU_ASSERT(utf8stricmp("abcd","abc") > 0);
+	CU_ASSERT(utf8stricmp("mßabcd","Nßabcd") < 0);
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_utf8stricmp_len(void)
+{
+	CU_ASSERT_EQUAL(utf8stricmp_len("ößAF","ößaf",4),0);
+	CU_ASSERT_EQUAL(utf8stricmp_len("abcd","abCd",4),0);
+	CU_ASSERT(utf8stricmp_len("abcd","abc",3) == 0);
+	CU_ASSERT(utf8stricmp_len("mßabcd","Nßabcd", 1) < 0);
+}
+
+/* @Test */
+void test_match_mask_t(void)
+{
+	CU_ASSERT_EQUAL(match_bitmask(0), 1U<<31);
+	CU_ASSERT_EQUAL(match_bitmask_size(29), 4);
+	CU_ASSERT_EQUAL(match_bitmask_pos(0), 0);
+	CU_ASSERT_EQUAL(match_bitmask_pos(4), 0);
+	CU_ASSERT_EQUAL(match_bitmask_pos(8), 0);
+	CU_ASSERT_EQUAL(match_bitmask_pos(32), 1);
+}
+
+/* @Test */
+void test_utf8match(void)
+{
+	const char *txt = "TextTextText";
+	int txt_len = strlen(txt);
+	match_mask_t m[txt_len/sizeof(match_mask_t)+1];
+
+	memset(&m, 0, txt_len/sizeof(match_mask_t)+1);
+
+	CU_ASSERT(utf8match(txt, "xe", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "xe", 0, m) == 1);
+	CU_ASSERT(check_match_mask("001001000000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "tz", 0, NULL) == 0);
+	CU_ASSERT(utf8match(txt, "tz", 0, m) == 0);
+
+	CU_ASSERT(utf8match(txt, "TTT", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "TTT", 0, m) == 1);
+	CU_ASSERT(check_match_mask("100010001000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "eee", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eee", 0, m) == 1);
+	CU_ASSERT(check_match_mask("010001000100", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "eeee", 0, NULL) == 0);
+	CU_ASSERT(utf8match(txt, "eeee", 0, m) == 0);
+
+	CU_ASSERT(utf8match(txt, "eTx", 0, NULL) == 1);
+	CU_ASSERT(utf8match(txt, "eTx", 0, m) == 1);
+	CU_ASSERT(check_match_mask("010010100000", m) == 1);
+
+	CU_ASSERT(utf8match(txt, "TTTT", 1, NULL) == 1);
+
+	CU_ASSERT(utf8match("ö", "ö", 0, NULL) == 1);
+	CU_ASSERT(utf8match("Ö", "Ö", 0, NULL) == 1);
+	CU_ASSERT(utf8match("ö", "Ö", 0, NULL) == 0);
+	CU_ASSERT(utf8match("ö", "Ö", 1, NULL) == 1);
+
+	CU_ASSERT(utf8match("cde@abc.dd", "AB", 1, m));
+	CU_ASSERT(check_match_mask("0000110000", m) == 1);
+
 }
 
 /*******************************************************/

@@ -27,7 +27,9 @@
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h"
+#include "imap_thread.h"
 #include "mail.h"
+#include "progmon.h"
 #include "simplemail.h"
 #include "support_indep.h"
 

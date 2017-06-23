@@ -32,17 +32,22 @@
 
 #include "account.h"
 #include "addresslist.h"
+#include "atcleanup.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
 #include "imap.h"
 #include "lists.h"
+#include "mail_support.h"
 #include "parse.h"
+#include "progmon.h"
 #include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "status.h"
+#include "string_pools.h"
+#include "subthreads.h"
 #include "support_indep.h"
 
 #include "gui_main.h" /* gui_execute_arexx() */
@@ -51,7 +56,7 @@
 #include "support.h"
 #include "timesupport.h"
 
-#define FOLDER_INDEX_VERSION 7
+#define FOLDER_INDEX_VERSION 8
 
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
 
@@ -63,6 +68,9 @@ static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_
 
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
+
+/* the global string pool for the folder */
+static struct string_pool *folder_spool;
 
 /**
  * Compare two mails with respect to their status.
@@ -111,66 +119,6 @@ static int mail_compare_to(const struct mail_info *arg1, const struct mail_info 
 	int rc = utf8stricmp(mail_info_get_to(arg1),mail_info_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
-}
-
-/*****************************************************************************/
-
-char *mail_get_compare_subject(char *subj)
-{
-	char *p;
-	int brackets = 0;
-
-	/* Move the pointer beyond all []'s and Re's */
-	if (subj)
-	{
-		while ((*subj))
-		{
-			if (*subj == '[')
-			{
-				subj++;
-				brackets++;
-				continue;
-			} else if (*subj == ']')
-			{
-				subj++;
-				brackets--;
-				continue;
-			}
-			if (!brackets)
-			{
-				/* check for space or tab */
-				if (*subj == ' ')
-				{
-					subj++;
-					continue;
-				} else if (*subj == '\t')
-				{
-					subj++;
-					continue;
-				} else if (*subj == '-' || *subj == ')')
-				{
-					/* this is for smilies in the subject -> :-), :) */
-					subj++;
-					continue;
-				}
-				/*
-				** check for ':' in the next 10 chars because it could be "Re:", "AW:", "fwd:",
-  	    ** "Re[12]:", and so on
-				*/
-				if ((p = strchr(subj, ':')))
-				{
-					if ((p-subj) < 10)
-					{
-						subj = ++p;
-						continue;
-					}
-				}
-				break;
-			}
-			subj++;
-		}
-	}
-	return subj;
 }
 
 /**
@@ -403,9 +351,148 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 }
 
 
-static char *fread_str(FILE *fh);
-static char *fread_str_no_null(FILE *fh);
+/**
+ * Writes a string into a filehandle. Returns 0 for an error else
+ * the number of bytes which has been written (at least two).
+ *
+ * @param fh
+ * @param str
+ * @param sp the optional string pool that can be used to get the string id.
+ * @return
+ */
+static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
+{
+	if (str)
+	{
+		int sp_id;
+		int len;
+		unsigned char upper, lower;
+		int strl = strlen(str);
+
+		/* We only support up to 32767 characters */
+		if (strl > (1<<15))
+		{
+			return 0;
+		}
+
+		sp_id = sp?string_pool_get_id(sp, str):-1;
+		if (sp_id != -1)
+		{
+			upper = (sp_id >> 24) & 0x7f;
+			upper |= 1<<7; /* string pool ref mark */
+			lower = sp_id & 0xff;
+
+			if (fputc(upper,fh)==EOF) return 0;
+			if (fputc((sp_id >> 16) & 0xff, fh)==EOF) return 0;
+			if (fputc((sp_id >> 8) & 0xff, fh)==EOF) return 0;
+			if (fputc(lower,fh)==EOF) return 0;
+			return 4;
+		} else
+		{
+			upper = (strl/256)%256;
+			lower = strl%256;
+			if (fputc(upper,fh)==EOF) return 0;
+			if (fputc(lower,fh)==EOF) return 0;
+
+			len = fwrite(str,1,strl,fh);
+			if (len == strl) return len + 2;
+		}
+	}
+	fputc(0,fh);
+	fputc(0,fh);
+	return 2;
+}
+
+/**
+ * Reads a string from a filehandle. It is allocated with malloc().
+ *
+ * @param fh
+ * @param sp
+ * @param zero_is_null if set to 1, NULL is returned for 0 length strings.
+ *  Otherwise, an empty string is allocated.
+ * @return
+ */
+static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
+{
+	unsigned char upper;
+	char *txt;
+
+	txt = NULL;
+
+	upper = fgetc(fh);
+	if (upper & (1<<7))
+	{
+		/* It's a string pool ref */
+		int sp_id;
+		unsigned char m2, m1, lower;
+		char *src_txt;
+
+		m2 = fgetc(fh);
+		m1 = fgetc(fh);
+		lower = fgetc(fh);
+
+		sp_id = ((upper & 0x7f) << 24) | (m2 << 16) | (m1 << 8) | lower;
+		src_txt = string_pool_get(sp, sp_id);
+		if (src_txt && (txt = malloc(strlen(src_txt) + 1)))
+		{
+			strcpy(txt, src_txt);
+		}
+	} else
+	{
+		int len;
+
+		len = upper << 8;
+		upper = fgetc(fh);
+		len += upper;
+
+		if (zero_is_null && !len)
+		{
+			return NULL;
+		}
+
+		if ((txt = (char*)malloc(len+1)))
+		{
+			fread(txt,1,len,fh);
+			txt[len]=0;
+		} else
+		{
+			fseek(fh, len, SEEK_CUR);
+		}
+	}
+	return txt;
+}
+
+/**
+ * Reads a string from a file handle. It is allocated with malloc().
+ * Returns NULL if the string has an length of 0.
+ *
+ * @param fh
+ * @return
+ */
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
+{
+	return fread_str(fh, sp, 1);
+}
+
 static int folder_config_load(struct folder *f);
+
+/**
+ * Returns the filename of the string pool that belongs to the index.
+ *
+ * @param f
+ * @return the name of the folder that needs to be freed via free().
+ */
+static char *folder_get_string_pool_name(struct folder *f)
+{
+	char *sp_name;
+
+	if ((sp_name = malloc(strlen(f->path) + 12)))
+	{
+		strcpy(sp_name, f->path);
+		strcat(sp_name, ".index.sp");
+	}
+	return sp_name;
+}
 
 /**
  * Opens the indexfile of the given folder and return the filehandle.
@@ -424,7 +511,11 @@ static FILE *folder_open_indexfile(struct folder *f, const char *mode)
 	char cpath[256];
 
 	if (!f || !f->path) return 0;
-	if (f->special == FOLDER_SPECIAL_GROUP) return 0;
+	if (f->special == FOLDER_SPECIAL_GROUP)
+	{
+		SM_DEBUGF(5, ("Folder \"%s\" is a group. No index file support for now.\n"));
+		return 0;
+	}
 	if (!(path = mystrdup(f->path))) return 0;
 
 	*sm_path_part(path) = 0;
@@ -546,18 +637,20 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 	return 1;
 }
 
-/******************************************************************
- This resets the indexuptodate field within the folders indexfile.
- Returns 0 on failure, else 1.
-
- This flag is an indication that the indexfile is not uptodate
- (does not reflect the contents of the folder)
-
- The use of this flags is, if if this flag is set and there are
- no pending mails the indexfile mustn't be read instead the whole
- directory must be rescanned. This should only happen if SimpleMail
- have not been shut down properly.
-*******************************************************************/
+/**
+ * Resets the indexuptodate field within the folders indexfile.
+ *
+ * This flag is an indication that the indexfile is not uptodate
+ * (does not reflect the contents of the folder)
+ *
+ * The use of this flags is, if if this flag is set and there are
+ * no pending mails the indexfile mustn't be read instead the whole
+ * directory must be rescanned. This should only happen if SimpleMail
+ * has not been shut down properly.
+ *
+ * @param folder the folder whose pending flag should be set.
+ * @return 0 on failure, else 1.
+ */
 static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 {
 	int rc = 0;
@@ -596,7 +689,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 
 	if (!folder->mail_infos_loaded)
 	{
-		/* No mail infos has been read. We could now load them now but
+		/* No mail infos has been read. We could load them now but
 		   instead we add the new mail to the pending mail array. This
 		   makes this operation a lot of faster and the overall operation
 		   of SimpleMail as well if this folder is not viewed (which is
@@ -727,6 +820,8 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 	if (mail->flags & MAIL_FLAGS_PARTIAL) folder->partial_mails++;
 
+	/* Disabled because slow, buggy, and not really used */
+#if 0
 	/* sort the mails for threads */
 	if (mail->message_id)
 	{
@@ -780,14 +875,17 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 			}
 		}
 	}
+#endif
 
 	return pos;
 }
 
-/******************************************************************
- Removes a mail from the given folder.
- (does not free it)
-*******************************************************************/
+/**
+ * Remove the given mail from the given folder. It does not free the mail.
+ *
+ * @param folder the folder in which the mail resides.
+ * @param mail the mail to be removed.
+ */
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail)
 {
 	int i;
@@ -1206,107 +1304,559 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 
 /*****************************************************************************/
 
-int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
+int folder_is_filename_mail(const char *fn)
 {
+	if (fn[0] != '.')
+		return 1;
+
+	if (strcmp(".",fn) && strcmp("..",fn) && strcmp(".config", fn) && strcmp(".index", fn))
+		return 1;
+
+	return 0;
+}
+
+/*****************************************************************************/
+
+struct folder_rescan_really_context
+{
+	struct coroutine_basic_context basic_context;
+
+	/* Input parameters */
+
+	const char *folder_path;
+	const char *folder_name;
+
+	/** Function to be called for a new mail. Returns 1 on success, 0 otherwise. */
+	int (*mail_callback)(struct mail_info *m, void *udata);
+	void *mail_callback_udata;
+	void (*status_callback)(const char *txt);
+
+	/** the optional progress monitor. It should have 101 work units. */
+	struct progmon *pm;
+
+	/* Actual context */
 	DIR *dfd; /* directory descriptor */
-	struct dirent *dptr; /* dir entry */
 	char path[380];
 
-	folder_lock(folder);
+	struct string_list mail_filename_list;
+	int number_of_mails;
+	char buf[80];
+	unsigned int last_ticks;
+	unsigned int total_work_done;// = 0;
+	unsigned int current_mail;
 
-	getcwd(path, sizeof(path));
-	if(chdir(folder->path) == -1)
+	int create;// = 1;
+};
+
+/**
+ * Work horse for scanning a folder.
+ *
+ * @return coroutine return status.
+ */
+static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *ctx)
+{
+	struct folder_rescan_really_context *c = (struct folder_rescan_really_context*)ctx;
+	struct dirent *dptr; /* dir entry */
+	struct string_node *snode;
+
+	COROUTINE_BEGIN(c);
+
+	c->create = 1;
+
+	getcwd(c->path, sizeof(c->path));
+	if (chdir(c->folder_path) == -1)
+		goto out;
+
+	if (!(c->dfd = opendir(SM_CURRENT_DIR)))
+		goto out;
+
+	c->last_ticks = time_reference_ticks();
+
+	string_list_init(&c->mail_filename_list);
+	c->number_of_mails = 0;
+
+	if (c->status_callback)
 	{
-		folder_unlock(folder);
+		sm_snprintf(c->buf,sizeof(c->buf),_("Scanning folder \"%s\""),c->folder_name);
+		c->status_callback(c->buf);
+		if (c->pm)
+		{
+			c->pm->working_on(c->pm, c->buf);
+		}
+	}
+
+	while ((dptr = readdir(c->dfd)) != NULL)
+	{
+		char *name = dptr->d_name;
+
+		if (!folder_is_filename_mail(name))
+			continue;
+
+		string_list_insert_tail(&c->mail_filename_list, name);
+		c->number_of_mails++;
+	}
+	closedir(c->dfd);
+
+	if (c->pm)
+	{
+		c->pm->work(c->pm, 1);
+	}
+
+	c->current_mail = 0;
+	while ((snode = string_list_remove_head(&c->mail_filename_list)))
+	{
+		struct mail_info *m;
+
+		if (c->status_callback || c->pm)
+		{
+			if (time_ms_passed(c->last_ticks) > 500)
+			{
+				sm_snprintf(c->buf,sizeof(c->buf),_("Reading mail %ld of %ld"),c->current_mail,c->number_of_mails);
+				if (c->status_callback)
+				{
+					c->status_callback(c->buf);
+				}
+
+				if (c->pm)
+				{
+					int new_total_work_done;
+					int work;
+
+					new_total_work_done = c->current_mail * 100 / c->number_of_mails;;
+					if ((work = new_total_work_done - c->total_work_done) > 0)
+					{
+						c->pm->working_on(c->pm, c->buf);
+						c->pm->work(c->pm, work);
+
+						c->total_work_done = new_total_work_done;
+					}
+				}
+				c->last_ticks = time_reference_ticks();
+			}
+		}
+
+		if (c->create && (m = mail_info_create_from_file(snode->string)))
+		{
+			c->create = c->mail_callback(m, c->mail_callback_udata);
+		}
+
+		free(snode->string);
+		free(snode);
+
+		c->current_mail++;
+	}
+
+	if (c->status_callback || c->pm)
+	{
+		sm_snprintf(c->buf,sizeof(c->buf),_("Folder \"%s\" scanned"),c->folder_name);
+
+		if (c->status_callback)
+		{
+			c->status_callback(c->buf);
+		}
+
+		if (c->pm)
+		{
+			c->pm->working_on(c->pm, c->buf);
+			c->pm->work(c->pm, 100 - c->total_work_done);
+		}
+	}
+
+out:
+	(void)1;
+	COROUTINE_END(c);
+}
+
+
+/*****************************************************************************/
+
+/**
+ * Internal operation to dispose all mails of a folder.
+ *
+ * @param f
+ */
+static void folder_dispose_mails(struct folder *f)
+{
+	/* FIXME: We should also delete each mail */
+	free(f->mail_info_array);
+	free(f->sorted_mail_info_array);
+	free(f->pending_mail_info_array);
+
+	f->mail_info_array = f->sorted_mail_info_array = f->pending_mail_info_array = NULL;
+	f->mail_info_array_allocated = 0;
+	f->num_mails = 0;
+	f->new_mails = 0;
+	f->unread_mails = 0;
+	f->pending_mail_info_array_allocated = 0;
+	f->num_pending_mails = 0;
+}
+
+/*****************************************************************************/
+
+/** Thread for various lengthy folder operations */
+static thread_t folder_thread;
+
+/*****************************************************************************/
+
+struct folder_thread_mail_callback_data
+{
+	int num_mails;
+	int mails_allocated;
+	struct mail_info **mails;
+};
+
+/*****************************************************************************/
+
+/**
+ * Callback that is invoked for each successfully read in mail.
+ *
+ * @param m the mail the has been read in.
+ * @param udata the user data.
+ * @return 0 if further processing should be aborter, else 1.
+ */
+static int folder_thread_mail_callback(struct mail_info *m, void *udata)
+{
+	struct folder_thread_mail_callback_data *data = udata;
+
+	if (thread_aborted())
+	{
 		return 0;
 	}
 
-	if ((dfd = opendir(SM_CURRENT_DIR)))
+	if (data->num_mails >= data->mails_allocated)
 	{
-		struct string_list mail_filename_list;
-		struct string_node *snode;
-		int number_of_mails;
-		char buf[80];
-		unsigned int last_ticks;
-		unsigned int current_mail;
-
-		last_ticks = time_reference_ticks();
-
-		free(folder->mail_info_array);
-		free(folder->sorted_mail_info_array);
-
-		folder->mail_info_array = folder->sorted_mail_info_array = NULL;
-		folder->mail_info_array_allocated = 0;
-		folder->num_mails = 0;
-		folder->new_mails = 0;
-		folder->unread_mails = 0;
-
-		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-		folder->num_index_mails = 0;
-		folder->partial_mails = 0;
-		folder->rescanning = 1;
-
-		string_list_init(&mail_filename_list);
-		number_of_mails = 0;
-
-		if (status_callback)
+		int new_mails_allocated = (data->mails_allocated * 2) + 8;
+		struct mail_info **new_mails = (struct mail_info**)realloc(data->mails, new_mails_allocated * sizeof(*new_mails));
+		if (!new_mails)
 		{
-			sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder->name);
-			status_callback(buf);
+			return 0;
 		}
-
-		while ((dptr = readdir(dfd)) != NULL)
-		{
-			char *name = dptr->d_name;
-
-			if (name[0] == '.')
-				if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
-
-			string_list_insert_tail(&mail_filename_list, name);
-			number_of_mails++;
-		}
-		closedir(dfd);
-
-		current_mail = 0;
-		while ((snode = string_list_remove_head(&mail_filename_list)))
-		{
-			struct mail_info *m;
-
-			if (status_callback)
-			{
-				if (time_ms_passed(last_ticks) > 500)
-				{
-					sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
-					status_callback(buf);
-					last_ticks = time_reference_ticks();
-				}
-			}
-
-			if ((m = mail_info_create_from_file(snode->string)))
-				folder_add_mail(folder,m,0);
-
-			free(snode->string);
-			free(snode);
-
-			current_mail++;
-		}
-		folder->rescanning = 0;
-
-		if (status_callback)
-		{
-			sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder->name);
-			status_callback(buf);
-		}
-
-		folder_invalidate_indexfile(folder);
+		data->mails = new_mails;
+		data->mails_allocated = new_mails_allocated;
 	}
-
-	folder_unlock(folder);
-	chdir(path);
+	data->mails[data->num_mails++] = m;
 	return 1;
 }
 
 /*****************************************************************************/
+
+/**
+ * Entry for the folder thread.
+ *
+ * @param udata
+ * @return
+ */
+static int folder_thread_entry(void *udata)
+{
+	coroutine_scheduler_t sched;
+
+	if (!(sched = coroutine_scheduler_new_custom(NULL, NULL)))
+		return 0;
+
+	if (thread_parent_task_can_contiue())
+	{
+		while (thread_wait(sched, NULL, NULL, 0));
+	}
+	coroutine_scheduler_dispose(sched);
+	return 0;
+}
+
+/*****************************************************************************/
+
+struct folder_thread_rescan_context
+{
+	struct coroutine_basic_context basic_context;
+
+	/* Input parameters */
+	char *folder_path;
+	void (*status_callback)(const char *txt);
+	void (*completed)(char *folder_path, void *udata);
+	void *completed_udata;
+	struct progmon *pm;
+
+	/* Actual context */
+	char *folder_name;
+	struct folder_thread_mail_callback_data udata;
+
+	/* Context of nested coroutine */
+	struct folder_rescan_really_context *rescan_ctx;
+};
+
+/*****************************************************************************/
+
+
+/**
+ * Function that is called on the context of the main thread.
+ *
+ * @param folder_path
+ * @param m
+ * @param num_m
+ */
+static void folder_rescan_async_completed(struct folder_thread_rescan_context *ctx)
+{
+	struct folder *f;
+	int i;
+
+	char *folder_path;
+	struct mail_info **m;
+	int num_m;
+
+	folder_path = ctx->folder_path;
+	m = ctx->udata.mails;
+	num_m = ctx->udata.num_mails;
+
+	if (!(f = folder_find_by_path(folder_path)))
+		return;
+
+	folder_lock(f);
+	folder_dispose_mails(f);
+
+	f->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+	f->num_index_mails = 0;
+	f->partial_mails = 0;
+
+	folder_prepare_for_additional_mails(f, num_m);
+
+	for (i=0; i < num_m; i++)
+	{
+		folder_add_mail(f, m[i], 0);
+	}
+
+	folder_invalidate_indexfile(f);
+
+	f->rescanning = 0;
+
+	if (f->to_be_saved)
+	{
+		folder_save_index(f);
+		f->to_be_saved = 0;
+	}
+	folder_unlock(f);
+
+	ctx->completed(folder_path, ctx->completed_udata);
+}
+
+/*****************************************************************************/
+
+/**
+ * Rescan the folder. This function is callable from any context.
+ *
+ * @param ctx
+ * @return a coroutine return value.
+ */
+static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_context *ctx)
+{
+	struct folder_thread_rescan_context *c = (struct folder_thread_rescan_context*)ctx;
+	struct folder_rescan_really_context *rescan_ctx = c->rescan_ctx;
+
+	COROUTINE_BEGIN(c);
+
+	{
+		/* Retrieve name of the folder, set rescanning state and initialize context */
+		struct folder *f;
+
+		folders_lock();
+		if ((f = folder_find_by_path(c->folder_path)))
+		{
+			folder_lock(f);
+			c->folder_name = mystrdup(f->name);
+			folder_unlock(f);
+		}
+		folders_unlock();
+
+		if (!f)
+		{
+			goto bailout;
+		}
+	}
+
+	if ((rescan_ctx = c->rescan_ctx = malloc(sizeof(*rescan_ctx))))
+	{
+		coroutine_t cor;
+
+		memset(rescan_ctx, 0, sizeof(*rescan_ctx));
+
+		rescan_ctx->folder_path = c->folder_path;
+		rescan_ctx->folder_name = c->folder_name;
+		rescan_ctx->mail_callback= folder_thread_mail_callback;
+		rescan_ctx->mail_callback_udata = &c->udata;
+		rescan_ctx->status_callback = c->status_callback;
+		rescan_ctx->pm = c->pm;
+
+		if ((cor = coroutine_add(ctx->scheduler, folder_rescan_really, &rescan_ctx->basic_context)))
+		{
+			COROUTINE_AWAIT_OTHER(c, cor);
+		}
+
+		free(rescan_ctx);
+	}
+
+	thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
+	free(c->udata.mails);
+bailout:
+	c->pm->done(c->pm);
+	free(c->folder_path);
+	free(c->folder_name);
+	progmon_delete(c->pm);
+
+	COROUTINE_END(c);
+}
+
+/*****************************************************************************/
+
+/**
+ * Function that is called when SimpleMail shuts down.
+ *
+ * @param udata
+ */
+static void folder_thread_cleanup(void *udata)
+{
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensure that the folder thread is running.
+ *
+ * @return 0 or 1, depending of the folder thread is up or not.
+ */
+static int folder_thread_ensure(void)
+{
+	if (!folder_thread)
+	{
+		if (!(folder_thread = thread_add("SimpleMail - Folder thread", folder_thread_entry, NULL)))
+		{
+			return 0;
+		}
+		atcleanup(folder_thread_cleanup, NULL);
+	}
+
+	return !!folder_thread;
+}
+
+/*****************************************************************************/
+
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+{
+	char *folder_path;
+	struct folder_thread_rescan_context *ctx;
+
+	if (!folder_thread_ensure())
+	{
+		return 0;
+	}
+
+	if (!(folder_path = mystrdup(folder->path)))
+	{
+		return 0;
+	}
+
+	if (!(ctx = (struct folder_thread_rescan_context*)malloc(sizeof(*ctx))))
+		return 0;
+	memset(ctx, 0, sizeof(*ctx));
+	ctx->basic_context.free_after_done = 1;
+	ctx->folder_path = folder_path;
+	ctx->status_callback = status_callback;
+	ctx->completed = completed;
+	ctx->completed_udata = udata;
+	if ((ctx->pm = progmon_create()))
+	{
+		ctx->pm->begin(ctx->pm, 101, "Rescanning");
+	}
+
+	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
+	{
+		folder->rescanning = 1;
+		callback_refresh_folder(folder);
+		return 1;
+	} else
+	{
+		free(ctx->folder_path);
+		ctx->pm->done(ctx->pm);
+		progmon_delete(ctx->pm);
+	}
+	return 0;
+}
+
+/**
+ * Read the next mail info from the index.
+ *
+ * @param fh the file handle of the index file.
+ * @param sp the string pool that is used to resolve string references.
+ * @return the mail info or NULL when something failed.
+ */
+static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct string_pool *sp)
+{
+	struct mail_info *m;
+	int num_to = 0;
+	int num_cc = 0;
+
+	if (fread(&num_to,1,4,fh) != 4) return NULL;
+	if (fread(&num_cc,1,4,fh) != 4) return NULL;
+
+	if ((m = mail_info_create()))
+	{
+		m->subject = (utf8*)fread_str(fh, NULL, 0);
+		m->filename = fread_str(fh, NULL, 0);
+
+		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
+		m->from_addr = fread_str_no_null(fh, sp);
+
+		/* Read the to list */
+		if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
+			list_init(&m->to_list->list);
+
+		while (num_to--)
+		{
+			char *realname = fread_str_no_null(fh, sp);
+			char *email = fread_str_no_null(fh, sp);
+			struct address *addr;
+
+			if (m->to_list)
+			{
+				if ((addr = (struct address*)malloc(sizeof(struct address))))
+				{
+					addr->realname = realname;
+					addr->email = email;
+					list_insert_tail(&m->to_list->list, &addr->node);
+				} /* should free realname and email on failure */
+			}
+		}
+
+		/* Read the cc list */
+		if ((m->cc_list = (struct address_list*)malloc(sizeof(struct address_list))))
+			list_init(&m->cc_list->list);
+
+		while (num_cc--)
+		{
+			char *realname = fread_str_no_null(fh, sp);
+			char *email = fread_str_no_null(fh, sp);
+			struct address *addr;
+
+			if (m->cc_list)
+			{
+				if ((addr = (struct address*)malloc(sizeof(struct address))))
+				{
+					addr->realname = realname;
+					addr->email = email;
+					list_insert_tail(&m->cc_list->list, &addr->node);
+				} /* should free realname and email on failure */
+			}
+		}
+
+		m->pop3_server = fread_str_no_null(fh, sp);
+		m->message_id = fread_str_no_null(fh, sp);
+		m->message_reply_id = fread_str_no_null(fh, sp);
+		m->reply_addr = fread_str_no_null(fh, sp);
+
+		fseek(fh,ftell(fh)%2,SEEK_CUR);
+		fread(&m->size,1,sizeof(m->size),fh);
+		fread(&m->seconds,1,sizeof(m->seconds),fh);
+		fread(&m->received,1,sizeof(m->received),fh);
+		fread(&m->flags,1,sizeof(m->flags),fh);
+	}
+	return m;
+}
 
 /******************************************************************
  Reads the all mail infos in the given folder.
@@ -1355,7 +1905,21 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 					if (!only_num_mails)
 					{
+						struct string_pool *sp;
+						char *sp_name;
+
 						int i;
+
+						if (!(sp = string_pool_create()))
+							goto nosp;
+
+						if ((sp_name = folder_get_string_pool_name(folder)))
+						{
+							/* Failure cases will be handled later when a string ref
+							 * cannot be resolved */
+							string_pool_load(sp, sp_name);
+							free(sp_name);
+						}
 
 						folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 						mail_infos_read = 1;
@@ -1371,80 +1935,9 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						while (num_mails-- && !feof(fh))
 						{
 							struct mail_info *m;
-							int num_to = 0;
-							int num_cc = 0;
 
-							if (fread(&num_to,1,4,fh) != 4) break;
-							if (fread(&num_cc,1,4,fh) != 4) break;
-
-							if ((m = mail_info_create()))
+							if ((m = folder_read_mail_info_from_index(fh, sp)))
 							{
-								int first = 1;
-
-								m->subject = (utf8*)fread_str(fh);
-								m->filename = fread_str(fh);
-								m->from_phrase = (utf8*)fread_str_no_null(fh);
-								m->from_addr = fread_str_no_null(fh);
-
-								/* Read the to list */
-								if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
-									list_init(&m->to_list->list);
-
-								while (num_to--)
-								{
-									char *realname = fread_str_no_null(fh);
-									char *email = fread_str_no_null(fh);
-									struct address *addr;
-
-									if (first)
-									{
-										m->to_phrase = (utf8*)mystrdup(realname);
-										m->to_addr = mystrdup(email);
-										first = 0;
-									}
-
-									if (m->to_list)
-									{
-										if ((addr = (struct address*)malloc(sizeof(struct address))))
-										{
-											addr->realname = realname;
-											addr->email = email;
-											list_insert_tail(&m->to_list->list, &addr->node);
-										} /* should free realname and email on failure */
-									}
-								}
-
-								/* Read the cc list */
-								if ((m->cc_list = (struct address_list*)malloc(sizeof(struct address_list))))
-									list_init(&m->cc_list->list);
-
-								while (num_cc--)
-								{
-									char *realname = fread_str_no_null(fh);
-									char *email = fread_str_no_null(fh);
-									struct address *addr;
-
-									if (m->cc_list)
-									{
-										if ((addr = (struct address*)malloc(sizeof(struct address))))
-										{
-											addr->realname = realname;
-											addr->email = email;
-											list_insert_tail(&m->cc_list->list, &addr->node);
-										} /* should free realname and email on failure */
-									}
-								}
-
-								m->pop3_server = fread_str_no_null(fh);
-								m->message_id = fread_str_no_null(fh);
-								m->message_reply_id = fread_str_no_null(fh);
-								m->reply_addr = fread_str_no_null(fh);
-
-								fseek(fh,ftell(fh)%2,SEEK_CUR);
-								fread(&m->size,1,sizeof(m->size),fh);
-								fread(&m->seconds,1,sizeof(m->seconds),fh);
-								fread(&m->received,1,sizeof(m->received),fh);
-								fread(&m->flags,1,sizeof(m->flags),fh);
 								mail_identify_status(m);
 
 								m->flags &= ~MAIL_FLAGS_NEW;
@@ -1454,6 +1947,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 						if (folder->num_pending_mails)
 						{
+							/* Add pending mails (i.e., mails that have been added
+							 * prior the loading of the folder) now */
 							for (i=0;i<folder->num_pending_mails;i++)
 								folder_add_mail(folder,folder->pending_mail_info_array[i],0);
 							folder->num_pending_mails = 0;
@@ -1466,6 +1961,9 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							folder->index_uptodate = 0;
 							return 1;
 						}
+
+nosp:
+						(void)1;
 					} else
 					{
 						folder->num_index_mails = num_mails;
@@ -1484,8 +1982,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 	folder->index_uptodate = mail_infos_read;
 
-	if (!mail_infos_read)
-		folder_rescan(folder, status_set_status);
+	if (!mail_infos_read && !folder->rescanning)
+	{
+		folder_rescan_async(folder, NULL, callback_rescan_folder_completed, NULL);
+	}
 	return 1;
 }
 
@@ -1715,6 +2215,12 @@ int folder_remove(struct folder *f)
   	return 0;
   }
 
+	if (f->rescanning)
+	{
+		sm_request(NULL,_("Can't delete folder because it is currently being rescanned."),_("_Ok"));
+		return 0;
+	}
+
 	if (f->special == FOLDER_SPECIAL_NO)
 	{
 		struct folder_node *node = (struct folder_node*)list_first(&folder_list);
@@ -1925,9 +2431,12 @@ static char *folder_config_get_imap_path(char *folder_path)
 	return NULL;
 }
 
-/******************************************************************
- Load the configuration for the folder
-*******************************************************************/
+/**
+ * Load the configuration for the folder.
+ *
+ * @param f the folder for which the configuration shall be loaded.
+ * @return success or not.
+ */
 static int folder_config_load(struct folder *f)
 {
 	char buf[256];
@@ -2362,33 +2871,33 @@ static struct folder *folder_find_by_imap_account(struct account *ac)
 	return f;
 }
 
-/******************************************************************
- Returns the incoming folder
-*******************************************************************/
+/**
+ * @return the main incoming folder.
+ */
 struct folder *folder_incoming(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_INCOMING);
 }
 
-/******************************************************************
- Returns the outgoing folder
-*******************************************************************/
+/**
+ * @return the main outgoing folder.
+ */
 struct folder *folder_outgoing(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_OUTGOING);
 }
 
-/******************************************************************
- Returns the sent folder
-*******************************************************************/
+/**
+ * @return the main sent folder.
+ */
 struct folder *folder_sent(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_SENT);
 }
 
-/******************************************************************
- Returns the deleleted folder
-*******************************************************************/
+/**
+  * @return the main deleted folder.
+ */
 struct folder *folder_deleted(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_DELETED);
@@ -2803,85 +3312,6 @@ void folder_delete_deleted(void)
 }
 
 /**
- * Writes a string into a filehandle. Returns 0 for an error else
- * the number of bytes which has been written (at least two).
- *
- * @param fh
- * @param str
- * @return
- */
-static int fwrite_str(FILE *fh, char *str)
-{
-	if (str)
-	{
-		int len;
-		int strl = strlen(str);
-
-		if (fputc((strl/256)%256,fh)==EOF) return 0;
-		if (fputc(strl%256,fh)==EOF) return 0;
-
-		len = fwrite(str,1,strl,fh);
-		if (len == strl) return len + 2;
-	}
-	fputc(0,fh);
-	fputc(0,fh);
-	return 2;
-}
-
-/**
- * Reads a string from a filehandle. It is allocated with malloc().
- *
- * @param fh
- * @return
- */
-static char *fread_str(FILE *fh)
-{
-	unsigned char a;
-	char *txt;
-	int len;
-
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
-
-	if ((txt = (char*)malloc(len+1)))
-	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
-	}
-	return txt;
-}
-
-/**
- * Reads a string from a file handle. It is allocated with malloc().
- * Returns NULL if the string has an length of 0.
- *
- * @param fh
- * @return
- */
-static char *fread_str_no_null(FILE *fh)
-{
-	unsigned char a;
-	char *txt;
-	int len;
-
-	a = fgetc(fh);
-	len = a << 8;
-	a = fgetc(fh);
-	len += a;
-
-	if (!len) return NULL;
-
-	if ((txt = (char*)malloc(len+1)))
-	{
-		fread(txt,1,len,fh);
-		txt[len]=0;
-	}
-	return txt;
-}
-
-/**
  * Stores the header of the index file.
  *
  * @param f the folder for which the index file shall be written.
@@ -2903,15 +3333,66 @@ static int folder_save_index_header(struct folder *f, FILE *fh)
 
 /*****************************************************************************/
 
+static int string_pool_put_address_list(struct string_pool *sp, struct address_list *al)
+{
+	struct address *addr;
+
+	addr = address_list_first(al);
+	while (addr)
+	{
+		string_pool_ref(sp, addr->email);
+		string_pool_ref(sp, addr->realname);
+		addr = address_next(addr);
+	}
+	return 1;
+}
+
+/*****************************************************************************/
+
 int folder_save_index(struct folder *f)
 {
 	FILE *fh;
 	int append;
+	struct string_pool *sp;
 
 	if (!f->num_pending_mails && (!f->mail_infos_loaded || f->index_uptodate))
 		return 0;
 
+	if (f->rescanning)
+	{
+		f->to_be_saved = 1;
+		return 0;
+	}
+
 	append = !!f->num_pending_mails;
+	sp = NULL;
+
+	if (!append && f->mail_info_array)
+	{
+		char *sp_name;
+
+		if ((sp_name = folder_get_string_pool_name(f)))
+		{
+			if ((sp = string_pool_create()))
+			{
+				int i;
+
+				for (i=0; i < f->num_mails; i++)
+				{
+					struct mail_info *m = f->mail_info_array[i];
+
+					if (m->from_addr) string_pool_ref(sp, m->from_addr);
+					if (m->from_phrase) string_pool_ref(sp, m->from_phrase);
+					if (m->to_list) string_pool_put_address_list(sp, m->to_list);
+					if (m->cc_list) string_pool_put_address_list(sp, m->cc_list);
+					if (m->reply_addr) string_pool_ref(sp, m->reply_addr);
+					if (m->pop3_server) string_pool_ref(sp, m->pop3_server);
+				}
+				string_pool_save(sp, sp_name);
+			}
+			free(sp_name);
+		}
+	}
 
 	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))
 	{
@@ -2943,53 +3424,53 @@ int folder_save_index(struct folder *f)
 
 			if (m->to_list)
 			{
-				num_to = list_length(&m->to_list->list);
-				to_addr = (struct address*)list_first(&m->to_list->list);
+				num_to = address_list_length(m->to_list);
+				to_addr = address_list_first(m->to_list);
 			}
 
 			if (m->cc_list)
 			{
-				num_cc = list_length(&m->cc_list->list);
-				cc_addr = (struct address*)list_first(&m->cc_list->list);
+				num_cc = address_list_length(m->cc_list);
+				cc_addr = address_list_first(m->cc_list);
 			}
 
 			fwrite(&num_to,1,4,fh);
 			fwrite(&num_cc,1,4,fh);
 
-			if (!(len_add = fwrite_str(fh, (char*)m->subject))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->subject, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->filename))) break;
+			if (!(len_add = fwrite_str(fh, m->filename, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, (char*)m->from_phrase))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->from_phrase, sp))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->from_addr, sp))) break;
 			len += len_add;
 
 			while (to_addr)
 			{
-				if (!(len_add = fwrite_str(fh, to_addr->realname))) break;
+				if (!(len_add = fwrite_str(fh, to_addr->realname, sp))) break;
 				len += len_add;
-				if (!(len_add = fwrite_str(fh, to_addr->email))) break;
+				if (!(len_add = fwrite_str(fh, to_addr->email, sp))) break;
 				len += len_add;
-				to_addr = (struct address*)node_next(&to_addr->node);
+				to_addr = address_next(to_addr);
 			}
 
 			while (cc_addr)
 			{
-				if (!(len_add = fwrite_str(fh, cc_addr->realname))) break;
+				if (!(len_add = fwrite_str(fh, cc_addr->realname, sp))) break;
 				len += len_add;
-				if (!(len_add = fwrite_str(fh, cc_addr->email))) break;
+				if (!(len_add = fwrite_str(fh, cc_addr->email, sp))) break;
 				len += len_add;
-				cc_addr = (struct address*)node_next(&cc_addr->node);
+				cc_addr = address_next(cc_addr);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server))) break;
+			if (!(len_add = fwrite_str(fh, m->pop3_server, sp))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_id, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_reply_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_reply_id, NULL))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->reply_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->reply_addr, sp))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */
@@ -3015,7 +3496,12 @@ int folder_save_index(struct folder *f)
 		f->index_uptodate = 1;
 	} else
 	{
-		SM_DEBUGF(5,("Couldn't open %s for writing\n",f->path));
+		SM_DEBUGF(5,("Couldn't open index file for folder at path \"%s\" for writing\n",f->path));
+	}
+
+	if (sp)
+	{
+		string_pool_delete(sp);
 	}
 
 	return 1;
@@ -3967,6 +4453,12 @@ int init_folders(void)
 	if (!(folders_semaphore = thread_create_semaphore()))
 		return 0;
 
+	if (!(folder_spool = string_pool_create()))
+	{
+		thread_dispose_semaphore(folders_semaphore);
+		return 0;
+	}
+
 	list_init(&folder_list);
 
 	folder_traverse_order_file(init_folders_traverse_orders_callback,NULL);
@@ -4080,6 +4572,8 @@ void del_folders(void)
 
 	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
 		folder_node_dispose(node);
+
+	string_pool_delete(folder_spool);
 }
 
 /*****************************************************************************/

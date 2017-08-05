@@ -781,7 +781,7 @@ msgstr ""
 
 #: amiga-mui/configwnd.c:1471
 msgid "The default signature for this account"
-msgstr "Die Vorgabesignature für dieses Konto"
+msgstr "Die Vorgabesignatur für dieses Konto"
 
 #: amiga-mui/configwnd.c:1472
 msgid ""
@@ -963,7 +963,7 @@ msgstr "Zeilenumbrüche vor dem Zitieren"
 
 #: amiga-mui/configwnd.c:1533 amiga-mui/configwnd.c:1534
 msgid "Strip signature before quoting"
-msgstr "Signature vor dem Zitieren entfernen"
+msgstr "Signatur vor dem Zitieren entfernen"
 
 #: amiga-mui/configwnd.c:1536 amiga-mui/configwnd.c:1537
 msgid "Quote empty lines"

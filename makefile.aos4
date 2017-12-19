@@ -34,8 +34,7 @@ SSL_FLAGS = -DUSE_OPENSSL
 SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
 SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
 SSL_LIB = -lssl -lcrypto
-else
-ifdef USE_AMISSL3
+else ifdef USE_AMISSL3
 OBJSDIRSUFFIX = amissl3
 TARGETSUFFIX = -amissl3
 SSL_FLAGS = -DUSE_AMISSL3
@@ -49,7 +48,6 @@ SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL4_INCLUDE)"
 SSL_LINK =
 SSL_LIB =
-endif
 endif
 
 # COMMITID, COMMITS, and VERSION_TAG macros

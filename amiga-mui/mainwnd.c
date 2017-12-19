@@ -42,6 +42,17 @@
 #include <openssl/crypto.h>
 #endif
 
+#ifdef USE_AMISSL4
+
+#include <libraries/amisslmaster.h>
+#include <proto/amissl.h>
+#include <proto/amisslmaster.h>
+
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+
+#endif
+
 #include "version.h"
 
 #include "account.h"
@@ -246,16 +257,49 @@ void display_about(void)
 #else
 	{
 		const char *ssl_support;
+		char ssl_support_secondary[48];
+
+		ssl_support_secondary[0] = 0;
 #if defined(USE_OPENSSL)
 		ssl_support = SSLeay_version(SSLEAY_VERSION);
 #elif defined(USE_AMISSL4)
 		ssl_support = "AmiSSL4";
+		{
+			struct Library *AmiSSLMasterBase;
+			struct AmiSSLMasterIFace *IAmiSSLMaster;
+
+			if ((AmiSSLMasterBase = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &IAmiSSLMaster)))
+			{
+				if (InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
+				{
+					struct Library *AmiSSLBase;
+
+					if ((AmiSSLBase = OpenAmiSSL()))
+					{
+						struct AmiSSLIFace *IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase,"main",1,NULL);
+						if (IAmiSSL)
+						{
+							mystrlcpy(ssl_support_secondary, OpenSSL_version(OPENSSL_VERSION), sizeof(ssl_support_secondary));
+							DropInterface((struct Interface*)IAmiSSL);
+						}
+						CloseAmiSSL();
+					}
+				}
+				CloseLibraryInterface(AmiSSLMasterBase, IAmiSSLMaster);
+			}
+		}
 #elif defined(USE_AMISSL3)
 		ssl_support = "AmiSSL3";
 #else
 		ssl_support = "AmiSSL";
 #endif
-		sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s."), ssl_support);
+		if (ssl_support_secondary[0])
+		{
+			sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s (%s)."), ssl_support, ssl_support_secondary);
+		} else
+		{
+			sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s."), ssl_support);
+		}
 	}
 #endif
 

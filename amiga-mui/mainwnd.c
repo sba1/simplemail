@@ -295,7 +295,7 @@ void display_about(void)
 #endif
 		if (ssl_support_secondary[0])
 		{
-			sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s (%s)."), ssl_support, ssl_support_secondary);
+			sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s (based on %s)."), ssl_support, ssl_support_secondary);
 		} else
 		{
 			sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s."), ssl_support);

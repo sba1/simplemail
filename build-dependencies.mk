@@ -44,8 +44,8 @@ endif
 .amissl4-done: $(LHA)
 ifndef AMISSL4_INCLUDE
 	mkdir -p build-dependencies/amissl4
-	cd build-dependencies/amissl4 && wget -N https://github.com/jens-maus/amissl/releases/download/4.0/AmiSSL-4.0.lha
-	cd build-dependencies/amissl4 && $(LHA) xf AmiSSL-4.0.lha
+	cd build-dependencies/amissl4 && wget -N https://github.com/jens-maus/amissl/releases/download/4.1/AmiSSL-4.1.lha
+	cd build-dependencies/amissl4 && $(LHA) xf AmiSSL-4.1.lha
 endif
 	touch $@
 

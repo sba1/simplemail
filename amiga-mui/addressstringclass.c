@@ -81,14 +81,14 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 
 		if ((addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos)))
 		{
-			if (entry->is_group)
+			if (entry->type == AMET_GROUP)
 			{
 				int addr_start_len = strlen(addr_start);
 
 				/* Get the completed string */
 				if (!utf8stricmp_len(addr_start,entry->o.group->name,addr_start_len))
 					DoMethod(data->str, MUIM_AddressString_Complete, (ULONG)entry->o.group->name + addr_start_len);
-			} else
+			} else if (entry->type == AMET_ENTRY)
 			{
 				/* Address entries have an own function to get the completed string */
 				if ((complete = addressbook_get_entry_completing_part(entry->o.entry, addr_start, NULL)))

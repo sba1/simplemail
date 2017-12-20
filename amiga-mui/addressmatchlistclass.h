@@ -31,10 +31,17 @@ IMPORT struct MUI_CustomClass *CL_AddressMatchList;
 
 struct MUIP_AddressMatchList_Refresh {ULONG MethodID; char *pattern;};
 
+enum address_match_entry_t
+{
+	AMET_ENTRY,
+	AMET_GROUP
+};
+
 /* The type of the entries */
 struct address_match_entry
 {
-	int is_group;
+	/* Any of AMET_xxx */
+	enum address_match_entry_t type;
 	union
 	{
 		struct addressbook_group *group;

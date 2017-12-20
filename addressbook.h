@@ -349,9 +349,11 @@ struct addressbook_completion_node
  * Completes an groupname/alias/realname/e-mail address of the addressbook
  *
  * @param address
+ * @param max defines the maximum number of items that shall be put in the completion list. Use
+ *  0 to get the maximum.
  * @return
  */
-struct addressbook_completion_list *addressbook_complete_address_full(char *address);
+struct addressbook_completion_list *addressbook_complete_address_full(char *address, unsigned int max);
 
 /**
  * Frees the list returned by addressbook_complete_address_full().

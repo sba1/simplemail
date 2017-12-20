@@ -173,6 +173,10 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressMatchList_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
+	/* TODO: We just should bring the window in front of the parent window,
+	 *  not necessarily in front of all other windows.
+	 */
+	DoMethod(obj, MUIM_Window_ToFront);
 	return DoMethod(data->list, MUIM_AddressMatchList_Refresh, (ULONG)msg->pattern);
 }
 

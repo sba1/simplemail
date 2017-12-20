@@ -383,6 +383,21 @@ static inline struct addressbook_completion_node *addressbook_completion_node_ne
 {
 	return (struct addressbook_completion_node*)node_next(&n->n);
 }
+/**
+ * Duplicate the given completion node.
+ *
+ * @param n the node to be duplicated.
+ * @return the duplicate or NULL. The result must be freed via addressbook_completion_node_free();
+ */
+struct addressbook_completion_node *addressbook_completion_node_duplicate(struct addressbook_completion_node *n);
+
+/**
+ * Free the given completion node.
+ *
+ * @param n the node to be freed. It needs to be a result of
+ *  addressbook_completion_node_duplicate().
+ */
+void addressbook_completion_node_free(struct addressbook_completion_node *n);
 
 #endif
 

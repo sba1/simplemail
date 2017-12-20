@@ -1698,6 +1698,46 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 
 /*****************************************************************************/
 
+struct addressbook_completion_node *addressbook_completion_node_duplicate(struct addressbook_completion_node *n)
+{
+	struct addressbook_completion_node *nc;
+	int l;
+
+	if (!(nc = malloc(sizeof(*nc))))
+	{
+		return NULL;
+	}
+
+	if (!(nc->complete = mystrdup(n->complete)))
+	{
+		goto bailout;
+	}
+
+	l = utf8len(nc->complete);
+	if ((nc->match_mask = malloc(match_bitmask_size(l))))
+	{
+		memcpy(nc->match_mask, n->match_mask, match_bitmask_size(l));
+	} else
+	{
+		goto bailout;
+	}
+	nc->type = n->type;
+
+	return nc;
+bailout:
+	free(nc->match_mask);
+	free(nc->complete);
+	free(nc);
+	return NULL;
+}
+
+void addressbook_completion_node_free(struct addressbook_completion_node *n)
+{
+	free(n->complete);
+	free(n->match_mask);
+	free(n);
+}
+
 void addressbook_completion_list_free(struct addressbook_completion_list *cl)
 {
 	struct addressbook_completion_node *n;

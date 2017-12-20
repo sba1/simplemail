@@ -38,6 +38,9 @@ struct  MUIP_AddressString_UpdateList {ULONG MethodID;};
 
 #define MUIM_MatchWindow_Up      (TAG_USER | 0x30020101)
 #define MUIM_MatchWindow_Down    (TAG_USER | 0x30020102)
+#define MUIM_MatchWindow_Refresh (TAG_USER | 0x30020103)
+
+struct  MUIP_MatchWindow_Refresh {ULONG MethodID; char *pattern;};
 
 /**
  * Create the address string custom class.

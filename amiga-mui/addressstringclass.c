@@ -170,7 +170,7 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
  * @param msg the parameter of the method
  * @return
  */
-STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressMatchList_Refresh *msg)
+STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_MatchWindow_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	/* TODO: We just should bring the window in front of the parent window,
@@ -237,7 +237,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
-		case	MUIM_AddressMatchList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressMatchList_Refresh*)msg);
+		case	MUIM_MatchWindow_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_MatchWindow_Refresh*)msg);
 		case 	MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
 		case	MUIM_MatchWindow_Down: return MatchWindow_Down(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
@@ -628,7 +628,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	if (data->match_wnd)
 	{
 		int entries;
-		DoMethod(data->match_wnd, MUIM_AddressMatchList_Refresh, (ULONG)addr_start);
+		DoMethod(data->match_wnd, MUIM_MatchWindow_Refresh, (ULONG)addr_start);
 		entries = xget(data->match_wnd, MUIA_MatchWindow_Entries);
 
 		if (entries > 1)

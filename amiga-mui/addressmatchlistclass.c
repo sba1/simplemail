@@ -92,6 +92,11 @@ STATIC ASM SAVEDS struct address_match_entry *matchentry_construct(REG(a0, struc
 					goto err;
 				break;
 
+		case	AMET_COMPLETION:
+				if (!(new_entry->o.completion = addressbook_completion_node_duplicate(entry->o.completion)))
+					goto err;
+				break;
+
 		default:
 				goto err;
 	}
@@ -116,6 +121,10 @@ STATIC ASM SAVEDS VOID matchentry_destruct(REG(a0, struct Hook *h), REG(a2, Obje
 
 		case	AMET_ENTRY:
 				addressbook_free_entry_new(entry->o.entry);
+				break;
+
+		case	AMET_COMPLETION:
+				addressbook_completion_node_free(entry->o.completion);
 				break;
 	}
 
@@ -214,6 +223,17 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 			count += utf8tostr(addr_entry->group_array[i], &data->group_buf[count], sizeof(data->group_buf) - count, user.config.default_codeset);
 		}
 		*array++ = data->group_buf;
+	} else if (entry->type == AMET_COMPLETION)
+	{
+		utf8tostr(entry->o.completion->complete, data->realname_buf, sizeof(data->realname_buf), user.config.default_codeset);
+
+		*array++ = data->realname_buf;
+		*array++ = NULL;
+		*array++ = NULL;
+		*array++ = NULL;
+		*array++ = NULL;
+		*array = NULL;
+
 	}
 }
 
@@ -233,6 +253,12 @@ STATIC ASM SAVEDS LONG matchentry_compare(REG(a0, struct Hook *h), REG(a2, Objec
 	if (entry2->type == AMET_GROUP) str2 = entry2->o.group->name;
 	else if (entry1->type == AMET_ENTRY) str2 = entry2->o.entry->realname;
 	else str2 = "";
+
+	if (entry1->type == AMET_COMPLETION && entry2->type == AMET_COMPLETION)
+	{
+		str1 = entry1->o.completion->complete;
+		str2 = entry2->o.completion->complete;
+	}
 
 	return utf8stricmp(str1,str2);
 }
@@ -343,7 +369,7 @@ STATIC ULONG AddressMatchList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	struct addressbook_group *group;
 	struct address_match_entry entry;
 	char *pattern = msg->pattern;
-	int pattern_len = strlen(pattern);
+	int pattern_len = mystrlen(pattern);
 
 	free(data->pattern);
 	data->pattern = mystrdup(pattern);
@@ -376,6 +402,27 @@ STATIC ULONG AddressMatchList_Refresh(struct IClass *cl, Object *obj, struct MUI
 		}
 
 		group = addressbook_next_group(group);
+	}
+
+	/* Add remaining more fuzzy completions */
+	if (msg->pattern)
+	{
+		struct addressbook_completion_list *cl;
+
+		if ((cl = addressbook_complete_address_full(msg->pattern, 10)))
+		{
+			struct addressbook_completion_node *cn = addressbook_completion_list_first(cl);
+			while (cn)
+			{
+				entry.type = AMET_COMPLETION;
+				entry.o.completion = cn;
+
+				DoMethod(obj, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Sorted);
+
+				cn = addressbook_completion_node_next(cn);
+			}
+			addressbook_completion_list_free(cl);
+		}
 	}
 
 	set(obj, MUIA_NList_Quiet, FALSE);

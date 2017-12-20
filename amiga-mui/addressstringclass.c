@@ -53,6 +53,7 @@ struct MatchWindow_Data
 {
 	Object *str;
 	Object *list;
+	char *current_pattern;
 };
 
 struct MUI_CustomClass *CL_MatchWindow;
@@ -74,12 +75,10 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 
 	if (entry)
 	{
-		char *contents = (char*)xget(data->str,MUIA_UTF8String_Contents);
-		int buf_pos =  utf8realpos(contents,xget(data->str,MUIA_String_BufferPos));
 		char *addr_start;
 		char *complete;
 
-		if ((addr_start = sm_get_to_be_completed_address_from_line(contents, buf_pos)))
+		if ((addr_start = data->current_pattern))
 		{
 			if (entry->type == AMET_GROUP)
 			{
@@ -93,8 +92,11 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 				/* Address entries have an own function to get the completed string */
 				if ((complete = addressbook_get_entry_completing_part(entry->o.entry, addr_start, NULL)))
 					DoMethod(data->str, MUIM_AddressString_Complete, (ULONG)complete);
+			} else if (entry->type == AMET_COMPLETION)
+			{
+				/* Updating the contents doesn't make sense here, because the
+				 * string to be completed may not be a prefix */
 			}
-			free(addr_start);
 		}
 		/* For some reasons, MUIA_NList_Active gets lot within MUIM_AddressString_Complete (at MUIM_BetterString_ClearSelected).
 		 * This is a workaround for this problem. */
@@ -144,6 +146,21 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 }
 
 /**
+ * Implementation of OM_DISPOSE
+ *
+ * @param cl the class
+ * @param obj the object
+ * @param msg the parameter of the method
+ * @return
+ */
+STATIC ULONG MatchWindow_Dispose(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
+	free(data->current_pattern);
+	return DoSuperMethodA(cl,obj,msg);
+}
+
+/**
  * Implementation of OM_GET.
  *
  * @param cl the class
@@ -157,6 +174,20 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	if (msg->opg_AttrID == MUIA_MatchWindow_Entries)
 	{
 		*msg->opg_Storage = xget(data->list, MUIA_NList_Entries);
+		return 1;
+	}
+
+	if (msg->opg_AttrID == MUIA_MatchWindow_ActiveString)
+	{
+		struct address_match_entry *entry;
+		DoMethod(data->list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
+		if (entry && entry->type == AMET_COMPLETION)
+		{
+			*msg->opg_Storage = (ULONG)entry->o.completion->complete;
+		} else
+		{
+			*msg->opg_Storage = 0;
+		}
 		return 1;
 	}
 	return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -177,7 +208,9 @@ STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_Mat
 	 *  not necessarily in front of all other windows.
 	 */
 	DoMethod(obj, MUIM_Window_ToFront);
-	return DoMethod(data->list, MUIM_AddressMatchList_Refresh, (ULONG)msg->pattern);
+	if (data->current_pattern) free(data->current_pattern);
+	data->current_pattern = utf8strdup(msg->pattern, 1);
+	return DoMethod(data->list, MUIM_AddressMatchList_Refresh, (ULONG)data->current_pattern);
 }
 
 /**
@@ -236,6 +269,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE: return MatchWindow_Dispose(cl,obj,msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
 		case	MUIM_MatchWindow_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_MatchWindow_Refresh*)msg);
 		case 	MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
@@ -395,6 +429,44 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 										 TAG_DONE);
 			}
     }
+
+		if (data->match_wnd && (code == 13))
+		{
+			char *active_str = (char*)xget(data->match_wnd, MUIA_MatchWindow_ActiveString);
+			if (active_str)
+			{
+				char c;
+				char *contents = (char*)xget(obj, MUIA_UTF8String_Contents);
+				char *new_contents;
+				int active_str_len = strlen(active_str);
+
+				int addr_start_buf_pos = sm_get_addr_start_pos(contents, buf_pos);
+				int addr_end_buf_pos = addr_start_buf_pos;
+
+				while ((c = contents[addr_end_buf_pos]))
+				{
+					if (c == ',') break;
+					addr_end_buf_pos++;
+				}
+
+				if ((new_contents = malloc(strlen(contents) + strlen(active_str) + 1)))
+				{
+					strncpy(new_contents, contents, addr_start_buf_pos);
+					strcpy(&new_contents[addr_start_buf_pos], active_str);
+					strcpy(&new_contents[addr_start_buf_pos + active_str_len], &contents[addr_end_buf_pos]);
+
+					SetAttrs(obj,
+						MUIA_UTF8String_Contents, new_contents,
+						MUIA_String_BufferPos, utf8realpos(contents, addr_start_buf_pos),
+						MUIA_BetterString_SelectSize, utf8realpos(active_str, active_str_len),
+						MUIA_NoNotify, TRUE,
+						TAG_DONE);
+
+					return MUI_EventHandlerRC_Eat;
+				}
+			}
+			/* Don't eat */
+		}
 
 		if (((code >= 32 && code <= 126) || code >= 160) && !(msg->imsg->Qualifier & IEQUALIFIER_RCOMMAND))
 		{

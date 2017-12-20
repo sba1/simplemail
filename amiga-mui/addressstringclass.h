@@ -35,6 +35,7 @@ struct  MUIP_AddressString_UpdateList {ULONG MethodID;};
 /* MatchWindowClass */
 #define MUIA_MatchWindow_Entries (TAG_USER | 0x30020001)
 #define MUIA_MatchWindow_String  (TAG_USER | 0x30020002)
+#define MUIA_MatchWindow_ActiveString (TAG_USER | 0x30020003)
 
 #define MUIM_MatchWindow_Up      (TAG_USER | 0x30020101)
 #define MUIM_MatchWindow_Down    (TAG_USER | 0x30020102)

@@ -37,6 +37,16 @@
 void sm_get_current_time(unsigned int *seconds, unsigned int *mics);
 
 /**
+ * Return start position of an address that contains the given pos within an
+ * address string.
+ *
+ * @param contents
+ * @param pos
+ * @return the start position
+ */
+int sm_get_addr_start_pos(char *contents, int pos);
+
+/**
  * Returns a malloced() sting for the address start (this what should
  * be completed). The comma is identified as a separator.
  *

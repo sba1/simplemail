@@ -34,7 +34,8 @@ struct MUIP_AddressMatchList_Refresh {ULONG MethodID; char *pattern;};
 enum address_match_entry_t
 {
 	AMET_ENTRY,
-	AMET_GROUP
+	AMET_GROUP,
+	AMET_COMPLETION
 };
 
 /* The type of the entries */
@@ -46,6 +47,7 @@ struct address_match_entry
 	{
 		struct addressbook_group *group;
 		struct addressbook_entry_new *entry;
+		struct addressbook_completion_node *completion;
 	} o;
 };
 

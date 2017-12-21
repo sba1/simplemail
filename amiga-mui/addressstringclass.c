@@ -420,17 +420,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
 		code = ConvertKey(msg->imsg);
 
-    if (code == ',')
-    {
-			if (selectsize)
-			{
-				SetAttrs(obj,MUIA_String_BufferPos, buf_pos + selectsize,
-										 MUIA_BetterString_SelectSize, 0,
-										 TAG_DONE);
-			}
-    }
-
-		if (data->match_wnd && (code == 13))
+		if (data->match_wnd && (code == 13 || code == ','))
 		{
 			char *active_str = (char*)xget(data->match_wnd, MUIA_MatchWindow_ActiveString);
 			if (active_str)
@@ -457,15 +447,23 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
 					SetAttrs(obj,
 						MUIA_UTF8String_Contents, new_contents,
-						MUIA_String_BufferPos, utf8realpos(contents, addr_start_buf_pos),
-						MUIA_BetterString_SelectSize, utf8realpos(active_str, active_str_len),
 						MUIA_NoNotify, TRUE,
 						TAG_DONE);
 
-					return MUI_EventHandlerRC_Eat;
+					return 0;
 				}
 			}
 			/* Don't eat */
+		}
+
+		if (code == ',')
+		{
+			if (selectsize)
+			{
+				SetAttrs(obj,MUIA_String_BufferPos, buf_pos + selectsize,
+										 MUIA_BetterString_SelectSize, 0,
+										 TAG_DONE);
+			}
 		}
 
 		if (((code >= 32 && code <= 126) || code >= 160) && !(msg->imsg->Qualifier & IEQUALIFIER_RCOMMAND))

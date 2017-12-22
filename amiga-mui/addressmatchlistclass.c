@@ -225,9 +225,32 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 		*array++ = data->group_buf;
 	} else if (entry->type == AMET_COMPLETION)
 	{
+		int l, i, j, last_hit = 0;
+
 		utf8tostr(entry->o.completion->complete, data->realname_buf, sizeof(data->realname_buf), user.config.default_codeset);
 
-		*array++ = data->realname_buf;
+		l = strlen(data->realname_buf);
+
+		j = 0;
+
+		for (i = 0; i < l && j < sizeof(data->description_buf) - 3; i++)
+		{
+			int hit = match_hit(entry->o.completion->match_mask, i);
+			if (last_hit != hit && j + 2 < sizeof(data->description_buf))
+			{
+				unsigned char s;
+
+				data->description_buf[j++] = '\033';
+				s = hit?'b':'n';
+				data->description_buf[j++] = s;
+
+				last_hit = hit;
+			}
+			data->description_buf[j++] = data->realname_buf[i];
+		}
+		data->description_buf[j] = 0;
+
+		*array++ = data->description_buf;
 		*array++ = NULL;
 		*array++ = NULL;
 		*array++ = NULL;

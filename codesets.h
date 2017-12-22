@@ -272,6 +272,15 @@ static inline unsigned int match_bitmask_size(int len)
 }
 
 /**
+ * @return whether there is a hit at the given pos.
+ */
+static inline int match_hit(match_mask_t *mask, int pos)
+{
+	unsigned int mp = match_bitmask_pos(pos);
+	return !!(mask[mp] & match_bitmask(pos));
+}
+
+/**
  * Tries to match needle against haystack. A needle matches if it is a substring
  * of the haystack or, more generally, if the sequence of characters in the
  * substring can be found in the haystack with possible additional characters.

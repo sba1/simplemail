@@ -39,6 +39,7 @@
 #include "filter.h"
 #include "imap.h"
 #include "lists.h"
+#include "mail_context.h"
 #include "mail_support.h"
 #include "parse.h"
 #include "progmon.h"
@@ -69,8 +70,8 @@ static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
 
-/* the global string pool for the folder */
-static struct string_pool *folder_spool;
+/* the global mail context for all mails associated to folders */
+static mail_context *folder_mail_context;
 
 /**
  * Compare two mails with respect to their status.
@@ -4453,7 +4454,7 @@ int init_folders(void)
 	if (!(folders_semaphore = thread_create_semaphore()))
 		return 0;
 
-	if (!(folder_spool = string_pool_create()))
+	if (!(folder_mail_context = mail_context_create()))
 	{
 		thread_dispose_semaphore(folders_semaphore);
 		return 0;
@@ -4573,7 +4574,7 @@ void del_folders(void)
 	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
 		folder_node_dispose(node);
 
-	string_pool_delete(folder_spool);
+	mail_context_free(folder_mail_context);
 }
 
 /*****************************************************************************/

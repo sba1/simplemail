@@ -27,6 +27,12 @@
 #include "lists.h"
 #endif
 
+#ifdef __SASC
+#ifndef inline
+#define inline __inline
+#endif
+#endif
+
 typedef char utf8;
 
 struct single_convert

@@ -1,3 +1,8 @@
+Version 0.44 (30th beta) - released on 2017/12/24
+   - Added AmiSSL 4 support
+   - Decreased folder index storage
+   - Improved the e-mail address auto-completion
+
 Version 0.43 (29th beta) - released on 2016/12/24
    - Updated OpenSSL version to 1.0.1u
    - Building mail index no longer blocks UI

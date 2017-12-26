@@ -135,7 +135,7 @@ struct mail_info
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
 	unsigned short reference_count; /* number of additional references to this object */
-	unsigned char to_be_freed;
+	unsigned char tflags; /* transient flags */
 
 	/* for mail threads */
 	unsigned char child_mail;									/* is a child mail */
@@ -144,6 +144,9 @@ struct mail_info
 	struct mail_info *next_thread_mail;	/* the same level */
 
 };
+
+/* Only 8 bits in total */
+#define MAIL_TFLAGS_TO_BE_FREED (1<<0)
 
 struct mail_complete
 {

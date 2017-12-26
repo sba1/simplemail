@@ -2442,7 +2442,7 @@ void mail_info_free(struct mail_info *info)
 	/* don't free anything, if there still other references of this mail */
 	if (info->reference_count)
 	{
-		info->to_be_freed = 1;
+		info->tflags |= MAIL_TFLAGS_TO_BE_FREED;
 		return;
 	}
 
@@ -2530,7 +2530,7 @@ void mail_dereference(struct mail_info *mail)
 	}
 	mail->reference_count--;
 	SM_DEBUGF(20,("Decreased reference count of mail %p to %ld\n",mail,mail->reference_count));
-	if (mail->to_be_freed) mail_info_free(mail);
+	if (mail->tflags & MAIL_TFLAGS_TO_BE_FREED) mail_info_free(mail);
 }
 
 /*****************************************************************************/

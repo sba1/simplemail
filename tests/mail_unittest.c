@@ -102,7 +102,7 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
 	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
 	CU_ASSERT_PTR_NULL(m->cc_list);
-	CU_ASSERT_PTR_NULL(m->pop3_server);
+	CU_ASSERT_PTR_NULL(m->pop3_server.str);
 	CU_ASSERT_PTR_NULL(m->reply_addr);
 	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
 	CU_ASSERT_PTR_NULL(m->message_id);

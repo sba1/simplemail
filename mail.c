@@ -1924,7 +1924,7 @@ int mail_process_headers(struct mail_complete *mail)
 
 			case HEADER_X_SIMPLEMAIL_POP3:
 			{
-				mail->info->pop3_server = mystrdup(buf);
+				mail->info->pop3_server.str = mystrdup(buf);
 			}
 			break;
 
@@ -2452,7 +2452,7 @@ void mail_info_free(struct mail_info *info)
 	if (info->to_list) address_list_free(info->to_list);
 	if (info->cc_list) address_list_free(info->cc_list);
 	free(info->reply_addr);
-	free(info->pop3_server);
+	free(info->pop3_server.str);
 	free(info->message_id);
 	free(info->message_reply_id);
 	free(info->filename);

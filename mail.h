@@ -109,6 +109,16 @@ typedef enum
 #define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /**
+ * An union that represent a string, either an id of string pool or a plain
+ * string.
+ */
+union mail_str
+{
+	utf8 *str;
+	int id;
+};
+
+/**
  * @brief Describes some user presentable information of a mail
  */
 struct mail_info
@@ -121,7 +131,7 @@ struct mail_info
 	utf8 *from_addr;			/* the email address */
 	struct address_list *to_list; /* a list of all TO'ed receivers (if any) */
 	struct address_list *cc_list; /* a list of all CC'ed receivers (if any) */
-	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
+	union mail_str pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
 	char *reply_addr;			/* the address where the mail should be replied */
 	utf8 *subject;
 	char *message_id;
@@ -147,6 +157,7 @@ struct mail_info
 
 /* Only 8 bits in total */
 #define MAIL_TFLAGS_TO_BE_FREED (1<<0)
+#define MAIL_TFLAGS_POP3_ID (1<<1)
 
 struct mail_complete
 {

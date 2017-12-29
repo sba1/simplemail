@@ -1795,7 +1795,7 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	if (fread(&num_to,1,4,fh) != 4) return NULL;
 	if (fread(&num_cc,1,4,fh) != 4) return NULL;
 
-	if ((m = mail_info_create()))
+	if ((m = mail_info_create(folder_mail_context)))
 	{
 		m->subject = (utf8*)fread_str(fh, NULL, 0);
 		m->filename = fread_str(fh, NULL, 0);

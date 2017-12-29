@@ -33,6 +33,10 @@
 #include "codesets.h"
 #endif
 
+#ifndef SM__MAIL_CONTEXT_H
+#include "mail_context.h"
+#endif
+
 struct header
 {
 	struct node node; /* embedded node structure */
@@ -153,6 +157,7 @@ struct mail_info
 	struct mail_info *sub_thread_mail;	/* one more level */
 	struct mail_info *next_thread_mail;	/* the same level */
 
+	mail_context *context; /* The context to which this mail is associated, may be NULL */
 };
 
 /* Only 8 bits in total */
@@ -228,9 +233,10 @@ struct mail_complete
 /**
  * Creates a mail info, initialize it to default values.
  *
+ * @param mc the context to which this mail will be associated. May be NULL.
  * @return the mail info.
  */
-struct mail_info *mail_info_create(void);
+struct mail_info *mail_info_create(mail_context *mc);
 
 /**
  * Frees all memory associated with a mail info.

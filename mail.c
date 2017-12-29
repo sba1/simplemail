@@ -582,12 +582,15 @@ void mail_identify_status(struct mail_info *m)
 
 /*****************************************************************************/
 
-struct mail_info *mail_info_create(void)
+struct mail_info *mail_info_create(mail_context *mc)
 {
 	struct mail_info *m;
 
 	if ((m = (struct mail_info*)malloc(sizeof(struct mail_info))))
+	{
 		memset(m,0,sizeof(*m));
+		m->context = mc;
+	}
 	return m;
 }
 
@@ -600,7 +603,7 @@ struct mail_complete *mail_complete_create(void)
 	if ((m = (struct mail_complete*)malloc(sizeof(struct mail_complete))))
 	{
 		memset(m,0,sizeof(*m));
-		if ((m->info = mail_info_create()))
+		if ((m->info = mail_info_create(NULL)))
 		{
 			list_init(&m->content_parameter_list);
 			list_init(&m->header_list);

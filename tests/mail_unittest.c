@@ -86,6 +86,7 @@ void test_mail_filenames_of_new_mails_are_unique(void)
  * X-Mailer: SimpleMail 0.38 (UNIX/GTK+) E-Mail Client (c) 2000-2011 by Hynek Schlawack and Sebastian Bauer
  * Date: 00 Jan 1900 00:00:00 +0000
  * Importance: low
+ * X-SimpleMail-POP3: pop3.def.ghi
  *
  * }}}
  */
@@ -102,7 +103,7 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
 	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
 	CU_ASSERT_PTR_NULL(m->cc_list);
-	CU_ASSERT_PTR_NULL(m->pop3_server.str);
+	CU_ASSERT_STRING_EQUAL(m->pop3_server.str, "pop3.def.ghi");
 	CU_ASSERT_PTR_NULL(m->reply_addr);
 	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
 	CU_ASSERT_PTR_NULL(m->message_id);

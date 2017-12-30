@@ -1436,7 +1436,7 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 			}
 		}
 
-		if (c->create && (m = mail_info_create_from_file(snode->string)))
+		if (c->create && (m = mail_info_create_from_file(folder_mail_context, snode->string)))
 		{
 			c->create = c->mail_callback(m, c->mail_callback_udata);
 		}

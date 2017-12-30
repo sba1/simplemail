@@ -93,7 +93,7 @@ void test_mail_info_create_from_file(void)
 {
 	struct mail_info *m;
 
-	m = mail_info_create_from_file("test.eml");
+	m = mail_info_create_from_file(NULL, "test.eml");
 
 	CU_ASSERT_PTR_NOT_NULL(m);
 	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
@@ -129,7 +129,7 @@ void test_simple_mail_info_with_attachment(void)
 {
 	struct mail_info *m;
 
-	m = mail_info_create_from_file(simple_mail_with_attachment_filename);
+	m = mail_info_create_from_file(NULL, simple_mail_with_attachment_filename);
 	CU_ASSERT(m != NULL);
 
 	CU_ASSERT(m->flags & MAIL_FLAGS_ATTACH);
@@ -148,7 +148,7 @@ void test_simple_mail_complete_with_attachment(void)
 	int m1_data_len, m2_data_len;
 	string s;
 
-	m = mail_complete_create_from_file(simple_mail_with_attachment_filename);
+	m = mail_complete_create_from_file(NULL, simple_mail_with_attachment_filename);
 	CU_ASSERT(m != NULL);
 	CU_ASSERT_STRING_EQUAL(m->content_type, "multipart");
 	CU_ASSERT_STRING_EQUAL(m->content_subtype, "mixed");
@@ -287,7 +287,7 @@ void test_mail_compose_new_with_attachment_can_be_read_again(void)
 
 	test_write_mail_with_attachment("written-with-attachment2.eml");
 
-	m = mail_complete_create_from_file("written-with-attachment2.eml");
+	m = mail_complete_create_from_file(NULL, "written-with-attachment2.eml");
 	CU_ASSERT(m!=NULL);
 
 	CU_ASSERT(m->info->from_phrase != NULL);
@@ -339,7 +339,7 @@ void test_mail_info_get_recipient_addresses(void)
 	private_mail_compose_write(fh, &comp);
 	fclose(fh);
 
-	mi = mail_info_create_from_file("written2.eml");
+	mi = mail_info_create_from_file(NULL, "written2.eml");
 	CU_ASSERT(mi != NULL);
 
 	recipients = mail_info_get_recipient_addresses(mi);

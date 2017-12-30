@@ -1192,7 +1192,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 		old_dir = CurrentDir(lock);
 		SM_DEBUGF(15,("Old dir at %p\n",old_dir));
 
-		if ((data->mail = mail_complete_create_from_file(mail->filename)))
+		if ((data->mail = mail_complete_create_from_file(NULL, mail->filename)))
 		{
 			int dont_show = 0;
 			struct mail_complete *initial;

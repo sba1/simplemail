@@ -422,10 +422,11 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
  * Scans a mail file and returns a filled (malloc'ed) mail instance, NULL
  * if an error happened.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @param filename that points to the file that represents the mail.
  * @return the mail or NULL.
  */
-struct mail_complete *mail_complete_create_from_file(char *filename);
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename);
 
 /**
  * Creates a mail that is a reply to the given mails. That means change the
@@ -454,10 +455,11 @@ struct mail_complete *mail_create_forward(int num, char **filename_array);
  * Scans a mail file and returns a filled (malloc'ed) mail_info instance, NULL
  * if an error happened.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @param filename
  * @return the mail or NULL.
  */
-struct mail_info *mail_info_create_from_file(char *filename);
+struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename);
 
 /**
  * Frees all memory associated with a mail.

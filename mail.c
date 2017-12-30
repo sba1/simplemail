@@ -647,7 +647,7 @@ int mail_read_header_list_if_empty(struct mail_complete *m)
 
 /*****************************************************************************/
 
-struct mail_complete *mail_complete_create_from_file(char *filename)
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename)
 {
 	struct mail_complete *m;
 	FILE *fh;
@@ -708,11 +708,11 @@ struct mail_complete *mail_complete_create_from_file(char *filename)
 
 /*****************************************************************************/
 
-struct mail_info *mail_info_create_from_file(char *filename)
+struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename)
 {
 	struct mail_complete *mail;
 
-	if ((mail = mail_complete_create_from_file(filename)))
+	if ((mail = mail_complete_create_from_file(mc, filename)))
 	{
 		struct mail_info *info;
 
@@ -1131,7 +1131,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 	{
 		struct mail_complete *forward;
 
-		if (!(forward = mail_complete_create_from_file(filename_array[0])))
+		if (!(forward = mail_complete_create_from_file(NULL, filename_array[0])))
 		{
 			mail_complete_free(forward);
 			return NULL;
@@ -1324,7 +1324,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 				mail_complete_free(forward);
 				i++;
 				if (i>=num) break;
-				if (!(forward = mail_complete_create_from_file(filename_array[i]))) break;
+				if (!(forward = mail_complete_create_from_file(NULL, filename_array[i]))) break;
 				mail_read_contents("",forward);
 			} /* while (1) */
 
@@ -3068,7 +3068,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 				remove(new_name);
 		}
 
-		if ((mail = mail_info_create_from_file(new_name)))
+		if ((mail = mail_info_create_from_file(NULL, new_name)))
 		{
 			struct mail_info *old_mail;
 

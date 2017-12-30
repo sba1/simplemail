@@ -95,7 +95,7 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	getcwd(buf, sizeof(buf));
 	chdir(path);
 
-	if ((mail_complete = mail_complete_create_from_file(mail->filename)))
+	if ((mail_complete = mail_complete_create_from_file(NULL, mail->filename)))
 	{
 		struct mail_complete *mail_text;
 		mail_read_contents("",mail_complete);

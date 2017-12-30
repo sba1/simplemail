@@ -471,7 +471,7 @@ int callback_open_message(char *mail_filename, int window)
 		if (getcwd(buf, sizeof(buf)) == NULL) return -1;
 		chdir(dir);
 
-		if ((mail = mail_info_create_from_file(filename)))
+		if ((mail = mail_info_create_from_file(NULL, filename)))
 		{
 			chdir(buf);
 
@@ -528,7 +528,7 @@ void callback_reply_mails(char *folder_path, int num, struct mail_info **to_repl
 
 		for (i=0;i<num;i++)
 		{
-			if (!(mail_array[i] = mail_complete_create_from_file(to_reply_array[i]->filename)))
+			if (!(mail_array[i] = mail_complete_create_from_file(NULL, to_reply_array[i]->filename)))
 			{
 				err = 1;
 				break;
@@ -1189,7 +1189,7 @@ void callback_change_mail(void)
 		getcwd(buf, sizeof(buf));
 		chdir(main_get_folder_drawer());
 
-		if ((mail = mail_complete_create_from_file(filename)))
+		if ((mail = mail_complete_create_from_file(NULL, filename)))
 		{
 			struct compose_args ca;
 			mail_read_contents("",mail);
@@ -1449,12 +1449,12 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
 		if ((newname = mail_get_new_name(MAIL_STATUS_UNREAD)))
 		{
 			myfilecopy(filename,newname);
-			mail = mail_info_create_from_file(newname);
+			mail = mail_info_create_from_file(NULL, newname);
 			free(newname);
 		}
 	} else
 	{
-		mail = mail_info_create_from_file(filename);
+		mail = mail_info_create_from_file(NULL, filename);
 	}
 
 	if (mail)
@@ -1491,7 +1491,8 @@ struct mail_info *callback_new_mail_to_folder_by_file(char *filename)
 	getcwd(buf, sizeof(buf));
 	chdir(folder->path);
 
-	if ((mail = mail_info_create_from_file(filename)))
+	/* TODO: Use common mail context here! */
+	if ((mail = mail_info_create_from_file(NULL, filename)))
 	{
 		pos = folder_add_mail(folder,mail,1);
 		if (main_get_folder() == folder && pos != -1)
@@ -1678,7 +1679,8 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 	getcwd(buf, sizeof(buf));
 	chdir(folder_incoming()->path);
 
-	if ((mail = mail_info_create_from_file(filename)))
+	/* TODO: Use common mail context here! */
+	if ((mail = mail_info_create_from_file(NULL, filename)))
 	{
 		if (is_spam) mail->flags |= MAIL_FLAGS_AUTOSPAM;
 
@@ -1726,7 +1728,8 @@ void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *
 
 	for (i=0;i<num_filenames;i++)
 	{
-		if ((mail = mail_info_create_from_file(filenames[i])))
+		/* TODO: Use common mail context here! */
+		if ((mail = mail_info_create_from_file(NULL, filenames[i])))
 		{
 			simplemail_new_mail_arrived(mail,f,0);
 		}

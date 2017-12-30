@@ -792,7 +792,7 @@ static int pop3_get_mail(struct pop3_dl_callbacks *callbacks,
 
 		if (auto_spam)
 		{
-			struct mail_info *mail = mail_info_create();
+			struct mail_info *mail = mail_info_create(NULL);
 			if (mail)
 			{
 				mail->filename = fn;

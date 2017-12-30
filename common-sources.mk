@@ -30,6 +30,7 @@ NONARCHSRCS=\
 	lists.c \
 	logging.c \
 	mail.c \
+	mail_context.c \
 	mail_support.c \
 	mailinfo_extractor.c \
 	mbox.c \

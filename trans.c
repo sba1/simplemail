@@ -577,7 +577,7 @@ int mails_upload(void)
 
 		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
 
-		if (!(m = mail_complete_create_from_file(m_iter->filename)))
+		if (!(m = mail_complete_create_from_file(NULL, m_iter->filename)))
 		{
 			free_outmail_array(out_array);
 			chdir(path);
@@ -694,7 +694,7 @@ int mails_upload_single(struct mail_info *mi)
 
 	if (!mi) return 0;
 	if (!(out_array = create_outmail_array(1))) return 0;
-	if (!(m = mail_complete_create_from_file(mi->filename)))
+	if (!(m = mail_complete_create_from_file(NULL, mi->filename)))
 	{
 		free_outmail_array(out_array);
 		return 0;

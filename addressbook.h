@@ -349,9 +349,11 @@ struct addressbook_completion_node
  * Completes an groupname/alias/realname/e-mail address of the addressbook
  *
  * @param address
+ * @param max defines the maximum number of items that shall be put in the completion list. Use
+ *  0 to get the maximum.
  * @return
  */
-struct addressbook_completion_list *addressbook_complete_address_full(char *address);
+struct addressbook_completion_list *addressbook_complete_address_full(char *address, unsigned int max);
 
 /**
  * Frees the list returned by addressbook_complete_address_full().
@@ -381,6 +383,21 @@ static inline struct addressbook_completion_node *addressbook_completion_node_ne
 {
 	return (struct addressbook_completion_node*)node_next(&n->n);
 }
+/**
+ * Duplicate the given completion node.
+ *
+ * @param n the node to be duplicated.
+ * @return the duplicate or NULL. The result must be freed via addressbook_completion_node_free();
+ */
+struct addressbook_completion_node *addressbook_completion_node_duplicate(struct addressbook_completion_node *n);
+
+/**
+ * Free the given completion node.
+ *
+ * @param n the node to be freed. It needs to be a result of
+ *  addressbook_completion_node_duplicate().
+ */
+void addressbook_completion_node_free(struct addressbook_completion_node *n);
 
 #endif
 

@@ -33,6 +33,10 @@
 #include "codesets.h"
 #endif
 
+#ifndef SM__MAIL_CONTEXT_H
+#include "mail_context.h"
+#endif
+
 struct header
 {
 	struct node node; /* embedded node structure */
@@ -109,6 +113,16 @@ typedef enum
 #define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /**
+ * An union that represent a string, either an id of string pool or a plain
+ * string.
+ */
+union mail_str
+{
+	utf8 *str;
+	int id;
+};
+
+/**
  * @brief Describes some user presentable information of a mail
  */
 struct mail_info
@@ -121,7 +135,7 @@ struct mail_info
 	utf8 *from_addr;			/* the email address */
 	struct address_list *to_list; /* a list of all TO'ed receivers (if any) */
 	struct address_list *cc_list; /* a list of all CC'ed receivers (if any) */
-	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
+	union mail_str pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
 	char *reply_addr;			/* the address where the mail should be replied */
 	utf8 *subject;
 	char *message_id;
@@ -135,7 +149,7 @@ struct mail_info
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
 	unsigned short reference_count; /* number of additional references to this object */
-	unsigned char to_be_freed;
+	unsigned char tflags; /* transient flags */
 
 	/* for mail threads */
 	unsigned char child_mail;									/* is a child mail */
@@ -143,7 +157,12 @@ struct mail_info
 	struct mail_info *sub_thread_mail;	/* one more level */
 	struct mail_info *next_thread_mail;	/* the same level */
 
+	mail_context *context; /* The context to which this mail is associated, may be NULL */
 };
+
+/* Only 8 bits in total */
+#define MAIL_TFLAGS_TO_BE_FREED (1<<0)
+#define MAIL_TFLAGS_POP3_ID (1<<1)
 
 struct mail_complete
 {
@@ -214,9 +233,10 @@ struct mail_complete
 /**
  * Creates a mail info, initialize it to default values.
  *
+ * @param mc the context to which this mail will be associated. May be NULL.
  * @return the mail info.
  */
-struct mail_info *mail_info_create(void);
+struct mail_info *mail_info_create(mail_context *mc);
 
 /**
  * Frees all memory associated with a mail info.
@@ -402,10 +422,11 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
  * Scans a mail file and returns a filled (malloc'ed) mail instance, NULL
  * if an error happened.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @param filename that points to the file that represents the mail.
  * @return the mail or NULL.
  */
-struct mail_complete *mail_complete_create_from_file(char *filename);
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename);
 
 /**
  * Creates a mail that is a reply to the given mails. That means change the
@@ -434,10 +455,11 @@ struct mail_complete *mail_create_forward(int num, char **filename_array);
  * Scans a mail file and returns a filled (malloc'ed) mail_info instance, NULL
  * if an error happened.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @param filename
  * @return the mail or NULL.
  */
-struct mail_info *mail_info_create_from_file(char *filename);
+struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename);
 
 /**
  * Frees all memory associated with a mail.

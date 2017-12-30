@@ -582,12 +582,15 @@ void mail_identify_status(struct mail_info *m)
 
 /*****************************************************************************/
 
-struct mail_info *mail_info_create(void)
+struct mail_info *mail_info_create(mail_context *mc)
 {
 	struct mail_info *m;
 
 	if ((m = (struct mail_info*)malloc(sizeof(struct mail_info))))
+	{
 		memset(m,0,sizeof(*m));
+		m->context = mc;
+	}
 	return m;
 }
 
@@ -600,7 +603,7 @@ struct mail_complete *mail_complete_create(void)
 	if ((m = (struct mail_complete*)malloc(sizeof(struct mail_complete))))
 	{
 		memset(m,0,sizeof(*m));
-		if ((m->info = mail_info_create()))
+		if ((m->info = mail_info_create(NULL)))
 		{
 			list_init(&m->content_parameter_list);
 			list_init(&m->header_list);
@@ -644,7 +647,7 @@ int mail_read_header_list_if_empty(struct mail_complete *m)
 
 /*****************************************************************************/
 
-struct mail_complete *mail_complete_create_from_file(char *filename)
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename)
 {
 	struct mail_complete *m;
 	FILE *fh;
@@ -705,11 +708,11 @@ struct mail_complete *mail_complete_create_from_file(char *filename)
 
 /*****************************************************************************/
 
-struct mail_info *mail_info_create_from_file(char *filename)
+struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename)
 {
 	struct mail_complete *mail;
 
-	if ((mail = mail_complete_create_from_file(filename)))
+	if ((mail = mail_complete_create_from_file(mc, filename)))
 	{
 		struct mail_info *info;
 
@@ -1128,7 +1131,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 	{
 		struct mail_complete *forward;
 
-		if (!(forward = mail_complete_create_from_file(filename_array[0])))
+		if (!(forward = mail_complete_create_from_file(NULL, filename_array[0])))
 		{
 			mail_complete_free(forward);
 			return NULL;
@@ -1321,7 +1324,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 				mail_complete_free(forward);
 				i++;
 				if (i>=num) break;
-				if (!(forward = mail_complete_create_from_file(filename_array[i]))) break;
+				if (!(forward = mail_complete_create_from_file(NULL, filename_array[i]))) break;
 				mail_read_contents("",forward);
 			} /* while (1) */
 
@@ -1924,7 +1927,7 @@ int mail_process_headers(struct mail_complete *mail)
 
 			case HEADER_X_SIMPLEMAIL_POP3:
 			{
-				mail->info->pop3_server = mystrdup(buf);
+				mail->info->pop3_server.str = mystrdup(buf);
 			}
 			break;
 
@@ -2442,7 +2445,7 @@ void mail_info_free(struct mail_info *info)
 	/* don't free anything, if there still other references of this mail */
 	if (info->reference_count)
 	{
-		info->to_be_freed = 1;
+		info->tflags |= MAIL_TFLAGS_TO_BE_FREED;
 		return;
 	}
 
@@ -2452,7 +2455,7 @@ void mail_info_free(struct mail_info *info)
 	if (info->to_list) address_list_free(info->to_list);
 	if (info->cc_list) address_list_free(info->cc_list);
 	free(info->reply_addr);
-	free(info->pop3_server);
+	free(info->pop3_server.str);
 	free(info->message_id);
 	free(info->message_reply_id);
 	free(info->filename);
@@ -2530,7 +2533,7 @@ void mail_dereference(struct mail_info *mail)
 	}
 	mail->reference_count--;
 	SM_DEBUGF(20,("Decreased reference count of mail %p to %ld\n",mail,mail->reference_count));
-	if (mail->to_be_freed) mail_info_free(mail);
+	if (mail->tflags & MAIL_TFLAGS_TO_BE_FREED) mail_info_free(mail);
 }
 
 /*****************************************************************************/
@@ -3065,7 +3068,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 				remove(new_name);
 		}
 
-		if ((mail = mail_info_create_from_file(new_name)))
+		if ((mail = mail_info_create_from_file(NULL, new_name)))
 		{
 			struct mail_info *old_mail;
 

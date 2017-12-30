@@ -2,6 +2,43 @@
 
 <news>
 
+  <entry date="2017/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released (binaries still on SourceForge)! Version
+    0.44 comes with following changes:
+    <list>
+     <item>
+       Requires now AmiSSL 4.1 on AmigaOS 4.1
+     </item>
+     <item>
+        Decreased folder index storage size
+     </item>
+     <item>
+       Improved the e-mail address auto-completion
+     </item>
+    </list>
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2018!
+   </text>
+
+   <text lang="de">
+    Eine neue Version von SimpleMail wurde veröffentlicht (Binärdateien über SourceForge).
+    Version 0.44 kommt mit folgenden Änderungen:
+    <list>
+     <item>
+      Benötigt nun AmiSSL 4.1 auf AmigaOS 4.1
+     </item>
+     <item>
+        Folder-Index-Dateien beanspruchen weniger Platz
+     </item>
+     <item>
+        Verbesserte Addressen-Auto-Vervollständigung
+     </item>
+    </list>
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   </text>
+  </entry>
+
+
   <entry date="2016/12/24">
    <text lang="en">
     A new version of SimpleMail has been released (binaries still on SourceForge)! Version

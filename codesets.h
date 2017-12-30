@@ -27,6 +27,12 @@
 #include "lists.h"
 #endif
 
+#ifdef __SASC
+#ifndef inline
+#define inline __inline
+#endif
+#endif
+
 typedef char utf8;
 
 struct single_convert
@@ -269,6 +275,15 @@ static inline unsigned int match_bitmask_pos(unsigned pos)
 static inline unsigned int match_bitmask_size(int len)
 {
 	return (len + MATCH_MASK_T_BITS - 1) / MATCH_MASK_T_BITS * MATCH_MASK_T_BYTES;
+}
+
+/**
+ * @return whether there is a hit at the given pos.
+ */
+static inline int match_hit(match_mask_t *mask, int pos)
+{
+	unsigned int mp = match_bitmask_pos(pos);
+	return !!(mask[mp] & match_bitmask(pos));
 }
 
 /**

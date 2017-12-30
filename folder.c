@@ -39,6 +39,7 @@
 #include "filter.h"
 #include "imap.h"
 #include "lists.h"
+#include "mail_context.h"
 #include "mail_support.h"
 #include "parse.h"
 #include "progmon.h"
@@ -69,8 +70,8 @@ static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
 
-/* the global string pool for the folder */
-static struct string_pool *folder_spool;
+/* the global mail context for all mails associated to folders */
+static mail_context *folder_mail_context;
 
 /**
  * Compare two mails with respect to their status.
@@ -207,7 +208,7 @@ static int mail_compare_filename(const struct mail_info *arg1, const struct mail
  */
 static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->pop3_server, arg2->pop3_server);
+	int rc = mystricmp(arg1->pop3_server.str, arg2->pop3_server.str);
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -1435,7 +1436,7 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 			}
 		}
 
-		if (c->create && (m = mail_info_create_from_file(snode->string)))
+		if (c->create && (m = mail_info_create_from_file(folder_mail_context, snode->string)))
 		{
 			c->create = c->mail_callback(m, c->mail_callback_udata);
 		}
@@ -1794,7 +1795,7 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	if (fread(&num_to,1,4,fh) != 4) return NULL;
 	if (fread(&num_cc,1,4,fh) != 4) return NULL;
 
-	if ((m = mail_info_create()))
+	if ((m = mail_info_create(folder_mail_context)))
 	{
 		m->subject = (utf8*)fread_str(fh, NULL, 0);
 		m->filename = fread_str(fh, NULL, 0);
@@ -1844,7 +1845,7 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 			}
 		}
 
-		m->pop3_server = fread_str_no_null(fh, sp);
+		m->pop3_server.str = fread_str_no_null(fh, sp);
 		m->message_id = fread_str_no_null(fh, sp);
 		m->message_reply_id = fread_str_no_null(fh, sp);
 		m->reply_addr = fread_str_no_null(fh, sp);
@@ -3386,7 +3387,7 @@ int folder_save_index(struct folder *f)
 					if (m->to_list) string_pool_put_address_list(sp, m->to_list);
 					if (m->cc_list) string_pool_put_address_list(sp, m->cc_list);
 					if (m->reply_addr) string_pool_ref(sp, m->reply_addr);
-					if (m->pop3_server) string_pool_ref(sp, m->pop3_server);
+					if (m->pop3_server.str) string_pool_ref(sp, m->pop3_server.str);
 				}
 				string_pool_save(sp, sp_name);
 			}
@@ -3464,7 +3465,7 @@ int folder_save_index(struct folder *f)
 				cc_addr = address_next(cc_addr);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server, sp))) break;
+			if (!(len_add = fwrite_str(fh, m->pop3_server.str, sp))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->message_id, NULL))) break;
 			len += len_add;
@@ -4453,7 +4454,7 @@ int init_folders(void)
 	if (!(folders_semaphore = thread_create_semaphore()))
 		return 0;
 
-	if (!(folder_spool = string_pool_create()))
+	if (!(folder_mail_context = mail_context_create()))
 	{
 		thread_dispose_semaphore(folders_semaphore);
 		return 0;
@@ -4573,7 +4574,7 @@ void del_folders(void)
 	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
 		folder_node_dispose(node);
 
-	string_pool_delete(folder_spool);
+	mail_context_free(folder_mail_context);
 }
 
 /*****************************************************************************/

@@ -91,7 +91,7 @@ void test_addressbook_simple(void)
 
 	/************************************************************************/
 
-	cl = addressbook_complete_address_full("AB");
+	cl = addressbook_complete_address_full("AB", 0);
 	CU_ASSERT_PTR_NOT_NULL(cl);
 
 	cn = addressbook_completion_list_first(cl);
@@ -125,7 +125,7 @@ void test_addressbook_simple(void)
 
 	/************************************************************************/
 
-	cl = addressbook_complete_address_full("BC");
+	cl = addressbook_complete_address_full("BC", 0);
 	CU_ASSERT_PTR_NOT_NULL(cl);
 
 	cn = addressbook_completion_list_first(cl);

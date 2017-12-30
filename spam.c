@@ -304,7 +304,7 @@ static int spam_feed_mail(struct folder *folder, struct mail_info *to_parse_mail
 
 	chdir(folder->path);
 
-	if ((mail = mail_complete_create_from_file(to_parse_mail->filename)))
+	if ((mail = mail_complete_create_from_file(NULL, to_parse_mail->filename)))
 	{
 		mail_read_contents("",mail);
 
@@ -499,7 +499,7 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail_inf
 		chdir(folder_path);
 	}
 
-	if ((mail = mail_complete_create_from_file(to_check_mail->filename)))
+	if ((mail = mail_complete_create_from_file(NULL, to_check_mail->filename)))
 	{
 		double prod;
 		double prod2;

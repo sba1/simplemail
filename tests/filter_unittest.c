@@ -126,7 +126,7 @@ void test_filter_rule_create_subject_rule_from_mail_iterator(void)
 		char buf[128];
 		snprintf(buf,sizeof(buf),"%d%dTest%d%d\n",i,i,i,i);
 
-		m[i] = mail_info_create();
+		m[i] = mail_info_create(NULL);
 		CU_ASSERT(m[i] != NULL);
 
 		m[i]->subject = (utf8*)mystrdup(buf);
@@ -163,7 +163,7 @@ void test_filter_rule_create_recipient_rule_from_mail_iterator(void)
 		char buf[128];
 		snprintf(buf,sizeof(buf),"test%d@abcdef.de,sba@zzzqqq.de\n",i);
 
-		m[i] = mail_info_create();
+		m[i] = mail_info_create(NULL);
 		CU_ASSERT(m[i] != NULL);
 
 		m[i]->to_list = address_list_create(buf);
@@ -198,7 +198,7 @@ void test_filter_rule_create_from_rule_from_mail_iterator_all_match(void)
 
 	for (i=0;i<sizeof(m)/sizeof(*m);i++)
 	{
-		m[i] = mail_info_create();
+		m[i] = mail_info_create(NULL);
 		CU_ASSERT(m[i] != NULL);
 
 		m[i]->from_addr = (utf8*)mystrdup("sba@zzzqqq.de");
@@ -233,7 +233,7 @@ void test_filter_rule_create_from_rule_from_mail_iterator_one_mismatch(void)
 
 	for (i=0;i<sizeof(m)/sizeof(*m);i++)
 	{
-		m[i] = mail_info_create();
+		m[i] = mail_info_create(NULL);
 		CU_ASSERT(m[i] != NULL);
 
 		m[i]->from_addr = (utf8*)mystrdup(i==0?"sba@zzzqqqq.de":"sba@zzzqqq.de");

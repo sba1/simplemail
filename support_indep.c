@@ -53,9 +53,8 @@ void sm_get_current_time(unsigned int *seconds, unsigned int *mics)
 
 /*****************************************************************************/
 
-char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
+int sm_get_addr_start_pos(char *contents, int pos)
 {
-	char *buf;
 	int start_pos = pos;
 
 	if (start_pos && contents[start_pos] == ',')
@@ -70,6 +69,17 @@ char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
 		}
 		start_pos--;
 	}
+	return start_pos;
+}
+
+/*****************************************************************************/
+
+char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
+{
+	char *buf;
+	int start_pos;
+
+	start_pos = sm_get_addr_start_pos(contents, pos);
 
 	while (start_pos < pos && contents[start_pos]==' ')
 		start_pos++;

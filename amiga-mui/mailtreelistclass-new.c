@@ -827,7 +827,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEnt
 			case	COLUMN_TYPE_POP3:
 						if (m)
 						{
-							txt = m->pop3_server;
+							txt = m->pop3_server.str;
 							is_ascii7 = TRUE;
 						} else txt = data->pop3_text;
 						break;
@@ -1242,7 +1242,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			case	COLUMN_TYPE_POP3:
 						if (m)
 						{
-							txt = m->pop3_server;
+							txt = m->pop3_server.str;
 							is_ascii7 = TRUE;
 						} else txt = data->pop3_text;
 						break;
@@ -4065,7 +4065,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 								data->date_text, date_buf,
 								data->received_text, recv_buf,
 								data->size_text, m->size,
-								data->pop3_text, m->pop3_server?m->pop3_server:"",
+								data->pop3_text, m->pop3_server.str?m->pop3_server.str:"",
 								data->filename_text, m->filename);
 
 				free(replyto);

@@ -339,7 +339,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				*array++ = date_buf;
 				*array++ = size_buf;
 				*array++ = mail->filename;
-				*array++ = mail->pop3_server;
+				*array++ = mail->pop3_server.str;
 				*array = recv_buf;
 			}
 		} else
@@ -468,7 +468,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 							data->date_text, date_buf,
 							data->received_text, recv_buf,
 							data->size_text, m->size,
-							data->pop3_text, m->pop3_server?m->pop3_server:"",
+							data->pop3_text, m->pop3_server.str?m->pop3_server.str:"",
 							data->filename_text, m->filename);
 
 			free(replyto);

@@ -1698,6 +1698,46 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 
 /*****************************************************************************/
 
+struct addressbook_completion_node *addressbook_completion_node_duplicate(struct addressbook_completion_node *n)
+{
+	struct addressbook_completion_node *nc;
+	int l;
+
+	if (!(nc = malloc(sizeof(*nc))))
+	{
+		return NULL;
+	}
+
+	if (!(nc->complete = mystrdup(n->complete)))
+	{
+		goto bailout;
+	}
+
+	l = utf8len(nc->complete);
+	if ((nc->match_mask = malloc(match_bitmask_size(l))))
+	{
+		memcpy(nc->match_mask, n->match_mask, match_bitmask_size(l));
+	} else
+	{
+		goto bailout;
+	}
+	nc->type = n->type;
+
+	return nc;
+bailout:
+	free(nc->match_mask);
+	free(nc->complete);
+	free(nc);
+	return NULL;
+}
+
+void addressbook_completion_node_free(struct addressbook_completion_node *n)
+{
+	free(n->complete);
+	free(n->match_mask);
+	free(n);
+}
+
 void addressbook_completion_list_free(struct addressbook_completion_list *cl)
 {
 	struct addressbook_completion_node *n;
@@ -1711,7 +1751,10 @@ void addressbook_completion_list_free(struct addressbook_completion_list *cl)
 
 /*****************************************************************************/
 
-static void addressbook_test_and_add_match(
+/**
+ * @return whether the element has been added or not.
+ */
+static int addressbook_test_and_add_match(
 	struct addressbook_completion_list *cl, addressbook_completion_node_type type,
 	char *haystack, const char *needle,
 	match_mask_t **pm, int *pm_len)
@@ -1721,7 +1764,7 @@ static void addressbook_test_and_add_match(
 	int m_len = *pm_len;
 
 	if (!haystack)
-		return;
+		return 0;
 
 	l = strlen(haystack);
 
@@ -1731,17 +1774,24 @@ static void addressbook_test_and_add_match(
 	if (utf8match(haystack, needle, 1, m))
 	{
 		addressbook_completion_list_add(cl, type, haystack, m);
+		return 1;
 	}
+	return 0;
 }
 
 /*****************************************************************************/
 
-struct addressbook_completion_list *addressbook_complete_address_full(char *address)
+struct addressbook_completion_list *addressbook_complete_address_full(char *address, unsigned int max)
 {
 	struct addressbook_completion_list *cl;
 
 	match_mask_t *m;
 	int m_len = 128;
+
+	if (max == 0)
+	{
+		max = ~0;
+	}
 
 	if (!(cl = malloc(sizeof(*cl))))
 		return NULL;
@@ -1756,40 +1806,41 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 	{
 		struct addressbook_entry_new *entry;
 		struct addressbook_group *group;
+		int total_entries = 0;
 
 		/* find matching group */
 		group = addressbook_first_group();
 		while (group)
 		{
-			addressbook_test_and_add_match(cl, ACNT_GROUP, group->name, address, &m, &m_len);
+			total_entries += addressbook_test_and_add_match(cl, ACNT_GROUP, group->name, address, &m, &m_len);
 			group = addressbook_next_group(group);
 		}
 
 		/* find matching realname  */
 		entry = addressbook_first_entry();
-		while (entry)
+		while (entry && total_entries < max)
 		{
-			addressbook_test_and_add_match(cl, ACNT_REALNAME, entry->realname, address, &m, &m_len);
+			total_entries += addressbook_test_and_add_match(cl, ACNT_REALNAME, entry->realname, address, &m, &m_len);
 			entry = addressbook_next_entry(entry);
 		}
 
 		/* try if there exists a matching alias */
 		entry = addressbook_first_entry();
-		while (entry)
+		while (entry && total_entries < max)
 		{
-			addressbook_test_and_add_match(cl, ACNT_ALIAS, entry->alias, address, &m, &m_len);
+			total_entries += addressbook_test_and_add_match(cl, ACNT_ALIAS, entry->alias, address, &m, &m_len);
 			entry = addressbook_next_entry(entry);
 		}
 
 		/* addresses */
 		entry = addressbook_first_entry();
-		while (entry)
+		while (entry && total_entries < max)
 		{
 			int i;
 
-			for (i=0; i < array_length(entry->email_array); i++)
+			for (i=0; i < array_length(entry->email_array) && total_entries < max; i++)
 			{
-				addressbook_test_and_add_match(cl, ACNT_EMAIL, entry->email_array[i], address, &m, &m_len);
+				total_entries += addressbook_test_and_add_match(cl, ACNT_EMAIL, entry->email_array[i], address, &m, &m_len);
 			}
 			entry = addressbook_next_entry(entry);
 		}

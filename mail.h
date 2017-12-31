@@ -401,9 +401,10 @@ void mail_identify_status(struct mail_info *m);
 /**
  * Creates a mail, initialize it to default values.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @return the newly created mail.
  */
-struct mail_complete *mail_complete_create(void);
+struct mail_complete *mail_complete_create(mail_context *mc);
 
 /**
  * Creates a mail to be sent to a given address.

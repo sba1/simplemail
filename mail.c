@@ -596,14 +596,14 @@ struct mail_info *mail_info_create(mail_context *mc)
 
 /*****************************************************************************/
 
-struct mail_complete *mail_complete_create(void)
+struct mail_complete *mail_complete_create(mail_context *mc)
 {
 	struct mail_complete *m;
 
 	if ((m = (struct mail_complete*)malloc(sizeof(struct mail_complete))))
 	{
 		memset(m,0,sizeof(*m));
-		if ((m->info = mail_info_create(NULL)))
+		if ((m->info = mail_info_create(mc)))
 		{
 			list_init(&m->content_parameter_list);
 			list_init(&m->header_list);
@@ -652,7 +652,7 @@ struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *fil
 	struct mail_complete *m;
 	FILE *fh;
 
-	if ((m = mail_complete_create()))
+	if ((m = mail_complete_create(mc)))
 	{
 		unsigned int size = ~0;
 
@@ -737,7 +737,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 	to_str = to_str_unexpanded?addressbook_get_expanded(to_str_unexpanded):NULL;
 
 	if (to_str) parse_mailbox(to_str,&mb);
-	if ((mail = mail_complete_create()))
+	if ((mail = mail_complete_create(NULL)))
 	{
 		string contents_str;
 
@@ -921,7 +921,7 @@ static char *mail_create_replied_subject_line(int num, struct mail_complete **ma
 
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array)
 {
-	struct mail_complete *m = mail_complete_create();
+	struct mail_complete *m = mail_complete_create(NULL);
 	if (m)
 	{
 		struct mail_complete *mail = mail_array[0];
@@ -1127,7 +1127,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 
 	if (num < 1) return NULL;
 
-	if ((m = mail_complete_create()))
+	if ((m = mail_complete_create(NULL)))
 	{
 		struct mail_complete *forward;
 
@@ -1188,7 +1188,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 
 					size = myfsize(fh);
 
-					if ((new_part = mail_complete_create()))
+					if ((new_part = mail_complete_create(NULL)))
 					{
 						if ((new_part->decoded_data = malloc(size)))
 						{
@@ -1218,7 +1218,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 			m->content_type = mystrdup("multipart");
 			m->content_subtype = mystrdup("mixed");
 
-			if ((m->multipart_array[0] = mail_complete_create()))
+			if ((m->multipart_array[0] = mail_complete_create(NULL)))
 			{
 				m->multipart_array[0]->decoded_data = mystrdup("");
 				m->multipart_array[0]->decoded_len = mystrlen(m->multipart_array[0]->decoded_data);
@@ -1288,7 +1288,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 					/* Ignore multiparts parts and the part which has been found above */
 					if (!mail_iter->num_multiparts && mail_iter != text_mail)
 					{
-						struct mail_complete *new_part = mail_complete_create();
+						struct mail_complete *new_part = mail_complete_create(NULL);
 						if (new_part)
 						{
 							int attach_len;
@@ -1331,7 +1331,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 			/* So we have not only a single part */
 			if (m->num_multiparts)
 			{
-				if ((m->multipart_array[0] = mail_complete_create()))
+				if ((m->multipart_array[0] = mail_complete_create(NULL)))
 				{
 					m->multipart_array[0]->decoded_data = modified_text;
 					m->multipart_array[0]->decoded_len = mystrlen(modified_text);
@@ -2078,7 +2078,7 @@ static void mail_decrypt(struct mail_complete *mail)
 								for (i=0;i<mail->num_multiparts;i++)
 									mail_complete_free(mail->multipart_array[i]);
 
-								if ((new_mail = mail->multipart_array[0] = mail_complete_create()))
+								if ((new_mail = mail->multipart_array[0] = mail_complete_create(NULL)))
 								{
 									struct mail_scan ms;
 
@@ -2163,7 +2163,7 @@ static void mail_resolve_smime(struct mail_complete *mail)
 		struct mail_scan ms;
 
 		if (!(mail->multipart_array = (struct mail_complete**)malloc(sizeof(struct mail_complete*)*1))) return;
-		if (!(new_mail = mail->multipart_array[0] = mail_complete_create())) return;
+		if (!(new_mail = mail->multipart_array[0] = mail_complete_create(mail->info->context))) return;
 		mail->multipart_allocated = mail->num_multiparts = 1;
 
 		mail_decode(mail);
@@ -2251,7 +2251,7 @@ static int mail_read_structure(struct mail_complete *mail)
 							}
 						}
 
-						if ((new_mail = mail_complete_create()))
+						if ((new_mail = mail_complete_create(NULL)))
 						{
 							struct mail_scan ms;
 
@@ -2301,7 +2301,7 @@ static int mail_read_structure(struct mail_complete *mail)
 		struct mail_scan ms;
 
 		if (!(mail->multipart_array = malloc(sizeof(struct mail*)))) return 0;
-		if (!(new_mail = mail->multipart_array[0] = mail_complete_create())) return 0;
+		if (!(new_mail = mail->multipart_array[0] = mail_complete_create(NULL))) return 0;
 		mail->multipart_allocated = mail->num_multiparts = 1;
 
 		/* Decode the mail */

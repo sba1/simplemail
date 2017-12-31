@@ -3772,7 +3772,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 											  struct filter *filter)
 {
 	struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
-	struct mail_complete *mc = mail_complete_create();
+	struct mail_complete *mc = mail_complete_create(NULL);
 	if (mc) mc->info = m;
 
 	while (rule)

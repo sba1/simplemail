@@ -318,6 +318,21 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 char *mail_get_from_address(struct mail_info *mail);
 
 /**
+ * Return the pop3 server.
+ *
+ * @param mail
+ * @return
+ */
+static inline char *mail_get_pop3_server(const struct mail_info *mail)
+{
+	if (mail->tflags & MAIL_TFLAGS_POP3_ID)
+	{
+		return string_pool_get(mail->context->sp, mail->pop3_server.id);
+	}
+	return mail->pop3_server.str;
+}
+
+/**
  * Returns the first to phrase (real name) of the mail.
  *
  * @param mail

@@ -1593,6 +1593,8 @@ int mail_process_headers(struct mail_complete *mail)
 	struct header *header = (struct header*)list_first(&mail->header_list);
 	struct header *header_next;
 
+	mail_context *mc = mail->info->context;
+
 	for (; header; header = header_next)
 	{
 		char *buf = header->contents;
@@ -1927,7 +1929,21 @@ int mail_process_headers(struct mail_complete *mail)
 
 			case HEADER_X_SIMPLEMAIL_POP3:
 			{
-				mail->info->pop3_server.str = mystrdup(buf);
+				int id = -1;
+				if (mc)
+				{
+					id = string_pool_ref(mc->sp, buf);
+				}
+
+				if (id != -1)
+				{
+					mail->info->pop3_server.id = id;
+					mail->info->tflags |= MAIL_TFLAGS_POP3_ID;
+				}
+				else
+				{
+					mail->info->pop3_server.str = mystrdup(buf);
+				}
 			}
 			break;
 
@@ -2436,6 +2452,24 @@ void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr)
 	return decoded;
 }
 
+/**
+ * Free a mail string, either the id or directly.
+ *
+ * @param m the mail to which
+ * @param str
+ * @param free_id
+ */
+static void mail_free_str(struct mail_info *m, union mail_str *str, int free_id)
+{
+	if (free_id)
+	{
+		string_pool_deref_by_id(m->context->sp, str->id);
+	} else
+	{
+		free(str->str);
+	}
+}
+
 /*****************************************************************************/
 
 void mail_info_free(struct mail_info *info)
@@ -2455,7 +2489,9 @@ void mail_info_free(struct mail_info *info)
 	if (info->to_list) address_list_free(info->to_list);
 	if (info->cc_list) address_list_free(info->cc_list);
 	free(info->reply_addr);
-	free(info->pop3_server.str);
+
+	mail_free_str(info, &info->pop3_server, !!(info->tflags & MAIL_TFLAGS_POP3_ID));
+
 	free(info->message_id);
 	free(info->message_reply_id);
 	free(info->filename);

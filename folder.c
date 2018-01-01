@@ -208,7 +208,7 @@ static int mail_compare_filename(const struct mail_info *arg1, const struct mail
  */
 static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->pop3_server.str, arg2->pop3_server.str);
+	int rc = mystricmp(mail_get_pop3_server(arg1), mail_get_pop3_server(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -3381,13 +3381,15 @@ int folder_save_index(struct folder *f)
 				for (i=0; i < f->num_mails; i++)
 				{
 					struct mail_info *m = f->mail_info_array[i];
+					const char *pop3 = mail_get_pop3_server(m);
 
 					if (m->from_addr) string_pool_ref(sp, m->from_addr);
 					if (m->from_phrase) string_pool_ref(sp, m->from_phrase);
 					if (m->to_list) string_pool_put_address_list(sp, m->to_list);
 					if (m->cc_list) string_pool_put_address_list(sp, m->cc_list);
 					if (m->reply_addr) string_pool_ref(sp, m->reply_addr);
-					if (m->pop3_server.str) string_pool_ref(sp, m->pop3_server.str);
+
+					if (pop3) string_pool_ref(sp, pop3);
 				}
 				string_pool_save(sp, sp_name);
 			}
@@ -3465,7 +3467,7 @@ int folder_save_index(struct folder *f)
 				cc_addr = address_next(cc_addr);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server.str, sp))) break;
+			if (!(len_add = fwrite_str(fh, mail_get_pop3_server(m), sp))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->message_id, NULL))) break;
 			len += len_add;

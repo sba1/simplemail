@@ -65,7 +65,7 @@ void string_pool_delete(struct string_pool *p);
  * @param string the string, the caller can free the argument any time
  * @return the id or -1 if the string could not be referenced (memory)
  */
-int string_pool_ref(struct string_pool *p, char *string);
+int string_pool_ref(struct string_pool *p, const char *string);
 
 /**
  * Dereference the given string.

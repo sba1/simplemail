@@ -405,20 +405,29 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 }
 
 /**
- * Reads a string from a filehandle. It is allocated with malloc().
+ * Reads a string from a filehandle. It is allocated with malloc(), except
+ * if sp_id is given and it filled with a meaningful value.
  *
  * @param fh
  * @param sp
  * @param zero_is_null if set to 1, NULL is returned for 0 length strings.
- *  Otherwise, an empty string is allocated.
- * @return
+ *  Otherwise, an empty string is allocated if it is necessary.
+ * @param sp_id_ptr pointer to an integer variable, in which the id of the string
+ *  is stored. If the pointer is non-NULL, no string will be allocated and returned
+ *  if the string was read as an id.
+ * @return the string or NULL (which may or not may be due to an error)
  */
-static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
+static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null, int *sp_id_ptr)
 {
 	unsigned char upper;
 	char *txt;
 
 	txt = NULL;
+
+	if (sp_id_ptr)
+	{
+		*sp_id_ptr = -1;
+	}
 
 	upper = fgetc(fh);
 	if (upper & (1<<7))
@@ -434,6 +443,11 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
 
 		sp_id = ((upper & 0x7f) << 24) | (m2 << 16) | (m1 << 8) | lower;
 		src_txt = string_pool_get(sp, sp_id);
+		if (src_txt && sp_id_ptr)
+		{
+			*sp_id_ptr = sp_id;
+			return NULL;
+		}
 		if (src_txt && (txt = malloc(strlen(src_txt) + 1)))
 		{
 			strcpy(txt, src_txt);
@@ -468,11 +482,14 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
  * Returns NULL if the string has an length of 0.
  *
  * @param fh
- * @return
+ * @param sp_id_ptr pointer to an integer variable, in which the id of the string
+ *  is stored. If the pointer is non-NULL, no string will be allocated and returned
+ *  if the string was read as an id.
+ * @return the string or NULL (which may or not may be due to an error)
  */
-static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp, int *sp_id_ptr)
 {
-	return fread_str(fh, sp, 1);
+	return fread_str(fh, sp, 1, sp_id_ptr);
 }
 
 static int folder_config_load(struct folder *f);
@@ -1797,11 +1814,11 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 	if ((m = mail_info_create(folder_mail_context)))
 	{
-		m->subject = (utf8*)fread_str(fh, NULL, 0);
-		m->filename = fread_str(fh, NULL, 0);
+		m->subject = (utf8*)fread_str(fh, NULL, 0, NULL);
+		m->filename = fread_str(fh, NULL, 0, NULL);
 
-		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
-		m->from_addr = fread_str_no_null(fh, sp);
+		m->from_phrase = (utf8*)fread_str_no_null(fh, sp, NULL);
+		m->from_addr = fread_str_no_null(fh, sp, NULL);
 
 		/* Read the to list */
 		if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
@@ -1809,8 +1826,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 		while (num_to--)
 		{
-			char *realname = fread_str_no_null(fh, sp);
-			char *email = fread_str_no_null(fh, sp);
+			char *realname = fread_str_no_null(fh, sp, NULL);
+			char *email = fread_str_no_null(fh, sp, NULL);
 			struct address *addr;
 
 			if (m->to_list)
@@ -1830,8 +1847,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 		while (num_cc--)
 		{
-			char *realname = fread_str_no_null(fh, sp);
-			char *email = fread_str_no_null(fh, sp);
+			char *realname = fread_str_no_null(fh, sp, NULL);
+			char *email = fread_str_no_null(fh, sp, NULL);
 			struct address *addr;
 
 			if (m->cc_list)
@@ -1845,10 +1862,10 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 			}
 		}
 
-		m->pop3_server.str = fread_str_no_null(fh, sp);
-		m->message_id = fread_str_no_null(fh, sp);
-		m->message_reply_id = fread_str_no_null(fh, sp);
-		m->reply_addr = fread_str_no_null(fh, sp);
+		m->pop3_server.str = fread_str_no_null(fh, sp, NULL);
+		m->message_id = fread_str_no_null(fh, sp, NULL);
+		m->message_reply_id = fread_str_no_null(fh, sp, NULL);
+		m->reply_addr = fread_str_no_null(fh, sp, NULL);
 
 		fseek(fh,ftell(fh)%2,SEEK_CUR);
 		fread(&m->size,1,sizeof(m->size),fh);

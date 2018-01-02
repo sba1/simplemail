@@ -1814,6 +1814,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 	if ((m = mail_info_create(folder_mail_context)))
 	{
+		int pop3_id = -1;
+
 		m->subject = (utf8*)fread_str(fh, NULL, 0, NULL);
 		m->filename = fread_str(fh, NULL, 0, NULL);
 
@@ -1862,7 +1864,20 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 			}
 		}
 
-		m->pop3_server.str = fread_str_no_null(fh, sp, NULL);
+		m->pop3_server.str = fread_str_no_null(fh, sp, &pop3_id);
+		if (pop3_id != -1)
+		{
+			const char *pop3_str = string_pool_get(sp, pop3_id);
+			int our_pop3_id = string_pool_ref(m->context->sp, pop3_str);
+			if (our_pop3_id != -1)
+			{
+				m->pop3_server.id = our_pop3_id;
+				m->tflags |= MAIL_TFLAGS_POP3_ID;
+			}
+		} else
+		{
+			/* TODO: Compress string also here if possible */
+		}
 		m->message_id = fread_str_no_null(fh, sp, NULL);
 		m->message_reply_id = fread_str_no_null(fh, sp, NULL);
 		m->reply_addr = fread_str_no_null(fh, sp, NULL);

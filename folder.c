@@ -519,7 +519,7 @@ static char *folder_get_string_pool_name(struct folder *f)
  * @param mode the open mode, like fopen().
  * @return the filehandle or NULL on error.
  */
-static FILE *folder_open_indexfile(struct folder *f, const char *mode)
+static FILE *folder_indexfile_open(struct folder *f, const char *mode)
 {
 	FILE *fh;
 	char *path;
@@ -678,7 +678,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 
 	if (folder->special == FOLDER_SPECIAL_GROUP) SM_RETURN(0,"%ld");
 
-	if ((fh = folder_open_indexfile(folder,"rb+")))
+	if ((fh = folder_indexfile_open(folder,"rb+")))
 	{
 		/* Move at the position of the field */
 
@@ -1905,7 +1905,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 	if (folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
-	if ((fh = folder_open_indexfile(folder,"rb")))
+	if ((fh = folder_indexfile_open(folder,"rb")))
 	{
 		char buf[4];
 		unsigned int time_ref;
@@ -3429,7 +3429,7 @@ int folder_save_index(struct folder *f)
 		}
 	}
 
-	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))
+	if ((fh = folder_indexfile_open(f,append?"rb+":"wb")))
 	{
 		int i;
 		struct mail_info **mail_info_array;

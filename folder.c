@@ -1891,6 +1891,32 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	return m;
 }
 
+/**
+ * Check whether the given file handle is a proper indexfile.
+ *
+ * @param fh
+ * @return
+ */
+static int folder_indexfile_check(FILE *fh)
+{
+	char buf[4];
+	int ver;
+
+	fread(buf,1,4,fh);
+	if (strncmp("SMFI",buf,4) != 0)
+	{
+		return 0;
+	}
+
+	fread(&ver,1,4,fh);
+	if (ver != FOLDER_INDEX_VERSION)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 /******************************************************************
  Reads the all mail infos in the given folder.
  TODO: Get rid of readdir and friends
@@ -1907,101 +1933,94 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 	if ((fh = folder_indexfile_open(folder,"rb")))
 	{
-		char buf[4];
 		unsigned int time_ref;
 
 		time_ref = time_reference_ticks();
 
-		fread(buf,1,4,fh);
-		if (!strncmp("SMFI",buf,4))
+		if (folder_indexfile_check(fh))
 		{
-			int ver;
-			fread(&ver,1,4,fh);
-			if (ver == FOLDER_INDEX_VERSION)
+			int pending = 1;
+
+			fread(&pending,1,4,fh);
+
+			/* Read in the mail info if index is not marked as having pending mails
+			   or if we know the pending mails. Also only do this if we do not
+			   already know the number of mails */
+
+			/* This whole if cause including needs a small rethought */
+			if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
 			{
-				int pending = 1;
+				int num_mails;
+				int unread_mails=0;
 
-				fread(&pending,1,4,fh);
+				fread(&num_mails,1,4,fh);
+				fread(&unread_mails,1,4,fh);
 
-				/* Read in the mail info if index is not marked as having pending mails
-				   or if we know the pending mails. Also only do this if we do not
-				   already know the number of mails */
-
-				/* This whole if cause including needs a small rethought */
-				if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
+				if (!only_num_mails)
 				{
-					int num_mails;
-					int unread_mails=0;
+					struct string_pool *sp;
+					char *sp_name;
 
-					fread(&num_mails,1,4,fh);
-					fread(&unread_mails,1,4,fh);
+					int i;
 
-					if (!only_num_mails)
+					if (!(sp = string_pool_create()))
+						goto nosp;
+
+					if ((sp_name = folder_get_string_pool_name(folder)))
 					{
-						struct string_pool *sp;
-						char *sp_name;
+						/* Failure cases will be handled later when a string ref
+						 * cannot be resolved */
+						string_pool_load(sp, sp_name);
+						free(sp_name);
+					}
 
-						int i;
+					folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+					mail_infos_read = 1;
+					folder->unread_mails = 0;
+					folder->new_mails = 0;
+					folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
 
-						if (!(sp = string_pool_create()))
-							goto nosp;
+					if (pending)
+					{
+						SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
+					}
 
-						if ((sp_name = folder_get_string_pool_name(folder)))
+					while (num_mails-- && !feof(fh))
+					{
+						struct mail_info *m;
+
+						if ((m = folder_read_mail_info_from_index(fh, sp)))
 						{
-							/* Failure cases will be handled later when a string ref
-							 * cannot be resolved */
-							string_pool_load(sp, sp_name);
-							free(sp_name);
+							mail_identify_status(m);
+
+							m->flags &= ~MAIL_FLAGS_NEW;
+							folder_add_mail(folder,m,0);
 						}
+					}
 
-						folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-						mail_infos_read = 1;
-						folder->unread_mails = 0;
-						folder->new_mails = 0;
-						folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
+					if (folder->num_pending_mails)
+					{
+						/* Add pending mails (i.e., mails that have been added
+						 * prior the loading of the folder) now */
+						for (i=0;i<folder->num_pending_mails;i++)
+							folder_add_mail(folder,folder->pending_mail_info_array[i],0);
+						folder->num_pending_mails = 0;
 
-						if (pending)
-						{
-							SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
-						}
-
-						while (num_mails-- && !feof(fh))
-						{
-							struct mail_info *m;
-
-							if ((m = folder_read_mail_info_from_index(fh, sp)))
-							{
-								mail_identify_status(m);
-
-								m->flags &= ~MAIL_FLAGS_NEW;
-								folder_add_mail(folder,m,0);
-							}
-						}
-
-						if (folder->num_pending_mails)
-						{
-							/* Add pending mails (i.e., mails that have been added
-							 * prior the loading of the folder) now */
-							for (i=0;i<folder->num_pending_mails;i++)
-								folder_add_mail(folder,folder->pending_mail_info_array[i],0);
-							folder->num_pending_mails = 0;
-
-							fclose(fh);
-							/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
-							   if saving is requested or we append the pending stuff with the indexfile here. I chose
-							   the first because it means less to do for me */
-							folder_delete_indexfile(folder);
-							folder->index_uptodate = 0;
-							return 1;
-						}
+						fclose(fh);
+						/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
+						   if saving is requested or we append the pending stuff with the indexfile here. I chose
+						   the first because it means less to do for me */
+						folder_delete_indexfile(folder);
+						folder->index_uptodate = 0;
+						return 1;
+					}
 
 nosp:
-						(void)1;
-					} else
-					{
-						folder->num_index_mails = num_mails;
-						folder->unread_mails = unread_mails;
-					}
+					(void)1;
+				} else
+				{
+					folder->num_index_mails = num_mails;
+					folder->unread_mails = unread_mails;
 				}
 			}
 		}

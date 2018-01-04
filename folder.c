@@ -568,7 +568,7 @@ static FILE *folder_indexfile_open(struct folder *f, const char *mode)
  *
  * @param f the folder for which the index file should be deleted.
  */
-static void folder_delete_indexfile(struct folder *f)
+static void folder_indexfile_delete(struct folder *f)
 {
 	char *path;
 	char *index_name;
@@ -611,11 +611,11 @@ static void folder_delete_indexfile(struct folder *f)
  * @param folder specifies the folder of which the index should
  * be made invalid.
  */
-static void folder_invalidate_indexfile(struct folder *folder)
+static void folder_indexfile_invalidate(struct folder *folder)
 {
 	if (folder->index_uptodate)
 	{
-		folder_delete_indexfile(folder);
+		folder_indexfile_delete(folder);
 		folder->index_uptodate = 0;
 	}
 }
@@ -627,7 +627,7 @@ void folder_delete_all_indexfiles(void)
 	struct folder *f = folder_first();
 	while (f)
 	{
-		folder_delete_indexfile(f);
+		folder_indexfile_delete(f);
 		f->index_uptodate = 0;
 		f = folder_next(f);
 	}
@@ -758,7 +758,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	}
 
 	/* delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	if (folder->mail_info_array_allocated == folder->num_mails)
 	{
@@ -924,7 +924,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	}
 
 	/* delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -1002,7 +1002,7 @@ void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail)
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		folder_invalidate_indexfile(folder);
+		folder_indexfile_invalidate(folder);
 	}
 
 	chdir(buf);
@@ -1027,7 +1027,7 @@ void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		folder_invalidate_indexfile(folder);
+		folder_indexfile_invalidate(folder);
 	}
 
 	chdir(buf);
@@ -1053,7 +1053,7 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 	}
 
 	/* Delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -1222,7 +1222,7 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 			chdir(buf);
 
 			/* Delete the indexfile if not already done */
-			folder_invalidate_indexfile(folder);
+			folder_indexfile_invalidate(folder);
 		}
 	}
 }
@@ -1245,7 +1245,7 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 	mail->flags = flags_new;
 
 	/* Delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 }
 
 /*****************************************************************************/
@@ -1640,7 +1640,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 		folder_add_mail(f, m[i], 0);
 	}
 
-	folder_invalidate_indexfile(f);
+	folder_indexfile_invalidate(f);
 
 	f->rescanning = 0;
 
@@ -2010,7 +2010,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
 						   if saving is requested or we append the pending stuff with the indexfile here. I chose
 						   the first because it means less to do for me */
-						folder_delete_indexfile(folder);
+						folder_indexfile_delete(folder);
 						folder->index_uptodate = 0;
 						return 1;
 					}
@@ -2725,7 +2725,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 			refresh = !!mystricmp(newpath,f->path);
 
 			if (refresh)
-				folder_invalidate_indexfile(f);
+				folder_indexfile_invalidate(f);
 
 			if (f->path) free(f->path);
 			f->path = newpath;
@@ -2739,7 +2739,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		refresh = 1;
 		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
 		{
-			folder_invalidate_indexfile(f);
+			folder_indexfile_invalidate(f);
 			rescan = 1;
 		}
 		f->type = newtype;

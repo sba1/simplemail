@@ -1891,6 +1891,12 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	return m;
 }
 
+struct folder_index_magic
+{
+	char magic[4];
+	int ver;
+};
+
 /**
  * Check whether the given file handle is a proper indexfile.
  *
@@ -1899,17 +1905,16 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
  */
 static int folder_indexfile_check(FILE *fh)
 {
-	char buf[4];
-	int ver;
+	struct folder_index_magic magic = {0};
 
-	fread(buf,1,4,fh);
-	if (strncmp("SMFI",buf,4) != 0)
+	fread(&magic,1,sizeof(magic),fh);
+
+	if (strncmp("SMFI", magic.magic, 4) != 0)
 	{
 		return 0;
 	}
 
-	fread(&ver,1,4,fh);
-	if (ver != FOLDER_INDEX_VERSION)
+	if (magic.ver != FOLDER_INDEX_VERSION)
 	{
 		return 0;
 	}

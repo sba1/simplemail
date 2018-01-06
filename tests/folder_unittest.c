@@ -117,6 +117,17 @@ void test_folder_many_mails(void)
 	CU_ASSERT(folder_save_index(folder_incoming()) != 0);
 
 	del_folders();
+
+	/* Init folder again, we are especially interested in reading the index file */
+	CU_ASSERT(init_folders() != 0);
+
+	f = folder_incoming();
+
+	/* Confirm, that we have not yet read all the mails, only some statistics */
+	CU_ASSERT_EQUAL(f->num_index_mails, 5000);
+	CU_ASSERT_EQUAL(f->num_mails, 0);
+
+	del_folders();
 	codesets_cleanup();
 	free_config();
 	cleanup_threads();

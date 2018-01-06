@@ -114,6 +114,8 @@ void test_folder_many_mails(void)
 	CU_ASSERT(folder_rescan_async(folder_incoming(), NULL, test_folder_many_mails_rescan_completed, NULL) != 0);
 	thread_wait(NULL, NULL, NULL, 0);
 
+	CU_ASSERT_EQUAL(folder_incoming()->num_mails, 5000);
+
 	CU_ASSERT(folder_save_index(folder_incoming()) != 0);
 
 	del_folders();

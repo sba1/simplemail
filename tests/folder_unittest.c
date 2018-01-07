@@ -82,6 +82,8 @@ void test_folder_many_mails(void)
 	struct folder *f;
 	char mail_filename[100];
 	int i;
+	void *handle = NULL;
+	struct mail_info *mi;
 
 	system("rm -Rf " MANY_EMAILS_PROFILE);
 	config_set_user_profile_directory(MANY_EMAILS_PROFILE);
@@ -128,6 +130,11 @@ void test_folder_many_mails(void)
 	/* Confirm, that we have not yet read all the mails, only some statistics */
 	CU_ASSERT_EQUAL(f->num_index_mails, 5000);
 	CU_ASSERT_EQUAL(f->num_mails, 0);
+	CU_ASSERT_EQUAL(f->mail_infos_loaded, 0);
+
+	mi = folder_next_mail(f, &handle);
+	CU_ASSERT_EQUAL(f->mail_infos_loaded, 1);
+	CU_ASSERT_EQUAL(f->num_mails, 5000);
 
 	del_folders();
 	codesets_cleanup();

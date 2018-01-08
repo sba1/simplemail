@@ -84,6 +84,7 @@ void test_folder_many_mails(void)
 	int i;
 	void *handle = NULL;
 	struct mail_info *mi;
+	int count = 0;
 
 	system("rm -Rf " MANY_EMAILS_PROFILE);
 	config_set_user_profile_directory(MANY_EMAILS_PROFILE);
@@ -135,6 +136,16 @@ void test_folder_many_mails(void)
 	mi = folder_next_mail(f, &handle);
 	CU_ASSERT_EQUAL(f->mail_infos_loaded, 1);
 	CU_ASSERT_EQUAL(f->num_mails, 5000);
+
+	while (mi)
+	{
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from(mi), "Sebastian Bauer");
+
+		count++;
+		mi = folder_next_mail(f, &handle);
+	}
+
+	CU_ASSERT_EQUAL(count, 5000);
 
 	del_folders();
 	codesets_cleanup();

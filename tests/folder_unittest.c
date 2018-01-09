@@ -140,6 +140,8 @@ void test_folder_many_mails(void)
 	while (mi)
 	{
 		CU_ASSERT_STRING_EQUAL(mail_info_get_from(mi), "Sebastian Bauer");
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from_phrase(mi), "Sebastian Bauer");
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from_addr(mi), "mail@sebastianbauer.info");
 
 		count++;
 		mi = folder_next_mail(f, &handle);

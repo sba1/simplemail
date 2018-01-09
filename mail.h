@@ -228,6 +228,8 @@ struct mail_complete
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
 
 #define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
+#define mail_info_get_from_phrase(x) ((x)->from_phrase)
+#define mail_info_get_from_addr(x) ((x)->from_addr)
 #define mail_info_get_to(x) (mail_get_to_phrase(x)?mail_get_to_phrase(x):mail_get_to_addr(x))
 
 /**

@@ -954,7 +954,6 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 		{
 			struct mail_info *next = submail->next_thread_mail;
 			submail->next_thread_mail = NULL;
-			submail->child_mail = 0;
 			submail = next;
 		}
 	}

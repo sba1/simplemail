@@ -114,7 +114,6 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
 	CU_ASSERT_EQUAL(m->reference_count, 0);
 	CU_ASSERT_EQUAL(m->tflags & MAIL_TFLAGS_TO_BE_FREED, 0);
-	CU_ASSERT_EQUAL(m->child_mail, 0);
 	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
 	CU_ASSERT_PTR_NULL(m->next_thread_mail);
 
@@ -162,7 +161,6 @@ void test_mail_info_create_from_file_with_common_context(void)
 	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
 	CU_ASSERT_EQUAL(m->reference_count, 0);
 	CU_ASSERT_EQUAL(m->tflags & MAIL_TFLAGS_TO_BE_FREED, 0);
-	CU_ASSERT_EQUAL(m->child_mail, 0);
 	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
 	CU_ASSERT_PTR_NULL(m->next_thread_mail);
 

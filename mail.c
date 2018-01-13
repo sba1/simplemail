@@ -3207,15 +3207,15 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 			fputs("<TD>",fh);
 			fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mail->info->from_addr,style_text);
 
-			if (mail->info->from_phrase)
+			if (mail_info_get_from_phrase(mail->info))
 			{
-				fputhtmlstr(mail->info->from_phrase,fh);
+				fputhtmlstr(mail_info_get_from_phrase(mail->info),fh);
 				fputs(" &lt;",fh);
-				fputhtmlstr(mail->info->from_addr,fh);
+				fputhtmlstr(mail_info_get_from_addr(mail->info),fh);
 				fputs("&gt;",fh);
 			} else
 			{
-				fputhtmlstr(mail->info->from_addr,fh);
+				fputhtmlstr(mail_info_get_from_addr(mail->info),fh);
 			}
 
 			fputs("</A></TD>",fh);

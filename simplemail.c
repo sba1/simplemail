@@ -368,7 +368,7 @@ void callback_get_address(void)
 		} else
 		{
 			phrase = mail_info_get_from_phrase(mail);
-			addr = mail_info_get_from_add(mail);
+			addr = mail_info_get_from_addr(mail);
 		}
 
 		if (addr && !addressbook_find_entry_by_address(addr))

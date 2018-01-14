@@ -468,11 +468,16 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 
 		if (user.config.header_flags & (SHOW_HEADER_FROM))
 		{
-			if (mi->from_phrase)
-				sm_snprintf(buf, sizeof(buf), "%s <%s>",mi->from_phrase,mi->from_addr);
+			const char *addr = mail_info_get_from_addr(mi);
+			const char *phrase = mail_info_get_from_phrase(mi);
+
+			if (phrase)
+			{
+				sm_snprintf(buf, sizeof(buf), "%s <%s>",phrase,addr);
+			}
 			else
 			{
-				if (mi->from_addr) mystrlcpy(buf,mi->from_addr,sizeof(buf));
+				if (addr) mystrlcpy(buf,addr,sizeof(buf));
 				else buf[0] = 0;
 			}
 

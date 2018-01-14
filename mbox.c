@@ -137,6 +137,7 @@ static int export_entry(struct export_data *data)
 
 								static const char *mon_str[] = {"Jan","Feb","Mar","Apr","May","Jun", "Jul","Aug","Sep","Oct","Nov","Dec"};
 								static const char *week_str[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+								const char *from_addr = mail_info_get_from_addr(m);
 								struct tm tm;
 
 								thread_call_function_async(thread_get_main(),status_set_mail, 2, mail_no, m->size);
@@ -144,7 +145,7 @@ static int export_entry(struct export_data *data)
 								sm_convert_seconds(m->received,&tm);
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
 
-								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:(utf8*)"",date_buf);
+								fprintf(fh, "From %s %s\n",from_addr?from_addr:(utf8*)"",date_buf);
 
 								in = fopen(m->filename,"r");
 								if (in)

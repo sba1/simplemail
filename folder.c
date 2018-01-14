@@ -3661,10 +3661,21 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 
 		filter = folder->filter;
 
-		do
+		while (1)
 		{
-			mi = folder_next_mail_info(folder->ref_folder,handle);
-		} while (mi && (!utf8stristr(mi->subject,filter) && !utf8stristr(mi->from_addr,filter) && !utf8stristr(mi->from_phrase,filter)));
+			if (!(mi = folder_next_mail_info(folder->ref_folder,handle)))
+				break;
+
+			if (utf8stristr(mi->subject,filter))
+				break;
+
+			if (utf8stristr(mail_info_get_from_addr(mi),filter))
+				break;
+
+			if (utf8stristr(mail_info_get_from_phrase(mi),filter))
+				break;
+
+		}
 		return mi;
 	}
 

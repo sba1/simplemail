@@ -506,12 +506,12 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	int is_ascii7 = 1;
 	char *txt;
 
-	if ((txt = (char*)m->from_phrase))
+	if ((txt = (char*)mail_info_get_from_phrase(m)))
 		is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ASCII7);
 
 	if (!txt)
 	{
-		if ((txt = (char*)m->from_addr))
+		if ((txt = (char*)mail_info_get_from_addr(m)))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ADDR_ASCII7);
 	}
 

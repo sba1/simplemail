@@ -3190,7 +3190,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 		char *replyto = mail_find_header_contents(mail, "reply-to");
 		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 		struct header *header;
-		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail->info->from_addr);
+		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail_info_get_from_addr(mail->info));
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		fprintf(fh,"<TABLE WIDTH=\"100%%\" BORDER=\"1\" CELLPADDING=\"0\" BGCOLOR=\"#%06x\"><TR><TD><TABLE>",user.config.read_header_background);
@@ -3515,7 +3515,7 @@ int mail_allowed_to_download(struct mail_info *mail)
 		int i;
 		for (i=0;user.config.internet_emails[i];i++)
 		{
-			if (!mystricmp(user.config.internet_emails[i],mail->from_addr))
+			if (!mystricmp(user.config.internet_emails[i],mail_info_get_from_addr(mail)))
 			{
 				rc = 1;
 				break;

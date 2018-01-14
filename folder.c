@@ -1460,6 +1460,11 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 		free(snode);
 
 		c->current_mail++;
+
+		if (!(c->current_mail % 512))
+		{
+			COROUTINE_YIELD(c);
+		}
 	}
 
 	if (c->status_callback || c->pm)

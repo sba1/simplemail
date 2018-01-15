@@ -86,6 +86,7 @@ void test_mail_filenames_of_new_mails_are_unique(void)
  * X-Mailer: SimpleMail 0.38 (UNIX/GTK+) E-Mail Client (c) 2000-2011 by Hynek Schlawack and Sebastian Bauer
  * Date: 00 Jan 1900 00:00:00 +0000
  * Importance: low
+ * X-SimpleMail-POP3: pop3.def.ghi
  *
  * }}}
  */
@@ -102,7 +103,7 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
 	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
 	CU_ASSERT_PTR_NULL(m->cc_list);
-	CU_ASSERT_PTR_NULL(m->pop3_server.str);
+	CU_ASSERT_STRING_EQUAL(m->pop3_server.str, "pop3.def.ghi");
 	CU_ASSERT_PTR_NULL(m->reply_addr);
 	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
 	CU_ASSERT_PTR_NULL(m->message_id);
@@ -113,11 +114,59 @@ void test_mail_info_create_from_file(void)
 	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
 	CU_ASSERT_EQUAL(m->reference_count, 0);
 	CU_ASSERT_EQUAL(m->tflags & MAIL_TFLAGS_TO_BE_FREED, 0);
-	CU_ASSERT_EQUAL(m->child_mail, 0);
 	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
 	CU_ASSERT_PTR_NULL(m->next_thread_mail);
 
 	mail_info_free(m);
+}
+
+/*************************************************************/
+
+/* @Test
+ */
+void test_mail_info_create_from_file_with_common_context(void)
+{
+	struct mail_info *m;
+	struct mail_info *m2;
+	mail_context *mc;
+	int pop_id;
+
+	mc = mail_context_create();
+	CU_ASSERT_PTR_NOT_NULL(mc);
+
+	/* Read same mail twice to check for string sharing */
+	m = mail_info_create_from_file(mc, "test.eml");
+	m2 = mail_info_create_from_file(mc, "test.eml");
+	pop_id = string_pool_get_id(mc->sp, "pop3.def.ghi");
+
+	CU_ASSERT_PTR_NOT_NULL(m);
+	CU_ASSERT_PTR_NOT_NULL(m2);
+	CU_ASSERT_NOT_EQUAL(pop_id, -1);
+
+	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
+	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
+	CU_ASSERT_PTR_NOT_NULL(m->to_list);
+	CU_ASSERT_PTR_NULL(mail_get_to_phrase(m));
+	CU_ASSERT_STRING_EQUAL(mail_get_to_addr(m), "xyz@localhost");
+	CU_ASSERT_PTR_NULL(m->cc_list);
+	CU_ASSERT_NOT_EQUAL(m->tflags & MAIL_TFLAGS_POP3_ID, 0);
+	CU_ASSERT_EQUAL(m->pop3_server.id, pop_id);
+	CU_ASSERT_PTR_NULL(m->reply_addr);
+	CU_ASSERT_STRING_EQUAL(m->subject, "Test Subject");
+	CU_ASSERT_PTR_NULL(m->message_id);
+	CU_ASSERT_PTR_NULL(m->message_reply_id);
+	CU_ASSERT_EQUAL(m->seconds, 0);
+	CU_ASSERT_EQUAL(m->received, 0);
+	CU_ASSERT_PTR_NULL(m->excerpt);
+	CU_ASSERT_STRING_EQUAL(m->filename, "test.eml");
+	CU_ASSERT_EQUAL(m->reference_count, 0);
+	CU_ASSERT_EQUAL(m->tflags & MAIL_TFLAGS_TO_BE_FREED, 0);
+	CU_ASSERT_PTR_NULL(m->sub_thread_mail);
+	CU_ASSERT_PTR_NULL(m->next_thread_mail);
+
+	mail_info_free(m);
+	mail_info_free(m2);
+	mail_context_free(mc);
 }
 
 /*************************************************************/

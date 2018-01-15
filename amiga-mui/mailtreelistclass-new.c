@@ -506,12 +506,12 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	int is_ascii7 = 1;
 	char *txt;
 
-	if ((txt = (char*)m->from_phrase))
+	if ((txt = (char*)mail_info_get_from_phrase(m)))
 		is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ASCII7);
 
 	if (!txt)
 	{
-		if ((txt = (char*)m->from_addr))
+		if ((txt = (char*)mail_info_get_from_addr(m)))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ADDR_ASCII7);
 	}
 
@@ -827,7 +827,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEnt
 			case	COLUMN_TYPE_POP3:
 						if (m)
 						{
-							txt = m->pop3_server.str;
+							txt = mail_get_pop3_server(m);
 							is_ascii7 = TRUE;
 						} else txt = data->pop3_text;
 						break;
@@ -1242,7 +1242,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			case	COLUMN_TYPE_POP3:
 						if (m)
 						{
-							txt = m->pop3_server.str;
+							txt = mail_get_pop3_server(m);
 							is_ascii7 = TRUE;
 						} else txt = data->pop3_text;
 						break;
@@ -4065,7 +4065,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 								data->date_text, date_buf,
 								data->received_text, recv_buf,
 								data->size_text, m->size,
-								data->pop3_text, m->pop3_server.str?m->pop3_server.str:"",
+								data->pop3_text, mail_get_pop3_server(m)?mail_get_pop3_server(m):"",
 								data->filename_text, m->filename);
 
 				free(replyto);

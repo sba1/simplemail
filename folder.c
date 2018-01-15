@@ -208,7 +208,7 @@ static int mail_compare_filename(const struct mail_info *arg1, const struct mail
  */
 static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->pop3_server.str, arg2->pop3_server.str);
+	int rc = mystricmp(mail_get_pop3_server(arg1), mail_get_pop3_server(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -405,20 +405,29 @@ static int fwrite_str(FILE *fh, char *str, struct string_pool *sp)
 }
 
 /**
- * Reads a string from a filehandle. It is allocated with malloc().
+ * Reads a string from a filehandle. It is allocated with malloc(), except
+ * if sp_id is given and it filled with a meaningful value.
  *
  * @param fh
  * @param sp
  * @param zero_is_null if set to 1, NULL is returned for 0 length strings.
- *  Otherwise, an empty string is allocated.
- * @return
+ *  Otherwise, an empty string is allocated if it is necessary.
+ * @param sp_id_ptr pointer to an integer variable, in which the id of the string
+ *  is stored. If the pointer is non-NULL, no string will be allocated and returned
+ *  if the string was read as an id.
+ * @return the string or NULL (which may or not may be due to an error)
  */
-static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
+static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null, int *sp_id_ptr)
 {
 	unsigned char upper;
 	char *txt;
 
 	txt = NULL;
+
+	if (sp_id_ptr)
+	{
+		*sp_id_ptr = -1;
+	}
 
 	upper = fgetc(fh);
 	if (upper & (1<<7))
@@ -434,6 +443,11 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
 
 		sp_id = ((upper & 0x7f) << 24) | (m2 << 16) | (m1 << 8) | lower;
 		src_txt = string_pool_get(sp, sp_id);
+		if (src_txt && sp_id_ptr)
+		{
+			*sp_id_ptr = sp_id;
+			return NULL;
+		}
 		if (src_txt && (txt = malloc(strlen(src_txt) + 1)))
 		{
 			strcpy(txt, src_txt);
@@ -468,11 +482,14 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null)
  * Returns NULL if the string has an length of 0.
  *
  * @param fh
- * @return
+ * @param sp_id_ptr pointer to an integer variable, in which the id of the string
+ *  is stored. If the pointer is non-NULL, no string will be allocated and returned
+ *  if the string was read as an id.
+ * @return the string or NULL (which may or not may be due to an error)
  */
-static char *fread_str_no_null(FILE *fh, struct string_pool *sp)
+static char *fread_str_no_null(FILE *fh, struct string_pool *sp, int *sp_id_ptr)
 {
-	return fread_str(fh, sp, 1);
+	return fread_str(fh, sp, 1, sp_id_ptr);
 }
 
 static int folder_config_load(struct folder *f);
@@ -502,7 +519,7 @@ static char *folder_get_string_pool_name(struct folder *f)
  * @param mode the open mode, like fopen().
  * @return the filehandle or NULL on error.
  */
-static FILE *folder_open_indexfile(struct folder *f, const char *mode)
+static FILE *folder_indexfile_open(struct folder *f, const char *mode)
 {
 	FILE *fh;
 	char *path;
@@ -551,7 +568,7 @@ static FILE *folder_open_indexfile(struct folder *f, const char *mode)
  *
  * @param f the folder for which the index file should be deleted.
  */
-static void folder_delete_indexfile(struct folder *f)
+static void folder_indexfile_delete(struct folder *f)
 {
 	char *path;
 	char *index_name;
@@ -594,11 +611,11 @@ static void folder_delete_indexfile(struct folder *f)
  * @param folder specifies the folder of which the index should
  * be made invalid.
  */
-static void folder_invalidate_indexfile(struct folder *folder)
+static void folder_indexfile_invalidate(struct folder *folder)
 {
 	if (folder->index_uptodate)
 	{
-		folder_delete_indexfile(folder);
+		folder_indexfile_delete(folder);
 		folder->index_uptodate = 0;
 	}
 }
@@ -610,7 +627,7 @@ void folder_delete_all_indexfiles(void)
 	struct folder *f = folder_first();
 	while (f)
 	{
-		folder_delete_indexfile(f);
+		folder_indexfile_delete(f);
 		f->index_uptodate = 0;
 		f = folder_next(f);
 	}
@@ -661,7 +678,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 
 	if (folder->special == FOLDER_SPECIAL_GROUP) SM_RETURN(0,"%ld");
 
-	if ((fh = folder_open_indexfile(folder,"rb+")))
+	if ((fh = folder_indexfile_open(folder,"rb+")))
 	{
 		/* Move at the position of the field */
 
@@ -741,7 +758,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	}
 
 	/* delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	if (folder->mail_info_array_allocated == folder->num_mails)
 	{
@@ -907,7 +924,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	}
 
 	/* delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -937,13 +954,11 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 		{
 			struct mail_info *next = submail->next_thread_mail;
 			submail->next_thread_mail = NULL;
-			submail->child_mail = 0;
 			submail = next;
 		}
 	}
 	mail->sub_thread_mail = NULL;
 	mail->next_thread_mail = NULL;
-	mail->child_mail = 0;
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -985,7 +1000,7 @@ void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail)
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		folder_invalidate_indexfile(folder);
+		folder_indexfile_invalidate(folder);
 	}
 
 	chdir(buf);
@@ -1010,7 +1025,7 @@ void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		folder_invalidate_indexfile(folder);
+		folder_indexfile_invalidate(folder);
 	}
 
 	chdir(buf);
@@ -1036,7 +1051,7 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 	}
 
 	/* Delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -1205,7 +1220,7 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 			chdir(buf);
 
 			/* Delete the indexfile if not already done */
-			folder_invalidate_indexfile(folder);
+			folder_indexfile_invalidate(folder);
 		}
 	}
 }
@@ -1228,7 +1243,7 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 	mail->flags = flags_new;
 
 	/* Delete the indexfile if not already done */
-	folder_invalidate_indexfile(folder);
+	folder_indexfile_invalidate(folder);
 }
 
 /*****************************************************************************/
@@ -1445,6 +1460,11 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 		free(snode);
 
 		c->current_mail++;
+
+		if (!(c->current_mail % 512))
+		{
+			COROUTINE_YIELD(c);
+		}
 	}
 
 	if (c->status_callback || c->pm)
@@ -1623,7 +1643,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 		folder_add_mail(f, m[i], 0);
 	}
 
-	folder_invalidate_indexfile(f);
+	folder_indexfile_invalidate(f);
 
 	f->rescanning = 0;
 
@@ -1797,11 +1817,13 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 	if ((m = mail_info_create(folder_mail_context)))
 	{
-		m->subject = (utf8*)fread_str(fh, NULL, 0);
-		m->filename = fread_str(fh, NULL, 0);
+		int pop3_id = -1;
 
-		m->from_phrase = (utf8*)fread_str_no_null(fh, sp);
-		m->from_addr = fread_str_no_null(fh, sp);
+		m->subject = (utf8*)fread_str(fh, NULL, 0, NULL);
+		m->filename = fread_str(fh, NULL, 0, NULL);
+
+		m->from_phrase = (utf8*)fread_str_no_null(fh, sp, NULL);
+		m->from_addr = fread_str_no_null(fh, sp, NULL);
 
 		/* Read the to list */
 		if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
@@ -1809,8 +1831,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 		while (num_to--)
 		{
-			char *realname = fread_str_no_null(fh, sp);
-			char *email = fread_str_no_null(fh, sp);
+			char *realname = fread_str_no_null(fh, sp, NULL);
+			char *email = fread_str_no_null(fh, sp, NULL);
 			struct address *addr;
 
 			if (m->to_list)
@@ -1830,8 +1852,8 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 
 		while (num_cc--)
 		{
-			char *realname = fread_str_no_null(fh, sp);
-			char *email = fread_str_no_null(fh, sp);
+			char *realname = fread_str_no_null(fh, sp, NULL);
+			char *email = fread_str_no_null(fh, sp, NULL);
 			struct address *addr;
 
 			if (m->cc_list)
@@ -1845,10 +1867,23 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 			}
 		}
 
-		m->pop3_server.str = fread_str_no_null(fh, sp);
-		m->message_id = fread_str_no_null(fh, sp);
-		m->message_reply_id = fread_str_no_null(fh, sp);
-		m->reply_addr = fread_str_no_null(fh, sp);
+		m->pop3_server.str = fread_str_no_null(fh, sp, &pop3_id);
+		if (pop3_id != -1)
+		{
+			const char *pop3_str = string_pool_get(sp, pop3_id);
+			int our_pop3_id = string_pool_ref(m->context->sp, pop3_str);
+			if (our_pop3_id != -1)
+			{
+				m->pop3_server.id = our_pop3_id;
+				m->tflags |= MAIL_TFLAGS_POP3_ID;
+			}
+		} else
+		{
+			/* TODO: Compress string also here if possible */
+		}
+		m->message_id = fread_str_no_null(fh, sp, NULL);
+		m->message_reply_id = fread_str_no_null(fh, sp, NULL);
+		m->reply_addr = fread_str_no_null(fh, sp, NULL);
 
 		fseek(fh,ftell(fh)%2,SEEK_CUR);
 		fread(&m->size,1,sizeof(m->size),fh);
@@ -1857,6 +1892,103 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 		fread(&m->flags,1,sizeof(m->flags),fh);
 	}
 	return m;
+}
+
+struct folder_index_magic
+{
+	char magic[4];
+	int ver;
+};
+
+/**
+ * Check whether the given file handle is a proper indexfile.
+ *
+ * @param fh
+ * @return
+ */
+static int folder_indexfile_check(FILE *fh)
+{
+	struct folder_index_magic magic = {0};
+
+	fread(&magic,1,sizeof(magic),fh);
+
+	if (strncmp("SMFI", magic.magic, 4) != 0)
+	{
+		return 0;
+	}
+
+	if (magic.ver != FOLDER_INDEX_VERSION)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+struct folder_index
+{
+	FILE *fh;
+	int pending;
+	int num_mails;
+	int unread_mails;
+};
+
+/**
+ * Open the index for the given folder.
+ *
+ * @param f
+ * @return
+ */
+static struct folder_index *folder_index_open(struct folder *f)
+{
+	struct folder_index *fi;
+
+	if (!(fi = (struct folder_index*)malloc(sizeof(*fi))))
+	{
+		return NULL;
+	}
+	memset(fi, 0, sizeof(*fi));
+
+	if (!(fi->fh = folder_indexfile_open(f, "rb")))
+	{
+		goto bailout;
+	}
+
+	if (!folder_indexfile_check(fi->fh))
+	{
+		goto bailout;
+	}
+
+	if (fread(&fi->pending, 1, 4, fi->fh) != 4)
+	{
+		goto bailout;
+	}
+	if (fread(&fi->num_mails, 1, 4, fi->fh) != 4)
+	{
+		goto bailout;
+	}
+	if (fread(&fi->unread_mails, 1, 4, fi->fh) != 4)
+	{
+		goto bailout;
+	}
+
+	return fi;
+
+bailout:
+	if (fi->fh) fclose(fi->fh);
+	free(fi);
+	return NULL;
+}
+
+static void folder_index_close(struct folder_index *fi)
+{
+	if (!fi)
+	{
+		return;
+	}
+	fclose(fi->fh);
+	free(fi);
+
 }
 
 /******************************************************************
@@ -1868,114 +2000,100 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 *******************************************************************/
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 {
-	FILE *fh;
-  int mail_infos_read = 0;
+	struct folder_index *fi;
+	int mail_infos_read = 0;
 
 	if (folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
-	if ((fh = folder_open_indexfile(folder,"rb")))
+	if ((fi = folder_index_open(folder)))
 	{
-		char buf[4];
 		unsigned int time_ref;
+		int pending;
 
 		time_ref = time_reference_ticks();
+		pending = fi->pending;
 
-		fread(buf,1,4,fh);
-		if (!strncmp("SMFI",buf,4))
+		/* Read in the mail info if index is not marked as having pending mails
+		   or if we know the pending mails. Also only do this if we do not
+		   already know the number of mails */
+
+		/* This whole if cause including needs a small rethought */
+		if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
 		{
-			int ver;
-			fread(&ver,1,4,fh);
-			if (ver == FOLDER_INDEX_VERSION)
+			int num_mails = fi->num_mails;
+			int unread_mails = fi->unread_mails;
+
+			if (!only_num_mails)
 			{
-				int pending = 1;
+				struct string_pool *sp;
+				char *sp_name;
 
-				fread(&pending,1,4,fh);
+				int i;
 
-				/* Read in the mail info if index is not marked as having pending mails
-				   or if we know the pending mails. Also only do this if we do not
-				   already know the number of mails */
+				if (!(sp = string_pool_create()))
+					goto nosp;
 
-				/* This whole if cause including needs a small rethought */
-				if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
+				if ((sp_name = folder_get_string_pool_name(folder)))
 				{
-					int num_mails;
-					int unread_mails=0;
+					/* Failure cases will be handled later when a string ref
+					 * cannot be resolved */
+					string_pool_load(sp, sp_name);
+					free(sp_name);
+				}
 
-					fread(&num_mails,1,4,fh);
-					fread(&unread_mails,1,4,fh);
+				folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+				mail_infos_read = 1;
+				folder->unread_mails = 0;
+				folder->new_mails = 0;
+				folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
 
-					if (!only_num_mails)
+				if (pending)
+				{
+					SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
+				}
+
+				while (num_mails-- && !feof(fi->fh))
+				{
+					struct mail_info *m;
+
+					if ((m = folder_read_mail_info_from_index(fi->fh, sp)))
 					{
-						struct string_pool *sp;
-						char *sp_name;
+						mail_identify_status(m);
 
-						int i;
-
-						if (!(sp = string_pool_create()))
-							goto nosp;
-
-						if ((sp_name = folder_get_string_pool_name(folder)))
-						{
-							/* Failure cases will be handled later when a string ref
-							 * cannot be resolved */
-							string_pool_load(sp, sp_name);
-							free(sp_name);
-						}
-
-						folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-						mail_infos_read = 1;
-						folder->unread_mails = 0;
-						folder->new_mails = 0;
-						folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
-
-						if (pending)
-						{
-							SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
-						}
-
-						while (num_mails-- && !feof(fh))
-						{
-							struct mail_info *m;
-
-							if ((m = folder_read_mail_info_from_index(fh, sp)))
-							{
-								mail_identify_status(m);
-
-								m->flags &= ~MAIL_FLAGS_NEW;
-								folder_add_mail(folder,m,0);
-							}
-						}
-
-						if (folder->num_pending_mails)
-						{
-							/* Add pending mails (i.e., mails that have been added
-							 * prior the loading of the folder) now */
-							for (i=0;i<folder->num_pending_mails;i++)
-								folder_add_mail(folder,folder->pending_mail_info_array[i],0);
-							folder->num_pending_mails = 0;
-
-							fclose(fh);
-							/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
-							   if saving is requested or we append the pending stuff with the indexfile here. I chose
-							   the first because it means less to do for me */
-							folder_delete_indexfile(folder);
-							folder->index_uptodate = 0;
-							return 1;
-						}
-
-nosp:
-						(void)1;
-					} else
-					{
-						folder->num_index_mails = num_mails;
-						folder->unread_mails = unread_mails;
+						m->flags &= ~MAIL_FLAGS_NEW;
+						folder_add_mail(folder,m,0);
 					}
 				}
+
+				if (folder->num_pending_mails)
+				{
+					/* Add pending mails (i.e., mails that have been added
+					 * prior the loading of the folder) now */
+					for (i=0;i<folder->num_pending_mails;i++)
+						folder_add_mail(folder,folder->pending_mail_info_array[i],0);
+					folder->num_pending_mails = 0;
+
+					folder_index_close(fi);
+
+					/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
+					   if saving is requested or we append the pending stuff with the indexfile here. I chose
+					   the first because it means less to do for me */
+					folder_indexfile_delete(folder);
+					folder->index_uptodate = 0;
+					return 1;
+				}
+
+nosp:
+				(void)1;
+			} else
+			{
+				folder->num_index_mails = num_mails;
+				folder->unread_mails = unread_mails;
 			}
 		}
 
 		SM_DEBUGF(10,("Index file of folder \"%s\" read after %d ms\n",folder->name,time_ms_passed(time_ref)));
-		fclose(fh);
+		folder_index_close(fi);
 	}
 
 	if (only_num_mails)
@@ -2674,7 +2792,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 			refresh = !!mystricmp(newpath,f->path);
 
 			if (refresh)
-				folder_invalidate_indexfile(f);
+				folder_indexfile_invalidate(f);
 
 			if (f->path) free(f->path);
 			f->path = newpath;
@@ -2688,7 +2806,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		refresh = 1;
 		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
 		{
-			folder_invalidate_indexfile(f);
+			folder_indexfile_invalidate(f);
 			rescan = 1;
 		}
 		f->type = newtype;
@@ -3381,13 +3499,15 @@ int folder_save_index(struct folder *f)
 				for (i=0; i < f->num_mails; i++)
 				{
 					struct mail_info *m = f->mail_info_array[i];
+					const char *pop3 = mail_get_pop3_server(m);
 
 					if (m->from_addr) string_pool_ref(sp, m->from_addr);
 					if (m->from_phrase) string_pool_ref(sp, m->from_phrase);
 					if (m->to_list) string_pool_put_address_list(sp, m->to_list);
 					if (m->cc_list) string_pool_put_address_list(sp, m->cc_list);
 					if (m->reply_addr) string_pool_ref(sp, m->reply_addr);
-					if (m->pop3_server.str) string_pool_ref(sp, m->pop3_server.str);
+
+					if (pop3) string_pool_ref(sp, pop3);
 				}
 				string_pool_save(sp, sp_name);
 			}
@@ -3395,7 +3515,7 @@ int folder_save_index(struct folder *f)
 		}
 	}
 
-	if ((fh = folder_open_indexfile(f,append?"rb+":"wb")))
+	if ((fh = folder_indexfile_open(f,append?"rb+":"wb")))
 	{
 		int i;
 		struct mail_info **mail_info_array;
@@ -3465,7 +3585,7 @@ int folder_save_index(struct folder *f)
 				cc_addr = address_next(cc_addr);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server.str, sp))) break;
+			if (!(len_add = fwrite_str(fh, mail_get_pop3_server(m), sp))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->message_id, NULL))) break;
 			len += len_add;
@@ -3605,10 +3725,21 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 
 		filter = folder->filter;
 
-		do
+		while (1)
 		{
-			mi = folder_next_mail_info(folder->ref_folder,handle);
-		} while (mi && (!utf8stristr(mi->subject,filter) && !utf8stristr(mi->from_addr,filter) && !utf8stristr(mi->from_phrase,filter)));
+			if (!(mi = folder_next_mail_info(folder->ref_folder,handle)))
+				break;
+
+			if (utf8stristr(mi->subject,filter))
+				break;
+
+			if (utf8stristr(mail_info_get_from_addr(mi),filter))
+				break;
+
+			if (utf8stristr(mail_info_get_from_phrase(mi),filter))
+				break;
+
+		}
 		return mi;
 	}
 
@@ -3772,7 +3903,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 											  struct filter *filter)
 {
 	struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
-	struct mail_complete *mc = mail_complete_create();
+	struct mail_complete *mc = mail_complete_create(NULL);
 	if (mc) mc->info = m;
 
 	while (rule)

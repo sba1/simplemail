@@ -565,7 +565,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				int more = 1; /* more lines needed */
 				int showme = 0;
 
-				if (!(m = mail_complete_create())) break;
+				if (!(m = mail_complete_create(NULL))) break;
 
 				sprintf(buf, "TOP %d 1\r\n",i+1);
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;

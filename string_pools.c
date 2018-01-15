@@ -191,7 +191,7 @@ void string_pool_delete(struct string_pool *p)
 
 /*****************************************************************************/
 
-int string_pool_ref(struct string_pool *p, char *string)
+int string_pool_ref(struct string_pool *p, const char *string)
 {
 	struct hash_entry *he;
 

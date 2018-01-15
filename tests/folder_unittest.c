@@ -82,6 +82,9 @@ void test_folder_many_mails(void)
 	struct folder *f;
 	char mail_filename[100];
 	int i;
+	void *handle = NULL;
+	struct mail_info *mi;
+	int count = 0;
 
 	system("rm -Rf " MANY_EMAILS_PROFILE);
 	config_set_user_profile_directory(MANY_EMAILS_PROFILE);
@@ -114,7 +117,37 @@ void test_folder_many_mails(void)
 	CU_ASSERT(folder_rescan_async(folder_incoming(), NULL, test_folder_many_mails_rescan_completed, NULL) != 0);
 	thread_wait(NULL, NULL, NULL, 0);
 
+	CU_ASSERT_EQUAL(folder_incoming()->num_mails, 5000);
+
 	CU_ASSERT(folder_save_index(folder_incoming()) != 0);
+
+	del_folders();
+
+	/* Init folder again, we are especially interested in reading the index file */
+	CU_ASSERT(init_folders() != 0);
+
+	f = folder_incoming();
+
+	/* Confirm, that we have not yet read all the mails, only some statistics */
+	CU_ASSERT_EQUAL(f->num_index_mails, 5000);
+	CU_ASSERT_EQUAL(f->num_mails, 0);
+	CU_ASSERT_EQUAL(f->mail_infos_loaded, 0);
+
+	mi = folder_next_mail(f, &handle);
+	CU_ASSERT_EQUAL(f->mail_infos_loaded, 1);
+	CU_ASSERT_EQUAL(f->num_mails, 5000);
+
+	while (mi)
+	{
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from(mi), "Sebastian Bauer");
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from_phrase(mi), "Sebastian Bauer");
+		CU_ASSERT_STRING_EQUAL(mail_info_get_from_addr(mi), "mail@sebastianbauer.info");
+
+		count++;
+		mi = folder_next_mail(f, &handle);
+	}
+
+	CU_ASSERT_EQUAL(count, 5000);
 
 	del_folders();
 	codesets_cleanup();

@@ -149,10 +149,7 @@ struct mail_info
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
 	unsigned short reference_count; /* number of additional references to this object */
-	unsigned char tflags; /* transient flags */
-
-	/* for mail threads */
-	unsigned char child_mail;									/* is a child mail */
+	unsigned short tflags; /* transient flags */
 
 	struct mail_info *sub_thread_mail;	/* one more level */
 	struct mail_info *next_thread_mail;	/* the same level */
@@ -160,7 +157,7 @@ struct mail_info
 	mail_context *context; /* The context to which this mail is associated, may be NULL */
 };
 
-/* Only 8 bits in total */
+/* Only 16 bits in total */
 #define MAIL_TFLAGS_TO_BE_FREED (1<<0)
 #define MAIL_TFLAGS_POP3_ID (1<<1)
 
@@ -228,6 +225,8 @@ struct mail_complete
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
 
 #define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
+#define mail_info_get_from_phrase(x) ((x)->from_phrase)
+#define mail_info_get_from_addr(x) ((x)->from_addr)
 #define mail_info_get_to(x) (mail_get_to_phrase(x)?mail_get_to_phrase(x):mail_get_to_addr(x))
 
 /**
@@ -318,6 +317,21 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 char *mail_get_from_address(struct mail_info *mail);
 
 /**
+ * Return the pop3 server.
+ *
+ * @param mail
+ * @return
+ */
+static inline char *mail_get_pop3_server(const struct mail_info *mail)
+{
+	if (mail->tflags & MAIL_TFLAGS_POP3_ID)
+	{
+		return string_pool_get(mail->context->sp, mail->pop3_server.id);
+	}
+	return mail->pop3_server.str;
+}
+
+/**
  * Returns the first to phrase (real name) of the mail.
  *
  * @param mail
@@ -401,9 +415,10 @@ void mail_identify_status(struct mail_info *m);
 /**
  * Creates a mail, initialize it to default values.
  *
+ * @param mc the optional context to which this mail shall be associated.
  * @return the newly created mail.
  */
-struct mail_complete *mail_complete_create(void);
+struct mail_complete *mail_complete_create(mail_context *mc);
 
 /**
  * Creates a mail to be sent to a given address.

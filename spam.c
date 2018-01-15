@@ -542,7 +542,7 @@ int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char *
 	int rc;
 
 	thread_lock_semaphore(sem);
-	if ((from_addr = to_check_mail->from_addr))
+	if ((from_addr = mail_info_get_from_addr(to_check_mail)))
 	{
 		if (array_contains(white,from_addr))
 		{

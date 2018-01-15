@@ -408,7 +408,7 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 		switch (type)
 		{
 			case	FRCT_FROM:
-					data[i] = array_add_string(NULL,m->from_addr);
+					data[i] = array_add_string(NULL,mail_info_get_from_addr(m));
 					break;
 			case	FRCT_RECEPIENTS:
 					data[i] = mail_info_get_recipient_addresses(m); /* returns an array() */

@@ -1991,6 +1991,31 @@ static void folder_index_close(struct folder_index *fi)
 
 }
 
+/**
+ * Load the string pool associated with the given folder.
+ *
+ * @param f
+ * @return the string pool or NULL.
+ */
+static struct string_pool *folder_load_string_pool(struct folder *f)
+{
+	struct string_pool *sp;
+	char *sp_name;
+
+	if (!(sp = string_pool_create()))
+		return NULL;
+
+	if ((sp_name = folder_get_string_pool_name(f)))
+	{
+		/* Failure cases will be handled later when a string ref
+		 * cannot be resolved */
+		string_pool_load(sp, sp_name);
+		free(sp_name);
+	}
+	return sp;
+
+}
+
 /******************************************************************
  Reads the all mail infos in the given folder.
  TODO: Get rid of readdir and friends
@@ -2026,20 +2051,11 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 			if (!only_num_mails)
 			{
 				struct string_pool *sp;
-				char *sp_name;
 
 				int i;
 
-				if (!(sp = string_pool_create()))
+				if (!(sp = folder_load_string_pool(folder)))
 					goto nosp;
-
-				if ((sp_name = folder_get_string_pool_name(folder)))
-				{
-					/* Failure cases will be handled later when a string ref
-					 * cannot be resolved */
-					string_pool_load(sp, sp_name);
-					free(sp_name);
-				}
 
 				folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 				mail_infos_read = 1;

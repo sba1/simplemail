@@ -2016,13 +2016,14 @@ static struct string_pool *folder_load_string_pool(struct folder *f)
 
 }
 
-/******************************************************************
- Reads the all mail infos in the given folder.
- TODO: Get rid of readdir and friends
- TODO: The structure of this functions is "somewhat" weird
- TODO: Integrate live filter support (currently in folder_next_mail_info())
- returns 0 if an error has happended otherwise 0
-*******************************************************************/
+/**
+ * Read the information of all mails of the given folder. This may
+ * involve triggering index file or rescanning of the folder.
+ *
+ * @param folder
+ * @param only_num_mails
+ * @return 0 if an error occurred otherwise something else.
+ */
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 {
 	struct folder_index *fi;

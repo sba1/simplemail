@@ -1802,11 +1802,12 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 /**
  * Read the next mail info from the index.
  *
+ * @param mc the mail context that shall be used when creating the mails or NULL.
  * @param fh the file handle of the index file.
  * @param sp the string pool that is used to resolve string references.
  * @return the mail info or NULL when something failed.
  */
-static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct string_pool *sp)
+static struct mail_info *folder_read_mail_info_from_index(mail_context *mc, FILE *fh, struct string_pool *sp)
 {
 	struct mail_info *m;
 	int num_to = 0;
@@ -1815,7 +1816,7 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	if (fread(&num_to,1,4,fh) != 4) return NULL;
 	if (fread(&num_cc,1,4,fh) != 4) return NULL;
 
-	if ((m = mail_info_create(folder_mail_context)))
+	if ((m = mail_info_create(mc)))
 	{
 		int pop3_id = -1;
 
@@ -2073,7 +2074,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				{
 					struct mail_info *m;
 
-					if ((m = folder_read_mail_info_from_index(fi->fh, sp)))
+					if ((m = folder_read_mail_info_from_index(folder_mail_context, fi->fh, sp)))
 					{
 						mail_identify_status(m);
 

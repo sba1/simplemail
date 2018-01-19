@@ -151,7 +151,9 @@ struct mail_info
 	unsigned short reference_count; /* number of additional references to this object */
 	unsigned short tflags; /* transient flags */
 
+#if 0
 	struct mail_info *sub_thread_mail;	/* one more level */
+#endif
 	struct mail_info *next_thread_mail;	/* the same level */
 
 	mail_context *context; /* The context to which this mail is associated, may be NULL */

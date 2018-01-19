@@ -907,7 +907,9 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail)
 {
 	int i;
+#if 0
 	struct mail_info *submail;
+#endif
 
 	/* lock the folder, because we are going to remove something */
 	folder_lock(folder);
@@ -926,6 +928,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	/* delete the indexfile if not already done */
 	folder_indexfile_invalidate(folder);
 
+#if 0
 	for (i=0; i < folder->num_mails; i++)
 	{
 		if (folder->mail_info_array[i]->sub_thread_mail == mail)
@@ -959,6 +962,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	}
 	mail->sub_thread_mail = NULL;
 	mail->next_thread_mail = NULL;
+#endif
 
 	for (i=0; i < folder->num_mails; i++)
 	{

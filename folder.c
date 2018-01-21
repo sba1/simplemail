@@ -914,9 +914,11 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	/* lock the folder, because we are going to remove something */
 	folder_lock(folder);
 
-	/* If mails info is not read_yet, read it now */
+	/* If mails info is not read_yet, the mail cannot be associated to this folder */
 	if (!folder->mail_infos_loaded)
-		folder_read_mail_infos(folder,0);
+	{
+		return;
+	}
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_info_array)

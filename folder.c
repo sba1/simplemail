@@ -655,6 +655,12 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 	return 1;
 }
 
+struct folder_index_magic
+{
+	char magic[4];
+	int ver;
+};
+
 /**
  * Resets the indexuptodate field within the folders indexfile.
  *
@@ -682,7 +688,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 	{
 		/* Move at the position of the field */
 
-		if (fseek(fh,8,SEEK_SET) == 0)
+		if (fseek(fh,sizeof(struct folder_index_magic),SEEK_SET) == 0)
 		{
 			int pending = 1;
 			if (fwrite(&pending,1,4,fh) == 4)
@@ -1900,12 +1906,6 @@ static struct mail_info *folder_read_mail_info_from_index(mail_context *mc, FILE
 	}
 	return m;
 }
-
-struct folder_index_magic
-{
-	char magic[4];
-	int ver;
-};
 
 /**
  * Check whether the given file handle is a proper indexfile.

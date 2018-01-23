@@ -1049,7 +1049,7 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 {
 	int i;
 
-  folder_lock(folder);
+	folder_lock(folder);
 
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
@@ -1281,7 +1281,7 @@ struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *file
 {
 	int i;
 
-	/* first check the pendig mail array */
+	/* first check the pending mail array */
 	for (i=0; i < folder->num_pending_mails; i++)
 	{
 		if (!mystricmp(folder->pending_mail_info_array[i]->filename,filename))

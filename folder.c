@@ -1051,10 +1051,6 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 
 	folder_lock(folder);
 
-	/* If mails info is not read_yet, read it now */
-	if (!folder->mail_infos_loaded)
-		folder_read_mail_infos(folder,0);
-
 	/* free the sorted mail array */
 	if (folder->sorted_mail_info_array)
 	{

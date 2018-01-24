@@ -2074,7 +2074,6 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 		if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
 		{
 			int num_mails = fi->num_mails;
-			int unread_mails = fi->unread_mails;
 
 			if (!only_num_mails)
 			{
@@ -2121,7 +2120,7 @@ nosp:
 			} else
 			{
 				folder->num_index_mails = num_mails;
-				folder->unread_mails = unread_mails;
+				folder->unread_mails = fi->unread_mails;
 			}
 		}
 

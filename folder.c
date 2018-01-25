@@ -2106,6 +2106,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				}
 
 				folder_index_read_them_all(fi, sp, &mis);
+				string_pool_delete(sp);
 
 				if (mis)
 				{

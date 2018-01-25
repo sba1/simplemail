@@ -2024,13 +2024,21 @@ static struct string_pool *folder_load_string_pool(struct folder *f)
  *
  * @param fi
  * @param sp
- * @param folder
+ * @param out_ptr
  */
-static void folder_index_read_them_all(struct folder_index *fi, struct string_pool *sp, struct folder *folder)
+static void folder_index_read_them_all(struct folder_index *fi, struct string_pool *sp, struct mail_info ***out_ptr)
 {
+	int i;
 	int num_mails = fi->num_mails;
+	struct mail_info **out;
 
-	while (num_mails-- && !feof(fi->fh))
+	if (!(out = malloc(sizeof(struct mail_info *) * num_mails)))
+	{
+		*out_ptr = NULL;
+		return;
+	}
+
+	for (i = 0; i < num_mails && !feof(fi->fh); i++)
 	{
 		struct mail_info *m;
 
@@ -2038,7 +2046,7 @@ static void folder_index_read_them_all(struct folder_index *fi, struct string_po
 		{
 			mail_identify_status(m);
 			m->flags &= ~MAIL_FLAGS_NEW;
-			folder_add_mail(folder, m, 0);
+			out[i] = m;
 		}
 	}
 }
@@ -2078,6 +2086,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 			if (!only_num_mails)
 			{
 				struct string_pool *sp;
+				struct mail_info **mis;
 
 				int i;
 
@@ -2095,7 +2104,20 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 					SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
 				}
 
-				folder_index_read_them_all(fi, sp, folder);
+				folder_index_read_them_all(fi, sp, &mis);
+
+				if (mis)
+				{
+					for (i=0; i < num_mails; i++)
+					{
+						if (!mis[i])
+						{
+							continue;
+						}
+						folder_add_mail(folder, mis[i], 0);
+					}
+					free(mis);
+				}
 
 				if (folder->num_pending_mails)
 				{

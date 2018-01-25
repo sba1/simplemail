@@ -2049,6 +2049,7 @@ static void folder_index_read_them_all(struct folder_index *fi, struct string_po
 			out[i] = m;
 		}
 	}
+	*out_ptr = out;
 }
 
 /**

@@ -1814,7 +1814,7 @@ static int folder_rescan_or_reread_index_async(struct folder *folder, int try_in
 
 int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
 {
-	return folder_rescan_or_reread_index_async(folder, 0, status_callback, udata);
+	return folder_rescan_or_reread_index_async(folder, 0, status_callback, completed, udata);
 }
 
 /**

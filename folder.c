@@ -1602,6 +1602,7 @@ struct folder_thread_rescan_context
 	void (*completed)(char *folder_path, void *udata);
 	void *completed_udata;
 	struct progmon *pm;
+	int try_index; /* Try loading the index */
 
 	/* Actual context */
 	char *folder_name;
@@ -1765,7 +1766,7 @@ static int folder_thread_ensure(void)
 
 /*****************************************************************************/
 
-int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+static int folder_rescan_or_reread_index_async(struct folder *folder, int try_index, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
 {
 	char *folder_path;
 	struct folder_thread_rescan_context *ctx;
@@ -1788,6 +1789,8 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	ctx->status_callback = status_callback;
 	ctx->completed = completed;
 	ctx->completed_udata = udata;
+	ctx->try_index = try_index;
+
 	if ((ctx->pm = progmon_create()))
 	{
 		ctx->pm->begin(ctx->pm, 101, "Rescanning");
@@ -1805,6 +1808,13 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 		progmon_delete(ctx->pm);
 	}
 	return 0;
+}
+
+/*****************************************************************************/
+
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+{
+	return folder_rescan_or_reread_index_async(folder, 0, status_callback, udata);
 }
 
 /**

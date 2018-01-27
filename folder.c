@@ -644,8 +644,14 @@ void folder_delete_all_indexfiles(void)
 static int folder_prepare_for_additional_mails(struct folder *folder, int num_mails)
 {
 	struct mail_info **new_mail_array;
-	int new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
+	int new_mail_array_allocated;
 
+	if (num_mails + folder->num_mails < folder->mail_info_array_allocated)
+	{
+		return 1;
+	}
+
+	new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
 	new_mail_array = (struct mail_info**)realloc(folder->mail_info_array, new_mail_array_allocated*sizeof(struct mail_info*));
 	if (!new_mail_array) return 0;
 

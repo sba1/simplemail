@@ -910,6 +910,30 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	return pos;
 }
 
+/*****************************************************************************/
+
+static int folder_add_mails(struct folder *f, struct mail_info **mails, int num)
+{
+	int i;
+
+	if (!mails)
+	{
+		return 0;
+	}
+
+	folder_prepare_for_additional_mails(f, num);
+
+	for (i = 0; i < num; i++)
+	{
+		if (!mails[i]) continue;
+		if (!folder_add_mail(f, mails[i], 0))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /**
  * Remove the given mail from the given folder. It does not free the mail.
  *
@@ -1631,7 +1655,6 @@ struct folder_thread_rescan_context
 static void folder_rescan_async_completed(struct folder_thread_rescan_context *ctx)
 {
 	struct folder *f;
-	int i;
 
 	char *folder_path;
 	struct mail_info **m;
@@ -1647,16 +1670,11 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 	folder_lock(f);
 	folder_dispose_mails(f);
 
-	f->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+	f->mail_infos_loaded = 1; /* must happen before folder_add_mails() */
 	f->num_index_mails = 0;
 	f->partial_mails = 0;
 
-	folder_prepare_for_additional_mails(f, num_m);
-
-	for (i=0; i < num_m; i++)
-	{
-		folder_add_mail(f, m[i], 0);
-	}
+	folder_add_mails(f, m, num_m);
 
 	folder_indexfile_invalidate(f);
 
@@ -2110,12 +2128,6 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				if (!(sp = folder_load_string_pool(folder)))
 					goto nosp;
 
-				folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-				mail_infos_read = 1;
-				folder->unread_mails = 0;
-				folder->new_mails = 0;
-				folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
-
 				if (pending)
 				{
 					SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
@@ -2124,18 +2136,13 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				folder_index_read_them_all(fi, sp, &mis);
 				string_pool_delete(sp);
 
-				if (mis)
-				{
-					for (i=0; i < num_mails; i++)
-					{
-						if (!mis[i])
-						{
-							continue;
-						}
-						folder_add_mail(folder, mis[i], 0);
-					}
-					free(mis);
-				}
+				folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+				mail_infos_read = 1;
+				folder->unread_mails = 0;
+				folder->new_mails = 0;
+				folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
+
+				folder_add_mails(folder, mis, num_mails);
 
 				if (folder->num_pending_mails)
 				{

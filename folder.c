@@ -2123,8 +2123,6 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				struct string_pool *sp;
 				struct mail_info **mis;
 
-				int i;
-
 				if (!(sp = folder_load_string_pool(folder)))
 					goto nosp;
 
@@ -2148,8 +2146,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				{
 					/* Add pending mails (i.e., mails that have been added
 					 * prior the loading of the folder) now */
-					for (i=0;i<folder->num_pending_mails;i++)
-						folder_add_mail(folder,folder->pending_mail_info_array[i],0);
+					folder_add_mails(folder, folder->pending_mail_info_array, folder->num_pending_mails);
+
 					folder->num_pending_mails = 0;
 
 					folder_index_close(fi);

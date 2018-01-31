@@ -1698,7 +1698,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
  * @param ctx
  * @return a coroutine return value.
  */
-static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_context *ctx)
+static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct coroutine_basic_context *ctx)
 {
 	struct folder_thread_rescan_context *c = (struct folder_thread_rescan_context*)ctx;
 	struct folder_rescan_really_context *rescan_ctx = c->rescan_ctx;
@@ -1820,7 +1820,7 @@ static int folder_rescan_or_reread_index_async(struct folder *folder, int try_in
 		ctx->pm->begin(ctx->pm, 101, "Rescanning");
 	}
 
-	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
+	if (thread_call_coroutine(folder_thread, folder_thread_rescan_or_reread_index_coroutine, &ctx->basic_context))
 	{
 		folder->rescanning = 1;
 		callback_refresh_folder(folder);

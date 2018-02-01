@@ -60,6 +60,8 @@
 #define FOLDER_INDEX_VERSION 8
 
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
+static struct folder_index *folder_index_open(struct folder *f);
+static void folder_index_close(struct folder_index *fi);
 
 /* folder sort stuff to control the compare functions */
 static int compare_primary_reverse;
@@ -1379,6 +1381,7 @@ struct folder_rescan_really_context
 
 	const char *folder_path;
 	const char *folder_name;
+	struct folder_index *folder_index; /* the opened index, if any */
 
 	/** Function to be called for a new mail. Returns 1 on success, 0 otherwise. */
 	int (*mail_callback)(struct mail_info *m, void *udata);
@@ -1636,6 +1639,7 @@ struct folder_thread_rescan_context
 
 	/* Actual context */
 	char *folder_name;
+	struct folder_index *folder_index;
 	struct folder_thread_mail_callback_data udata;
 
 	/* Context of nested coroutine */
@@ -1714,6 +1718,10 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		{
 			folder_lock(f);
 			c->folder_name = mystrdup(f->name);
+			if (c->try_index)
+			{
+				c->folder_index = folder_index_open(f);
+			}
 			folder_unlock(f);
 		}
 		folders_unlock();
@@ -1732,6 +1740,7 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 
 		rescan_ctx->folder_path = c->folder_path;
 		rescan_ctx->folder_name = c->folder_name;
+		rescan_ctx->folder_index = c->folder_index;
 		rescan_ctx->mail_callback= folder_thread_mail_callback;
 		rescan_ctx->mail_callback_udata = &c->udata;
 		rescan_ctx->status_callback = c->status_callback;
@@ -1745,6 +1754,7 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		free(rescan_ctx);
 	}
 
+	if (c->folder_index) folder_index_close(c->folder_index);
 	thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
 	free(c->udata.mails);
 bailout:

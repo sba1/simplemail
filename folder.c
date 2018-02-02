@@ -1978,6 +1978,7 @@ struct folder_index
 	int pending;
 	int num_mails;
 	int unread_mails;
+	char *string_pool_name;
 };
 
 /**
@@ -2006,6 +2007,11 @@ static struct folder_index *folder_index_open(struct folder *f)
 		goto bailout;
 	}
 
+	if (!(fi->string_pool_name = folder_get_string_pool_name(f)))
+	{
+		goto bailout;
+	}
+
 	if (fread(&fi->pending, 1, 4, fi->fh) != 4)
 	{
 		goto bailout;
@@ -2022,6 +2028,7 @@ static struct folder_index *folder_index_open(struct folder *f)
 	return fi;
 
 bailout:
+	if (fi->string_pool_name) free(fi->string_pool_name);
 	if (fi->fh) fclose(fi->fh);
 	free(fi);
 	return NULL;
@@ -2033,6 +2040,7 @@ static void folder_index_close(struct folder_index *fi)
 	{
 		return;
 	}
+	free(fi->string_pool_name);
 	fclose(fi->fh);
 	free(fi);
 
@@ -2041,24 +2049,19 @@ static void folder_index_close(struct folder_index *fi)
 /**
  * Load the string pool associated with the given folder.
  *
- * @param f
+ * @param sp_name the name of the string pool to load.
  * @return the string pool or NULL.
  */
-static struct string_pool *folder_load_string_pool(struct folder *f)
+static struct string_pool *folder_load_string_pool(const char *sp_name)
 {
 	struct string_pool *sp;
-	char *sp_name;
 
 	if (!(sp = string_pool_create()))
 		return NULL;
 
-	if ((sp_name = folder_get_string_pool_name(f)))
-	{
-		/* Failure cases will be handled later when a string ref
-		 * cannot be resolved */
-		string_pool_load(sp, sp_name);
-		free(sp_name);
-	}
+	/* Failure cases will be handled later when a string ref
+	 * cannot be resolved */
+	string_pool_load(sp, sp_name);
 	return sp;
 
 }
@@ -2133,7 +2136,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				struct string_pool *sp;
 				struct mail_info **mis;
 
-				if (!(sp = folder_load_string_pool(folder)))
+				if (!(sp = folder_load_string_pool(fi->string_pool_name)))
 					goto nosp;
 
 				if (pending)

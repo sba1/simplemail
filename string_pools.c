@@ -93,7 +93,7 @@ static int string_pool_ensure_space(struct string_pool *p, int wanted_size)
 
 /*****************************************************************************/
 
-int string_pool_load(struct string_pool *sp, char *filename)
+int string_pool_load(struct string_pool *sp, const char *filename)
 {
 	FILE *fh;
 	char buf[128];

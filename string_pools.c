@@ -150,6 +150,21 @@ bailout:
 
 /*****************************************************************************/
 
+struct string_pool *string_pool_create_and_load(const char *filename)
+{
+	struct string_pool *sp;
+
+	if (!(sp = string_pool_create()))
+		return NULL;
+
+	if (string_pool_load(sp, filename))
+		return 0;
+
+	return sp;
+}
+
+/*****************************************************************************/
+
 int string_pool_save(struct string_pool *sp, char *filename)
 {
 	FILE *fh;

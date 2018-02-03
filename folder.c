@@ -2047,26 +2047,6 @@ static void folder_index_close(struct folder_index *fi)
 }
 
 /**
- * Load the string pool associated with the given folder.
- *
- * @param sp_name the name of the string pool to load.
- * @return the string pool or NULL.
- */
-static struct string_pool *folder_load_string_pool(const char *sp_name)
-{
-	struct string_pool *sp;
-
-	if (!(sp = string_pool_create()))
-		return NULL;
-
-	/* Failure cases will be handled later when a string ref
-	 * cannot be resolved */
-	string_pool_load(sp, sp_name);
-	return sp;
-
-}
-
-/**
  * Read all mail info from the already opened index file to the given folder.
  *
  * @param fi
@@ -2136,7 +2116,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				struct string_pool *sp;
 				struct mail_info **mis;
 
-				if (!(sp = folder_load_string_pool(fi->string_pool_name)))
+				if (!(sp = string_pool_create_and_load(fi->string_pool_name)))
 					goto nosp;
 
 				if (pending)

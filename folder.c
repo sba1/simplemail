@@ -57,11 +57,26 @@
 #include "support.h"
 #include "timesupport.h"
 
+/*****************************************************************************/
+
 #define FOLDER_INDEX_VERSION 8
 
+struct folder_index
+{
+	FILE *fh;
+	int pending;
+	int num_mails;
+	int unread_mails;
+	char *string_pool_name;
+};
+
+static void folder_index_read_them_all(struct folder_index *fi, struct string_pool *sp, struct mail_info ***out_ptr);
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
 static struct folder_index *folder_index_open(struct folder *f);
 static void folder_index_close(struct folder_index *fi);
+
+
+/*****************************************************************************/
 
 /* folder sort stuff to control the compare functions */
 static int compare_primary_reverse;
@@ -1418,6 +1433,31 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 
 	COROUTINE_BEGIN(c);
 
+	if (c->folder_index)
+	{
+		struct string_pool *sp;
+		struct mail_info **mis = NULL;
+
+		if (!(sp = string_pool_create_and_load(c->folder_index->string_pool_name)))
+			goto out;
+
+		folder_index_read_them_all(c->folder_index, sp, &mis);
+		if (c->folder_index->num_mails && mis)
+		{
+			int i;
+
+			for (i = 0; i < c->folder_index->num_mails && c->create; i++)
+			{
+				c->create = c->mail_callback(mis[i], c->mail_callback_udata);
+			}
+			free(mis);
+		}
+
+		string_pool_delete(sp);
+
+		goto out;
+	}
+
 	c->create = 1;
 
 	getcwd(c->path, sizeof(c->path));
@@ -1971,15 +2011,6 @@ static int folder_indexfile_check(FILE *fh)
 
 	return 1;
 }
-
-struct folder_index
-{
-	FILE *fh;
-	int pending;
-	int num_mails;
-	int unread_mails;
-	char *string_pool_name;
-};
 
 /**
  * Open the index for the given folder.

@@ -57,9 +57,26 @@
 #include "support.h"
 #include "timesupport.h"
 
+/*****************************************************************************/
+
 #define FOLDER_INDEX_VERSION 8
 
+struct folder_index
+{
+	FILE *fh;
+	int pending;
+	int num_mails;
+	int unread_mails;
+	char *string_pool_name;
+};
+
+static void folder_index_read_them_all(struct folder_index *fi, struct string_pool *sp, struct mail_info ***out_ptr);
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
+static struct folder_index *folder_index_open(struct folder *f);
+static void folder_index_close(struct folder_index *fi);
+
+
+/*****************************************************************************/
 
 /* folder sort stuff to control the compare functions */
 static int compare_primary_reverse;
@@ -644,8 +661,14 @@ void folder_delete_all_indexfiles(void)
 static int folder_prepare_for_additional_mails(struct folder *folder, int num_mails)
 {
 	struct mail_info **new_mail_array;
-	int new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
+	int new_mail_array_allocated;
 
+	if (num_mails + folder->num_mails < folder->mail_info_array_allocated)
+	{
+		return 1;
+	}
+
+	new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
 	new_mail_array = (struct mail_info**)realloc(folder->mail_info_array, new_mail_array_allocated*sizeof(struct mail_info*));
 	if (!new_mail_array) return 0;
 
@@ -654,6 +677,12 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 
 	return 1;
 }
+
+struct folder_index_magic
+{
+	char magic[4];
+	int ver;
+};
 
 /**
  * Resets the indexuptodate field within the folders indexfile.
@@ -682,7 +711,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 	{
 		/* Move at the position of the field */
 
-		if (fseek(fh,8,SEEK_SET) == 0)
+		if (fseek(fh,sizeof(struct folder_index_magic),SEEK_SET) == 0)
 		{
 			int pending = 1;
 			if (fwrite(&pending,1,4,fh) == 4)
@@ -898,6 +927,30 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	return pos;
 }
 
+/*****************************************************************************/
+
+static int folder_add_mails(struct folder *f, struct mail_info **mails, int num)
+{
+	int i;
+
+	if (!mails)
+	{
+		return 0;
+	}
+
+	folder_prepare_for_additional_mails(f, num);
+
+	for (i = 0; i < num; i++)
+	{
+		if (!mails[i]) continue;
+		if (!folder_add_mail(f, mails[i], 0))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /**
  * Remove the given mail from the given folder. It does not free the mail.
  *
@@ -907,14 +960,18 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail)
 {
 	int i;
+#if 0
 	struct mail_info *submail;
+#endif
 
 	/* lock the folder, because we are going to remove something */
 	folder_lock(folder);
 
-	/* If mails info is not read_yet, read it now */
+	/* If mails info is not read_yet, the mail cannot be associated to this folder */
 	if (!folder->mail_infos_loaded)
-		folder_read_mail_infos(folder,0);
+	{
+		return;
+	}
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_info_array)
@@ -926,6 +983,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	/* delete the indexfile if not already done */
 	folder_indexfile_invalidate(folder);
 
+#if 0
 	for (i=0; i < folder->num_mails; i++)
 	{
 		if (folder->mail_info_array[i]->sub_thread_mail == mail)
@@ -959,6 +1017,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	}
 	mail->sub_thread_mail = NULL;
 	mail->next_thread_mail = NULL;
+#endif
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -1037,11 +1096,7 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 {
 	int i;
 
-  folder_lock(folder);
-
-	/* If mails info is not read_yet, read it now */
-	if (!folder->mail_infos_loaded)
-		folder_read_mail_infos(folder,0);
+	folder_lock(folder);
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_info_array)
@@ -1269,7 +1324,7 @@ struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *file
 {
 	int i;
 
-	/* first check the pendig mail array */
+	/* first check the pending mail array */
 	for (i=0; i < folder->num_pending_mails; i++)
 	{
 		if (!mystricmp(folder->pending_mail_info_array[i]->filename,filename))
@@ -1341,6 +1396,7 @@ struct folder_rescan_really_context
 
 	const char *folder_path;
 	const char *folder_name;
+	struct folder_index *folder_index; /* the opened index, if any */
 
 	/** Function to be called for a new mail. Returns 1 on success, 0 otherwise. */
 	int (*mail_callback)(struct mail_info *m, void *udata);
@@ -1376,6 +1432,31 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 	struct string_node *snode;
 
 	COROUTINE_BEGIN(c);
+
+	if (c->folder_index)
+	{
+		struct string_pool *sp;
+		struct mail_info **mis = NULL;
+
+		if (!(sp = string_pool_create_and_load(c->folder_index->string_pool_name)))
+			goto out;
+
+		folder_index_read_them_all(c->folder_index, sp, &mis);
+		if (c->folder_index->num_mails && mis)
+		{
+			int i;
+
+			for (i = 0; i < c->folder_index->num_mails && c->create; i++)
+			{
+				c->create = c->mail_callback(mis[i], c->mail_callback_udata);
+			}
+			free(mis);
+		}
+
+		string_pool_delete(sp);
+
+		goto out;
+	}
 
 	c->create = 1;
 
@@ -1594,9 +1675,11 @@ struct folder_thread_rescan_context
 	void (*completed)(char *folder_path, void *udata);
 	void *completed_udata;
 	struct progmon *pm;
+	int try_index; /* Try loading the index */
 
 	/* Actual context */
 	char *folder_name;
+	struct folder_index *folder_index;
 	struct folder_thread_mail_callback_data udata;
 
 	/* Context of nested coroutine */
@@ -1616,7 +1699,6 @@ struct folder_thread_rescan_context
 static void folder_rescan_async_completed(struct folder_thread_rescan_context *ctx)
 {
 	struct folder *f;
-	int i;
 
 	char *folder_path;
 	struct mail_info **m;
@@ -1632,16 +1714,11 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 	folder_lock(f);
 	folder_dispose_mails(f);
 
-	f->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+	f->mail_infos_loaded = 1; /* must happen before folder_add_mails() */
 	f->num_index_mails = 0;
 	f->partial_mails = 0;
 
-	folder_prepare_for_additional_mails(f, num_m);
-
-	for (i=0; i < num_m; i++)
-	{
-		folder_add_mail(f, m[i], 0);
-	}
+	folder_add_mails(f, m, num_m);
 
 	folder_indexfile_invalidate(f);
 
@@ -1665,7 +1742,7 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
  * @param ctx
  * @return a coroutine return value.
  */
-static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_context *ctx)
+static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct coroutine_basic_context *ctx)
 {
 	struct folder_thread_rescan_context *c = (struct folder_thread_rescan_context*)ctx;
 	struct folder_rescan_really_context *rescan_ctx = c->rescan_ctx;
@@ -1681,6 +1758,10 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		{
 			folder_lock(f);
 			c->folder_name = mystrdup(f->name);
+			if (c->try_index)
+			{
+				c->folder_index = folder_index_open(f);
+			}
 			folder_unlock(f);
 		}
 		folders_unlock();
@@ -1699,6 +1780,7 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 
 		rescan_ctx->folder_path = c->folder_path;
 		rescan_ctx->folder_name = c->folder_name;
+		rescan_ctx->folder_index = c->folder_index;
 		rescan_ctx->mail_callback= folder_thread_mail_callback;
 		rescan_ctx->mail_callback_udata = &c->udata;
 		rescan_ctx->status_callback = c->status_callback;
@@ -1712,6 +1794,7 @@ static coroutine_return_t folder_thread_rescan_coroutine(struct coroutine_basic_
 		free(rescan_ctx);
 	}
 
+	if (c->folder_index) folder_index_close(c->folder_index);
 	thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
 	free(c->udata.mails);
 bailout:
@@ -1757,7 +1840,7 @@ static int folder_thread_ensure(void)
 
 /*****************************************************************************/
 
-int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+static int folder_rescan_or_reread_index_async(struct folder *folder, int try_index, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
 {
 	char *folder_path;
 	struct folder_thread_rescan_context *ctx;
@@ -1780,12 +1863,14 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	ctx->status_callback = status_callback;
 	ctx->completed = completed;
 	ctx->completed_udata = udata;
+	ctx->try_index = try_index;
+
 	if ((ctx->pm = progmon_create()))
 	{
 		ctx->pm->begin(ctx->pm, 101, "Rescanning");
 	}
 
-	if (thread_call_coroutine(folder_thread, folder_thread_rescan_coroutine, &ctx->basic_context))
+	if (thread_call_coroutine(folder_thread, folder_thread_rescan_or_reread_index_coroutine, &ctx->basic_context))
 	{
 		folder->rescanning = 1;
 		callback_refresh_folder(folder);
@@ -1799,14 +1884,22 @@ int folder_rescan_async(struct folder *folder, void (*status_callback)(const cha
 	return 0;
 }
 
+/*****************************************************************************/
+
+int folder_rescan_async(struct folder *folder, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+{
+	return folder_rescan_or_reread_index_async(folder, 0, status_callback, completed, udata);
+}
+
 /**
  * Read the next mail info from the index.
  *
+ * @param mc the mail context that shall be used when creating the mails or NULL.
  * @param fh the file handle of the index file.
  * @param sp the string pool that is used to resolve string references.
  * @return the mail info or NULL when something failed.
  */
-static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct string_pool *sp)
+static struct mail_info *folder_read_mail_info_from_index(mail_context *mc, FILE *fh, struct string_pool *sp)
 {
 	struct mail_info *m;
 	int num_to = 0;
@@ -1815,7 +1908,7 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	if (fread(&num_to,1,4,fh) != 4) return NULL;
 	if (fread(&num_cc,1,4,fh) != 4) return NULL;
 
-	if ((m = mail_info_create(folder_mail_context)))
+	if ((m = mail_info_create(mc)))
 	{
 		int pop3_id = -1;
 
@@ -1894,12 +1987,6 @@ static struct mail_info *folder_read_mail_info_from_index(FILE *fh, struct strin
 	return m;
 }
 
-struct folder_index_magic
-{
-	char magic[4];
-	int ver;
-};
-
 /**
  * Check whether the given file handle is a proper indexfile.
  *
@@ -1924,14 +2011,6 @@ static int folder_indexfile_check(FILE *fh)
 
 	return 1;
 }
-
-struct folder_index
-{
-	FILE *fh;
-	int pending;
-	int num_mails;
-	int unread_mails;
-};
 
 /**
  * Open the index for the given folder.
@@ -1959,6 +2038,11 @@ static struct folder_index *folder_index_open(struct folder *f)
 		goto bailout;
 	}
 
+	if (!(fi->string_pool_name = folder_get_string_pool_name(f)))
+	{
+		goto bailout;
+	}
+
 	if (fread(&fi->pending, 1, 4, fi->fh) != 4)
 	{
 		goto bailout;
@@ -1975,6 +2059,7 @@ static struct folder_index *folder_index_open(struct folder *f)
 	return fi;
 
 bailout:
+	if (fi->string_pool_name) free(fi->string_pool_name);
 	if (fi->fh) fclose(fi->fh);
 	free(fi);
 	return NULL;
@@ -1986,18 +2071,53 @@ static void folder_index_close(struct folder_index *fi)
 	{
 		return;
 	}
+	free(fi->string_pool_name);
 	fclose(fi->fh);
 	free(fi);
 
 }
 
-/******************************************************************
- Reads the all mail infos in the given folder.
- TODO: Get rid of readdir and friends
- TODO: The structure of this functions is "somewhat" weird
- TODO: Integrate live filter support (currently in folder_next_mail_info())
- returns 0 if an error has happended otherwise 0
-*******************************************************************/
+/**
+ * Read all mail info from the already opened index file to the given folder.
+ *
+ * @param fi
+ * @param sp
+ * @param out_ptr
+ */
+static void folder_index_read_them_all(struct folder_index *fi, struct string_pool *sp, struct mail_info ***out_ptr)
+{
+	int i;
+	int num_mails = fi->num_mails;
+	struct mail_info **out;
+
+	if (!(out = malloc(sizeof(struct mail_info *) * num_mails)))
+	{
+		*out_ptr = NULL;
+		return;
+	}
+
+	for (i = 0; i < num_mails && !feof(fi->fh); i++)
+	{
+		struct mail_info *m;
+
+		if ((m = folder_read_mail_info_from_index(folder_mail_context, fi->fh, sp)))
+		{
+			mail_identify_status(m);
+			m->flags &= ~MAIL_FLAGS_NEW;
+			out[i] = m;
+		}
+	}
+	*out_ptr = out;
+}
+
+/**
+ * Read the information of all mails of the given folder. This may
+ * involve triggering index file or rescanning of the folder.
+ *
+ * @param folder
+ * @param only_num_mails
+ * @return 0 if an error occurred otherwise something else.
+ */
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 {
 	struct folder_index *fi;
@@ -2021,25 +2141,22 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 		if ((!pending || (pending && folder->num_pending_mails)) && (folder->num_index_mails == -1 || (!folder->mail_infos_loaded && !only_num_mails)))
 		{
 			int num_mails = fi->num_mails;
-			int unread_mails = fi->unread_mails;
 
 			if (!only_num_mails)
 			{
 				struct string_pool *sp;
-				char *sp_name;
+				struct mail_info **mis;
 
-				int i;
-
-				if (!(sp = string_pool_create()))
+				if (!(sp = string_pool_create_and_load(fi->string_pool_name)))
 					goto nosp;
 
-				if ((sp_name = folder_get_string_pool_name(folder)))
+				if (pending)
 				{
-					/* Failure cases will be handled later when a string ref
-					 * cannot be resolved */
-					string_pool_load(sp, sp_name);
-					free(sp_name);
+					SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
 				}
+
+				folder_index_read_them_all(fi, sp, &mis);
+				string_pool_delete(sp);
 
 				folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 				mail_infos_read = 1;
@@ -2047,30 +2164,14 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				folder->new_mails = 0;
 				folder_prepare_for_additional_mails(folder, num_mails + folder->num_pending_mails);
 
-				if (pending)
-				{
-					SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
-				}
-
-				while (num_mails-- && !feof(fi->fh))
-				{
-					struct mail_info *m;
-
-					if ((m = folder_read_mail_info_from_index(fi->fh, sp)))
-					{
-						mail_identify_status(m);
-
-						m->flags &= ~MAIL_FLAGS_NEW;
-						folder_add_mail(folder,m,0);
-					}
-				}
+				folder_add_mails(folder, mis, num_mails);
 
 				if (folder->num_pending_mails)
 				{
 					/* Add pending mails (i.e., mails that have been added
 					 * prior the loading of the folder) now */
-					for (i=0;i<folder->num_pending_mails;i++)
-						folder_add_mail(folder,folder->pending_mail_info_array[i],0);
+					folder_add_mails(folder, folder->pending_mail_info_array, folder->num_pending_mails);
+
 					folder->num_pending_mails = 0;
 
 					folder_index_close(fi);
@@ -2088,7 +2189,7 @@ nosp:
 			} else
 			{
 				folder->num_index_mails = num_mails;
-				folder->unread_mails = unread_mails;
+				folder->unread_mails = fi->unread_mails;
 			}
 		}
 

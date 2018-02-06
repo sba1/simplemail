@@ -39,7 +39,15 @@ struct string_pool *string_pool_create(void);
  * @param filename the name from where to load the contents.
  * @return whether this operation was successful or not
  */
-int string_pool_load(struct string_pool *sp, char *filename);
+int string_pool_load(struct string_pool *sp, const char *filename);
+
+/**
+ * Create a string pool and immediately load its contents.
+ *
+ * @param filename
+ * @return the newly created and populated string pool or NULL.
+ */
+struct string_pool *string_pool_create_and_load(const char *filename);
 
 /**
  * Save the string pool to the given file.

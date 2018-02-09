@@ -1665,6 +1665,13 @@ static int folder_thread_entry(void *udata)
 
 /*****************************************************************************/
 
+enum index_mode
+{
+	DONT_TRY, /* Index shall not be tried */
+	TRY, /* Index shall be tried */
+	ONLY /* Try index, and if this fails, do not scan */
+};
+
 struct folder_thread_rescan_context
 {
 	struct coroutine_basic_context basic_context;
@@ -1675,7 +1682,7 @@ struct folder_thread_rescan_context
 	void (*completed)(char *folder_path, void *udata);
 	void *completed_udata;
 	struct progmon *pm;
-	int try_index; /* Try loading the index */
+	enum index_mode index_mode; /* What to do with the index */
 
 	/* Actual context */
 	char *folder_name;
@@ -1758,7 +1765,7 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		{
 			folder_lock(f);
 			c->folder_name = mystrdup(f->name);
-			if (c->try_index)
+			if (c->index_mode != DONT_TRY)
 			{
 				c->folder_index = folder_index_open(f);
 			}
@@ -1770,6 +1777,11 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		{
 			goto bailout;
 		}
+	}
+
+	if (c->index_mode == ONLY && !c->folder_index)
+	{
+		goto bailout;
 	}
 
 	if ((rescan_ctx = c->rescan_ctx = malloc(sizeof(*rescan_ctx))))
@@ -1840,7 +1852,7 @@ static int folder_thread_ensure(void)
 
 /*****************************************************************************/
 
-static int folder_rescan_or_reread_index_async(struct folder *folder, int try_index, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
+static int folder_rescan_or_reread_index_async(struct folder *folder, enum index_mode index_mode, void (*status_callback)(const char *txt), void (*completed)(char *folder_path, void *udata), void *udata)
 {
 	char *folder_path;
 	struct folder_thread_rescan_context *ctx;
@@ -1863,7 +1875,7 @@ static int folder_rescan_or_reread_index_async(struct folder *folder, int try_in
 	ctx->status_callback = status_callback;
 	ctx->completed = completed;
 	ctx->completed_udata = udata;
-	ctx->try_index = try_index;
+	ctx->index_mode = index_mode;
 
 	if ((ctx->pm = progmon_create()))
 	{

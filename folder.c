@@ -1418,6 +1418,9 @@ struct folder_rescan_really_context
 	unsigned int current_mail;
 
 	int create;// = 1;
+
+	/* Output */
+	int index_read; /* Set to 1, if index has been read */
 };
 
 /**
@@ -1451,6 +1454,8 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 				c->create = c->mail_callback(mis[i], c->mail_callback_udata);
 			}
 			free(mis);
+
+			c->index_read = 1;
 		}
 
 		string_pool_delete(sp);

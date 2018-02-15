@@ -1582,20 +1582,24 @@ out:
  *
  * @param f
  */
-static void folder_dispose_mails(struct folder *f)
+static void folder_dispose_mails(struct folder *f, int keep_pending)
 {
 	/* FIXME: We should also delete each mail */
 	free(f->mail_info_array);
 	free(f->sorted_mail_info_array);
-	free(f->pending_mail_info_array);
 
 	f->mail_info_array = f->sorted_mail_info_array = f->pending_mail_info_array = NULL;
 	f->mail_info_array_allocated = 0;
 	f->num_mails = 0;
 	f->new_mails = 0;
 	f->unread_mails = 0;
-	f->pending_mail_info_array_allocated = 0;
-	f->num_pending_mails = 0;
+
+	if (!keep_pending)
+	{
+		free(f->pending_mail_info_array);
+		f->pending_mail_info_array_allocated = 0;
+		f->num_pending_mails = 0;
+	}
 }
 
 /*****************************************************************************/
@@ -1714,11 +1718,13 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 
 	char *folder_path;
 	struct mail_info **m;
+	int index_read;
 	int num_m;
 
 	folder_path = ctx->folder_path;
 	m = ctx->udata.mails;
 	num_m = ctx->udata.num_mails;
+	index_read = ctx->rescan_ctx->index_read;
 
 	folders_lock();
 
@@ -1731,13 +1737,25 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 	folder_lock(f);
 	folders_unlock();
 
-	folder_dispose_mails(f);
+	folder_dispose_mails(f, index_read);
 
 	f->mail_infos_loaded = 1; /* must happen before folder_add_mails() */
 	f->num_index_mails = 0;
 	f->partial_mails = 0;
 
 	folder_add_mails(f, m, num_m);
+
+	if (ctx->rescan_ctx->index_read)
+	{
+		if (f->num_pending_mails)
+		{
+			folder_add_mails(f, f->pending_mail_info_array, f->num_pending_mails);
+			free(f->pending_mail_info_array);
+			f->pending_mail_info_array = NULL;
+			f->num_pending_mails = 0;
+		}
+		/* TODO: If there are no pending mails, we don't need to invalidate the index */
+	}
 
 	folder_indexfile_invalidate(f);
 

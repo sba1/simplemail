@@ -1720,10 +1720,17 @@ static void folder_rescan_async_completed(struct folder_thread_rescan_context *c
 	m = ctx->udata.mails;
 	num_m = ctx->udata.num_mails;
 
+	folders_lock();
+
 	if (!(f = folder_find_by_path(folder_path)))
+	{
+		folders_unlock();
 		return;
+	}
 
 	folder_lock(f);
+	folders_unlock();
+
 	folder_dispose_mails(f);
 
 	f->mail_infos_loaded = 1; /* must happen before folder_add_mails() */

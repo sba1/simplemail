@@ -242,11 +242,11 @@ static void save_contents(struct MessageView_Data *data, struct mail_complete *m
 }
 
 /******************************************************************
- Open the contents of an icon (requires version 44 of the os)
+ Open the contents of an icon (requires version 44 of the OS or Ambient)
 *******************************************************************/
 static void open_contents(struct MessageView_Data *data, struct mail_complete *mail_part)
 {
-	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
+	if (WorkbenchBase->lib_Version >= 44)
 	{
 		BPTR fh;
 		BPTR newdir;
@@ -278,7 +278,7 @@ static void open_contents(struct MessageView_Data *data, struct mail_complete *m
 					Write(fh,cont,cont_len);
 					Close(fh);
 
-					if ((dobj = GetIconTags(mail_part->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+					if (IconBase->lib_Version >= 44 && (dobj = GetIconTags(mail_part->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
 					{
 						int ok_to_open = 1;
 						if (dobj->do_Type == WBTOOL)
@@ -291,6 +291,11 @@ static void open_contents(struct MessageView_Data *data, struct mail_complete *m
 
 						if (ok_to_open)
 							OpenWorkbenchObjectA(mail_part->content_name,NULL);
+					}
+					else
+					{
+						if (AddPart(filename,mail_part->content_name,sizeof filename))
+							OpenWorkbenchObjectA(filename,NULL);
 					}
 				}
 

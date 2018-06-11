@@ -52,16 +52,16 @@ int uidl_open(struct uidl *uidl)
 	if ((fh = fopen(uidl->filename,"rb")))
 	{
 		unsigned char id[4];
-		int fsize = myfsize(fh);
+		int uidls_size = myfsize(fh) - 4;
 		int cnt = fread(id,1,4,fh);
 
 		if (cnt == 4 && id[0] == 'S' && id[1] == 'M' && id[2] == 'U' && id[3] == 0 &&
-		    ((fsize - 4)%sizeof(struct uidl_entry)) == 0)
+		    (uidls_size % sizeof(struct uidl_entry)) == 0)
 		{
-			uidl->num_entries = (fsize - 4)/sizeof(struct uidl_entry);
-			if ((uidl->entries = malloc(fsize - 4)))
+			uidl->num_entries = (uidls_size)/sizeof(struct uidl_entry);
+			if ((uidl->entries = malloc(uidls_size)))
 			{
-				fread(uidl->entries,1,fsize - 4,fh);
+				fread(uidl->entries,1,uidls_size,fh);
 				rc = 1;
 			}
 		}

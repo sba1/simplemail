@@ -155,7 +155,7 @@ void uidl_add(struct uidl *uidl, const char *new_uidl)
 			fwrite("SMU",1,4,fh);
 		}
 		entry.size = -1;
-		strncpy(entry.uidl,new_uidl,sizeof(entry.uidl));
+		mystrlcpy(entry.uidl,new_uidl,sizeof(entry.uidl));
 		fwrite(&entry,1,sizeof(entry),fh);
 		fclose(fh);
 	} else

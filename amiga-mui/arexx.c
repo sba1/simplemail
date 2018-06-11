@@ -966,8 +966,10 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 				case	MAIL_STATUS_HOLD: mail_status = "H";break;
 				case	MAIL_STATUS_ERROR: mail_status = "E";break;
 				case	MAIL_STATUS_SPAM: mail_status = "M";break;
-				default: if (mail->flags & MAIL_FLAGS_NEW) mail_status = "N";
-								 else mail_status = "U"; break;
+				default:
+							if (mail->flags & MAIL_FLAGS_NEW) mail_status = "N";
+							else mail_status = "U";
+							break;
 			}
 
 			mail_index = folder_get_index_of_mail(main_get_folder(),mail);

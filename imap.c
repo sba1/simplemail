@@ -2187,13 +2187,14 @@ int imap_really_move_mail(struct connection *imap_connection, struct mail_info *
 
 int imap_really_append_mail(struct connection *imap_connection, struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
 {
+	const int line_buf_size = 2048;
 	char send[200];
 	char buf[380];
 	char *line;
 	int success;
 	FILE *fh,*tfh;
 	char tag[20],path[380];
-	char line_buf[1200];
+	char *line_buf;
 	int filesize;
 
 	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
@@ -2212,7 +2213,15 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 		return 0;
 	}
 
-	while (fgets(line_buf,sizeof(line_buf)-2,fh))
+	if (!(line_buf = malloc(line_buf_size)))
+	{
+		fclose(fh);
+		fclose(tfh);
+		chdir(path);
+		return 0;
+	}
+
+	while (fgets(line_buf,line_buf_size - 2,fh))
 	{
 		int len = strlen(line_buf);
 		if (len > 1 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
@@ -2242,6 +2251,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 	line = tcp_readln(imap_connection);
 	if (line[0] != '+')
 	{
+		free(line_buf);
 		fclose(tfh);
 		return 0;
 	}
@@ -2249,7 +2259,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 	success = 1;
 	while (filesize>0)
 	{
-		int read = fread(line_buf,1,sizeof(line_buf),tfh);
+		int read = fread(line_buf,1,line_buf_size,tfh);
 		if (!read || read == -1)
 		{
 			success = 0;

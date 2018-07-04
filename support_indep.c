@@ -947,7 +947,7 @@ int string_append_part(string *string, const char *appstr, int bytes)
 		string->str = newstr;
 	}
 
-	strncpy(&string->str[string->len],appstr,bytes);
+	memcpy(&string->str[string->len],appstr,bytes);
 	string->len += bytes;
 	string->str[string->len] = 0;
 	return 1;

@@ -762,9 +762,9 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 					unsigned int flags = 0;
 					unsigned int size = 0;
 					char *headers = NULL;
-					char msgno_buf[100];
-					char stuff_buf[1024];
-					char cmd_buf[1024];
+					char msgno_buf[40];
+					char stuff_buf[768];
+					char cmd_buf[768];
 					char *temp;
 					int i;
 

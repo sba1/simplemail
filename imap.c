@@ -1226,7 +1226,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 								if (todownload)
 								{
 									FILE *fh;
-									char filename_buf[60];
+									char filename_buf[32];
 									sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
 
 									if ((fh = fopen(filename_buf,"w")))

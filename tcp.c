@@ -498,12 +498,18 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 		conn->read_pos += len;
 		return len;
 	}
+	if (conn->read)
+	{
+		didget = conn->read(conn,buf,nbytes);
+	} else
+	{
 #ifndef NO_SSL
-	if (conn->ssl) didget = SSL_read(conn->ssl,buf,nbytes);
-	else didget = recv(conn->socket,buf,nbytes,0);
+		if (conn->ssl) didget = SSL_read(conn->ssl,buf,nbytes);
+		else didget = recv(conn->socket,buf,nbytes,0);
 #else
-	didget = recv(conn->socket,buf,nbytes,0);
+		didget = recv(conn->socket,buf,nbytes,0);
 #endif
+	}
 	if (didget < 0)
 	{
 		if (tcp_errno() == EINTR) error_code = TCP_INTERRUPTED;
@@ -527,12 +533,18 @@ static int tcp_read_char(struct connection *conn)
 		int didget;
 		conn->read_pos = 0;
 
+		if (conn->read)
+		{
+			didget = conn->read(conn,conn->read_buf,sizeof(conn->read_buf));
+		} else
+		{
 #ifndef NO_SSL
-		if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
-		else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+			if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
+			else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
 #else
-		didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+			didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
 #endif
+		}
 
 		if (didget <= 0)
 		{
@@ -605,12 +617,18 @@ int tcp_flush(struct connection *conn)
 			printf("\n");
 #endif
 
+		if (conn->write)
+		{
+			bytes = conn->write(conn, conn->write_buf, conn->write_size);
+		} else
+		{
 #ifndef NO_SSL
-		if (conn->ssl) bytes = SSL_write(conn->ssl, conn->write_buf, conn->write_size);
-		else bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
+			if (conn->ssl) bytes = SSL_write(conn->ssl, conn->write_buf, conn->write_size);
+			else bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
 #else
-		bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
+			bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
 #endif
+		}
 
 		if (bytes < 0)
 		{
@@ -639,6 +657,10 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 	conn->read_pos = conn->read_size = 0;
 	tcp_flush(conn); /* flush the write buffer */
 
+	if (conn->write)
+	{
+		return conn->write(conn,buf,nbytes);
+	}
 #ifndef NO_SSL
 	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
 #endif

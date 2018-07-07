@@ -650,7 +650,7 @@ struct imap_get_remote_mails_args
 	/** Whether the mailbox should be opened in write mode */
 	int writemode;
 
-	/** Whether als the mail headers should be downloaded */
+	/** Whether all of the mail headers should be downloaded */
 	int headers;
 
 	/**

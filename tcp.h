@@ -87,6 +87,14 @@ struct connection
 
 int tcp_error_code(void);
 const char *tcp_strerror(int code);
+
+/**
+ * Create and initialize a connection.
+ *
+ * @return the newly initialized connection.
+ */
+struct connection *tcp_create_connection(void);
+
 struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint);

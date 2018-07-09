@@ -106,6 +106,20 @@ const char *tcp_strerror(int code)
 	}
 }
 
+/******************************************************************************/
+
+struct connection *tcp_create_connection(void)
+{
+	struct connection *conn;
+
+	if (!(conn = malloc(sizeof(struct connection))))
+		return NULL;
+
+	memset(conn,0,sizeof(struct connection));
+
+	return conn;
+}
+
 /**
  * Establish the connection to the given server.
  *
@@ -130,10 +144,8 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 
 	if (!server)
 		goto out;
-	if (!(conn = malloc(sizeof(struct connection))))
+	if (!(conn = tcp_create_connection()))
 		goto out;
-
-	memset(conn,0,sizeof(struct connection));
 
 	conn->ssl_verify_failed = options->ssl_verify_failed;
 

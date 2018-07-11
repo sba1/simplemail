@@ -38,6 +38,7 @@
 #include "codesets.h"
 #include "debug.h"
 #include "folder.h"
+#include "imap_helper.h"
 #include "logging.h"
 #include "mail.h"
 #include "progmon.h"

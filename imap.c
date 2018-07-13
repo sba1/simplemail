@@ -63,9 +63,6 @@
  */
 #define MAX_MAILS_PER_REFRESH 100
 
-/* TODO: Get rid of this one */
-static int val;
-
 /**
  * Set the local mail array entry for the given entry.
  *
@@ -285,7 +282,7 @@ static int imap_send_simple_command(struct connection *conn, const char *cmd)
 	int success;
 
 	/* Now really remove the message */
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sm_snprintf(send,sizeof(send),"%s %s\r\n",tag,cmd);
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
@@ -352,54 +349,6 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 	}
 bailout:
 	return ok;
-}
-
-/**
- * Perform a login for the given connection to the given imap server.
- *
- * @param conn
- * @param server
- * @return
- */
-static int imap_login(struct connection *conn, struct imap_server *server)
-{
-	char *line;
-	char tag[16];
-	char send[200];
-	char buf[100];
-
-	sprintf(tag,"%04x",val++);
-
-	/* Logging */
-	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s", tag, server->login, "XXX");
-	SM_DEBUGF(20,("send: %s\n",send));
-
-	/* Build the IMAP command */
-	if (has_spaces(server->passwd))
-		sm_snprintf(buf,sizeof(buf),"\"%s\"", server->passwd);
-	else
-		mystrlcpy(buf,server->passwd,sizeof(buf));
-
-	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s\r\n", tag, server->login, buf);
-	tcp_write(conn,send,strlen(send));
-	tcp_flush(conn);
-
-	while ((line = tcp_readln(conn)))
-	{
-		SM_DEBUGF(20,("recv: %s",line));
-
-		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,tag))
-		{
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,"OK"))
-			{
-				return 1;
-			}
-			break;
-		}
-	}
-	return 0;
 }
 
 /** Describes a remote mailbox and its contents */
@@ -478,7 +427,7 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
 	args->set_status(status_buf);
 
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
 	SM_DEBUGF(10,("Examining folder %s: %s",path,send));
 	tcp_write(conn,send,strlen(send));
@@ -648,7 +597,7 @@ static struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct im
 
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
-			sprintf(tag,"%04x",val++);
+			sprintf(tag,"%04x",imap_val++);
 			sm_snprintf(buf,buf_size,"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			SM_DEBUGF(10,("Fetching remote mail array: %s",buf));
 			tcp_write(conn,buf,strlen(buf));
@@ -706,7 +655,7 @@ static struct string_list *imap_get_folders(struct connection *conn, int all)
 
 	ok = 0;
 
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB");
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
@@ -751,7 +700,7 @@ static struct string_list *imap_get_folders(struct connection *conn, int all)
    * so we add it manually in case it exists*/
 	if (ok && !all && !string_list_find(list,"INBOX"))
 	{
-		sprintf(tag,"%04x",val++);
+		sprintf(tag,"%04x",imap_val++);
 		sprintf(send,"%s STATUS INBOX (MESSAGES)\r\n",tag);
 		tcp_write(conn,send,strlen(send));
 		tcp_flush(conn);
@@ -866,7 +815,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							{
 								if (local_mail_array[i].uid == remote_mail_array[j].uid)
 								{
-									sprintf(tag,"%04x",val++);
+									sprintf(tag,"%04x",imap_val++);
 									sprintf(send,"%s STORE %d +FLAGS.SILENT (\\Deleted)\r\n",tag,j+1);
 									tcp_write(conn,send,strlen(send));
 									tcp_flush(conn);
@@ -891,7 +840,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 					if (success)
 					{
-						sprintf(tag,"%04x",val++);
+						sprintf(tag,"%04x",imap_val++);
 						sprintf(send,"%s EXPUNGE\r\n",tag);
 						tcp_write(conn,send,strlen(send));
 						tcp_flush(conn);
@@ -991,7 +940,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					sm_snprintf(status_buf,sizeof(status_buf),_("Fetching mail %d from server"),remote_mail_array[i].flags + 1);
 					callbacks->set_status(status_buf);
 
-					sprintf(tag,"%04x",val++);
+					sprintf(tag,"%04x",imap_val++);
 					sprintf(send,"%s FETCH %d RFC822\r\n",tag,remote_mail_array[i].flags+1); /* We could also use the UID command */
 					tcp_write(conn,send,strlen(send));
 					tcp_flush(conn);
@@ -1305,7 +1254,7 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 			if (path)
 			{
 				/* subscribe this folder */
-				sprintf(tag,"%04x",val++);
+				sprintf(tag,"%04x",imap_val++);
 				sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,path);
 				tcp_write(conn,send,strlen(send));
 				tcp_flush(conn);
@@ -1344,7 +1293,7 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 			if (path)
 			{
 				/* subscribe this folder */
-				sprintf(tag,"%04x",val++);
+				sprintf(tag,"%04x",imap_val++);
 				sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,path);
 				tcp_write(conn,send,strlen(send));
 				tcp_flush(conn);
@@ -1878,7 +1827,7 @@ int imap_really_delete_mail_by_filename(struct connection *imap_connection, stru
 	success = 0;
 	uid = atoi(filename + 1);
 
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
 	tcp_write(imap_connection,send,strlen(send));
 	tcp_flush(imap_connection);
@@ -1937,7 +1886,7 @@ int imap_really_move_mail(struct connection *imap_connection, struct mail_info *
 	success = 0;
 	uid = atoi(mail->filename + 1);
 
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
 	tcp_write(imap_connection,send,strlen(send));
 	tcp_flush(imap_connection);
@@ -2047,7 +1996,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 	/* Now upload the mail */
 	filesize = ftell(tfh);
 	fseek(tfh,0,SEEK_SET);
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sm_snprintf(send,sizeof(send),"%s APPEND %s {%d}\r\n",tag,dest_folder->imap_path,filesize);
 	tcp_write(imap_connection,send,strlen(send));
 	tcp_flush(imap_connection);
@@ -2108,7 +2057,7 @@ int imap_really_download_mail(struct connection *imap_connection, struct imap_se
 
 	uid = atoi(m->filename + 1);
 
-	sprintf(tag,"%04x",val++);
+	sprintf(tag,"%04x",imap_val++);
 	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
 	tcp_write(imap_connection,send,strlen(send));
 	tcp_flush(imap_connection);

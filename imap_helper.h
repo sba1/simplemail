@@ -7,6 +7,16 @@
 
 #include "tcp.h"
 
+/******************************************************************************/
+
+struct imap_server;
+
+/******************************************************************************/
+
+extern int imap_val;
+
+/******************************************************************************/
+
 #define RM_FLAG_SEEN      (1L<<0)
 #define RM_FLAG_ANSWERED  (1L<<1)
 #define RM_FLAG_FLAGGED	(1L<<2)
@@ -38,6 +48,14 @@ struct local_mail
  */
 char *imap_get_result(char *src, char *dest, int dest_size);
 
+/**
+ * Perform a login for the given connection to the given imap server.
+ *
+ * @param conn
+ * @param server
+ * @return
+ */
+int imap_login(struct connection *conn, struct imap_server *server);
 
 /**
  * Handle the answer of imap_get_remote_mails().

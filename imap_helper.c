@@ -8,8 +8,13 @@
 #include <stdlib.h>
 
 #include "debug.h"
+#include "imap.h"
 #include "qsort.h"
 #include "support_indep.h"
+
+/******************************************************************************/
+
+int imap_val;
 
 /******************************************************************************/
 
@@ -71,6 +76,49 @@ char *imap_get_result(char *src, char *dest, int dest_size)
 		return src;
 	}
 	return NULL;
+}
+
+/******************************************************************************/
+
+int imap_login(struct connection *conn, struct imap_server *server)
+{
+	char *line;
+	char tag[16];
+	char send[200];
+	char buf[100];
+
+	sprintf(tag,"%04x",imap_val++);
+
+	/* Logging */
+	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s", tag, server->login, "XXX");
+	SM_DEBUGF(20,("send: %s\n",send));
+
+	/* Build the IMAP command */
+	if (has_spaces(server->passwd))
+		sm_snprintf(buf,sizeof(buf),"\"%s\"", server->passwd);
+	else
+		mystrlcpy(buf,server->passwd,sizeof(buf));
+
+	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s\r\n", tag, server->login, buf);
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	while ((line = tcp_readln(conn)))
+	{
+		SM_DEBUGF(20,("recv: %s",line));
+
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+			{
+				return 1;
+			}
+			break;
+		}
+	}
+	return 0;
 }
 
 /******************************************************************************/

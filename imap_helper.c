@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "imap.h"
 #include "qsort.h"
+#include "support.h"
 #include "support_indep.h"
 
 /******************************************************************************/

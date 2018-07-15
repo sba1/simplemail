@@ -42,6 +42,7 @@ TESTEXES=\
 	hash_unittest \
 	index_unittest \
 	index_external_unittest \
+	imap_helper_unittest \
 	imap2_unittest \
 	logging_unittest \
 	mail_unittest \
@@ -158,7 +159,7 @@ imap-testsuite: dovecot-conf imap2_unittest
 #
 # $(1): The name of the unit test
 define dovecot-needed
-$(findstring imap,$(1))$(findstring pop,$(1))
+$(if $(findstring helper,$(1)),,$(findstring imap,$(1))$(findstring pop,$(1)))
 endef
 
 # run template

@@ -117,6 +117,7 @@ struct connection *tcp_create_connection(void)
 
 	memset(conn,0,sizeof(struct connection));
 
+	conn->socket = -1;
 	return conn;
 }
 
@@ -479,7 +480,10 @@ void tcp_disconnect(struct connection *conn)
 		SSL_free(conn->ssl);
 		close_ssl_lib(); /* FIXME: This may lead to crashes */
 	}
-	myclosesocket(conn->socket);
+	if (conn->socket != -1)
+	{
+		myclosesocket(conn->socket);
+	}
 #endif
 
 	if (conn->line) free(conn->line);

@@ -81,6 +81,7 @@ struct connection
 	char *line; /* dynamically allocated, it's hold the line returned in tcp_readln() */
 	int line_allocated; /* number of bytes which were allocated (including 0 byte) */
 
+	void *udata; /* Arbitrary user-data for  the following hooks */
 	int (*read)(struct connection *c, void *buf, size_t len);
 	int (*write)(struct connection *c, void *buf, size_t len);
 };

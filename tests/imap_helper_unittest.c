@@ -35,11 +35,14 @@ void test_imap_get_result_too_small(void)
 	char dest[2];
 	int dest_size = sizeof(dest);
 
-	res = imap_get_result(" 1ANSWER 2ANSWER",dest,dest_size);
+	res = imap_get_result(" 1ANSWER 2ANSWER (3ANSWER)",dest,dest_size);
 	CU_ASSERT_STRING_EQUAL(dest, "1");
 
 	res = imap_get_result(res,dest,dest_size);
 	CU_ASSERT_STRING_EQUAL(dest, "2");
+
+	res = imap_get_result(res,dest,dest_size);
+	CU_ASSERT_STRING_EQUAL(dest, "3");
 }
 
 /******************************************************************************/

@@ -42,7 +42,7 @@
 #include <mui/NList_mcc.h>
 #include <mui/NListtree_mcc.h>
 #include <mui/BetterString_mcc.h>
-#include <mui/popplaceholder_mcc.h>
+#include <mui/Popplaceholder_mcc.h>
 #include <mui/TextEditor_mcc.h>
 
 #include <libraries/iffparse.h>

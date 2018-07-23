@@ -32,7 +32,7 @@
 #include <mui/BetterString_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
-#include <mui/popplaceholder_mcc.h>
+#include <mui/Popplaceholder_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
@@ -208,7 +208,7 @@ static Object *image_prefs_spam_obj;
 #define GROUPS_PHRASE           7
 #define GROUPS_SIGNATURE        8
 #define GROUPS_SPAM             6
-#define GROUPS_READHTML 9
+#define GROUPS_READHTML 8
 #define GROUPS_MAX                              9
 
 #else

@@ -216,7 +216,7 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 	{
 		BPTR old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_complete_create_from_file(mail->filename)))
+		if ((data->mail = mail_complete_create_from_file(NULL, mail->filename)))
 		{
 		  set(data->mailinfo, MUIA_MailInfo_MailInfo, data->mail->info);
 			mail_read_contents(NULL,data->mail); /* already cd'ed in */

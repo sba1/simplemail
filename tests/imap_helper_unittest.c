@@ -81,8 +81,13 @@ static int mock_read(struct connection *c, void *buf, size_t len)
 	struct mock_connection *m = (struct mock_connection *)c->udata;
 
 	char *response = m->responses[m->currently_expected_response];
-	memcpy(buf, response, strlen(response));
-	return strlen(response);
+	int response_len = strlen(response);
+	int todo = response_len - m->currently_expected_response_done;
+	int tocpy = todo < len ? todo : len;
+
+	memcpy(buf, &response[m->currently_expected_response_done], todo);
+	m->currently_expected_response_done += todo;
+	return todo;
 }
 
 static int mock_write(struct connection *c, void *buf, size_t len)

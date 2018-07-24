@@ -149,6 +149,10 @@ void test_imap_login(void)
 
 	expect_write(m, "0000 LOGIN login ???\r\n", "0000 OK\r\n");
 	CU_ASSERT(imap_login(c, imap) == 1);
+
+	expect_write(m, "0001 LOGIN login ??\r\n", "0001 NO\r\n");
+	CU_ASSERT(imap_login(c, imap) == 0);
+
 	tcp_disconnect(c);
 }
 

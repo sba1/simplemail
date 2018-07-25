@@ -267,42 +267,6 @@ static void imap_delete_orphan_messages(struct imap_delete_orphan_messages_args 
 }
 
 /**
- * Send a simple imap command only to check for success/failure.
- *
- * @param conn
- * @param cmd
- * @return
- */
-static int imap_send_simple_command(struct connection *conn, const char *cmd)
-{
-	char send[200];
-	char tag[20];
-	char buf[380];
-	char *line;
-	int success;
-
-	/* Now really remove the message */
-	sprintf(tag,"%04x",imap_val++);
-	sm_snprintf(send,sizeof(send),"%s %s\r\n",tag,cmd);
-	tcp_write(conn,send,strlen(send));
-	tcp_flush(conn);
-
-	success = 0;
-	while ((line = tcp_readln(conn)))
-	{
-		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,tag))
-		{
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,"OK"))
-				success = 1;
-			break;
-		}
-	}
-	return success;
-}
-
-/**
  * Waits for an OK after an connect, i.e., until login credentials are requested.
  *
  * @param conn

@@ -58,6 +58,15 @@ char *imap_get_result(char *src, char *dest, int dest_size);
 int imap_login(struct connection *conn, struct imap_server *server);
 
 /**
+ * Send a simple imap command only to check for success/failure.
+ *
+ * @param conn
+ * @param cmd
+ * @return
+ */
+int imap_send_simple_command(struct connection *conn, const char *cmd);
+
+/**
  * Handle the answer of imap_get_remote_mails().
  *
  * @param conn

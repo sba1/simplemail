@@ -124,6 +124,37 @@ int imap_login(struct connection *conn, struct imap_server *server)
 
 /******************************************************************************/
 
+int imap_send_simple_command(struct connection *conn, const char *cmd)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int success;
+
+	/* Now really remove the message */
+	sprintf(tag,"%04x",imap_val++);
+	sm_snprintf(send,sizeof(send),"%s %s\r\n",tag,cmd);
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	success = 0;
+	while ((line = tcp_readln(conn)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		}
+	}
+	return success;
+}
+
+/******************************************************************************/
+
 int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, int num_of_remote_mails)
 {
 	char *line;

@@ -134,6 +134,8 @@ void test_imap_login(void)
 	struct mock_connection *m;
 	struct imap_server *imap;
 
+	imap_reset_command_counter();
+
 	c = tcp_create_connection();
 	CU_ASSERT(c != NULL);
 

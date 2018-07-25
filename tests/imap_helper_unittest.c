@@ -128,6 +128,29 @@ static struct mock_connection *mock(struct connection *c)
 /******************************************************************************/
 
 /* @Test */
+void test_imap_send_simple_command(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	expect_write(m, "0000 QUIT\r\n", "0000 OK\r\n");
+	CU_ASSERT(imap_send_simple_command(c, "QUIT") == 1);
+
+	expect_write(m, "0001 QUIT\r\n", "0001 NO\r\n");
+	CU_ASSERT(imap_send_simple_command(c, "QUIT") == 0);
+}
+
+/******************************************************************************/
+
+/* @Test */
 void test_imap_login(void)
 {
 	struct connection *c;

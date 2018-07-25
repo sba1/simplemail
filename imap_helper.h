@@ -15,6 +15,13 @@ struct imap_server;
 
 extern int imap_val;
 
+/**
+ * Resets the imap command counter (e.g., imap_val).
+ *
+ * TODO: Get rid of this, use a struct imap_connection instead.
+ */
+void imap_reset_command_counter(void);
+
 /******************************************************************************/
 
 #define RM_FLAG_SEEN      (1L<<0)

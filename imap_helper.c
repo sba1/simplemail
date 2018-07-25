@@ -19,6 +19,13 @@ int imap_val;
 
 /******************************************************************************/
 
+void imap_reset_command_counter(void)
+{
+	imap_val = 0;
+}
+
+/******************************************************************************/
+
 char *imap_get_result(char *src, char *dest, int dest_size)
 {
 	char c;

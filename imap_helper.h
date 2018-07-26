@@ -56,6 +56,16 @@ struct local_mail
 char *imap_get_result(char *src, char *dest, int dest_size);
 
 /**
+ * Waits for an OK after an connect, i.e., until login credentials are requested
+ * Also secures the connection if starttls mode is active..
+ *
+ * @param conn
+ * @param server
+ * @return
+ */
+int imap_wait_login(struct connection *conn, struct imap_server *server);
+
+/**
  * Perform a login for the given connection to the given imap server.
  *
  * @param conn

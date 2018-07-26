@@ -88,6 +88,50 @@ char *imap_get_result(char *src, char *dest, int dest_size)
 
 /******************************************************************************/
 
+int imap_wait_login(struct connection *conn, struct imap_server *server)
+{
+	char *line;
+	char buf[100];
+	int ok = 0;
+
+	if ((line = tcp_readln(conn)))
+	{
+		SM_DEBUGF(20,("recv: %s",line));
+
+		line = imap_get_result(line,buf,sizeof(buf));
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (mystricmp(buf,"OK"))
+			goto bailout;
+	}
+
+	/* If starttls option is active, perform the starttls kick off */
+	if (server->starttls)
+	{
+		if (!imap_send_simple_command(conn, "STARTTLS"))
+		{
+			SM_DEBUGF(10,("STARTTLS command failure\n"));
+			goto bailout;
+		}
+
+		if (!tcp_make_secure(conn, server->name, server->fingerprint))
+		{
+			SM_DEBUGF(10,("Connection couldn't be made secure\n",buf));
+			tell_from_subtask("Connection couldn't be made secure");
+			goto bailout;
+		}
+
+		ok = 1;
+		SM_DEBUGF(20,("STARTTLS success\n"));
+	} else
+	{
+		ok = 1;
+	}
+bailout:
+	return ok;
+}
+
+/******************************************************************************/
+
 int imap_login(struct connection *conn, struct imap_server *server)
 {
 	char *line;

@@ -164,6 +164,34 @@ void test_imap_send_simple_command(void)
 /******************************************************************************/
 
 /* @Test */
+void test_imap_wait_login(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+	struct imap_server *imap;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	/* Prepare imap data */
+	imap = imap_malloc();
+	CU_ASSERT(imap != NULL);
+	imap->name = "imap.simplemail.sf.net";
+	imap->login = "login";
+	imap->passwd = "???";
+
+	inject_read(m, "0000 OK\r\n");
+	CU_ASSERT(imap_wait_login(c, imap) != 0);
+}
+
+/******************************************************************************/
+
+/* @Test */
 void test_imap_login(void)
 {
 	struct connection *c;

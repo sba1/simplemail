@@ -102,6 +102,9 @@ int imap_wait_login(struct connection *conn, struct imap_server *server)
 		line = imap_get_result(line,buf,sizeof(buf));
 		if (mystricmp(buf,"OK"))
 			goto bailout;
+	} else
+	{
+		goto bailout;
 	}
 
 	/* If starttls option is active, perform the starttls kick off */

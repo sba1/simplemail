@@ -185,8 +185,11 @@ void test_imap_wait_login(void)
 	imap->login = "login";
 	imap->passwd = "???";
 
-	inject_read(m, "0000 OK\r\n");
+	inject_read(m, "0000 OK\r\n0001 NO\r\n0002 OK");
+
 	CU_ASSERT(imap_wait_login(c, imap) != 0);
+	CU_ASSERT(imap_wait_login(c, imap) == 0);
+	CU_ASSERT(imap_wait_login(c, imap) == 0); /* Last misses newline, so it should fail */
 }
 
 /******************************************************************************/

@@ -76,6 +76,19 @@ static void expect_write(struct mock_connection *c, const char *fmt, const char 
 	c->responses = array_add_string(c->responses, response);
 }
 
+
+/**
+ * Inject a read into the mock communication stream.
+ *
+ * @param c
+ * @param response
+ */
+static void inject_read(struct mock_connection *c, const char *response)
+{
+	c->responses = array_add_string(c->responses, response);
+	c->currently_expected_response = 0;
+}
+
 static int mock_read(struct connection *c, void *buf, size_t len)
 {
 	struct mock_connection *m = (struct mock_connection *)c->udata;

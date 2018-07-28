@@ -1,11 +1,11 @@
 # Meta-Makefile for AROS version of SimpleMail
 
-include $(TOP)/config/make.cfg
+include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-simplemail : contrib-simplemail-bin
 
 #MM contrib-simplemail-bin : includes linklibs linklibs-expat contrib-zune-classes-mailtext contrib-zune-classes-thebar \
-#MM contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
+#MM contrib-zune-classes-popph contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
 #MM contrib-simplemail-files contrib-simplemail-locale
 
 #MM
@@ -15,17 +15,20 @@ AMIGAMUI := \
 	vsnprintf \
 	utf8stringclass \
 	transwndclass \
+	timesupport \
 	tcpip \
 	sysprint \
 	support \
-	subthreads \
+	subthreads_amiga \
 	statuswnd \
 	startupwnd \
 	startup-aros \
-	smtoolbarclass \
 	signaturecycleclass \
+	socket-stubs \
+	smtoolbarclass \
 	shutdownwnd \
 	searchwnd \
+	request \
 	readwnd \
 	progmonwnd \
 	popupmenuclass \
@@ -72,37 +75,56 @@ AMIGAMUIFILES := $(foreach f, $(AMIGAMUI), amiga-mui/$(f))
 FILES   := \
 	account \
 	addressbook \
+	addresslist \
+	arrays \
 	atcleanup \
 	boyermoore \
 	codecs \
 	codesets \
 	configuration \
+	coroutines_sockets \
+	coroutines \
 	dbx \
 	debug \
 	estimate \
 	filter \
 	folder \
+	folder_search_thread \
 	hash \
 	hmac_md5 \
 	http \
 	imap \
+	imap_thread \
+	imap_helper \
+	index \
+	index_external \
+	index_naive \
 	lists \
+	logging \
 	mail \
+	mail_context \
+	mail_support \
+	mailinfo_extractor \
 	mbox \
 	md5 \
 	parse \
 	pgp \
 	phrase \
 	pop3 \
+	pop3_uidl \
 	print \
 	progmon \
 	punycode \
+	ringbuffer \
 	signature \
 	simplemail \
 	smintl \
 	smtp \
 	spam \
+	ssl \
 	status \
+	string_lists \
+	string_pools \
 	support_indep \
 	taglines \
 	tcp \
@@ -115,10 +137,14 @@ EXE    := SimpleMail
 
 USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/indep-include -I$(SRCDIR)/$(CURDIR)/amiga-mui -I$(SRCDIR)/$(CURDIR)
 
-USER_CFLAGS := -DHAVE_OPENURL -DNO_SSL -D__USE_XOPEN2K8 -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+NOWARN_FLAGS := $(NOWARN_STRICT_ALIASING) $(NOWARN_IMPLICIT_FUNCTION_DECL) $(NOWARN_UNUSED_VARIABLE) \
+	$(NOWARN_ERROR) $(NOWARN_UNUSED_BUT_SET_VARIABLE) $(NOWARN_MAYBE_UNINITIALIZED) $(NOWARN_INT_CONVERSION) \
+	$(NOWARN_FORMAT) $(NOWARN_DISCARDED_QUALIFIERS) $(NOWARN_INCOMPAT_POINTER_TYPES)
+
+USER_CFLAGS := $(NOWARN_FLAGS) -DHAVE_OPENURL -DUSE_OPENSSL -D__USE_XOPEN2K8 -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
-    targetdir=$(EXEDIR) uselibs="amiga arossupport mui expat"
+    targetdir=$(EXEDIR) uselibs="amiga arossupport mui expat ssl crypto net"
 
 # ############################################################################
 

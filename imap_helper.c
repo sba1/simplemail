@@ -209,6 +209,94 @@ int imap_send_simple_command(struct connection *conn, const char *cmd)
 
 /******************************************************************************/
 
+struct string_list *imap_get_folders(struct connection *conn, int all)
+{
+	int ok;
+	char *line;
+	char tag[20];
+	char send[200];
+	char buf[100];
+
+	struct string_list *list = (struct string_list*)malloc(sizeof(struct string_list));
+	if (!list) return NULL;
+	string_list_init(list);
+
+	ok = 0;
+
+	sprintf(tag,"%04x",imap_val++);
+	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB");
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	SM_DEBUGF(20,("%s",send));
+
+	while ((line = tcp_readln(conn)))
+	{
+		SM_DEBUGF(20,("%s\n",line));
+
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK")) ok = 1;
+			break;
+		} else
+		{
+			char *utf_name;
+
+			/* command */
+			line = imap_get_result(line,buf,sizeof(buf));
+
+			/* read flags */
+			line = imap_get_result(line,buf,sizeof(buf));
+
+			/* read delim */
+			line = imap_get_result(line,buf,sizeof(buf));
+
+			/* read name */
+			line = imap_get_result(line,buf,sizeof(buf));
+
+			if ((utf_name = iutf7ntoutf8(buf, strlen(buf))))
+			{
+				string_list_insert_tail(list,utf_name);
+				free(utf_name);
+			}
+		}
+	}
+
+	/* Some IMAP servers don't list the INBOX server on LSUB and don't allow subscribing of it,
+   * so we add it manually in case it exists*/
+	if (ok && !all && !string_list_find(list,"INBOX"))
+	{
+		sprintf(tag,"%04x",imap_val++);
+		sprintf(send,"%s STATUS INBOX (MESSAGES)\r\n",tag);
+		tcp_write(conn,send,strlen(send));
+		tcp_flush(conn);
+
+		SM_DEBUGF(20,("%s",send));
+
+		while ((line = tcp_readln(conn)))
+		{
+			SM_DEBUGF(20,("%s\n",line));
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,tag))
+			{
+				line = imap_get_result(line,buf,sizeof(buf));
+				if (!mystricmp(buf,"OK"))
+					string_list_insert_tail(list,"INBOX");
+				break;
+			}
+		}
+	}
+
+	if (ok) return list;
+
+	string_list_free(list);
+	return NULL;
+}
+
+/******************************************************************************/
+
 int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, int num_of_remote_mails)
 {
 	char *line;

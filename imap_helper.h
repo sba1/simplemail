@@ -84,6 +84,17 @@ int imap_login(struct connection *conn, struct imap_server *server);
 int imap_send_simple_command(struct connection *conn, const char *cmd);
 
 /**
+ * Returns a list with string_node nodes which describes the folder names.
+ * If you only want the subscribed folders set all to 0. Note that the
+ * INBOX folder is always included if it does exist.
+ *
+ * @param conn the connection to write against
+ * @param all whether all folders shall be returned or only the subscribed ones.
+ * @return the list with string_nodes
+ */
+struct string_list *imap_get_folders(struct connection *conn, int all);
+
+/**
  * Handle the answer of imap_get_remote_mails().
  *
  * @param conn

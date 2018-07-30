@@ -226,3 +226,30 @@ void test_imap_login(void)
 }
 
 /******************************************************************************/
+
+/* @Test */
+void test_imap_get_folders(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+
+	struct string_list *folders;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	expect_write(m, "0000 LIST \"\" *\r\n", "0000 OK\r\n");
+
+	folders = imap_get_folders(c, 1);
+	CU_ASSERT(folders != NULL);
+	CU_ASSERT(string_list_first(folders) == NULL);
+
+	string_list_free(folders);
+}
+
+/******************************************************************************/

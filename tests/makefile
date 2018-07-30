@@ -180,15 +180,15 @@ $(foreach testexe,$(TESTEXES), \
 
 # memleaks template
 define memleak.tmpl
-memleaks-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
-	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
-	$(if $(findstring imap,$(1)), $(DOVECOT))
+memleaks-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
+	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
 	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
 else
 	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) ./$$<
 endif
-	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" memleak targets

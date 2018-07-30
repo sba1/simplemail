@@ -58,6 +58,7 @@ struct mock_connection
 	char **responses;
 	int currently_expected_response;
 	int currently_expected_response_done;
+	int currently_expected_all_of_response_is_done;
 
 	string cur_write_string;
 };
@@ -100,6 +101,19 @@ static int mock_read(struct connection *c, void *buf, size_t len)
 
 	memcpy(buf, &response[m->currently_expected_response_done], todo);
 	m->currently_expected_response_done += todo;
+
+	if (todo == 0)
+	{
+		if (m->currently_expected_all_of_response_is_done)
+		{
+			fprintf(stderr, "Read something without something being expected\n");
+			exit(1);
+		}
+		m->currently_expected_all_of_response_is_done = 1;
+	} else
+	{
+		m->currently_expected_all_of_response_is_done = 0;
+	}
 	return todo;
 }
 

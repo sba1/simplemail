@@ -131,6 +131,8 @@ static int mock_write(struct connection *c, void *buf, size_t len)
 	{
 		m->currently_expected_response = m->currently_expected_write;
 		m->currently_expected_write++;
+		m->currently_expected_response_done = 0;
+		string_crop(&m->cur_write_string, 0, 0);
 	}
 	return len;
 }

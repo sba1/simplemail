@@ -261,10 +261,19 @@ void test_imap_get_folders(void)
 
 	expect_write(m, "0000 LIST \"\" *\r\n", "0000 OK\r\n");
 
+	expect_write(m, "0001 LSUB \"\" *\r\n", "0001 OK\r\n");
+	expect_write(m, "0002 STATUS INBOX (MESSAGES)\r\n", "0002 OK\r\n");
+
 	folders = imap_get_folders(c, 1);
 	CU_ASSERT(folders != NULL);
 	CU_ASSERT(string_list_first(folders) == NULL);
+	string_list_free(folders);
 
+	/* Here we expect an INBOX folder at least */
+	folders = imap_get_folders(c, 0);
+	CU_ASSERT(folders != NULL);
+	CU_ASSERT(string_list_first(folders) != NULL);
+	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "INBOX");
 	string_list_free(folders);
 }
 

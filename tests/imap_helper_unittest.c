@@ -127,6 +127,12 @@ static int mock_write(struct connection *c, void *buf, size_t len)
 
 	string_append(&m->cur_write_string, str);
 
+	if (array_length(m->writes) <= m->currently_expected_write)
+	{
+		fprintf(stderr, "Unexpected write of \"%s\"\n", (char*)buf);
+		exit(1);
+	}
+
 	if (!strncmp(m->cur_write_string.str, m->writes[m->currently_expected_write], strlen(m->writes[m->currently_expected_write])))
 	{
 		m->currently_expected_response = m->currently_expected_write;

@@ -256,6 +256,7 @@ void test_imap_get_folders(void)
 	struct mock_connection *m;
 
 	struct string_list *folders;
+	struct string_node *s;
 
 	imap_reset_command_counter();
 
@@ -270,7 +271,10 @@ void test_imap_get_folders(void)
 	expect_write(m, "0001 LSUB \"\" *\r\n", "0001 OK\r\n");
 	expect_write(m, "0002 STATUS INBOX (MESSAGES)\r\n", "0002 OK\r\n");
 
-	expect_write(m, "0003 LIST \"\" *\r\n", " * LIST () \"/\" \"inbox\"\r\n0003 OK\r\n");
+	expect_write(m, "0003 LIST \"\" *\r\n",
+			" * LIST () \"/\" \"inbox\"\r\n"
+			" * LIST () \"/\" \"sent\"\r\n"
+			"0003 OK\r\n");
 
 	folders = imap_get_folders(c, 1);
 	CU_ASSERT(folders != NULL);
@@ -289,6 +293,10 @@ void test_imap_get_folders(void)
 	CU_ASSERT(folders != NULL);
 	CU_ASSERT(string_list_first(folders) != NULL);
 	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "inbox");
+	s = string_list_remove_head(folders);
+	free(s->string);
+	free(s);
+	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
 	string_list_free(folders);
 }
 

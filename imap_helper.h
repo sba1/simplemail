@@ -38,6 +38,15 @@ struct remote_mail
 	char *headers;
 };
 
+/** Describes a remote mailbox and its contents */
+struct remote_mailbox
+{
+	struct remote_mail *remote_mail_array; /* may be NULL if remote_mail_num == 0 */
+	int num_of_remote_mail;
+	unsigned int uid_validity;
+	unsigned int uid_next;
+};
+
 struct local_mail
 {
 	unsigned int uid;
@@ -93,6 +102,29 @@ int imap_send_simple_command(struct connection *conn, const char *cmd);
  * @return the list with string_nodes
  */
 struct string_list *imap_get_folders(struct connection *conn, int all);
+
+struct imap_select_mailbox_args
+{
+	/** The already established connection */
+	struct connection *conn;
+
+	/** The utf8 encoded path of the mailbox to be selected */
+	char *path;
+
+	/** Whether mailbox should be selected in write mode */
+	int writemode;
+
+	void (*set_status_static)(const char *str);
+	void (*set_status)(const char *str);
+};
+
+/**
+ * Selects the given mailbox (as identified by path).
+ *
+ * @param args defines arguments and options.
+ * @return a remote_mailbox for further processing. Field remote_mail_array will be NULL.
+ */
+struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args);
 
 /**
  * Handle the answer of imap_get_remote_mails().

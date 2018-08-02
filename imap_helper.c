@@ -9,7 +9,9 @@
 
 #include "debug.h"
 #include "imap.h"
+#include "logging.h"
 #include "qsort.h"
+#include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -414,3 +416,104 @@ int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char
 
 	return success;
 }
+
+/******************************************************************************/
+
+struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args)
+{
+	struct remote_mailbox *rm;
+
+	char status_buf[200];
+	char send[200];
+	char buf[512];
+	char tag[20];
+	char *line;
+	int success = 0;
+
+	struct connection *conn = args->conn;
+	char *path = args->path;
+	int writemode = args->writemode;
+
+	unsigned int uid_validity = 0; /* Note that valid uids are non-zero */
+	unsigned int uid_next = 0;
+	int num_of_remote_mails = 0;
+
+	if (!path) return NULL;
+	if (!(path = utf8toiutf7(path,strlen(path)))) return NULL;
+	if (!(rm = (struct remote_mailbox*)malloc(sizeof(*rm)))) return NULL;
+	memset(rm,0,sizeof(*rm));
+
+	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
+	args->set_status(status_buf);
+
+	sprintf(tag,"%04x",imap_val++);
+	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
+	SM_DEBUGF(10,("Examining folder %s: %s",path,send));
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	while ((line = tcp_readln(conn)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		SM_DEBUGF(10,("Server: %s",line));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			char first[200];
+			char second[200];
+
+			line = imap_get_result(line,first,sizeof(first));
+			line = imap_get_result(line,second,sizeof(second));
+
+			if (!mystricmp("EXISTS",second))
+			{
+				num_of_remote_mails = atoi(first);
+			} else if (!mystricmp("OK",first))
+			{
+				/* Store first identifier of valid untagged response in first */
+				line = imap_get_result(second,first,sizeof(first));
+				if (!mystricmp("UIDVALIDITY",first))
+				{
+					/* [UIDVALIDITY n] */
+					imap_get_result(line,first,sizeof(first));
+					uid_validity = strtoul(first,NULL,10);
+				} else if (!mystricmp("UIDNEXT",first))
+				{
+					/* [UIDNEXT n] */
+					imap_get_result(line,first,sizeof(first));
+					uid_next = strtoul(first,NULL,10);
+				}
+			}
+		}
+	}
+
+	if (success)
+	{
+		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
+		args->set_status(status_buf);
+		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
+
+		sm_snprintf(status_buf, sizeof(status_buf), "Folder with path \"%s\" has %d remote mails", args->path, num_of_remote_mails);
+		logg(INFO, 0, __FILE__, NULL, 0, status_buf, LAST);
+
+		rm->uid_next = uid_next;
+		rm->uid_validity = uid_validity;
+		rm->num_of_remote_mail = num_of_remote_mails;
+	} else
+	{
+		args->set_status_static(N_("Failed examining the folder"));
+		SM_DEBUGF(10,("Failed examining the folder\n"));
+		free(rm);
+		rm = NULL;
+	}
+
+	free(path);
+	return rm;
+}
+

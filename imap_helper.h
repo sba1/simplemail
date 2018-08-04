@@ -127,6 +127,12 @@ struct imap_select_mailbox_args
 struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args);
 
 /**
+ * Frees memory associated with the remote mailbox including the remote mailbox itself.
+ * @param rm
+ */
+void imap_free_remote_mailbox(struct remote_mailbox *rm);
+
+/**
  * Handle the answer of imap_get_remote_mails().
  *
  * @param conn

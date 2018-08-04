@@ -266,25 +266,6 @@ static void imap_delete_orphan_messages(struct imap_delete_orphan_messages_args 
 	SM_LEAVE;
 }
 
-/**
- * Frees memory associated with the remote mailbox including the remote mailbox itself.
- * @param rm
- */
-static void imap_free_remote_mailbox(struct remote_mailbox *rm)
-{
-	int i;
-
-	if (!rm) return;
-
-	if (rm->remote_mail_array)
-	{
-		for (i=0; i < rm->num_of_remote_mail; i++)
-			free(rm->remote_mail_array[i].headers);
-	}
-	free(rm->remote_mail_array);
-	free(rm);
-}
-
 struct imap_get_remote_mails_args
 {
 	/** The already opened imap connection after successful login */

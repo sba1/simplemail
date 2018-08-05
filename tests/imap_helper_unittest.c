@@ -301,3 +301,21 @@ void test_imap_get_folders(void)
 }
 
 /******************************************************************************/
+
+/* @Test */
+void test_imap_select_mailbox(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+
+	struct string_list *folders;
+	struct string_node *s;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+}

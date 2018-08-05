@@ -517,3 +517,20 @@ struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args
 	return rm;
 }
 
+/******************************************************************************/
+
+void imap_free_remote_mailbox(struct remote_mailbox *rm)
+{
+	int i;
+
+	if (!rm) return;
+
+	if (rm->remote_mail_array)
+	{
+		for (i=0; i < rm->num_of_remote_mail; i++)
+			free(rm->remote_mail_array[i].headers);
+	}
+	free(rm->remote_mail_array);
+	free(rm);
+}
+

@@ -302,6 +302,14 @@ void test_imap_get_folders(void)
 
 /******************************************************************************/
 
+static void test_imap_set_status_static(const char *str)
+{
+}
+
+static void test_imap_set_status(const char *str)
+{
+}
+
 /* @Test */
 void test_imap_select_mailbox(void)
 {
@@ -311,6 +319,9 @@ void test_imap_select_mailbox(void)
 	struct string_list *folders;
 	struct string_node *s;
 
+	struct imap_select_mailbox_args args = {0};
+	struct remote_mailbox *rm;
+
 	imap_reset_command_counter();
 
 	c = tcp_create_connection();
@@ -318,4 +329,16 @@ void test_imap_select_mailbox(void)
 
 	m = mock(c);
 	CU_ASSERT(m != NULL);
+
+	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n", "0000 OK\r\n");
+
+	args.conn = c;
+	args.path = "INBOX";
+	args.set_status = test_imap_set_status;
+	args.set_status_static = test_imap_set_status_static;
+	args.writemode = 0;
+
+	rm = imap_select_mailbox(&args);
+	CU_ASSERT(rm != NULL);
+	CU_ASSERT(rm->num_of_remote_mail == 0);
 }

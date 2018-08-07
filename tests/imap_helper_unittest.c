@@ -332,6 +332,17 @@ void test_imap_select_mailbox(void)
 
 	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n", "0000 OK\r\n");
 
+	/* Taken literally from the RC3501 */
+	expect_write(m, "0001 EXAMINE \"INBOX\"\r\n",
+			"* 172 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 12]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 4392]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0001 OK [READ-WRITE] SELECT completed\r\n");
+
 	args.conn = c;
 	args.path = "INBOX";
 	args.set_status = test_imap_set_status;
@@ -341,4 +352,10 @@ void test_imap_select_mailbox(void)
 	rm = imap_select_mailbox(&args);
 	CU_ASSERT(rm != NULL);
 	CU_ASSERT(rm->num_of_remote_mail == 0);
+
+	rm = imap_select_mailbox(&args);
+	CU_ASSERT(rm != NULL);
+	CU_ASSERT(rm->num_of_remote_mail == 172);
+	CU_ASSERT(rm->uid_next == 4392);
+	CU_ASSERT(rm->uid_validity == 3857529045);
 }

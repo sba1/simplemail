@@ -53,7 +53,6 @@ struct local_mail
 	unsigned int todel;
 };
 
-
 /**
  * Writes the next word into the dest buffer but not more than dest_size.
  *
@@ -144,5 +143,53 @@ void imap_free_remote_mailbox(struct remote_mailbox *rm);
  * @return
  */
 int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, int num_of_remote_mails);
+
+struct imap_get_remote_mails_args
+{
+	/** The already opened imap connection after successful login */
+	struct connection *conn;
+
+	/**
+	 * Defines the remote path or mailbox from which the mail infos should be
+	 * gathered
+	 */
+	char *path;
+
+	/** Whether the mailbox should be opened in write mode */
+	int writemode;
+
+	/** Whether all of the mail headers should be downloaded */
+	int headers;
+
+	/**
+	 * Defines the uid of first mail to be downloaded. Zero means that all mails
+	 * should be downloaded (uid_end is ignored).
+	 */
+	unsigned int uid_start;
+
+	/**
+	 * Defines the uid of the final mail to be downloaded. Zero means that all mails
+	 * should be downloaded (uid_end is ignored).
+	 */
+	unsigned int uid_end;
+
+	void (*set_status_static)(const char *str);
+	void (*set_status)(const char *str);
+};
+
+/**
+ * Read information of all mails in the given path. Put this back into an array.
+ *
+ * @param empty_folder where is it stored, if the folder is empty.
+ * @param args arguments to this function.
+ *
+ * @return returns information of the mailbox in form of a remote_mailbox object.
+ *         NULL on failure (for any reasons). If not NULL, the elements in remote_mail_array
+ *         are sorted according to their uids.
+ *
+ * @note the given path stays in the selected/examine state.
+ * @note the returned structure must be free with imap_free_remote_mailbox()
+ */
+struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_remote_mails_args *args);
 
 #endif

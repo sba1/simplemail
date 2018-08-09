@@ -359,3 +359,56 @@ void test_imap_select_mailbox(void)
 	CU_ASSERT(rm->uid_next == 4392);
 	CU_ASSERT(rm->uid_validity == 3857529045);
 }
+
+/******************************************************************************/
+
+/* @Test */
+void test_get_remote_mails(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+
+	struct imap_get_remote_mails_args args = {0};
+	struct remote_mailbox *rm;
+	int empty_folder;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n",
+			"* 4 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 1]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 4392]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0000 OK [READ-WRITE] SELECT completed\r\n");
+	expect_write(m, "0001 FETCH 1:4 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
+			" * 1 FETCH (UID 1 RFC822.SIZE 1234)\r\n"
+			" * 2 FETCH (UID 2 RFC822.SIZE 8888)\r\n"
+			" * 3 FETCH (UID 3 RFC822.SIZE 2222)\r\n"
+			" * 4 FETCH (UID 4 RFC822.SIZE 4321)\r\n"
+			"0001 OK\r\n");
+
+	args.conn = c;
+	args.path = "INBOX";
+	args.writemode = 0;
+	args.headers = 1;
+	args.set_status = test_imap_set_status_static;
+	args.set_status_static = test_imap_set_status;
+
+	rm = imap_get_remote_mails(&empty_folder, &args);
+	CU_ASSERT(rm != NULL);
+	CU_ASSERT(rm->num_of_remote_mail == 4);
+
+	CU_ASSERT_EQUAL(rm->remote_mail_array[0].size, 1234);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[1].size, 8888);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[2].size, 2222);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[3].size, 4321);
+}

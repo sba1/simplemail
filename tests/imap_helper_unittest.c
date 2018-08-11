@@ -410,12 +410,12 @@ void test_get_remote_mails(void)
 	CU_ASSERT_EQUAL(rm->remote_mail_array[0].uid, 1);
 	CU_ASSERT_EQUAL(rm->remote_mail_array[0].size, 1234);
 
-	CU_ASSERT_EQUAL(rm->remote_mail_array[0].uid, 2);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[1].uid, 2);
 	CU_ASSERT_EQUAL(rm->remote_mail_array[1].size, 8888);
 
-	CU_ASSERT_EQUAL(rm->remote_mail_array[0].uid, 3);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[2].uid, 3);
 	CU_ASSERT_EQUAL(rm->remote_mail_array[2].size, 2222);
 
-	CU_ASSERT_EQUAL(rm->remote_mail_array[0].uid, 4);
+	CU_ASSERT_EQUAL(rm->remote_mail_array[3].uid, 4);
 	CU_ASSERT_EQUAL(rm->remote_mail_array[3].size, 4321);
 }

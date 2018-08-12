@@ -1583,7 +1583,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 
 /*****************************************************************************/
 
-int imap_really_download_mail(struct connection *imap_connection, struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
+int imap_really_download_mail(struct connection *imap_connection, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
 {
 	char send[200];
 	char tag[20];

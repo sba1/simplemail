@@ -166,14 +166,13 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
  * Download the given mail. Usually called in the context of the imap thread.
  *
  * @param connection already established connection for the imap server.
- * @param server
  * @param local_path
  * @param m
  * @param callback called on the context of the parent task.
  * @param userdata user data supplied for the callback
  * @return
  */
-int imap_really_download_mail(struct connection *imap_connection, struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
+int imap_really_download_mail(struct connection *imap_connection, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
 
 /**
  * Move a given mail from one folder into another one of the given imap account.

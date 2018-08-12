@@ -430,7 +430,7 @@ static int imap_thread_download_mail(struct imap_server *server, char *local_pat
 {
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	return imap_really_download_mail(imap_connection, server, local_path, m, callback, userdata);
+	return imap_really_download_mail(imap_connection, local_path, m, callback, userdata);
 }
 
 /**

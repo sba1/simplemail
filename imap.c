@@ -1657,8 +1657,11 @@ int imap_really_download_mail(struct connection *imap_connection, char *local_pa
 			}
 		}
 	}
+
 	if (callback)
-		thread_call_function_async(thread_get_main(), callback, 2, m, userdata);
+	{
+		callback(m, userdata);
+	}
 
 	SM_RETURN(success,"%ld");
 	return success;

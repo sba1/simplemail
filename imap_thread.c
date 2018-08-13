@@ -422,7 +422,7 @@ bailout:
  * @param server
  * @param local_path
  * @param m
- * @param callback called on the context of the parent task.
+ * @param callback called on the context of the calling task.
  * @param userdata user data supplied for the callback
  * @return
  */
@@ -563,13 +563,13 @@ struct imap_download_data
 };
 
 /**
- * Function that is to be called when an email has been downloaded
- * asynchronously. Always called on the context of the parent task.
+ * Function that is called when an email has been downloaded. It is assumed
+ * that is called on parent task.
  *
  * @param m
  * @param userdata
  */
-static void imap_download_mail_async_callback(struct mail_info *m, void *userdata)
+static void imap_download_mail_callback_on_parent_task(struct mail_info *m, void *userdata)
 {
 	struct imap_download_data *d = (struct imap_download_data*)userdata;
 	struct folder *local_folder;
@@ -596,6 +596,18 @@ static void imap_download_mail_async_callback(struct mail_info *m, void *userdat
 	free(d);
 
 	SM_LEAVE;
+}
+
+/**
+ * Function that is called when an email has been downloaded asynchronously.
+ * It is assumed that this called on a task that is not the main task.
+ *
+ * @param m
+ * @param userdata
+ */
+static void imap_download_mail_async_callback(struct mail_info *m, void *userdata)
+{
+	thread_call_function_async(thread_get_main(), imap_download_mail_callback_on_parent_task, 2, m, userdata);
 }
 
 /*****************************************************************************/

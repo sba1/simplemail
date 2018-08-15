@@ -13,7 +13,7 @@
  * @param callback the callback that is invoked if the request completes. The server
  *  argument is an actual duplicate of the original server, both lists contain string
  *  nodes with all_list containing all_list and sub_list containing only subscribed
- *  folders.
+ *  folders. The callback is called on the main thread's context.
  *
  * @return whether the request has been in principle submitted or not.
  */

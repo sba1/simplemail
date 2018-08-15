@@ -119,12 +119,13 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 	if (thread_parent_task_can_contiue())
 	{
 		struct imap_get_folder_list_options options = {0};
+		struct string_list *all_folder_list;
+		struct string_list *sub_folder_list;
 
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		thread_call_function_async(thread_get_main(),status_open,0);
 
 		options.server = server;
-		options.callbacks.lists_received = callback;
 		options.callbacks.set_status = imap_set_status;
 		options.callbacks.set_status_static = imap_set_status_static;
 		options.callbacks.set_connect_to_server = imap_set_connect_to_server;
@@ -132,7 +133,12 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 		options.callbacks.set_title = imap_set_title;
 		options.callbacks.set_title_utf8 = imap_set_title_utf8;
 
-		imap_get_folder_list_really(&options);
+		if (!(imap_get_folder_list_really(&options, &all_folder_list, &sub_folder_list)))
+			return 0;
+
+		thread_call_parent_function_sync(NULL, callback, 3, server, all_folder_list, sub_folder_list);
+		string_list_free(all_folder_list);
+		string_list_free(sub_folder_list);
 
 		thread_call_function_async(thread_get_main(),status_close,0);
 	}

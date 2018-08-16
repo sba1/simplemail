@@ -180,7 +180,6 @@ struct imap_get_remote_mails_args
 /**
  * Read information of all mails in the given path. Put this back into an array.
  *
- * @param empty_folder where is it stored, if the folder is empty.
  * @param args arguments to this function.
  *
  * @return returns information of the mailbox in form of a remote_mailbox object.
@@ -190,6 +189,6 @@ struct imap_get_remote_mails_args
  * @note the given path stays in the selected/examine state.
  * @note the returned structure must be free with imap_free_remote_mailbox()
  */
-struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_remote_mails_args *args);
+struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *args);
 
 #endif

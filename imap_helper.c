@@ -536,7 +536,7 @@ void imap_free_remote_mailbox(struct remote_mailbox *rm)
 
 /******************************************************************************/
 
-struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_remote_mails_args *args)
+struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *args)
 {
 	/* get number of remote mails */
 	char tag[16];
@@ -559,9 +559,6 @@ struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_
 
 	SM_ENTER;
 
-	/* Assume non-empty folder */
-	if (empty_folder) *empty_folder = 0;
-
 	select_mailbox_args.conn = conn;
 	select_mailbox_args.path = path;
 	select_mailbox_args.writemode = writemode;
@@ -576,8 +573,6 @@ struct remote_mailbox *imap_get_remote_mails(int *empty_folder, struct imap_get_
 
 	if (!(num_of_remote_mails = rm->num_of_remote_mail))
 	{
-		*empty_folder = 1;
-
 		/* Assume success if the folder is empty */
 		success = 1;
 

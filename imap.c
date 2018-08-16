@@ -334,7 +334,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			{
 				args.writemode = 1;
 
-				if ((rm = imap_get_remote_mails(NULL, &args)))
+				if ((rm = imap_get_remote_mails(&args)))
 				{
 					struct remote_mail *remote_mail_array;
 					int num_of_remote_mails;
@@ -404,7 +404,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			args.writemode = 0;
 
 			/* Get information of all mails within the folder */
-			if ((rm = imap_get_remote_mails(&empty_folder, &args)))
+			if ((rm = imap_get_remote_mails(&args)))
 			{
 				int i,j;
 				unsigned int max_todl_bytes = 0;
@@ -1083,7 +1083,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 				args.set_status = options->callbacks.set_status;
 				args.set_status_static = options->callbacks.set_status_static;
 
-				if ((rm = imap_get_remote_mails(NULL, &args)))
+				if ((rm = imap_get_remote_mails(&args)))
 				{
 					int i,j;
 
@@ -1215,12 +1215,12 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
 						if (!imap_server->keep_orphans)
-							rm = imap_get_remote_mails(&empty_folder, &args);
+							rm = imap_get_remote_mails(&args);
 						else
 							rm = NULL;
 					}
 
-					if (rm || empty_folder)
+					if (rm)
 					{
 						if (!imap_server->keep_orphans)
 						{

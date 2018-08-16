@@ -403,7 +403,7 @@ void test_get_remote_mails(void)
 	args.set_status = test_imap_set_status_static;
 	args.set_status_static = test_imap_set_status;
 
-	rm = imap_get_remote_mails(&empty_folder, &args);
+	rm = imap_get_remote_mails(&args);
 	CU_ASSERT(rm != NULL);
 	CU_ASSERT(rm->num_of_remote_mail == 4);
 

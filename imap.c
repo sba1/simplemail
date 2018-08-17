@@ -1067,10 +1067,10 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 				pm = progmon_create();
 				if (pm)
 				{
-					utf8fromstr(_("Downloading mails"),NULL,msg,sizeof(msg));
+					utf8fromstr(_("Downloading mail headers"),NULL,msg,sizeof(msg));
 					pm->begin(pm,1001,msg);
 
-					utf8fromstr(_("Determining which mails to download"),NULL,msg,sizeof(msg));
+					utf8fromstr(_("Determining which mail headers to download"),NULL,msg,sizeof(msg));
 					pm->working_on(pm,msg);
 				}
 

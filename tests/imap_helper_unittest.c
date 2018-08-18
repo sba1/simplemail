@@ -69,6 +69,8 @@ void test_imap_send_simple_command(void)
 
 	expect_write(m, "0001 QUIT\r\n", "0001 NO\r\n");
 	CU_ASSERT(imap_send_simple_command(c, "QUIT") == 0);
+
+	tcp_disconnect(c);
 }
 
 /******************************************************************************/
@@ -186,6 +188,8 @@ void test_imap_get_folders(void)
 	free(s);
 	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
 	string_list_free(folders);
+
+	tcp_disconnect(c);
 }
 
 /******************************************************************************/
@@ -246,6 +250,10 @@ void test_imap_select_mailbox(void)
 	CU_ASSERT(rm->num_of_remote_mail == 172);
 	CU_ASSERT(rm->uid_next == 4392);
 	CU_ASSERT(rm->uid_validity == 3857529045);
+
+	free(rm->remote_mail_array);
+	free(rm);
+	tcp_disconnect(c);
 }
 
 /******************************************************************************/
@@ -306,4 +314,8 @@ void test_get_remote_mails(void)
 
 	CU_ASSERT_EQUAL(rm->remote_mail_array[3].uid, 4);
 	CU_ASSERT_EQUAL(rm->remote_mail_array[3].size, 4321);
+
+	free(rm->remote_mail_array);
+	free(rm);
+	tcp_disconnect(c);
 }

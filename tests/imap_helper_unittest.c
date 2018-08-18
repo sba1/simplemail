@@ -7,6 +7,7 @@
 #include "imap_helper.h"
 
 #include "imap.h"
+#include "mail.h"
 #include "support_indep.h"
 
 #include "mock_connection.c"

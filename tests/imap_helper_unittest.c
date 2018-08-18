@@ -319,3 +319,40 @@ void test_get_remote_mails(void)
 	free(rm);
 	tcp_disconnect(c);
 }
+
+/******************************************************************************/
+
+static void test_imap_download_mail_callback(struct mail_info *m, void *userdata)
+{
+}
+
+/* @Test */
+void test_imap_download_mail()
+{
+	struct connection *c;
+	struct mock_connection *m;
+	struct mail_info *mi;
+
+	int empty_folder;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	mi = mail_info_create(NULL);
+	CU_ASSERT(mi != NULL);
+
+	expect_write(m, "0000 UID FETCH 1 RFC822\r\n",
+			"0000 OK\r\n");
+
+
+	mi->filename = strdup("u00001");
+	imap_really_download_mail(c, "/tmp/", mi, test_imap_download_mail_callback, NULL);
+
+	mail_info_free(mi);
+	tcp_disconnect(c);
+}

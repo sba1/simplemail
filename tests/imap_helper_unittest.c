@@ -334,7 +334,8 @@ void test_imap_download_mail()
 	struct mock_connection *m;
 	struct mail_info *mi;
 
-	int empty_folder;
+	int success;
+	FILE *f;
 
 	imap_reset_command_counter();
 
@@ -348,12 +349,19 @@ void test_imap_download_mail()
 	CU_ASSERT(mi != NULL);
 
 	expect_write(m, "0000 UID FETCH 1 RFC822\r\n",
+			"* 1 * ({88}\r\n"
+			"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+			"Date: Sa, 25 Aug 2018 10:06:36 +0200\r\n"
+			")\r\n"
 			"0000 OK\r\n");
 
-
 	mi->filename = strdup("u00001");
-	imap_really_download_mail(c, "/tmp/", mi, test_imap_download_mail_callback, NULL);
+	success = imap_really_download_mail(c, "/tmp/", mi, test_imap_download_mail_callback, NULL);
+	CU_ASSERT(success != 0);
 
+	f = fopen("/tmp/u00001", "r");
+	CU_ASSERT(f != NULL);
+	fclose(f);
 	mail_info_free(mi);
 	tcp_disconnect(c);
 }

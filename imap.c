@@ -314,7 +314,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		if (local_mail_array)
 		{
 			struct remote_mailbox *rm;
-			int empty_folder;
 
 			/* get number of remote mails */
 			char *line;
@@ -549,13 +548,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 
 				imap_free_remote_mailbox(rm);
-			} else
-			{
-				/* Assume success if folder was empty */
-				if (empty_folder)
-				{
-					success = 1;
-				}
 			}
 		}
 
@@ -1058,7 +1050,6 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
 				struct imap_get_remote_mails_args args = {0};
-				int empty_folder = 0;
 
 				utf8 msg[80];
 

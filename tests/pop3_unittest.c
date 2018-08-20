@@ -150,6 +150,11 @@ int search_has_mails(void)
 	return 0;
 }
 
+void new_mail_arrived_filename(char *filename, int is_spam)
+{
+	printf("new_mail_arrived: %s\n", filename);
+}
+
 /*************************************************************/
 
 /* @Test */
@@ -224,6 +229,7 @@ void test_pop3(void)
 	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;
 	dl_options.callbacks.request_login = sm_request_login;
 	dl_options.callbacks.number_of_mails_downloaded = callback_number_of_mails_downloaded;
+	dl_options.callbacks.new_mail_arrived_filename = new_mail_arrived_filename;
 
 	pop3_login_only(pop3_server, &dl_options.callbacks);
 

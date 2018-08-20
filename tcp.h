@@ -80,10 +80,22 @@ struct connection
 	int read_size;
 	char *line; /* dynamically allocated, it's hold the line returned in tcp_readln() */
 	int line_allocated; /* number of bytes which were allocated (including 0 byte) */
+
+	void *udata; /* Arbitrary user-data for  the following hooks */
+	int (*read)(struct connection *c, void *buf, size_t len);
+	int (*write)(struct connection *c, void *buf, size_t len);
 };
 
 int tcp_error_code(void);
 const char *tcp_strerror(int code);
+
+/**
+ * Create and initialize a connection.
+ *
+ * @return the newly initialized connection.
+ */
+struct connection *tcp_create_connection(void);
+
 struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint);

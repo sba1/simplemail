@@ -166,14 +166,13 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
  * Download the given mail. Usually called in the context of the imap thread.
  *
  * @param connection already established connection for the imap server.
- * @param server
  * @param local_path
  * @param m
  * @param callback called on the context of the parent task.
  * @param userdata user data supplied for the callback
  * @return
  */
-int imap_really_download_mail(struct connection *imap_connection, struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
+int imap_really_download_mail(struct connection *imap_connection, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
 
 /**
  * Move a given mail from one folder into another one of the given imap account.
@@ -235,7 +234,6 @@ struct imap_get_folder_list_callbacks
 	void (*set_head)(const char *head);
 	void (*set_title_utf8)(const char *title);
 	void (*set_title)(const char *title);
-	void (*lists_received)(struct imap_server *server, struct string_list *, struct string_list *);
 };
 
 struct imap_get_folder_list_options
@@ -249,11 +247,14 @@ struct imap_get_folder_list_options
  * Retrieve the folder list and call the given callback on the context of the
  * main thread.
  *
- * @param server
- * @param callback
+ * @param options
+ * @param all_folder_list where the pointer of a string list for all folders is stored
+ * @param sub_folder_list where the pointer of a string list for all subscribed folders is stored.
  * @return 1 on success, 0 on an error
  */
-int imap_get_folder_list_really(struct imap_get_folder_list_options *options);
+int imap_get_folder_list_really(struct imap_get_folder_list_options *options,
+	struct string_list **all_folder_list_out,
+	struct string_list **sub_folder_list_out);
 
 struct imap_submit_folder_list_callbacks
 {

@@ -208,7 +208,7 @@ static Object *image_prefs_spam_obj;
 #define GROUPS_PHRASE           7
 #define GROUPS_SIGNATURE        8
 #define GROUPS_SPAM             6
-#define GROUPS_READHTML 9
+#define GROUPS_READHTML 8
 #define GROUPS_MAX                              9
 
 #else

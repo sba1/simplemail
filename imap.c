@@ -495,48 +495,49 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							break;
 						} else
 						{
-							/* untagged */
-							if (buf[0] == '*')
+							char msgno_buf[200];
+							char *temp_ptr;
+							int todownload;
+
+							/* We only handle untagged lines here */
+							if (buf[0] != '*')
+								continue;
+
+							line++;
+
+							line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+							/*atoi(msgno_buf);*/ /* ignored */
+
+							/* skip the fetch command */
+							line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+							if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
 							{
-								char msgno_buf[200];
-								char *temp_ptr;
-								int todownload;
-								line++;
+								temp_ptr++;
+								todownload = atoi(temp_ptr);
+							} else todownload = 0;
 
-								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-								/*atoi(msgno_buf);*/ /* ignored */
+							if (todownload)
+							{
+								FILE *fh;
+								char filename_buf[32];
+								sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
 
-								/* skip the fetch command */
-								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-								if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+								if ((fh = fopen(filename_buf,"w")))
 								{
-									temp_ptr++;
-									todownload = atoi(temp_ptr);
-								} else todownload = 0;
-
-								if (todownload)
-								{
-									FILE *fh;
-									char filename_buf[32];
-									sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
-
-									if ((fh = fopen(filename_buf,"w")))
+									while (todownload)
 									{
-										while (todownload)
-										{
-											char buf[204];
-											int dl;
-											dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
+										char buf[204];
+										int dl;
+										dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
 
-											if (dl == -1 || !dl) break;
-											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
-											callbacks->set_gauge(todl_bytes);
-											fwrite(buf,1,dl,fh);
-											todownload -= dl;
-										}
-										fclose(fh);
-										callbacks->new_mail_arrived(filename_buf, server->login, server->name, imap_path);
+										if (dl == -1 || !dl) break;
+										todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
+										callbacks->set_gauge(todl_bytes);
+										fwrite(buf,1,dl,fh);
+										todownload -= dl;
 									}
+									fclose(fh);
+									callbacks->new_mail_arrived(filename_buf, server->login, server->name, imap_path);
 								}
 							}
 						}

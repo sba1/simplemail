@@ -389,3 +389,27 @@ void test_imap_download_mail()
 	mail_info_free(mi);
 	tcp_disconnect(c);
 }
+
+/******************************************************************************/
+
+/* @Test */
+void test_imap_really_download_mails()
+{
+	struct imap_download_mails_options options = {0};
+
+	struct connection *c;
+	struct mock_connection *m;
+
+	int success;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	success = imap_really_download_mails(c, &options);
+	CU_ASSERT(success != 0);
+}

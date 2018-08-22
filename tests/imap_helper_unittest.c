@@ -107,6 +107,26 @@ void test_imap_wait_login(void)
 
 /******************************************************************************/
 
+/**
+ * Create a test imap server instance.
+ *
+ * @return the test imap instance.
+ */
+static struct imap_server *create_test_imap_server(void)
+{
+	struct imap_server *imap;
+
+	if (!(imap = imap_malloc()))
+	{
+		return NULL;
+	}
+
+	imap->name = "imap.simplemail.sf.net";
+	imap->login = "login";
+	imap->passwd = "???";
+	return imap;
+}
+
 /* @Test */
 void test_imap_login(void)
 {
@@ -123,11 +143,8 @@ void test_imap_login(void)
 	CU_ASSERT(m != NULL);
 
 	/* Prepare imap data */
-	imap = imap_malloc();
+	imap = create_test_imap_server();
 	CU_ASSERT(imap != NULL);
-	imap->name = "imap.simplemail.sf.net";
-	imap->login = "login";
-	imap->passwd = "???";
 
 	expect_write(m, "0000 LOGIN login ???\r\n", "0000 OK\r\n");
 	CU_ASSERT(imap_login(c, imap) == 1);

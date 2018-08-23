@@ -76,37 +76,6 @@ void test_imap_send_simple_command(void)
 
 /******************************************************************************/
 
-/* @Test */
-void test_imap_wait_login(void)
-{
-	struct connection *c;
-	struct mock_connection *m;
-	struct imap_server *imap;
-
-	imap_reset_command_counter();
-
-	c = tcp_create_connection();
-	CU_ASSERT(c != NULL);
-
-	m = mock(c);
-	CU_ASSERT(m != NULL);
-
-	/* Prepare imap data */
-	imap = imap_malloc();
-	CU_ASSERT(imap != NULL);
-	imap->name = "imap.simplemail.sf.net";
-	imap->login = "login";
-	imap->passwd = "???";
-
-	inject_read(m, "0000 OK\r\n0001 NO\r\n0002 OK");
-
-	CU_ASSERT(imap_wait_login(c, imap) != 0);
-	CU_ASSERT(imap_wait_login(c, imap) == 0);
-	CU_ASSERT(imap_wait_login(c, imap) == 0); /* Last misses newline, so it should fail */
-}
-
-/******************************************************************************/
-
 /**
  * Create a test imap server instance.
  *
@@ -126,6 +95,34 @@ static struct imap_server *create_test_imap_server(void)
 	imap->passwd = "???";
 	return imap;
 }
+
+/* @Test */
+void test_imap_wait_login(void)
+{
+	struct connection *c;
+	struct mock_connection *m;
+	struct imap_server *imap;
+
+	imap_reset_command_counter();
+
+	c = tcp_create_connection();
+	CU_ASSERT(c != NULL);
+
+	m = mock(c);
+	CU_ASSERT(m != NULL);
+
+	/* Prepare imap data */
+	imap = create_test_imap_server();
+	CU_ASSERT(imap != NULL);
+
+	inject_read(m, "0000 OK\r\n0001 NO\r\n0002 OK");
+
+	CU_ASSERT(imap_wait_login(c, imap) != 0);
+	CU_ASSERT(imap_wait_login(c, imap) == 0);
+	CU_ASSERT(imap_wait_login(c, imap) == 0); /* Last misses newline, so it should fail */
+}
+
+/******************************************************************************/
 
 /* @Test */
 void test_imap_login(void)

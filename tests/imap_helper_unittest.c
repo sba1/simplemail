@@ -407,6 +407,9 @@ void test_imap_really_download_mails()
 	m = mock(c);
 	CU_ASSERT(m != NULL);
 
+	options.imap_server = create_test_imap_server();
+	CU_ASSERT(options.imap_server != NULL);
+
 	success = imap_really_download_mails(c, &options);
 	CU_ASSERT(success != 0);
 }

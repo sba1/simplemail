@@ -399,6 +399,8 @@ void test_imap_really_download_mails()
 
 	int success;
 
+	char tempdir[] = "SimpleMailXXXXXX";
+
 	imap_reset_command_counter();
 
 	c = tcp_create_connection();
@@ -407,8 +409,12 @@ void test_imap_really_download_mails()
 	m = mock(c);
 	CU_ASSERT(m != NULL);
 
+	options.imap_local_path = "INBOX";
 	options.imap_server = create_test_imap_server();
 	CU_ASSERT(options.imap_server != NULL);
+
+	CU_ASSERT(mkdtemp(tempdir) != NULL);
+	options.imap_folder = tempdir;
 
 	success = imap_really_download_mails(c, &options);
 	CU_ASSERT(success != 0);

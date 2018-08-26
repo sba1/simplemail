@@ -966,10 +966,10 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 	int do_download = 1;
 	int downloaded_mails = 0;
-	int dont_use_uids = 0;
+	int dont_use_uids = options->uid_options.imap_dont_use_uid;
 
-	unsigned int local_uid_validiy = 0;
-	unsigned int local_uid_next = 0;
+	unsigned int local_uid_validiy = options->uid_options.imap_uid_validity;
+	unsigned int local_uid_next = options->uid_options.imap_uid_next;
 
 	unsigned int uid_from = 0;
 	unsigned int uid_to = 0;
@@ -998,14 +998,20 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 	SM_DEBUGF(10,("Downloading mails of folder \"%s\"\n",imap_folder));
 
-	folders_lock();
-	if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
+	/* Determine uid values from folder if this shall not be skipped and if
+	 * the uids are not known.
+	 */
+	if (!dont_use_uids && !local_uid_next)
 	{
-		local_uid_validiy = local_folder->imap_uid_validity;
-		local_uid_next = local_folder->imap_uid_next;
-		dont_use_uids = local_folder->imap_dont_use_uids;
+		folders_lock();
+		if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
+		{
+			local_uid_validiy = local_folder->imap_uid_validity;
+			local_uid_next = local_folder->imap_uid_next;
+			dont_use_uids = local_folder->imap_dont_use_uids;
+		}
+		folders_unlock();
 	}
-	folders_unlock();
 
 	/* Uids are valid only if they are non-zero */
 	if (local_uid_validiy != 0 && local_uid_next != 0 && !dont_use_uids)

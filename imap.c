@@ -966,7 +966,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 	int do_download = 1;
 	int downloaded_mails = 0;
-	int dont_use_uids = options->uid_options.imap_dont_use_uid;
+	int dont_use_uids = options->uid_options.imap_dont_use_uids;
 
 	unsigned int local_uid_validiy = options->uid_options.imap_uid_validity;
 	unsigned int local_uid_next = options->uid_options.imap_uid_next;

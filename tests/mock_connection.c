@@ -116,3 +116,11 @@ static struct mock_connection *mock(struct connection *c)
 	m->currently_expected_response = -1;
 	return m;
 }
+
+static void mock_free(struct mock_connection *m)
+{
+	array_free(m->responses);
+	array_free(m->writes);
+	free(m->cur_write_string.str);
+	free(m);
+}

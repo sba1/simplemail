@@ -71,6 +71,7 @@ void test_imap_send_simple_command(void)
 	expect_write(m, "0001 QUIT\r\n", "0001 NO\r\n");
 	CU_ASSERT(imap_send_simple_command(c, "QUIT") == 0);
 
+	mock_free(m);
 	tcp_disconnect(c);
 }
 
@@ -120,6 +121,10 @@ void test_imap_wait_login(void)
 	CU_ASSERT(imap_wait_login(c, imap) != 0);
 	CU_ASSERT(imap_wait_login(c, imap) == 0);
 	CU_ASSERT(imap_wait_login(c, imap) == 0); /* Last misses newline, so it should fail */
+
+	free(imap);
+	mock_free(m);
+	tcp_disconnect(c);
 }
 
 /******************************************************************************/
@@ -149,6 +154,8 @@ void test_imap_login(void)
 	expect_write(m, "0001 LOGIN login ??\r\n", "0001 NO\r\n");
 	CU_ASSERT(imap_login(c, imap) == 0);
 
+	free(imap);
+	mock_free(m);
 	tcp_disconnect(c);
 }
 
@@ -204,6 +211,7 @@ void test_imap_get_folders(void)
 	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
 	string_list_free(folders);
 
+	mock_free(m);
 	tcp_disconnect(c);
 }
 
@@ -259,6 +267,7 @@ void test_imap_select_mailbox(void)
 	rm = imap_select_mailbox(&args);
 	CU_ASSERT(rm != NULL);
 	CU_ASSERT(rm->num_of_remote_mail == 0);
+	free(rm);
 
 	rm = imap_select_mailbox(&args);
 	CU_ASSERT(rm != NULL);
@@ -268,6 +277,7 @@ void test_imap_select_mailbox(void)
 
 	free(rm->remote_mail_array);
 	free(rm);
+	mock_free(m);
 	tcp_disconnect(c);
 }
 
@@ -332,6 +342,7 @@ void test_get_remote_mails(void)
 
 	free(rm->remote_mail_array);
 	free(rm);
+	mock_free(m);
 	tcp_disconnect(c);
 }
 
@@ -384,6 +395,7 @@ void test_imap_download_mail()
 	CU_ASSERT(f != NULL);
 	fclose(f);
 	mail_info_free(mi);
+	mock_free(m);
 	tcp_disconnect(c);
 }
 

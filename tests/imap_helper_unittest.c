@@ -401,6 +401,10 @@ void test_imap_download_mail()
 
 /******************************************************************************/
 
+#include "configuration.h"
+#include "folder.h"
+#include "subthreads.h"
+
 /* @Test */
 void test_imap_really_download_mails()
 {
@@ -409,9 +413,17 @@ void test_imap_really_download_mails()
 	struct connection *c;
 	struct mock_connection *m;
 
-	int success;
+	int num_mails;
 
 	char tempdir[] = "SimpleMailXXXXXX";
+
+	CU_ASSERT(mkdtemp(tempdir) != NULL);
+
+	CU_ASSERT(init_threads() != 0);
+	user.folder_directory = tempdir;
+	CU_ASSERT(init_folders() != 0);
+
+	/* Let the real test begin */
 
 	imap_reset_command_counter();
 
@@ -421,13 +433,21 @@ void test_imap_really_download_mails()
 	m = mock(c);
 	CU_ASSERT(m != NULL);
 
-	options.imap_local_path = "INBOX";
+	options.imap_folder = "INBOX";
 	options.imap_server = create_test_imap_server();
 	CU_ASSERT(options.imap_server != NULL);
 
-	CU_ASSERT(mkdtemp(tempdir) != NULL);
-	options.imap_folder = tempdir;
+	options.imap_local_path = tempdir;
+	options.uid_options.imap_dont_use_uids = 1;
+	options.callbacks.set_status = test_imap_set_status;
+	options.callbacks.set_status_static = test_imap_set_status_static;
 
-	success = imap_really_download_mails(c, &options);
-	CU_ASSERT(success != 0);
+	num_mails = imap_really_download_mails(c, &options);
+	CU_ASSERT(num_mails == 0);
+
+	del_folders();
+	cleanup_threads();
+	free(options.imap_server);
+	mock_free(m);
+	tcp_disconnect(c);
 }

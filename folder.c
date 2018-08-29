@@ -2391,6 +2391,28 @@ struct folder *folder_add_group(char *name)
 
 /*****************************************************************************/
 
+struct folder *folder_add_imap_server(char *local_name, const char *server, const char *login)
+{
+	struct folder *f;
+
+	if ((f = folder_add_group(local_name)))
+	{
+		f->is_imap = 1;
+		f->imap_server = mystrdup(server);
+		f->imap_user = mystrdup(login);
+		f->path = mycombinepath(user.folder_directory, local_name);
+
+		if (f->path)
+		{
+			sm_makedir(f->path);
+			folder_config_save(f);
+		}
+	}
+	return f;
+}
+
+/*****************************************************************************/
+
 struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 {
 	char *name;
@@ -4551,18 +4573,7 @@ void folder_create_imap(void)
 
 				if (tries < 20)
 				{
-					if ((f = folder_add_group(buf)))
-					{
-						f->is_imap = 1;
-						f->imap_server = mystrdup(ac->imap->name);
-						f->imap_user = mystrdup(ac->imap->login);
-						f->path = mycombinepath(user.folder_directory,buf);
-						if (f->path)
-						{
-							sm_makedir(f->path);
-							folder_config_save(f);
-						}
-					}
+					f = folder_add_imap_server(buf, ac->imap->name, ac->imap->login);
 				}
 			} else
 			{

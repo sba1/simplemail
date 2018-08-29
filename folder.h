@@ -596,6 +596,16 @@ struct folder *folder_add_with_name(char *path, char *name);
 struct folder *folder_add_group(char *name);
 
 /**
+ * Add a new imap folder based on the given data.
+ *
+ * @param local_name the name of the imap folder
+ * @param server the server to which the imap folder is connected
+ * @param login the login to connect to the server.
+ * @return the newly created folder or NULL.
+ */
+struct folder *folder_add_imap_server(char *local_name, const char *server, const char *login);
+
+/**
  * Adds an folder specified by the given path to an imap folder.
  *
  * @param parent specifies the parent imap folder.

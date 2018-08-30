@@ -415,7 +415,7 @@ void test_imap_really_download_mails()
 
 	int num_mails;
 
-	char tempdir[] = "SimpleMailXXXXXX";
+	char tempdir[] = "SimpleMail-tmp-XXXXXX";
 
 	struct folder *f;
 

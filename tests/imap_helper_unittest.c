@@ -417,6 +417,8 @@ void test_imap_really_download_mails()
 
 	char tempdir[] = "SimpleMailXXXXXX";
 
+	struct folder *f;
+
 	CU_ASSERT(mkdtemp(tempdir) != NULL);
 
 	CU_ASSERT(init_threads() != 0);
@@ -436,6 +438,9 @@ void test_imap_really_download_mails()
 	options.imap_folder = "INBOX";
 	options.imap_server = create_test_imap_server();
 	CU_ASSERT(options.imap_server != NULL);
+
+	f = folder_add_imap_server(options.imap_server->name, options.imap_server->name, options.imap_server->login);
+	CU_ASSERT(f != NULL);
 
 	options.imap_local_path = tempdir;
 	options.uid_options.imap_dont_use_uids = 1;

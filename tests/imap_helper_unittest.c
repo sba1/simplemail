@@ -442,6 +442,8 @@ void test_imap_really_download_mails()
 	f = folder_add_imap_server(options.imap_server->name, options.imap_server->name, options.imap_server->login);
 	CU_ASSERT(f != NULL);
 
+	f = folder_add_imap(f, "INBOX");
+
 	options.imap_local_path = tempdir;
 	options.uid_options.imap_dont_use_uids = 1;
 	options.callbacks.set_status = test_imap_set_status;

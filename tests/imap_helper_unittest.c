@@ -443,6 +443,7 @@ void test_imap_really_download_mails()
 	CU_ASSERT(f != NULL);
 
 	f = folder_add_imap(f, "INBOX");
+	CU_ASSERT(f != NULL);
 
 	options.imap_local_path = tempdir;
 	options.uid_options.imap_dont_use_uids = 1;

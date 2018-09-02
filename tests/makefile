@@ -195,6 +195,8 @@ $(foreach testexe,$(TESTEXES), \
 )
 
 # memleaks template
+#
+# $(1): The name of the unit test
 define memleak.tmpl
 memleaks-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)

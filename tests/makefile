@@ -178,6 +178,22 @@ $(foreach testexe,$(TESTEXES), \
  $(eval $(call run.tmpl,$(testexe))) \
 )
 
+# ddd template
+#
+# $(1): The name of the unit test
+define ddd.tmpl
+ddd-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
+	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
+	./$$<
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
+endef
+
+# "instanciate" run targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call run.tmpl,$(testexe))) \
+)
+
 # memleaks template
 define memleak.tmpl
 memleaks-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)

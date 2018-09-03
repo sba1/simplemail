@@ -401,9 +401,27 @@ void test_imap_download_mail()
 
 /******************************************************************************/
 
+#include "codesets.h"
 #include "configuration.h"
 #include "folder.h"
+#include "progmon.h"
 #include "subthreads.h"
+
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
+}
+
+void main_hide_progress(void)
+{
+}
+
+void test_imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
+{
+}
+
+void test_imap_new_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
+{
+}
 
 /* @Test */
 void test_imap_really_download_mails()
@@ -421,9 +439,11 @@ void test_imap_really_download_mails()
 
 	CU_ASSERT(mkdtemp(tempdir) != NULL);
 
+	CU_ASSERT(codesets_init() != 0);
 	CU_ASSERT(init_threads() != 0);
 	user.folder_directory = tempdir;
 	CU_ASSERT(init_folders() != 0);
+	CU_ASSERT(progmon_init() != 0);
 
 	/* Let the real test begin */
 
@@ -445,13 +465,31 @@ void test_imap_really_download_mails()
 	f = folder_add_imap(f, "INBOX");
 	CU_ASSERT(f != NULL);
 
-	options.imap_local_path = tempdir;
+	options.imap_local_path = f->parent_folder->path;
 	options.uid_options.imap_dont_use_uids = 1;
 	options.callbacks.set_status = test_imap_set_status;
 	options.callbacks.set_status_static = test_imap_set_status_static;
+	options.callbacks.new_uids = test_imap_new_uids;
+	options.callbacks.new_mails_arrived = test_imap_new_mails_arrived;
+
+	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n",
+			"* 4 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 1]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 4392]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0000 OK [READ-WRITE] SELECT completed\r\n");
+	expect_write(m, "0001 FETCH 1:4 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
+			" * 1 FETCH (UID 1 RFC822.SIZE 1234)\r\n"
+			" * 2 FETCH (UID 2 RFC822.SIZE 8888)\r\n"
+			" * 3 FETCH (UID 3 RFC822.SIZE 2222)\r\n"
+			" * 4 FETCH (UID 4 RFC822.SIZE 4321)\r\n"
+			"0001 OK\r\n");
 
 	num_mails = imap_really_download_mails(c, &options);
-	CU_ASSERT(num_mails == 0);
+	CU_ASSERT(num_mails == 4);
 
 	del_folders();
 	cleanup_threads();

@@ -119,6 +119,11 @@ static struct mock_connection *mock(struct connection *c)
 
 static void mock_free(struct mock_connection *m)
 {
+	if (array_length(m->writes) != m->currently_expected_write)
+	{
+		fprintf(stderr, "Expected %d writes but got %d!\n", array_length(m->writes), m->currently_expected_write);
+		exit(1);
+	}
 	array_free(m->responses);
 	array_free(m->writes);
 	free(m->cur_write_string.str);

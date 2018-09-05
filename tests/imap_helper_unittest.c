@@ -465,7 +465,7 @@ void test_imap_really_download_mails()
 	f = folder_add_imap(f, "INBOX");
 	CU_ASSERT(f != NULL);
 
-	options.imap_local_path = f->parent_folder->path;
+	options.imap_local_path = f->path;
 	options.uid_options.imap_dont_use_uids = 1;
 	options.callbacks.set_status = test_imap_set_status;
 	options.callbacks.set_status_static = test_imap_set_status_static;

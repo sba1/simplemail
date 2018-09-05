@@ -989,13 +989,6 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 		return -1;
 	}
 
-	getcwd(path, sizeof(path));
-	if (chdir(imap_local_path) == -1)
-	{
-		SM_RETURN(-1,"%d");
-		return -1;
-	}
-
 	SM_DEBUGF(10,("Downloading mails of folder \"%s\"\n",imap_folder));
 
 	/* Determine uid values from folder if this shall not be skipped and if
@@ -1103,6 +1096,16 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 					num_remote_mails = rm->num_of_remote_mail;
 					remote_mail_array = rm->remote_mail_array;
+
+					/* Change dir to given local path (TODO: This is the same as f->path) */
+					getcwd(path, sizeof(path));
+					if (chdir(imap_local_path) == -1)
+					{
+						char logg_buf[80];
+						sm_snprintf(logg_buf, sizeof(logg_buf), _("Failed to change directory to \"%s\""), imap_local_path);
+						SM_LOG_TEXT(ERROR, logg_buf);
+						goto dl_done;
+					}
 
 					total_download_ticks = ticks = time_reference_ticks();
 
@@ -1245,7 +1248,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						}
 					}
 				}
-
+dl_done:
+				chdir(path);
 				if (pm)
 				{
 					pm->done(pm);
@@ -1255,7 +1259,6 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			} else folders_unlock();
 		} else folders_unlock();
 	}
-	chdir(path);
 
 	/* Display status message. We mis-use path here */
 	{

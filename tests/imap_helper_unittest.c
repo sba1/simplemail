@@ -437,6 +437,9 @@ void test_imap_really_download_mails()
 
 	struct folder *f;
 
+	char path[1024];
+	FILE *fh;
+
 	CU_ASSERT(mkdtemp(tempdir) != NULL);
 
 	CU_ASSERT(codesets_init() != 0);
@@ -490,6 +493,22 @@ void test_imap_really_download_mails()
 
 	num_mails = imap_really_download_mails(c, &options);
 	CU_ASSERT(num_mails == 4);
+
+	snprintf(path, sizeof(path), "%s/u1", f->path);
+	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
+	fclose(fh);
+
+	snprintf(path, sizeof(path), "%s/u2", f->path);
+	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
+	fclose(fh);
+
+	snprintf(path, sizeof(path), "%s/u3", f->path);
+	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
+	fclose(fh);
+
+	snprintf(path, sizeof(path), "%s/u4", f->path);
+	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
+	fclose(fh);
 
 	del_folders();
 	cleanup_threads();

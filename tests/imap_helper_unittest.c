@@ -407,6 +407,9 @@ void test_imap_download_mail()
 #include "progmon.h"
 #include "subthreads.h"
 
+static unsigned int test_imap_new_uids_uid_validity;
+static unsigned int test_imap_new_uids_uid_next;
+
 void main_set_progress(unsigned int max_work, unsigned int work)
 {
 }
@@ -417,6 +420,8 @@ void main_hide_progress(void)
 
 void test_imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
 {
+	test_imap_new_uids_uid_validity = uid_validity;
+	test_imap_new_uids_uid_next = uid_next;
 }
 
 void test_imap_new_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
@@ -509,6 +514,9 @@ void test_imap_really_download_mails()
 	snprintf(path, sizeof(path), "%s/u4", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
+
+	CU_ASSERT(test_imap_new_uids_uid_validity == 3857529045);
+	CU_ASSERT(test_imap_new_uids_uid_next == 4392);
 
 	del_folders();
 	cleanup_threads();

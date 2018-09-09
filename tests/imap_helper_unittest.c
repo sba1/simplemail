@@ -410,6 +410,7 @@ void test_imap_download_mail()
 static unsigned int test_imap_new_uids_uid_validity;
 static unsigned int test_imap_new_uids_uid_next;
 static int test_imap_new_mails_arrived_num_filenames;
+static char **test_imap_new_mails_arrived_filenames;
 
 void main_set_progress(unsigned int max_work, unsigned int work)
 {
@@ -427,7 +428,14 @@ void test_imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char *
 
 void test_imap_new_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
 {
+	int i;
+
 	test_imap_new_mails_arrived_num_filenames += num_filenames;
+
+	for (i=0; i < num_filenames; i++)
+	{
+		test_imap_new_mails_arrived_filenames = array_add_string(test_imap_new_mails_arrived_filenames, filenames[i]);
+	}
 }
 
 /* @Test */
@@ -520,6 +528,10 @@ void test_imap_really_download_mails()
 	CU_ASSERT(test_imap_new_uids_uid_validity == 3857529045);
 	CU_ASSERT(test_imap_new_uids_uid_next == 4392);
 	CU_ASSERT(test_imap_new_mails_arrived_num_filenames == 4);
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[0], "u1");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[1], "u2");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[2], "u3");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4");
 
 	del_folders();
 	cleanup_threads();

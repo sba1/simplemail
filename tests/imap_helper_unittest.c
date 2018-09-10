@@ -538,4 +538,5 @@ void test_imap_really_download_mails()
 	free(options.imap_server);
 	mock_free(m);
 	tcp_disconnect(c);
+	codesets_cleanup();
 }

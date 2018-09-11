@@ -533,6 +533,23 @@ void test_imap_really_download_mails()
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[2], "u3");
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4");
 
+	expect_write(m, "0002 EXAMINE \"INBOX\"\r\n",
+			"* 4 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 1]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 4]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0002 OK [READ-WRITE] SELECT completed\r\n");
+
+	options.uid_options.imap_dont_use_uids = 0;
+	options.uid_options.imap_uid_next = 4;
+	options.uid_options.imap_uid_validity = 3857529045;
+
+	num_mails = imap_really_download_mails(c, &options);
+	CU_ASSERT(num_mails == 0);
+
 	del_folders();
 	cleanup_threads();
 	free(options.imap_server);

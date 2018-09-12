@@ -185,13 +185,13 @@ define ddd.tmpl
 ddd-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
-	./$$<
+	ddd ./$$<
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
 
-# "instanciate" run targets
+# "instanciate" ddd targets
 $(foreach testexe,$(TESTEXES), \
- $(eval $(call run.tmpl,$(testexe))) \
+ $(eval $(call ddd.tmpl,$(testexe))) \
 )
 
 # memleaks template

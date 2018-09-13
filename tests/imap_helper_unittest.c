@@ -475,6 +475,7 @@ void test_imap_really_download_mails()
 
 	options.imap_folder = "INBOX";
 	options.imap_server = create_test_imap_server();
+	options.imap_server->keep_orphans = 1;
 	CU_ASSERT(options.imap_server != NULL);
 
 	f = folder_add_imap_server(options.imap_server->name, options.imap_server->name, options.imap_server->login);
@@ -549,6 +550,39 @@ void test_imap_really_download_mails()
 
 	num_mails = imap_really_download_mails(c, &options);
 	CU_ASSERT(num_mails == 0);
+
+	/* Test if the presence of three mails cause the download of the fourth mail */
+
+	expect_write(m, "0003 EXAMINE \"INBOX\"\r\n",
+			"* 5 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 1]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 5]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0003 OK [READ-WRITE] SELECT completed\r\n");
+
+	expect_write(m, "0004 EXAMINE \"INBOX\"\r\n",
+			"* 5 EXISTS\r\n"
+			"* 1 RECENT\r\n"
+			"* OK [UNSEEN 1]\r\n"
+			"* OK [UIDVALIDITY 3857529045]\r\n"
+			"* OK [UIDNEXT 5]\r\n"
+			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
+			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
+			"0004 OK [READ-WRITE] SELECT completed\r\n");
+
+	expect_write(m, "0005 UID FETCH 4:5 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
+			" * 5 FETCH (UID 5 RFC822.SIZE 4321)\r\n"
+			"0005 OK\r\n");
+
+	options.uid_options.imap_dont_use_uids = 0;
+	options.uid_options.imap_uid_next = 4;
+	options.uid_options.imap_uid_validity = 3857529045;
+
+	num_mails = imap_really_download_mails(c, &options);
+	CU_ASSERT(num_mails == 1);
 
 	del_folders();
 	cleanup_threads();

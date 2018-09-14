@@ -96,6 +96,9 @@ lib$(SIMPLEMAIL_LIB).a: $(OBJS)
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))
 
+.PHONY: clean-tmp
+clean-tmp:
+	rm -Rf SimpleMail-tmp*
 
 # Dovecot support
 DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz

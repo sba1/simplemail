@@ -551,7 +551,7 @@ void test_imap_really_download_mails()
 	num_mails = imap_really_download_mails(c, &options);
 	CU_ASSERT(num_mails == 0);
 
-	/* Test if the presence of three mails cause the download of the fourth mail */
+	/* Test if the presence of four mails cause the download of the (new) fifth mail */
 
 	expect_write(m, "0003 EXAMINE \"INBOX\"\r\n",
 			"* 5 EXISTS\r\n"

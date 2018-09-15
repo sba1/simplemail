@@ -584,6 +584,10 @@ void test_imap_really_download_mails()
 	num_mails = imap_really_download_mails(c, &options);
 	CU_ASSERT(num_mails == 1);
 
+	snprintf(path, sizeof(path), "%s/u5", f->path);
+	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
+	fclose(fh);
+
 	del_folders();
 	cleanup_threads();
 	free(options.imap_server);

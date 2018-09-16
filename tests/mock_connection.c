@@ -33,6 +33,26 @@ static void expect_write(struct mock_connection *c, const char *fmt, const char 
 	c->responses = array_add_string(c->responses, response);
 }
 
+/**
+ * Expect that someone writes the given string to the mocked connection, and if
+ * so, give back the given response that can be specified as a format string.
+ *
+ * @param c
+ * @param fmt
+ * @param responsefmt
+ */
+static void expect_writef(struct mock_connection *c, const char *fmt, const char *responsefmt, ...)
+{
+	va_list al;
+	static char large_buf[16384];
+
+	va_start(al, responsefmt);
+	vsnprintf(large_buf, sizeof(large_buf), responsefmt, al);
+	va_end(al);
+
+	c->writes = array_add_string(c->writes, fmt);
+	c->responses = array_add_string(c->responses, large_buf);
+}
 
 /**
  * Inject a read into the mock communication stream.

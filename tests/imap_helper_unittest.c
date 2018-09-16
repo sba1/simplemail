@@ -491,6 +491,12 @@ void test_imap_really_download_mails()
 	options.callbacks.new_uids = test_imap_new_uids;
 	options.callbacks.new_mails_arrived = test_imap_new_mails_arrived;
 
+	char *mail_headers[] = {
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+	};
 	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n",
 			"* 4 EXISTS\r\n"
 			"* 1 RECENT\r\n"
@@ -500,12 +506,16 @@ void test_imap_really_download_mails()
 			"* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n"
 			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
 			"0000 OK [READ-WRITE] SELECT completed\r\n");
-	expect_write(m, "0001 FETCH 1:4 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
-			" * 1 FETCH (UID 1 RFC822.SIZE 1234)\r\n"
-			" * 2 FETCH (UID 2 RFC822.SIZE 8888)\r\n"
-			" * 3 FETCH (UID 3 RFC822.SIZE 2222)\r\n"
-			" * 4 FETCH (UID 4 RFC822.SIZE 4321)\r\n"
-			"0001 OK\r\n");
+	expect_writef(m, "0001 FETCH 1:4 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
+			" * 1 FETCH (UID 1 RFC822.SIZE 1234 BODY{%d}\r\n%s)\r\n"
+			" * 2 FETCH (UID 2 RFC822.SIZE 8888 BODY{%d}\r\n%s)\r\n"
+			" * 3 FETCH (UID 3 RFC822.SIZE 2222 BODY{%d}\r\n%s)\r\n"
+			" * 4 FETCH (UID 4 RFC822.SIZE 4321 BODY{%d}\r\n%s)\r\n"
+			"0001 OK\r\n",
+			strlen(mail_headers[0]), mail_headers[0],
+			strlen(mail_headers[1]), mail_headers[1],
+			strlen(mail_headers[2]), mail_headers[2],
+			strlen(mail_headers[3]), mail_headers[3]);
 
 	num_mails = imap_really_download_mails(c, &options);
 	CU_ASSERT(num_mails == 4);

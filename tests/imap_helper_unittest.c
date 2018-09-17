@@ -362,9 +362,7 @@ void test_imap_download_mail()
 	const char *mail_text =
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
 		"Date: Sa, 25 Aug 2018 10:06:36 +0200\r\n";
-
-	char expected_read_buf[1024];
-
+	const int mail_text_len = strlen(mail_text);
 	int success;
 	FILE *f;
 
@@ -379,13 +377,11 @@ void test_imap_download_mail()
 	mi = mail_info_create(NULL);
 	CU_ASSERT(mi != NULL);
 
-	snprintf(expected_read_buf, sizeof(expected_read_buf),
+	expect_writef(m, "0000 UID FETCH 1 RFC822\r\n",
 			"* 1 * ({%d}\r\n"
 			"%s"
 			")\r\n"
-			"0000 OK\r\n", strlen(mail_text), mail_text);
-
-	expect_write(m, "0000 UID FETCH 1 RFC822\r\n", expected_read_buf);
+			"0000 OK\r\n", mail_text_len, mail_text);
 
 	mi->filename = strdup("u00001");
 	success = imap_really_download_mail(c, "/tmp/", mi, test_imap_download_mail_callback, NULL);
@@ -393,6 +389,8 @@ void test_imap_download_mail()
 
 	f = fopen("/tmp/u00001", "r");
 	CU_ASSERT(f != NULL);
+	fseek(f, 0, SEEK_END);
+	CU_ASSERT(ftell(f) == mail_text_len);
 	fclose(f);
 	mail_info_free(mi);
 	mock_free(m);

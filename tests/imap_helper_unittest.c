@@ -453,6 +453,8 @@ void test_imap_really_download_mails()
 	char path[1024];
 	FILE *fh;
 
+	struct mail_info *mi;
+
 	CU_ASSERT(mkdtemp(tempdir) != NULL);
 
 	CU_ASSERT(codesets_init() != 0);
@@ -521,18 +523,30 @@ void test_imap_really_download_mails()
 	snprintf(path, sizeof(path), "%s/u1", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
+	mi = mail_info_create_from_file(NULL, path);
+	CU_ASSERT(mi != NULL);
+	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u2", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
+	mi = mail_info_create_from_file(NULL, path);
+	CU_ASSERT(mi != NULL);
+	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u3", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
+	mi = mail_info_create_from_file(NULL, path);
+	CU_ASSERT(mi != NULL);
+	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u4", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
+	mi = mail_info_create_from_file(NULL, path);
+	CU_ASSERT(mi != NULL);
+	mail_info_free(mi);
 
 	CU_ASSERT(test_imap_new_uids_uid_validity == 3857529045);
 	CU_ASSERT(test_imap_new_uids_uid_next == 4392);

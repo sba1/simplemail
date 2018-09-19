@@ -314,7 +314,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		if (local_mail_array)
 		{
 			struct remote_mailbox *rm;
-			int empty_folder;
 
 			/* get number of remote mails */
 			char *line;
@@ -496,48 +495,49 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							break;
 						} else
 						{
-							/* untagged */
-							if (buf[0] == '*')
+							char msgno_buf[200];
+							char *temp_ptr;
+							int todownload;
+
+							/* We only handle untagged lines here */
+							if (buf[0] != '*')
+								continue;
+
+							line++;
+
+							line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+							/*atoi(msgno_buf);*/ /* ignored */
+
+							/* skip the fetch command */
+							line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+							if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
 							{
-								char msgno_buf[200];
-								char *temp_ptr;
-								int todownload;
-								line++;
+								temp_ptr++;
+								todownload = atoi(temp_ptr);
+							} else todownload = 0;
 
-								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-								/*atoi(msgno_buf);*/ /* ignored */
+							if (todownload)
+							{
+								FILE *fh;
+								char filename_buf[32];
+								sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
 
-								/* skip the fetch command */
-								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-								if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+								if ((fh = fopen(filename_buf,"w")))
 								{
-									temp_ptr++;
-									todownload = atoi(temp_ptr);
-								} else todownload = 0;
-
-								if (todownload)
-								{
-									FILE *fh;
-									char filename_buf[32];
-									sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
-
-									if ((fh = fopen(filename_buf,"w")))
+									while (todownload)
 									{
-										while (todownload)
-										{
-											char buf[204];
-											int dl;
-											dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
+										char buf[204];
+										int dl;
+										dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
 
-											if (dl == -1 || !dl) break;
-											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
-											callbacks->set_gauge(todl_bytes);
-											fwrite(buf,1,dl,fh);
-											todownload -= dl;
-										}
-										fclose(fh);
-										callbacks->new_mail_arrived(filename_buf, server->login, server->name, imap_path);
+										if (dl == -1 || !dl) break;
+										todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
+										callbacks->set_gauge(todl_bytes);
+										fwrite(buf,1,dl,fh);
+										todownload -= dl;
 									}
+									fclose(fh);
+									callbacks->new_mail_arrived(filename_buf, server->login, server->name, imap_path);
 								}
 							}
 						}
@@ -549,13 +549,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 
 				imap_free_remote_mailbox(rm);
-			} else
-			{
-				/* Assume success if folder was empty */
-				if (empty_folder)
-				{
-					success = 1;
-				}
 			}
 		}
 
@@ -973,10 +966,10 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 	int do_download = 1;
 	int downloaded_mails = 0;
-	int dont_use_uids = 0;
+	int dont_use_uids = options->uid_options.imap_dont_use_uids;
 
-	unsigned int local_uid_validiy = 0;
-	unsigned int local_uid_next = 0;
+	unsigned int local_uid_validiy = options->uid_options.imap_uid_validity;
+	unsigned int local_uid_next = options->uid_options.imap_uid_next;
 
 	unsigned int uid_from = 0;
 	unsigned int uid_to = 0;
@@ -996,23 +989,22 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 		return -1;
 	}
 
-	getcwd(path, sizeof(path));
-	if (chdir(imap_local_path) == -1)
-	{
-		SM_RETURN(-1,"%d");
-		return -1;
-	}
-
 	SM_DEBUGF(10,("Downloading mails of folder \"%s\"\n",imap_folder));
 
-	folders_lock();
-	if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
+	/* Determine uid values from folder if this shall not be skipped and if
+	 * the uids are not known.
+	 */
+	if (!dont_use_uids && !local_uid_next)
 	{
-		local_uid_validiy = local_folder->imap_uid_validity;
-		local_uid_next = local_folder->imap_uid_next;
-		dont_use_uids = local_folder->imap_dont_use_uids;
+		folders_lock();
+		if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
+		{
+			local_uid_validiy = local_folder->imap_uid_validity;
+			local_uid_next = local_folder->imap_uid_next;
+			dont_use_uids = local_folder->imap_dont_use_uids;
+		}
+		folders_unlock();
 	}
-	folders_unlock();
 
 	/* Uids are valid only if they are non-zero */
 	if (local_uid_validiy != 0 && local_uid_next != 0 && !dont_use_uids)
@@ -1058,7 +1050,6 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
 				struct imap_get_remote_mails_args args = {0};
-				int empty_folder = 0;
 
 				utf8 msg[80];
 
@@ -1105,6 +1096,16 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 					num_remote_mails = rm->num_of_remote_mail;
 					remote_mail_array = rm->remote_mail_array;
+
+					/* Change dir to given local path (TODO: This is the same as f->path) */
+					getcwd(path, sizeof(path));
+					if (chdir(imap_local_path) == -1)
+					{
+						char logg_buf[80];
+						sm_snprintf(logg_buf, sizeof(logg_buf), _("Failed to change directory to \"%s\""), imap_local_path);
+						SM_LOG_TEXT(ERROR, logg_buf);
+						goto dl_done;
+					}
 
 					total_download_ticks = ticks = time_reference_ticks();
 
@@ -1247,7 +1248,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 						}
 					}
 				}
-
+dl_done:
+				chdir(path);
 				if (pm)
 				{
 					pm->done(pm);
@@ -1257,7 +1259,6 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			} else folders_unlock();
 		} else folders_unlock();
 	}
-	chdir(path);
 
 	/* Display status message. We mis-use path here */
 	{

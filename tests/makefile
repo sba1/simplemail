@@ -96,6 +96,9 @@ lib$(SIMPLEMAIL_LIB).a: $(OBJS)
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))
 
+.PHONY: clean-tmp
+clean-tmp:
+	rm -Rf SimpleMail-tmp*
 
 # Dovecot support
 DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
@@ -178,7 +181,25 @@ $(foreach testexe,$(TESTEXES), \
  $(eval $(call run.tmpl,$(testexe))) \
 )
 
+# ddd template
+#
+# $(1): The name of the unit test
+define ddd.tmpl
+ddd-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
+	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
+	ddd ./$$<
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
+endef
+
+# "instanciate" ddd targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call ddd.tmpl,$(testexe))) \
+)
+
 # memleaks template
+#
+# $(1): The name of the unit test
 define memleak.tmpl
 memleaks-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)

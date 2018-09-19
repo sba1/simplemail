@@ -125,6 +125,27 @@ void test_mail_info_create_from_file(void)
 /*************************************************************/
 
 /* @Test
+ * @File "test-only-from.eml"
+ * {{{
+ * From: Test <abc@def.ghi>
+ * }}}
+ */
+void test_mail_info_create_from_file_only_from(void)
+{
+	struct mail_info *m;
+
+	m = mail_info_create_from_file(NULL, "test-only-from.eml");
+
+	CU_ASSERT_PTR_NOT_NULL(m);
+	CU_ASSERT_STRING_EQUAL(m->from_phrase, "Test");
+	CU_ASSERT_STRING_EQUAL(m->from_addr, "abc@def.ghi");
+
+	mail_info_free(m);
+}
+
+/*************************************************************/
+
+/* @Test
  */
 void test_mail_info_create_from_file_with_common_context(void)
 {

@@ -135,6 +135,11 @@ void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail)
 
 void mail_scan_buffer_end(struct mail_scan *ms)
 {
+	if (ms->name_size && ms->contents_size)
+	{
+		/* Add remaining header if there is any */
+		mail_complete_add_header(ms->mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size);
+	}
 	free(ms->line);
 }
 

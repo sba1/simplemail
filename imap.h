@@ -95,11 +95,34 @@ struct imap_download_mails_callbacks
 	void (*delete_mail_by_uid)(char *user, char *server, char *path, unsigned int uid);
 };
 
+/* TODO: Merge with the ones in folder.h */
+struct imap_uid_options
+{
+	/**
+	 * Set to 1, if IMAP UIDs should not be used.
+	 */
+	int imap_dont_use_uids;
+
+	/**
+	 * The UIDVALIDITY field as determined during the most recent
+	 * access to this folder on its imap server.
+	 */
+	unsigned int imap_uid_validity;
+
+	/**
+	 * The UIDNEXT field as determined during the most recent
+	 * access to this folder on its imap serve
+	 */
+	unsigned int imap_uid_next;
+};
+
 struct imap_download_mails_options
 {
 	char *imap_local_path;
 	struct imap_server *imap_server;
 	char *imap_folder;
+
+	struct imap_uid_options uid_options;
 
 	struct imap_download_mails_callbacks callbacks;
 };

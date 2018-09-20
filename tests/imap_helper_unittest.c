@@ -525,6 +525,7 @@ void test_imap_really_download_mails()
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
+	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u2", f->path);
@@ -532,6 +533,7 @@ void test_imap_really_download_mails()
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
+	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u3", f->path);
@@ -539,6 +541,7 @@ void test_imap_really_download_mails()
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
+	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u4", f->path);
@@ -546,6 +549,7 @@ void test_imap_really_download_mails()
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
+	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 	mail_info_free(mi);
 
 	CU_ASSERT(test_imap_new_uids_uid_validity == 3857529045);

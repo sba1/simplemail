@@ -495,6 +495,7 @@ void test_imap_really_download_mails()
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
 	};
 	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n",
@@ -599,9 +600,10 @@ void test_imap_really_download_mails()
 			"* OK [PERMANENTFLAGS (\\Deleted \\Seen \\*)] Limited\r\n"
 			"0004 OK [READ-WRITE] SELECT completed\r\n");
 
-	expect_write(m, "0005 UID FETCH 4:5 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
-			" * 5 FETCH (UID 5 RFC822.SIZE 4321)\r\n"
-			"0005 OK\r\n");
+	expect_writef(m, "0005 UID FETCH 4:5 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
+			" * 5 FETCH (UID 5 RFC822.SIZE 4321 BODY{%d}\r\n%s)\r\n"
+			"0005 OK\r\n",
+			strlen(mail_headers[4]), mail_headers[4]);
 
 	options.uid_options.imap_dont_use_uids = 0;
 	options.uid_options.imap_uid_next = 4;
@@ -611,8 +613,9 @@ void test_imap_really_download_mails()
 	CU_ASSERT(num_mails == 1);
 
 	snprintf(path, sizeof(path), "%s/u5", f->path);
-	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
-	fclose(fh);
+	mi = mail_info_create_from_file(NULL, path);
+	CU_ASSERT(mi != NULL);
+	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 
 	del_folders();
 	cleanup_threads();

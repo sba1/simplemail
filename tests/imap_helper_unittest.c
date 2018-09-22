@@ -492,11 +492,20 @@ void test_imap_really_download_mails()
 	options.callbacks.new_mails_arrived = test_imap_new_mails_arrived;
 
 	char *mail_headers[] = {
-		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
-		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
-		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
-		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n",
 		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+		"Subject: Mail 1\r\n",
+
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+		"Subject: Mail 2\r\n",
+
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+		"Subject: Mail 3\r\n",
+
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+		"Subject: Mail 4\r\n",
+
+		"From: Sebastian Bauer <mail@sebastianbauer.info>\r\n"
+		"Subject: Mail 5\r\n",
 	};
 	expect_write(m, "0000 EXAMINE \"INBOX\"\r\n",
 			"* 4 EXISTS\r\n"
@@ -527,6 +536,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 1");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u2", f->path);
@@ -535,6 +545,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 2");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u3", f->path);
@@ -543,6 +554,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 3");
 	mail_info_free(mi);
 
 	snprintf(path, sizeof(path), "%s/u4", f->path);
@@ -551,6 +563,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 4");
 	mail_info_free(mi);
 
 	CU_ASSERT(test_imap_new_uids_uid_validity == 3857529045);
@@ -616,6 +629,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 5");
 
 	del_folders();
 	cleanup_threads();

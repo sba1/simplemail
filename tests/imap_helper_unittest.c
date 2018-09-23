@@ -630,6 +630,7 @@ void test_imap_really_download_mails()
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 5");
+	mail_info_free(mi);
 
 	del_folders();
 	cleanup_threads();

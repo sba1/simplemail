@@ -520,7 +520,7 @@ void test_imap_really_download_mails()
 			" * 1 FETCH (UID 1 RFC822.SIZE 1234 BODY{%d}\r\n%s)\r\n"
 			" * 2 FETCH (UID 2 RFC822.SIZE 8888 BODY{%d}\r\n%s)\r\n"
 			" * 3 FETCH (UID 3 RFC822.SIZE 2222 BODY{%d}\r\n%s)\r\n"
-			" * 4 FETCH (UID 4 RFC822.SIZE 4321 BODY{%d}\r\n%s)\r\n"
+			" * 4 FETCH (UID 4 RFC822.SIZE 4321 FLAGS (\\Seen \\Answered) BODY{%d}\r\n%s)\r\n"
 			"0001 OK\r\n",
 			strlen(mail_headers[0]), mail_headers[0],
 			strlen(mail_headers[1]), mail_headers[1],
@@ -557,7 +557,7 @@ void test_imap_really_download_mails()
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 3");
 	mail_info_free(mi);
 
-	snprintf(path, sizeof(path), "%s/u4", f->path);
+	snprintf(path, sizeof(path), "%s/u4.3", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
@@ -572,7 +572,7 @@ void test_imap_really_download_mails()
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[0], "u1");
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[1], "u2");
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[2], "u3");
-	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4.3");
 
 	expect_write(m, "0002 EXAMINE \"INBOX\"\r\n",
 			"* 4 EXISTS\r\n"

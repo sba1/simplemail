@@ -536,6 +536,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 1");
 	mail_info_free(mi);
 
@@ -545,6 +546,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 2");
 	mail_info_free(mi);
 
@@ -554,6 +556,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 3");
 	mail_info_free(mi);
 
@@ -563,6 +566,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 4");
 	mail_info_free(mi);
 
@@ -629,6 +633,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 5");
 	mail_info_free(mi);
 

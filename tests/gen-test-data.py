@@ -7,7 +7,7 @@ import sys
 
 text = sys.stdin.read()
 
-result = re.findall(r'@Test.*@File\s\"(.+)\".*\n(.*){{{\n(.*)}}}', text, re.DOTALL)
+result = re.findall(r'@Test[^@.]*@File\s\"([^\"]+)\"\w*\n(.*?){{{\n(.*?)}}}', text, re.DOTALL)
 
 for r in result:
     fn = r[0]

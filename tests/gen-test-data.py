@@ -15,5 +15,6 @@ for r in result:
     contents = r[2]
     # Extract the proper lines, i.e., without the prefix and without the last line
     lines = [l[len(prefix):] + "\n" for l in contents.split('\n')[:-1]]
+    sys.stderr.write('Generating {0}\n'.format(fn))
     with open(r[0],'w') as f:
         f.writelines(lines)

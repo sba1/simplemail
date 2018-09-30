@@ -10,7 +10,12 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser(description="""
-  Generates test data embedded into the source file that is read from stdin.
+  Generates test data embedded into the source file that is read from stdin
+  or from the file specified with --inputfile.
+  """)
+
+parser.add_argument('--inputfile', help="""
+  Specifies the name of the file that is used for scanning instead of stdin.
   """)
 
 parser.add_argument('--outdir',  help="""
@@ -20,13 +25,17 @@ parser.add_argument('--outdir',  help="""
 
 args = parser.parse_args()
 
+inputfile = sys.stdin
+if args.inputfile:
+  inputfile = open(args.inputfile, 'r')
+
 outdir = ''
 if args.outdir is not None:
   outdir = args.outdir
   if not os.path.exists(args.outdir):
     os.mkdir(outdir)
 
-text = sys.stdin.read()
+text = inputfile.read()
 
 result = re.findall(r'@Test[^@.]*@File\s\"([^\"]+)\"\w*\n(.*?){{{\n(.*?)}}}', text, re.DOTALL)
 

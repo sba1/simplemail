@@ -23,6 +23,11 @@ parser.add_argument('--outdir',  help="""
   it is creatde.
   """)
 
+parser.add_argument('--makefile', help="""
+  Specifies the file name of a makefile that will be additionally generated
+  and will contain the dependencies. Only works if --inputfile is specified.
+  """)
+
 args = parser.parse_args()
 
 inputfile = sys.stdin
@@ -34,6 +39,12 @@ if args.outdir is not None:
   outdir = args.outdir
   if not os.path.exists(args.outdir):
     os.mkdir(outdir)
+
+makefile = None
+if args.makefile is not None:
+  if args.inputfile is None:
+    sys.exit('--makefile needs --input')
+  makefile = open(args.makefile,'w')
 
 text = inputfile.read()
 
@@ -48,3 +59,7 @@ for r in result:
     sys.stderr.write('Generating {0}\n'.format(fn))
     with open(fn,'w') as f:
         f.writelines(lines)
+
+    if makefile:
+      print('{0}: {1}'.format(fn, args.inputfile), file=makefile)
+      print(file=makefile)

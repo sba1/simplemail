@@ -69,7 +69,7 @@ gen/%_unittest_table.c: %_unittest.c
 # General rule to compile the unit tests
 %_unittest: %_unittest.c gen/%_unittest_table.c lib$(SIMPLEMAIL_LIB).a
 	# Generate test data files
-	python gen-test-data.py <$<
+	python gen-test-data.py <$< --outdir gen-test-data
 	# Attempt to compile the unit test, but don't fail if it fails
 	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"gen/$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) 2>test-objs/$@error
 	# Generate simple stubs from error log
@@ -172,7 +172,7 @@ define run.tmpl
 run-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
-	./$$<
+	cd gen-test-data && ../$$<
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
 
@@ -188,7 +188,7 @@ define ddd.tmpl
 ddd-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
-	ddd ./$$<
+	cd gen-test-data && ddd ../$$<
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
 
@@ -196,6 +196,7 @@ endef
 $(foreach testexe,$(TESTEXES), \
  $(eval $(call ddd.tmpl,$(testexe))) \
 )
+
 
 # memleaks template
 #
@@ -205,9 +206,9 @@ memleaks-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
 	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
-	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
+	cd gen-test-data && G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ../$$<
 else
-	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) ./$$<
+	cd gen-test-data && G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) ../$$<
 endif
 	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
@@ -231,9 +232,9 @@ helgrind-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
 	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
 	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
-	valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ./$$<
+	cd gen-test-data && valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ../$$<
 else
-	valgrind --tool=helgrind ./$$<
+	cd gen-test-data && valgrind --tool=helgrind ../$$<
 endif
 	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
 endef

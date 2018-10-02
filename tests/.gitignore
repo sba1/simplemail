@@ -10,6 +10,7 @@ dovecot-2.2.9-root
 dovecot-2.2.9.tar.gz
 error
 gen
+gen-test-data
 imap-profile
 libsimplemail.a
 memleaks-*.xml

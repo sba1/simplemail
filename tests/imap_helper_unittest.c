@@ -188,6 +188,10 @@ void test_imap_get_folders(void)
 			" * LIST () \"/\" \"sent\"\r\n"
 			"0003 OK\r\n");
 
+	expect_write(m, "0004 LIST \"\" *\r\n",
+			" * LIST () \"/\" \"folder/subfolder\"\r\n"
+			"0004 OK\r\n");
+
 	folders = imap_get_folders(c, 1);
 	CU_ASSERT(folders != NULL);
 	CU_ASSERT(string_list_first(folders) == NULL);
@@ -209,6 +213,16 @@ void test_imap_get_folders(void)
 	free(s->string);
 	free(s);
 	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
+	string_list_free(folders);
+
+	/* Here we expect an inbox folder at least */
+	folders = imap_get_folders(c, 1);
+	CU_ASSERT(folders != NULL);
+	CU_ASSERT(string_list_first(folders) != NULL);
+	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "folder/subfolder");
+	s = string_list_remove_head(folders);
+	free(s->string);
+	free(s);
 	string_list_free(folders);
 
 	mock_free(m);

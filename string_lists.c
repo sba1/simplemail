@@ -24,6 +24,13 @@ struct string_node *string_list_first(struct string_list *list)
 
 /*****************************************************************************/
 
+struct string_node *string_node_next(struct string_node *node)
+{
+	return (struct string_node*)node_next(&node->node);
+}
+
+/*****************************************************************************/
+
 void string_list_insert_tail_node(struct string_list *list, struct string_node *node)
 {
 	list_insert_tail(&list->l, &node->node);

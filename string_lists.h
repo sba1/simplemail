@@ -54,6 +54,11 @@ void string_list_init(struct string_list *list);
 struct string_node *string_list_first(struct string_list *list);
 
 /**
+ * @return the node following the given node.
+ */
+struct string_node *string_node_next(struct string_node *node);
+
+/**
  * Insert the given string node at the tail of the given list.
  *
  * @param list the list at which the node should be inserted

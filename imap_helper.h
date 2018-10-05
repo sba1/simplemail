@@ -118,7 +118,7 @@ struct imap_select_mailbox_args
 };
 
 /**
- * Selects the given mailbox (as identified by path).
+ * Selects the given mailbox (as identified by args->path).
  *
  * @param args defines arguments and options.
  * @return a remote_mailbox for further processing. Field remote_mail_array will be NULL.

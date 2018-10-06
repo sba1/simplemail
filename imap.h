@@ -38,6 +38,7 @@
 
 struct folder;
 struct mail_info;
+struct remote_folder;
 
 struct imap_server
 {
@@ -271,13 +272,15 @@ struct imap_get_folder_list_options
  * main thread.
  *
  * @param options
- * @param all_folder_list where the pointer of a string list for all folders is stored
- * @param sub_folder_list where the pointer of a string list for all subscribed folders is stored.
+ * @param all_folders_out where the start pointer to the all folders array is stored.
+ * @param num_all_folders_out where the length of the all folders array is stored.
+ * @param sub_folders_out where the start pointer to subscribed all folders array is stored.
+ * @param num_sub_folders_out where the length of the subscribed folders array is stored.
  * @return 1 on success, 0 on an error
  */
 int imap_get_folder_list_really(struct imap_get_folder_list_options *options,
-	struct string_list **all_folder_list_out,
-	struct string_list **sub_folder_list_out);
+	struct remote_folder **all_folders_out, int *num_all_folders_out,
+	struct remote_folder **sub_folders_out, int *num_sub_folders_out);
 
 struct imap_submit_folder_list_callbacks
 {

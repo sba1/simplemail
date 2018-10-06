@@ -35,6 +35,7 @@
 #include "subthreads.h"
 #endif
 
+struct remote_folder;
 struct search_options;
 
 struct folder
@@ -307,12 +308,8 @@ int folder_is_filename_mail(const char *fn);
 /**
  * Sets the imap folder lists of a given folders. The list elements
  * are copied.
- *
- * @param folder
- * @param all_folders_list
- * @param sub_folders_list
  */
-void folder_imap_set_folders(struct folder *folder, struct string_list *all_folders_list, struct string_list *sub_folders_list);
+void folder_imap_set_folders(struct folder *folder, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders);
 
 /**
  * Set some folder attributes. Returns 1 if the folder must be

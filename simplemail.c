@@ -2164,12 +2164,12 @@ int callback_failed_ssl_verification(const char *server_name, const char *reason
  * @param all_folder_list
  * @param sub_folder_list
  */
-static void callback_received_imap_folders(struct imap_server *server, struct string_list *all_folder_list, struct string_list *sub_folder_list)
+static void callback_received_imap_folders(struct imap_server *server, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
 	struct folder *f = folder_find_by_imap(server->login, server->name, "");
 	if (!f) return;
-	folder_imap_set_folders(f, all_folder_list, sub_folder_list);
-	folder_fill_lists(all_folder_list, sub_folder_list);
+	folder_imap_set_folders(f, all_folders, num_all_folders, sub_folders, num_sub_folders);
+	folder_fill_lists(all_folders, num_all_folders, sub_folders, num_sub_folders);
 	folder_config_save(f);
 }
 

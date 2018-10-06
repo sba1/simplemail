@@ -102,7 +102,7 @@ static void imap_refresh_folders(void)
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
-	void (*callback)(struct imap_server *, struct string_list *, struct string_list *);
+	imap_get_folder_list_callback_t callback;
 };
 
 /**
@@ -114,13 +114,14 @@ struct imap_get_folder_list_entry_msg
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	void (*callback)(struct imap_server *, struct string_list *, struct string_list *) = msg->callback;
+	imap_get_folder_list_callback_t callback = msg->callback;
 
 	if (thread_parent_task_can_contiue())
 	{
 		struct imap_get_folder_list_options options = {0};
-		struct string_list *all_folder_list;
-		struct string_list *sub_folder_list;
+		struct remote_folder *all_folders;
+		struct remote_folder *sub_folders;
+		int num_all_folders, num_sub_folders;
 
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		thread_call_function_async(thread_get_main(),status_open,0);
@@ -133,12 +134,10 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 		options.callbacks.set_title = imap_set_title;
 		options.callbacks.set_title_utf8 = imap_set_title_utf8;
 
-		if (!(imap_get_folder_list_really(&options, &all_folder_list, &sub_folder_list)))
+		if (!(imap_get_folder_list_really(&options, &all_folders, &num_all_folders, &sub_folders, &num_sub_folders)))
 			return 0;
 
-		thread_call_parent_function_sync(NULL, callback, 3, server, all_folder_list, sub_folder_list);
-		string_list_free(all_folder_list);
-		string_list_free(sub_folder_list);
+		thread_call_parent_function_sync(NULL, callback, 5, server, all_folders, num_all_folders, sub_folders, num_sub_folders);
 
 		thread_call_function_async(thread_get_main(),status_close,0);
 	}
@@ -147,7 +146,7 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 
 /*****************************************************************************/
 
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *all_list, struct string_list *sub_list))
+int imap_get_folder_list(struct imap_server *server, imap_get_folder_list_callback_t callback)
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;

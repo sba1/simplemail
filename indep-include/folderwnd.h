@@ -35,10 +35,10 @@ void folder_edit(struct folder *f);
 /**
  * Update the GUI folder list according to the given lists.
  *
- * @param list contains all known folders
- * @param sub_folder_list contains all subscribed folders
+ * @param all_folders contains all known folders
+ * @param sub_folders contains all subscribed folders
  */
-void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list);
+void folder_fill_lists(struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders);
 
 /**
  * Return the folder that is currently being edited.

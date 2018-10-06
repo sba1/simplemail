@@ -3,6 +3,8 @@
 
 #include "imap.h"
 
+typedef void (*imap_get_folder_list_callback_t)(struct imap_server *server, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders);
+
 /**
  * Request the list of all folders of the imap server.
  *
@@ -17,7 +19,7 @@
  *
  * @return whether the request has been in principle submitted or not.
  */
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct string_list *, struct string_list *));
+int imap_get_folder_list(struct imap_server *server, imap_get_folder_list_callback_t callback);
 
 /**
  * Submit the given list of string_nodes as subscribed to the given server.

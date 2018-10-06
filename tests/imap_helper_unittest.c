@@ -167,8 +167,8 @@ void test_imap_get_folders(void)
 	struct connection *c;
 	struct mock_connection *m;
 
-	struct string_list *folders;
-	struct string_node *s;
+	struct remote_folder *rf;
+	int num_rf;
 
 	imap_reset_command_counter();
 
@@ -192,38 +192,41 @@ void test_imap_get_folders(void)
 			" * LIST () \"/\" \"folder/subfolder\"\r\n"
 			"0004 OK\r\n");
 
-	folders = imap_get_folders(c, 1);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) == NULL);
-	string_list_free(folders);
+	expect_write(m, "0005 LIST \"\" *\r\n",
+			" * LIST () \".\" \"folder.subfolder\"\r\n"
+			"0005 OK\r\n");
+
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT(num_rf == 0);
+	imap_folders_free(rf, num_rf);
 
 	/* Here we expect an INBOX folder at least */
-	folders = imap_get_folders(c, 0);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) != NULL);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "INBOX");
-	string_list_free(folders);
+	rf = imap_get_folders(c, 0, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT(num_rf == 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "INBOX");
+	imap_folders_free(rf, num_rf);
 
 	/* Here we expect an inbox folder at least */
-	folders = imap_get_folders(c, 1);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) != NULL);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "inbox");
-	s = string_list_remove_head(folders);
-	free(s->string);
-	free(s);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
-	string_list_free(folders);
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT_EQUAL(num_rf, 2);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "inbox");
+	CU_ASSERT_STRING_EQUAL(rf[1].name, "sent");
+	imap_folders_free(rf, num_rf);
 
-	/* Here we expect an inbox folder at least */
-	folders = imap_get_folders(c, 1);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) != NULL);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "folder/subfolder");
-	s = string_list_remove_head(folders);
-	free(s->string);
-	free(s);
-	string_list_free(folders);
+	/* Here we expect folder/subfolder */
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT_EQUAL(num_rf, 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder/subfolder");
+	imap_folders_free(rf, num_rf);
+
+	/* Here we expect folder/subfolder */
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT_EQUAL(num_rf, 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder.subfolder");
+	imap_folders_free(rf, num_rf);
 
 	mock_free(m);
 	tcp_disconnect(c);

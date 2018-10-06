@@ -38,6 +38,7 @@
 #include "debug.h"
 #include "filter.h"
 #include "imap.h"
+#include "imap_helper.h"
 #include "lists.h"
 #include "mail_context.h"
 #include "mail_support.h"
@@ -2880,29 +2881,27 @@ void folder_config_save(struct folder *f)
 
 /*****************************************************************************/
 
-void folder_imap_set_folders(struct folder *folder, struct string_list *all_folders_list, struct string_list *sub_folders_list)
+void folder_imap_set_folders(struct folder *folder, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
-	struct string_node *node;
+	int i;
 
-	if (all_folders_list)
+	if (all_folders)
 	{
 		string_list_clear(&folder->imap_all_folder_list);
-		node = string_list_first(all_folders_list);
-		while (node)
+
+		for (i = 0; i < num_all_folders; i++)
 		{
-			string_list_insert_tail(&folder->imap_all_folder_list,node->string);
-			node = (struct string_node*)node_next(&node->node);
+			string_list_insert_tail(&folder->imap_all_folder_list, all_folders[i].name);
 		}
 	}
 
-	if (sub_folders_list)
+	if (sub_folders)
 	{
 		string_list_clear(&folder->imap_sub_folder_list);
-		node = string_list_first(sub_folders_list);
-		while (node)
+
+		for (i = 0; i < num_sub_folders; i++)
 		{
-			string_list_insert_tail(&folder->imap_sub_folder_list,node->string);
-			node = (struct string_node*)node_next(&node->node);
+			string_list_insert_tail(&folder->imap_sub_folder_list, sub_folders[i].name);
 		}
 	}
 }

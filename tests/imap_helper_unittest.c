@@ -220,12 +220,14 @@ void test_imap_get_folders(void)
 	rf = imap_get_folders(c, 1, &num_rf);
 	CU_ASSERT_EQUAL(num_rf, 1);
 	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder/subfolder");
+	CU_ASSERT_EQUAL(rf[0].delim, '/');
 	imap_folders_free(rf, num_rf);
 
 	/* Here we expect folder/subfolder */
 	rf = imap_get_folders(c, 1, &num_rf);
 	CU_ASSERT_EQUAL(num_rf, 1);
 	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder.subfolder");
+	CU_ASSERT_EQUAL(rf[0].delim, '.');
 	imap_folders_free(rf, num_rf);
 
 	mock_free(m);

@@ -41,6 +41,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "imap.h"
+#include "imap_helper.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -633,22 +634,23 @@ void folder_edit(struct folder *f)
 
 /*****************************************************************************/
 
-void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list)
+void folder_fill_lists(struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
-	if (imap_folders_list)
-	{
-		struct string_node *node;
-		DoMethod(imap_folders_list,MUIM_NList_Clear);
-		node = string_list_first(list);
-		while (node)
-		{
-			struct imap_folder_entry entry;
-			entry.name = (utf8*)node->string;
-			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
+	int i;
 
-			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
-			node = (struct string_node*)node_next(&node->node);
-		}
+	if (!imap_folders_list)
+	{
+		return;
+	}
+
+	DoMethod(imap_folders_list,MUIM_NList_Clear);
+	for (i = 0; i < num_all_folders; i++)
+	{
+		struct imap_folder_entry entry;
+		entry.name = (utf8*)all_folders[i].name;
+		entry.subscribed = !!imap_remote_folder_exists(sub_folders, num_sub_folders, entry.name);
+
+		DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
 	}
 }
 

@@ -167,7 +167,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 
 				num_of_todel_mails += set_local_mail_array_entry(local_mail_array, i, fn);
 
-				sn = (struct string_node*)node_next(&sn->node);
+				sn = string_node_next(sn);
 				i++;
 			}
 			string_list_clear(&filename_list);
@@ -777,7 +777,7 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 	if (!(sub_folders = imap_get_folders(conn, 0, &num_sub_folders)))
 		goto out;
 
-	for (node = string_list_first(list); node; node = (struct string_node*)node_next(&node->node))
+	for (node = string_list_first(list); node; node = string_node_next(node))
 	{
 		if (!imap_remote_folder_exists(sub_folders, num_sub_folders, node->string))
 		{

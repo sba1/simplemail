@@ -182,7 +182,7 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 	while (node)
 	{
 		string_list_insert_tail(&list,node->string);
-		node = (struct string_node*)node_next(&node->node);
+		node = string_node_next(node);
 	}
 
 

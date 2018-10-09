@@ -624,7 +624,7 @@ void folder_edit(struct folder *f)
 			entry.subscribed = !!string_list_find(&f->imap_sub_folder_list,node->string);
 
 			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
-			node = (struct string_node*)node_next(&node->node);
+			node = string_node_next(node);
 		}
 	}
 

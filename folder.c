@@ -2865,14 +2865,14 @@ void folder_config_save(struct folder *f)
 		while (node)
 		{
 			fprintf(fh,"IMapFolder=%s\n",node->string);
-			node = (struct string_node*)node_next(&node->node);
+			node = string_node_next(node);
 		}
 
 		node = string_list_first(&f->imap_sub_folder_list);
 		while (node)
 		{
 			fprintf(fh,"IMapSubFolder=%s\n",node->string);
-			node = (struct string_node*)node_next(&node->node);
+			node = string_node_next(node);
 		}
 
 		fclose(fh);

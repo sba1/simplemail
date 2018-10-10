@@ -145,7 +145,7 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 	struct coroutine_scheduler_fd_data *data;
 	coroutine_scheduler_t sched;
 
-	if (!(data = malloc(sizeof(*data))))
+	if (!(data = (struct coroutine_scheduler_fd_data *)malloc(sizeof(*data))))
 		return NULL;
 
 	if (!(sched = coroutine_scheduler_new_custom(coroutine_wait_for_fd_event, data)))

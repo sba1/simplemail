@@ -1671,7 +1671,7 @@ static void simplemail_gather_mails(void)
 
 /*****************************************************************************/
 
-void callback_new_mail_arrived_filename(char *filename, int is_spam)
+void callback_new_mail_arrived_filename(const char *filename, int is_spam)
 {
 	struct mail_info *mail;
 	char buf[256];

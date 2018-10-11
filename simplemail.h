@@ -497,7 +497,7 @@ struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
  * @note FIXME: This functionality takes (mis)usage of next_thread_mail field
  *       FIXME: When SM is quit while mails are downloaded those mails get not presented to the user the next time.
  */
-void callback_new_mail_arrived_filename(char *filename, int spam);
+void callback_new_mail_arrived_filename(const char *filename, int spam);
 
 /**
  * @brief A new mail arrived into an imap folder

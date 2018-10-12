@@ -652,7 +652,7 @@ int mail_read_header_list_if_empty(struct mail_complete *m)
 
 /*****************************************************************************/
 
-struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename)
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, const char *filename)
 {
 	struct mail_complete *m;
 	FILE *fh;
@@ -713,7 +713,7 @@ struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *fil
 
 /*****************************************************************************/
 
-struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename)
+struct mail_info *mail_info_create_from_file(mail_context *mc, const char *filename)
 {
 	struct mail_complete *mail;
 

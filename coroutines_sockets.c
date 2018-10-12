@@ -28,9 +28,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#ifdef __AROS__
 #include <sys/select.h>
-#endif
 
 #include "coroutines_internal.h"
 

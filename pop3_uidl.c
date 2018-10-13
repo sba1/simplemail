@@ -59,7 +59,7 @@ int uidl_open(struct uidl *uidl)
 		    (uidls_size % sizeof(struct uidl_entry)) == 0)
 		{
 			uidl->num_entries = (uidls_size)/sizeof(struct uidl_entry);
-			if ((uidl->entries = malloc(uidls_size)))
+			if ((uidl->entries = (struct uidl_entry *)malloc(uidls_size)))
 			{
 				fread(uidl->entries,1,uidls_size,fh);
 				rc = 1;

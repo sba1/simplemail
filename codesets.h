@@ -85,7 +85,7 @@ struct codeset *codesets_find(char *name);
  * @param text_len number of bytes that should be converted
  * @return number of characters
  */
-int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len);
+int codesets_unconvertable_chars(struct codeset *codeset, const char *text, int text_len);
 
 /**
  * Returns the best codeset for the given text
@@ -95,7 +95,7 @@ int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_l
  * @param error_ptr here the number of conversion errors is stored
  * @return the best codesets
  */
-struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr);
+struct codeset *codesets_find_best(const char *text, int text_len, int *error_ptr);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))
 #define utf8cpy(dest,src) strcpy(dest,src)
@@ -334,7 +334,7 @@ char *utf8stristr(const char *str1, const char *str2);
  * @param codeset
  * @return
  */
-int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
+int utf8tochar(const utf8 *str, unsigned int *chr, struct codeset *codeset);
 
 /**
  * Converts a single UFT-8 Chracter to a�Unicode character very very

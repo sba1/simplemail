@@ -73,7 +73,7 @@ char *encode_header_field(char *field_name, char *field_contents);
  * @param field_contents the field contents to encode
  * @return the encoded header
  */
-char *encode_header_field_utf8(char *field_name, char *field_contents);
+char *encode_header_field_utf8(const char *field_name, const char *field_contents);
 
 /**
  * Creates a structured address encoded header field (includes all rules of the
@@ -129,7 +129,7 @@ char *encode_base64(unsigned char *buf, unsigned int len);
  * @param encoding where the encoding is stored that was actually used.
  * @return the encoded body.
  */
-char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, char **encoding);
+char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, const char **encoding);
 
 #endif
 

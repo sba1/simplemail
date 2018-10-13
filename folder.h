@@ -259,7 +259,7 @@ int folder_number_of_new_mails(struct folder *folder);
  * @param mail
  * @param status_new
  */
-void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int status_new);
+void folder_set_mail_status(struct folder *folder, struct mail_info *mail, mail_status_t status_new);
 
 /**
  * Set the flags of a mail.
@@ -420,7 +420,7 @@ struct folder *folder_find_by_path(char *name);
  *        the folder may be not the only one)
  * @return
  */
-struct folder *folder_find_by_file(char *filename);
+struct folder *folder_find_by_file(const char *filename);
 
 /**
  * Finds the folder of a mail.

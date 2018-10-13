@@ -123,7 +123,7 @@ static int export_entry(struct export_data *data)
 						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_size);
 						thread_call_function_async(thread_get_main(),status_init_mail, 1, f->num_mails);
 
-						if ((file_buf = malloc(8192)))
+						if ((file_buf = (char *)malloc(8192)))
 						{
 							char date_buf[128];
 
@@ -140,7 +140,7 @@ static int export_entry(struct export_data *data)
 								const char *from_addr = mail_info_get_from_addr(m);
 								struct tm tm;
 
-								thread_call_function_async(thread_get_main(),status_set_mail, 2, mail_no, m->size);
+								thread_call_function_async(thread_get_main(),status_set_mail, 2, mail_no, (int)m->size);
 
 								sm_convert_seconds(m->received,&tm);
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
@@ -251,7 +251,7 @@ static int import_entry(struct import_data *data)
 						fsize = myfsize(fh);
 						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,fsize);
 
-						if ((line_buf = malloc(8192)))
+						if ((line_buf = (char *)malloc(8192)))
 						{
 							mailfilename = NULL;
 							mailfh = NULL;

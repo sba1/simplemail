@@ -511,7 +511,7 @@ int mail_process_headers(struct mail_complete *mail);
  * @param folder
  * @param mail
  */
-void mail_read_contents(char *folder, struct mail_complete *mail);
+void mail_read_contents(const char *folder, struct mail_complete *mail);
 
 /**
  * Decodes the given mail. A text mail is always converted to UTF8 and
@@ -561,7 +561,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers);
  * @param name
  * @return
  */
-char *mail_find_header_contents(struct mail_complete *mail, char *name);
+char *mail_find_header_contents(struct mail_complete *mail, const char *name);
 
 /**
  * Returns a unique filename for a new mail that should have the
@@ -612,7 +612,7 @@ void mail_dereference(struct mail_info *mail);
  * @param name
  * @return
  */
-struct header *mail_find_header(struct mail_complete *mail, char *name);
+struct header *mail_find_header(struct mail_complete *mail, const char *name);
 
 /* mail scan functions */
 

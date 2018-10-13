@@ -482,7 +482,7 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
  * @param filename the filename of the mail to be added.
  * @return the newly created mail_info.
  */
-struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
+struct mail_info *callback_new_mail_to_folder_by_file(const char *filename);
 
 /**
  * @brief A new mail has been arrived within the incoming folder.

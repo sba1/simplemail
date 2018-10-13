@@ -256,7 +256,7 @@ int sm_system(char *command, char *output)
 
 /*****************************************************************************/
 
-int sm_file_is_in_drawer(char *filename, char *path)
+int sm_file_is_in_drawer(const char *filename, const char *path)
 {
 	BPTR dir = Lock(path,ACCESS_READ);
 	int rc = 0;

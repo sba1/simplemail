@@ -327,7 +327,7 @@ static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
 		/* Allocate memory for uidl vector, if not already done */
 		if (!stats->uidls)
 		{
-			if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
+			if ((stats->uidls = (char **)malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
 				memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
 		}
 
@@ -337,7 +337,7 @@ static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
 		/* Extract the uidl from the answer */
 		answer++;
 		len = uidllen(answer);
-		if (!(stats->uidls[mno] = malloc(len+1)))
+		if (!(stats->uidls[mno] = (char *)malloc(len+1)))
 			continue;
 		strncpy(stats->uidls[mno],answer,len);
 		stats->uidls[mno][len] = 0;
@@ -454,7 +454,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 	if ((size = strtol(next_answer,&answer,10))<0) return 0;
 	if (next_answer == answer) return 0;
 
-	if (!(mail_array = malloc((amm+1)*sizeof(struct dl_mail)))) return 0;
+	if (!(mail_array = (struct dl_mail *)malloc((amm+1)*sizeof(struct dl_mail)))) return 0;
 	stats->num_dl_mails = amm;
 	stats->total_size = size;
 	stats->dl_mails = mail_array;
@@ -846,7 +846,7 @@ static void pop3_uidl_init(struct uidl *uidl, struct pop3_server *server, char *
 	memset(uidl,0,sizeof(*uidl));
 
 	/* Construct the file name */
-	if (!(uidl->filename = malloc(len)))
+	if (!(uidl->filename = (char *)malloc(len)))
 		return;
 
 	strcpy(uidl->filename,folder_directory);
@@ -909,8 +909,8 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 	/* Ask for the login/password */
 	if (server->ask)
 	{
-		char *password = malloc(512);
-		char *login = malloc(512);
+		char *password = (char *)malloc(512);
+		char *login = (char *)malloc(512);
 
 		if (password && login)
 		{

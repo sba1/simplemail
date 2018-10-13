@@ -535,7 +535,7 @@ void imap_thread_connect(struct folder *folder)
 		goto bailout;
 	}
 
-	thread_call_function_async(imap_thread, imap_thread_connect_to_server, 4, server, imap_folder, imap_local_path, folder->imap_download);
+	thread_call_function_async(imap_thread, imap_thread_connect_to_server, 3, server, imap_folder, imap_local_path);
 bailout:
 	SM_LEAVE;
 }
@@ -550,7 +550,7 @@ int imap_download_mail(struct folder *f, struct mail_info *m)
 	if (!(server = account_find_imap_server_by_folder(f))) return 0;
 	if (!imap_start_thread()) return 0;
 
-	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 5, server, f->path, m, NULL, NULL))
+	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 5, server, f->path, m, (void (*)(struct mail_info *, void *))NULL, (void *)NULL))
 	{
 		folder_set_mail_flags(f, m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
 		return 1;
@@ -624,7 +624,7 @@ int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callb
 	SM_ENTER;
 
 	if (!imap_start_thread()) goto bailout;
-	if (!(d = malloc(sizeof(*d)))) goto bailout;
+	if (!(d = (struct imap_download_data *)malloc(sizeof(*d)))) goto bailout;
 	memset(d,0,sizeof(*d));
 	d->userdata = userdata;
 	if (!(d->server = account_find_imap_server_by_folder(f))) goto bailout;
@@ -635,7 +635,7 @@ int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callb
 	mail_reference(m);
 	d->callback = callback;
 
-	if (!thread_call_function_async(imap_thread, imap_thread_download_mail, 5, d->server, d->local_path, m, imap_download_mail_async_callback, d))
+	if (!thread_call_function_async(imap_thread, imap_thread_download_mail, 5, d->server, d->local_path, m, imap_download_mail_async_callback, (void*)d))
 		goto bailout;
 	SM_RETURN(1,"%ld");
 	return 1;

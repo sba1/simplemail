@@ -466,7 +466,7 @@ static char *fread_str(FILE *fh, struct string_pool *sp, int zero_is_null, int *
 			*sp_id_ptr = sp_id;
 			return NULL;
 		}
-		if (src_txt && (txt = malloc(strlen(src_txt) + 1)))
+		if (src_txt && (txt = (char *)malloc(strlen(src_txt) + 1)))
 		{
 			strcpy(txt, src_txt);
 		}
@@ -522,7 +522,7 @@ static char *folder_get_string_pool_name(struct folder *f)
 {
 	char *sp_name;
 
-	if ((sp_name = malloc(strlen(f->path) + 12)))
+	if ((sp_name = (char *)malloc(strlen(f->path) + 12)))
 	{
 		strcpy(sp_name, f->path);
 		strcat(sp_name, ".index.sp");
@@ -858,8 +858,16 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 		}
 #endif
 
+/* G++ didn't compile the non-C++ (gcc 8.2) so workaround this problem */
+#ifdef __cplusplus
+		struct mail_info *mi = mail;
+#endif
 		memmove(&folder->sorted_mail_info_array[pos+1],&folder->sorted_mail_info_array[pos],(folder->num_mails - pos)*sizeof(struct mail*));
+#ifdef __cplusplus
+		folder->sorted_mail_info_array[pos] = mi;
+#else
 		folder->sorted_mail_info_array[pos] = mail;
+#endif
 	} else pos = folder->num_mails;
 
 	folder->mail_info_array[folder->num_mails++] = mail;
@@ -1205,7 +1213,7 @@ int folder_number_of_new_mails(struct folder *folder)
 
 /*****************************************************************************/
 
-void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int status_new)
+void folder_set_mail_status(struct folder *folder, struct mail_info *mail, mail_status_t status_new)
 {
 	int i, mail_found = 0;
 	/* first check the pending mail array */
@@ -1628,7 +1636,7 @@ struct folder_thread_mail_callback_data
  */
 static int folder_thread_mail_callback(struct mail_info *m, void *udata)
 {
-	struct folder_thread_mail_callback_data *data = udata;
+	struct folder_thread_mail_callback_data *data = (struct folder_thread_mail_callback_data *)udata;
 
 	if (thread_aborted())
 	{
@@ -1815,7 +1823,7 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		goto bailout;
 	}
 
-	if ((rescan_ctx = c->rescan_ctx = malloc(sizeof(*rescan_ctx))))
+	if ((rescan_ctx = c->rescan_ctx = (struct folder_rescan_really_context *)malloc(sizeof(*rescan_ctx))))
 	{
 		coroutine_t cor;
 
@@ -2133,7 +2141,7 @@ static void folder_index_read_them_all(struct folder_index *fi, struct string_po
 	int num_mails = fi->num_mails;
 	struct mail_info **out;
 
-	if (!(out = malloc(sizeof(struct mail_info *) * num_mails)))
+	if (!(out = (struct mail_info **)malloc(sizeof(struct mail_info *) * num_mails)))
 	{
 		*out_ptr = NULL;
 		return;
@@ -3262,7 +3270,7 @@ struct folder *folder_find_by_path(char *name)
 
 /*****************************************************************************/
 
-struct folder *folder_find_by_file(char *filename)
+struct folder *folder_find_by_file(const char *filename)
 {
 	char buf[256];
 	struct folder *f = folder_first();
@@ -3451,7 +3459,7 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 		{
 			char *newfilename;
 
-			mail->status = MAIL_STATUS_WAITSEND | (mail->status & MAIL_STATUS_FLAG_MARKED);
+			mail->status = (mail_status_t)(MAIL_STATUS_WAITSEND | (mail->status & MAIL_STATUS_FLAG_MARKED));
 
 			if ((newfilename = mail_get_status_filename(mail->filename, mail->status)))
 			{

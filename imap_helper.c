@@ -260,7 +260,7 @@ struct remote_folder *imap_get_folders(struct connection *conn, int all, int *nu
 	}
 
 	/* Reserve memory for folders plus an additional for INBOX */
-	if (!(rf = malloc(sizeof(*rf) * (num_rf + 1))))
+	if (!(rf = (struct remote_folder *)malloc(sizeof(*rf) * (num_rf + 1))))
 	{
 		goto bailout;
 	}
@@ -649,7 +649,7 @@ struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *
 		goto bailout;
 	}
 
-	if (!(buf = malloc(buf_size)))
+	if (!(buf = (char *)malloc(buf_size)))
 		goto bailout;
 
 	if (!uid_start) uid_end = 0;

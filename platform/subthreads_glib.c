@@ -231,7 +231,7 @@ static gpointer thread_add_entry(gpointer udata)
 
 /*****************************************************************************/
 
-thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
+thread_t thread_add(const char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_s *t;
 	struct thread_add_data tad;

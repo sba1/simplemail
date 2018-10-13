@@ -1497,7 +1497,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 		return 0;
 	}
 
-	if (!(line_buf = malloc(line_buf_size)))
+	if (!(line_buf = (char *)malloc(line_buf_size)))
 	{
 		fclose(fh);
 		fclose(tfh);

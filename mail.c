@@ -93,7 +93,7 @@ static const char pgp_text[] =
  * @param contents_len the length
  * @return 0 on failure, 1 on success
  */
-static int mail_complete_add_header(struct mail_complete *mail, char *name, int name_len,
+static int mail_complete_add_header(struct mail_complete *mail, const char *name, int name_len,
 									  char *contents, int contents_len)
 {
 	struct header *header;
@@ -581,7 +581,7 @@ void mail_identify_status(struct mail_info *m)
 	for (i=0;i<sizeof(status_extensions);i++)
 	{
 	  if (suffix[1] == status_extensions[i])
-		m->status = i;
+		m->status = (mail_status_t)i;
 	}
 }
 
@@ -1195,7 +1195,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 
 					if ((new_part = mail_complete_create(NULL)))
 					{
-						if ((new_part->decoded_data = malloc(size)))
+						if ((new_part->decoded_data = (char *)malloc(size)))
 						{
 							fread(new_part->decoded_data,1,size,fh); /* Ignore possibilities of failure for now */
 
@@ -1210,7 +1210,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 							if (m->num_multiparts >= m->multipart_allocated)
 							{
 								m->multipart_allocated += 5;
-								m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
+								m->multipart_array = (struct mail_complete **)realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
 							}
 
 							m->multipart_array[m->num_multiparts] = new_part;
@@ -1302,7 +1302,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 							mail_decode(mail_iter);
 							mail_decoded_data(mail_iter,&attach_data,&attach_len);
 
-							if ((new_part->decoded_data = malloc(attach_len)))
+							if ((new_part->decoded_data = (char *)malloc(attach_len)))
 							{
 								memcpy(new_part->decoded_data,attach_data,attach_len);
 								new_part->decoded_len = attach_len;
@@ -1314,7 +1314,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 								if (m->num_multiparts == m->multipart_allocated)
 								{
 									m->multipart_allocated += 5;
-									m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
+									m->multipart_array = (struct mail_complete **)realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
 								}
 
 								/* Skip the first part because it's reserved for the text part */
@@ -1405,7 +1405,7 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 
 char *mail_get_from_address(struct mail_info *mail)
 {
-	char *buf = malloc(mystrlen(mail->from_phrase) + mystrlen(mail->from_addr)+10);
+	char *buf = (char *)malloc(mystrlen(mail->from_phrase) + mystrlen(mail->from_addr)+10);
 	if (buf)
 	{
 		if (mail->from_phrase) sprintf(buf,"%s <%s>", mail->from_phrase, mail->from_addr);
@@ -1454,11 +1454,11 @@ char *mail_get_to_address(struct mail_info *mail)
 {
 	char *buf;
 	utf8 *phrase = mail_get_to_phrase(mail);
-	utf8 *addr = mail_get_to_addr(mail);
+	const utf8 *addr = mail_get_to_addr(mail);
 
 	if (!addr) addr = "";
 
-	if ((buf = malloc(mystrlen(phrase) + mystrlen(addr)+10)))
+	if ((buf = (char *)malloc(mystrlen(phrase) + mystrlen(addr)+10)))
 	{
 		if (phrase) sprintf(buf,"%s <%s>",phrase,addr);
 		else strcpy(buf,addr);
@@ -1806,7 +1806,7 @@ int mail_process_headers(struct mail_complete *mail)
 					int len = subtype - buf;
 					if (len)
 					{
-						if ((mail->content_type = malloc(len+1)))
+						if ((mail->content_type = (char *)malloc(len+1)))
 						{
 							subtype++;
 
@@ -1877,7 +1877,7 @@ int mail_process_headers(struct mail_complete *mail)
 						char *buf2 = strrchr(buf,'>');
 						if (buf2)
 						{
-							if ((mail->content_id = malloc(buf2-buf+1)))
+							if ((mail->content_id = (char *)malloc(buf2-buf+1)))
 							{
 								strncpy(mail->content_id,buf,buf2-buf);
 								mail->content_id[buf2-buf]=0;
@@ -1887,7 +1887,7 @@ int mail_process_headers(struct mail_complete *mail)
 				} else
 				{
 					/* for the non rfc conform content-id's */
-					if ((mail->content_id = malloc(strlen(buf)+1)))
+					if ((mail->content_id = (char *)malloc(strlen(buf)+1)))
 						strcpy(mail->content_id,buf);
 				}
 			}
@@ -2290,7 +2290,7 @@ static int mail_read_structure(struct mail_complete *mail)
 							if (mail->num_multiparts == mail->multipart_allocated)
 							{
 								mail->multipart_allocated += 5;
-								mail->multipart_array = realloc(mail->multipart_array,sizeof(struct mail*)*mail->multipart_allocated);
+								mail->multipart_array = (struct mail_complete **)realloc(mail->multipart_array,sizeof(struct mail*)*mail->multipart_allocated);
 							}
 
 							if (mail->multipart_array)
@@ -2321,7 +2321,7 @@ static int mail_read_structure(struct mail_complete *mail)
 		struct mail_complete *new_mail;
 		struct mail_scan ms;
 
-		if (!(mail->multipart_array = malloc(sizeof(struct mail*)))) return 0;
+		if (!(mail->multipart_array = (struct mail_complete **)malloc(sizeof(struct mail*)))) return 0;
 		if (!(new_mail = mail->multipart_array[0] = mail_complete_create(NULL))) return 0;
 		mail->multipart_allocated = mail->num_multiparts = 1;
 
@@ -2349,7 +2349,7 @@ static int mail_read_structure(struct mail_complete *mail)
 
 /*****************************************************************************/
 
-void mail_read_contents(char *folder, struct mail_complete *mail)
+void mail_read_contents(const char *folder, struct mail_complete *mail)
 {
 	char path[256];
 	FILE *fp;
@@ -2362,7 +2362,7 @@ void mail_read_contents(char *folder, struct mail_complete *mail)
 
 	if ((fp = fopen(mail->info->filename,"rb")))
 	{
-		if ((mail->text = malloc(mail->info->size+1)))
+		if ((mail->text = (char *)malloc(mail->info->size+1)))
 		{
 			fread(mail->text,1,mail->info->size,fp);
 			mail->text[mail->info->size]=0;
@@ -2579,7 +2579,7 @@ void mail_dereference(struct mail_info *mail)
 
 /*****************************************************************************/
 
-struct header *mail_find_header(struct mail_complete *mail, char *name)
+struct header *mail_find_header(struct mail_complete *mail, const char *name)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
 
@@ -2593,7 +2593,7 @@ struct header *mail_find_header(struct mail_complete *mail, char *name)
 
 /*****************************************************************************/
 
-char *mail_find_header_contents(struct mail_complete *mail, char *name)
+char *mail_find_header_contents(struct mail_complete *mail, const char *name)
 {
 	struct header *header = mail_find_header(mail,name);
 	if (header) return header->contents;
@@ -2738,9 +2738,9 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 	if ((boundary = get_boundary_id(fp)))
 	{
 		struct address_list *tolist = address_list_create(new_mail->to);
-		char *encrypted_name = malloc(L_tmpnam+1);
-		char *id_name = malloc(L_tmpnam+1);
-		char *cmd = malloc(2*L_tmpnam+300);
+		char *encrypted_name = (char *)malloc(L_tmpnam+1);
+		char *id_name = (char *)malloc(L_tmpnam+1);
+		char *cmd = (char *)malloc(2*L_tmpnam+300);
 
 		if (cmd && encrypted_name && id_name && tolist)
 		{
@@ -2760,7 +2760,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 					if (!entry || !entry->pgpid || !(*entry->pgpid))
 					{
 						char *pgpid;
-						char *text = malloc(512);
+						char *text = (char *)malloc(512);
 						if (text)
 						{
 							sm_snprintf(text,512,_("Please select a key for %s <%s>"),addr->realname,addr->email);
@@ -2796,7 +2796,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 
 				if (!sys_rc)
 				{
-					char *buf = malloc(512);
+					char *buf = (char *)malloc(512);
 					if (buf)
 					{
 						FILE *encrypted_fh = fopen(encrypted_name,"rb");
@@ -2851,7 +2851,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 	if (new_mail->encrypt)
 	{
-		if ((ofh_name = malloc(L_tmpnam + 1)))
+		if ((ofh_name = (char *)malloc(L_tmpnam + 1)))
 		{
 			tmpnam(ofh_name);
 			ofh = fopen(ofh_name,"wb");
@@ -2909,7 +2909,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	} else
 	{
 		unsigned int body_len;
-		char *body_encoding = NULL;
+		const char *body_encoding = NULL;
 		char *body = NULL;
 
 		if (new_mail->text)
@@ -2929,7 +2929,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 			if (!unicode)
 			{
-				if ((convtext = malloc(unconvtext_len+1)))
+				if ((convtext = (char *)malloc(unconvtext_len+1)))
 					utf8tostr(new_mail->text, convtext, unconvtext_len+1, best_codeset);
 			} else convtext = mystrndup(new_mail->text,unconvtext_len);
 
@@ -3193,7 +3193,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 	{
 		int len;
 		char *replyto = mail_find_header_contents(mail, "reply-to");
-		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
+		const char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 		struct header *header;
 		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail_info_get_from_addr(mail->info));
 

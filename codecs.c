@@ -487,7 +487,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
  * @param structured
  * @return
  */
-static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int structured)
+static char *encode_header_str_utf8(const char *toencode, int *line_len_ptr, int structured)
 {
 	int line_len = *line_len_ptr;
 	int encoded_len = 0;
@@ -663,7 +663,7 @@ char *encode_header_field(char *field_name, char *field_contents)
 
 /*****************************************************************************/
 
-char *encode_header_field_utf8(char *field_name, char *field_contents)
+char *encode_header_field_utf8(const char *field_name, const char *field_contents)
 {
 	char *header = NULL;
 	int line_len;
@@ -1128,7 +1128,7 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
  * @return
  */
 
-static char *get_best_encoding(unsigned char *buf, int len, char *max)
+static const char *get_best_encoding(unsigned char *buf, int len, const char *max)
 {
 	int i,line_len=0,eight_bit=0;
 	unsigned char c;
@@ -1156,7 +1156,7 @@ static char *get_best_encoding(unsigned char *buf, int len, char *max)
 
 /*****************************************************************************/
 
-char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, char **encoding)
+char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, const char **encoding)
 {
 	char *body = NULL;
 	FILE *fh;

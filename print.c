@@ -186,7 +186,7 @@ int print_mail(struct mail_complete *m, int printhdr)
 			if(len != 0)
 			{
 				fseek(fp, 0, SEEK_SET);
-				buf = malloc(len + 1);
+				buf = (char *)malloc(len + 1);
 				if(buf != NULL)
 				{
 					if(fread(buf, len, 1, fp) == 1)

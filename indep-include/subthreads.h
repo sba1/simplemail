@@ -80,7 +80,7 @@ int thread_start(int (*entry)(void*), void *udata);
  * @param eudata
  * @return
  */
-thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata);
+thread_t thread_add(const char *thread_name, int (*entry)(void *), void *eudata);
 
 
 /**
@@ -139,6 +139,11 @@ int thread_aborted(void);
  */
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...);
 
+#if __cplusplus >= 201103L
+template<typename R, typename... A>
+int thread_call_function_sync(thread_t, R (*Func)(A...), int argcount, A... args);
+#endif
+
 /**
  * @brief Call a function in the context of the given thread in an asynchronous manner.
  *
@@ -196,7 +201,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
 template<typename R, typename... A>
-int thread_call_parent_function_async_string(R (*Func)(char *, A...), int argcount, char *str, A... args);
+int thread_call_parent_function_async_string(R (*Func)(const char *, A...), int argcount, const char *str, A... args);
 #endif
 
 
@@ -245,6 +250,11 @@ int thread_push_function(void *function, int argcount, ...);
  * @return return 1 for success else 0.
  */
 int thread_push_function_delayed(int millis, void *function, int argcount, ...);
+
+#if __cplusplus >= 201103L
+template<typename R, typename... A>
+int thread_push_function_delayed(int millis, R (*Func)(A...), int argcount, A... args);
+#endif
 
 /**
  * Return the main (UI) thread.

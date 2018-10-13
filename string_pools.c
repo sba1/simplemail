@@ -56,7 +56,7 @@ struct string_pool
 
 struct string_pool *string_pool_create(void)
 {
-	struct string_pool *p = malloc(sizeof(*p));
+	struct string_pool *p = (struct string_pool *)malloc(sizeof(*p));
 	if (!p)
 	{
 		return NULL;
@@ -82,7 +82,7 @@ static int string_pool_ensure_space(struct string_pool *p, int wanted_size)
 
 	new_ref_strings_allocated = (wanted_size+1)*2;
 
-	if (!(new_ref_strings = realloc(p->ref_strings, new_ref_strings_allocated * sizeof(*new_ref_strings))))
+	if (!(new_ref_strings = (struct ref_string *)realloc(p->ref_strings, new_ref_strings_allocated * sizeof(*new_ref_strings))))
 		return 0;
 
 	p->ref_strings_allocated = new_ref_strings_allocated;
@@ -126,7 +126,7 @@ int string_pool_load(struct string_pool *sp, const char *filename)
 			goto bailout;
 		if (fread(&l, 1, 4, fh) != 4)
 			goto bailout;
-		if (!(s = malloc(l+1)))
+		if (!(s = (char *)malloc(l+1)))
 			goto bailout;
 		if (fread(s, 1, l, fh) != l)
 			goto bailout;
@@ -231,7 +231,7 @@ int string_pool_ref(struct string_pool *p, const char *string)
 		if (p->id_next == p->ref_strings_allocated)
 		{
 			unsigned int new_ref_strings_allocated = (p->ref_strings_allocated+2)*2;
-			struct ref_string *new_ref_strings = realloc(p->ref_strings, new_ref_strings_allocated * sizeof(*new_ref_strings));
+			struct ref_string *new_ref_strings = (struct ref_string *)realloc(p->ref_strings, new_ref_strings_allocated * sizeof(*new_ref_strings));
 			if (!new_ref_strings)
 			{
 				/* FIXME: Remove entry again */

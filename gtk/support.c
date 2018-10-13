@@ -174,7 +174,7 @@ int sm_system(char *command, char *output)
  Checks weather a file is in the given drawer. Returns 1 for
  success.
 *******************************************************************/
-int sm_file_is_in_drawer(char *filename, char *path)
+int sm_file_is_in_drawer(const char *filename, const char *path)
 {
 	return 0;
 }

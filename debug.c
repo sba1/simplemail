@@ -126,6 +126,9 @@ static void debug_insert_module(char *mod)
  * that is generated during compilation.
  */
 #ifdef __GNUC__
+#ifdef __cplusplus
+extern
+#endif
 __attribute__((weak))
 #endif
 const char * const debugmodules[] =

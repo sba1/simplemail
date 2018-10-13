@@ -60,7 +60,7 @@ static char *buf_init(void)
 {
 	char *rc;
 	
-	rc = malloc(1100);
+	rc = (char *)malloc(1100);
 	if(rc)
 		rc[0] = 0;
 	

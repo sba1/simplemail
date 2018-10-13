@@ -1171,10 +1171,10 @@ struct codeset *codesets_find(char *name)
 
 /*****************************************************************************/
 
-int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len)
+int codesets_unconvertable_chars(struct codeset *codeset, const char *text, int text_len)
 {
 	struct single_convert conv;
-	char *text_ptr = text;
+	const char *text_ptr = text;
 	int i;
 	int errors = 0;
 
@@ -1199,7 +1199,7 @@ int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_l
 
 /*****************************************************************************/
 
-struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr)
+struct codeset *codesets_find_best(const char *text, int text_len, int *error_ptr)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
 	struct codeset *best_codeset = NULL;
@@ -1464,7 +1464,7 @@ char *utf8tostrcreate(const utf8 *str, struct codeset *codeset)
 
 /*****************************************************************************/
 
-int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
+int utf8tochar(const utf8 *str, unsigned int *chr, struct codeset *codeset)
 {
 	struct single_convert conv;
 	struct single_convert *f;

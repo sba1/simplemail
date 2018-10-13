@@ -84,7 +84,7 @@ char *sm_get_to_be_completed_address_from_line(char *contents, int pos)
 	while (start_pos < pos && contents[start_pos]==' ')
 		start_pos++;
 
-	buf = malloc(pos - start_pos + 1);
+	buf = (char *)malloc(pos - start_pos + 1);
 	if (!buf) return NULL;
 	strncpy(buf,&contents[start_pos],pos - start_pos);
 	buf[pos-start_pos]=0;
@@ -324,7 +324,7 @@ int myreadline(FILE *fh, char *buf)
 char *mystrcat(char *str1, char *str2)
 {
 	int len = strlen(str1) + strlen(str2) + 1;
-	char *rc = malloc(len);
+	char *rc = (char *)malloc(len);
 
 	if(rc != NULL)
 	{
@@ -469,8 +469,8 @@ int mydeletedir(const char *path)
 	struct stat *st;
 	char *buf;
 
-	if (!(buf = malloc(512))) return 0;
-	if (!(st = malloc(sizeof(struct stat))))
+	if (!(buf = (char *)malloc(512))) return 0;
+	if (!(st = (struct stat *)malloc(sizeof(struct stat))))
 	{
 		free(buf);
 		return 0;
@@ -915,7 +915,7 @@ void array_free(char **string_array)
 int string_initialize(string *string, unsigned int size)
 {
 	if (!size) size = 1;
-	string->str = malloc(size);
+	string->str = (char *)malloc(size);
 	if (!string->str) return 0;
 	string->str[0] = 0;
 	string->allocated = size;
@@ -941,7 +941,7 @@ int string_append_part(string *string, const char *appstr, int bytes)
 		char *newstr;
 
 		/* We have to allocate more memory */
-		newstr = realloc(string->str,alloclen);
+		newstr = (char *)realloc(string->str,alloclen);
 		if (!newstr) return 0;
 		string->allocated = alloclen;
 		string->str = newstr;
@@ -993,7 +993,7 @@ char *mycombinepath(const char *drawer, const char *file)
 	int len;
 	char *dest;
 	len = strlen(drawer)+strlen(file)+4;
-	if ((dest = malloc(len)))
+	if ((dest = (char *)malloc(len)))
 	{
 		strcpy(dest,drawer);
 		sm_add_part(dest,file,len);

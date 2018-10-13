@@ -133,7 +133,7 @@ int sm_system(char *command, char *output);
  * @param path
  * @return
  */
-int sm_file_is_in_drawer(char *filename, char *path);
+int sm_file_is_in_drawer(const char *filename, const char *path);
 
 /**
  * Checks whether the given paths represent the same resource.

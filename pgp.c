@@ -131,7 +131,7 @@ int pgp_operate(char *options, char *output)
 	char *path = sm_getenv("PGPPATH");
 	int len = mystrlen(path)+10+mystrlen(options);
 	int rc;
-	char *buf = malloc(len);
+	char *buf = (char *)malloc(len);
 	FILE *fh;
 
 	if (!buf) return 0;

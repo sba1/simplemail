@@ -1806,7 +1806,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 	{
 		struct addressbook_entry_new *entry;
 		struct addressbook_group *group;
-		int total_entries = 0;
+		unsigned int total_entries = 0;
 
 		/* find matching group */
 		group = addressbook_first_group();

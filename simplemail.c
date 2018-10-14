@@ -1788,7 +1788,7 @@ void callback_new_mail_written(struct mail_info *mail)
 
 /*****************************************************************************/
 
-void callback_mail_has_been_sent(char *filename)
+void callback_mail_has_been_sent(const char *filename)
 {
 	struct filter *f;
 	struct folder *out = folder_outgoing();
@@ -1820,7 +1820,7 @@ void callback_mail_has_been_sent(char *filename)
 
 /*****************************************************************************/
 
-void callback_mail_has_not_been_sent(char *filename)
+void callback_mail_has_not_been_sent(const char *filename)
 {
 	struct folder *out = folder_outgoing();
 	struct mail_info *m;

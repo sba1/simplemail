@@ -112,7 +112,7 @@ struct connection *tcp_create_connection(void)
 {
 	struct connection *conn;
 
-	if (!(conn = malloc(sizeof(struct connection))))
+	if (!(conn = (struct connection *)malloc(sizeof(struct connection))))
 		return NULL;
 
 	memset(conn,0,sizeof(struct connection));
@@ -262,8 +262,8 @@ static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x50
 	if (!preverify_ok)
 	{
 		/* Get ssl object associated to the x509 context */
-		SSL *ssl = X509_STORE_CTX_get_ex_data(x509_ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
-		int *failed = SSL_get_app_data(ssl);
+		SSL *ssl = (SSL *)X509_STORE_CTX_get_ex_data(x509_ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+		int *failed = (int*)SSL_get_app_data(ssl);
 		*failed = 1;
 		preverify_ok = 1;
 	}
@@ -307,8 +307,8 @@ int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprin
 
 		if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
 		{
-			int i, rc;
-			unsigned int sha1_size;
+			int rc;
+			unsigned int i, sha1_size;
 			unsigned char sha1[EVP_MAX_MD_SIZE];
 			char sha1_ascii[EVP_MAX_MD_SIZE*3+1];
 			unsigned int sha256_size;
@@ -706,7 +706,7 @@ char *tcp_readln(struct connection *conn)
 		if (line_pos + 8 > conn->line_allocated)
 		{
 			conn->line_allocated += 1024;
-			conn->line = realloc(conn->line,conn->line_allocated);
+			conn->line = (char *)realloc(conn->line,conn->line_allocated);
 		}
 
 		if (!conn->line)

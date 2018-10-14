@@ -83,7 +83,7 @@ static void buf_free(char *buf)
  * @param args
  * @return
  */
-static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
+static int smtp_send_cmd(struct smtp_connection *conn, const char *cmd, const char *args)
 {
 	int rc;
 	long count;

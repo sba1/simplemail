@@ -1329,7 +1329,7 @@ int folder_count_signatures(char *def_signature)
 
 /*****************************************************************************/
 
-struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename)
+struct mail_info *folder_find_mail_by_filename(struct folder *folder, const char *filename)
 {
 	int i;
 

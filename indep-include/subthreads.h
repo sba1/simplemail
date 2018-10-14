@@ -231,6 +231,11 @@ int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct c
  */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);
 
+#if __cplusplus >= 201103L
+template<typename R, typename... A>
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, R (*Func)(A...), int argcount, A... args);
+#endif
+
 /**
  * Pushes a function call in the function queue of the callers task context.
  *

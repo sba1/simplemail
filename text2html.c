@@ -41,8 +41,8 @@ static const char legalchars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij
 
 struct smily
 {
-	char *ascii;
-	char *gfx;
+	const char *ascii;
+	const char *gfx;
 };
 
 const static struct smily smily[] =
@@ -204,8 +204,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 					if (level != new_level)
 					{
-						char *begin_quote_string = "<TABLE BGCOLOR=\"#%06x\" WIDTH=\"100%%\" STYLE=\"border-left: 3px solid #%06x; border-right: 3px solid #%06x;\"><TD><FONT COLOR=\"#%06x\">";
-						char *end_quote_string = "</FONT></TD></TABLE>";
+						const char *begin_quote_string = "<TABLE BGCOLOR=\"#%06x\" WIDTH=\"100%%\" STYLE=\"border-left: 3px solid #%06x; border-right: 3px solid #%06x;\"><TD><FONT COLOR=\"#%06x\">";
+						const char *end_quote_string = "</FONT></TD></TABLE>";
 
 						/* If new level is larger */
 						for (;level < new_level; level++)
@@ -223,8 +223,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				{
 					if (last_color != new_color)
 					{
-						char *begin_quote_string = "<FONT COLOR=\"#%x\">";
-						char *end_quote_string = "</FONT>";
+						const char *begin_quote_string = "<FONT COLOR=\"#%x\">";
+						const char *end_quote_string = "</FONT>";
 
 						if (!initial_color) string_append(&str,end_quote_string);
 						if (new_color == 1)

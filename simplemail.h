@@ -562,14 +562,14 @@ void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned 
  * @param filename specifies the name of the mail. This has to be present in the
  *  index with the folder being the standard outgoing folder.
  */
-void callback_mail_has_been_sent(char *filename);
+void callback_mail_has_been_sent(const char *filename);
 
 /**
  * A mail has NOT been sent, something went wrong, set ERROR status.
  *
  * @param filename specifies the name of the mail that has not been sent.
  */
-void callback_mail_has_not_been_sent(char *filename);
+void callback_mail_has_not_been_sent(const char *filename);
 
 /**
  * Add a new imap folder.

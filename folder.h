@@ -285,7 +285,7 @@ int folder_count_signatures(char *def_signature);
  * @param filename
  * @return
  */
-struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename);
+struct mail_info *folder_find_mail_by_filename(struct folder *folder, const char *filename);
 
 /**
  * Find a mail with a given uid (which maps to a filename) in the

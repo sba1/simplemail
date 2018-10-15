@@ -77,10 +77,10 @@ struct Screen *main_get_screen(void);
  * @return 0 on failure
  */
 
-LONG MySetRexxVarFromMsg(STRPTR name, STRPTR value, struct RexxMsg *message)
+STATIC LONG MySetRexxVarFromMsg(CONST_STRPTR name, CONST_STRPTR value, struct RexxMsg *message)
 {
 #ifdef __AMIGAOS4__
-	if (IRexxSys) return SetRexxVarFromMsg(name,value,message);
+	if (IRexxSys) return SetRexxVarFromMsg((char *)name,(char*)value,message);
 	return 0;
 #else
 	return SetRexxVar(message,name,value,strlen(value));
@@ -295,7 +295,7 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 			if (mailwrite_arg.stem)
 			{
 				int stem_len = strlen(mailwrite_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,mailwrite_arg.stem);
@@ -448,7 +448,7 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 			if (getselected_arg.stem)
 			{
 				int stem_len = strlen(getselected_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					int i = 0;
@@ -521,7 +521,7 @@ static void arexx_getmailstat(struct RexxMsg *rxmsg, STRPTR args)
 		if (getmailstat_arg.stem)
 		{
 			int stem_len = strlen(getmailstat_arg.stem);
-			char *stem_buf = malloc(stem_len+20);
+			char *stem_buf = (char *)malloc(stem_len+20);
 			if (stem_buf)
 			{
 				strcpy(stem_buf,getmailstat_arg.stem);
@@ -621,7 +621,7 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 			if (folderinfo_arg.stem)
 			{
 				int stem_len = strlen(folderinfo_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,folderinfo_arg.stem);
@@ -707,7 +707,7 @@ static void arexx_request(struct RexxMsg *rxmsg, STRPTR args)
 		if (request_arg.stem)
 		{
 			int stem_len = strlen(request_arg.stem);
-			char *stem_buf = malloc(stem_len+20);
+			char *stem_buf = (char *)malloc(stem_len+20);
 			if (stem_buf)
 			{
 				strcpy(stem_buf,request_arg.stem);
@@ -753,7 +753,7 @@ static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 			if (requeststring_arg.stem)
 			{
 				int stem_len = strlen(requeststring_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,requeststring_arg.stem);
@@ -805,7 +805,7 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 
 	if ((arg_handle = ParseTemplate("STEM/K,DRAWER,FILE/K,PATTERN/K,TITLE/K,POSITIVE/K,NEGATIVE/K,ACCEPTPATTERN/K,REJECTPATTERN/K,SAVEMODE/S,MULTISELECT/S,DRAWERSONLY/S,NOICONS/S",args,&requestfile_arg)))
 	{
-		struct FileRequester *filereq = AllocAslRequest(ASL_FileRequest,NULL);
+		struct FileRequester *filereq = (struct FileRequester *)AllocAslRequest(ASL_FileRequest,NULL);
 		if (filereq)
 		{
 			UBYTE *acceptpattern = NULL,*rejectpattern = NULL;
@@ -816,7 +816,7 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 			if (requestfile_arg.stem)
 			{
 				stem_len = strlen(requestfile_arg.stem);
-				if ((stem_buf = malloc(stem_len+20)))
+				if ((stem_buf = (char *)malloc(stem_len+20)))
 				{
 					strcpy(stem_buf,requestfile_arg.stem);
 				} else stem_len = 0;
@@ -947,7 +947,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 
 		if (mail)
 		{
-			char *mail_status;
+			const char *mail_status;
 			char *mail_from = mail_get_from_address(mail);
 			char *mail_to = mail_get_to_address(mail);
 			char *mail_replyto = mail_get_replyto_address(mail);
@@ -975,8 +975,8 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 			mail_index = folder_get_index_of_mail(main_get_folder(),mail);
 
 			{
-				char *date = malloc(LEN_DATSTRING);
-				char *time = malloc(LEN_DATSTRING);
+				char *date = (char *)malloc(LEN_DATSTRING);
+				char *time = (char *)malloc(LEN_DATSTRING);
 				struct DateTime dt;
 
 				if (date && time)
@@ -989,7 +989,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 					dt.dat_StrDate = date;
 					dt.dat_StrTime = time;
 					DateToStr(&dt);
-					if ((mail_date = malloc(2*LEN_DATSTRING)))
+					if ((mail_date = (char *)malloc(2*LEN_DATSTRING)))
 					sprintf(mail_date,"%s %s",date,time);
 				}
 				free(date);
@@ -1005,7 +1005,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 			if (mailinfo_arg.stem)
 			{
 				int stem_len = strlen(mailinfo_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,mailinfo_arg.stem);
@@ -1269,7 +1269,7 @@ static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 							if (newmailfile_arg.stem)
 							{
 								int stem_len = strlen(newmailfile_arg.stem);
-								char *stem_buf = malloc(stem_len+20);
+								char *stem_buf = (char *)malloc(stem_len+20);
 								if (stem_buf)
 								{
 									strcpy(stem_buf,newmailfile_arg.stem);
@@ -1333,7 +1333,7 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 			if (mailread_arg.stem)
 			{
 				int stem_len = strlen(mailread_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,mailread_arg.stem);
@@ -1392,7 +1392,7 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 			if (readinfo_arg.stem)
 			{
 				int stem_len = strlen(readinfo_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					int i, count = 0;
@@ -1542,7 +1542,7 @@ static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
 			if (requestfolder_arg.stem)
 			{
 				int stem_len = strlen(requestfolder_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,requestfolder_arg.stem);
@@ -1598,7 +1598,7 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 			if (mailadd_arg.stem)
 			{
 				int stem_len = strlen(mailadd_arg.stem);
-				char *stem_buf = malloc(stem_len+20);
+				char *stem_buf = (char *)malloc(stem_len+20);
 				if (stem_buf)
 				{
 					strcpy(stem_buf,mailadd_arg.stem);
@@ -1671,7 +1671,7 @@ static void arexx_mailsetstatus(struct RexxMsg *rxmsg, STRPTR args)
 
 			if (new_status != -1)
 			{
-				folder_set_mail_status(f,mail,new_status);
+				folder_set_mail_status(f,mail,(mail_status_t)new_status);
 				main_refresh_mail(mail);
 			}
 		}
@@ -1739,7 +1739,7 @@ static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
 		if (openmessage_arg.stem)
 		{
 			int stem_len = strlen(openmessage_arg.stem);
-			char *stem_buf = malloc(stem_len+20);
+			char *stem_buf = (char *)malloc(stem_len+20);
 			if (stem_buf)
 			{
 				strcpy(stem_buf,openmessage_arg.stem);

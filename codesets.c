@@ -1154,7 +1154,7 @@ void codesets_cleanup(void)
 
 /*****************************************************************************/
 
-struct codeset *codesets_find(char *name)
+struct codeset *codesets_find(const char *name)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
 
@@ -1315,7 +1315,7 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
 
 /*****************************************************************************/
 
-utf8 *utf8create(void *from, char *charset)
+utf8 *utf8create(void *from, const char *charset)
 {
   /* utf8create_len() will stop on a null byte */
 	return utf8create_len(from,charset,0x7fffffff);
@@ -1362,7 +1362,7 @@ int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
 
 /*****************************************************************************/
 
-utf8 *utf8create_len(void *from, char *charset, int from_len)
+utf8 *utf8create_len(void *from, const char *charset, int from_len)
 {
 	int dest_size = 0;
 	char *dest;

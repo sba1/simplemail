@@ -96,7 +96,7 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem((APTR)&tstate)))
+	while ((tag = NextTagItem(&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{
@@ -115,7 +115,7 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 									len += strlen(array[cnt])+1; /* for the \n */
 									cnt++;
 								}
-								if ((buf = malloc(len+2)))
+								if ((buf = (char *)malloc(len+2)))
 								{
 									char *next_buf = buf;
 

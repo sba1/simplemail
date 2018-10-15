@@ -117,7 +117,7 @@ APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 #if defined(__AMIGAOS4__)
 
-struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *super_mcc, int instDataSize, ULONG (*dispatcher)(struct IClass *, Object *, Msg))
 {
 	struct MUI_CustomClass *cl;
 

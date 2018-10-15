@@ -345,7 +345,7 @@ static void appicon_load_position(void)
 	}
 
 	/* now, try to load the position from the appicon config file */
-	if ((buf = malloc(512)))
+	if ((buf = (char *)malloc(512)))
 	{
 		FILE *fh;
 

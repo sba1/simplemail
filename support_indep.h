@@ -574,6 +574,6 @@ char *utf8strdup(char *str, int utf8);
  * @param fname
  * @return
  */
-char *identify_file(char *fname);
+const char *identify_file(const char *fname);
 
 #endif

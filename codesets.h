@@ -74,7 +74,7 @@ void codesets_cleanup(void);
  * @param name the name of
  * @return the codeset
  */
-struct codeset *codesets_find(char *name);
+struct codeset *codesets_find(const char *name);
 
 /**
  * Determines number of characters that cannot be converted when a given
@@ -171,7 +171,7 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n);
  * @param charset
  * @return
  */
-utf8 *utf8create(void *from, char *charset);
+utf8 *utf8create(void *from, const char *charset);
 
 /**
  * Creates a uf8 string from a different one. from is the iso string and
@@ -182,7 +182,7 @@ utf8 *utf8create(void *from, char *charset);
  * @param from_len
  * @return
  */
-utf8 *utf8create_len(void *from, char *charset, int from_len);
+utf8 *utf8create_len(void *from, const char *charset, int from_len);
 
 /**
  * Converts a string with a given codeset to a utf8 representation.

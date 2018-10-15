@@ -282,7 +282,7 @@ STATIC ULONG AddressEntryList_Set(struct IClass *cl, Object *obj, struct opSet *
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{
@@ -331,7 +331,7 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	{
 		if (data->visible_group && !array_contains_utf8(entry->group_array,data->visible_group))
 		{
-			struct entry_node *node = malloc(sizeof(*node));
+			struct entry_node *node = (struct entry_node *)malloc(sizeof(*node));
 			if (node)
 			{
 				if ((node->entry = addressbook_duplicate_entry_new(entry)))

@@ -70,7 +70,7 @@ static void error_window_add_logg(logg_t l)
 {
 	struct error_node *node;
 
-	if (!(node = malloc(sizeof(*node))))
+	if (!(node = (struct error_node *)malloc(sizeof(*node))))
 		return;
 
 	memset(node, 0, sizeof(*node));
@@ -229,7 +229,7 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 		return;
 	}
 	msg->strings[0] = sm_get_time_str(error->date);
-	msg->strings[1] = error->severity==INFO?"I":"E";
+	msg->strings[1] = error->severity==INFO?(char*)"I":(char*)"E";
 	msg->strings[2] = error->text;
 }
 

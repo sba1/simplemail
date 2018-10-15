@@ -417,7 +417,7 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
-	if ((new_entry = malloc(sizeof(*new_entry))))
+	if ((new_entry = (struct addressbook_entry_new *)malloc(sizeof(*new_entry))))
 	{
 		LONG pos;
 		int i;
@@ -1137,7 +1137,7 @@ static void group_window_ok(struct Group_Data **pdata)
 
 	set(data->wnd, MUIA_Window_Open, FALSE);
 
-	if ((new_group = malloc(sizeof(*new_group))))
+	if ((new_group = (struct addressbook_group *)malloc(sizeof(*new_group))))
 	{
 		memset(new_group,0,sizeof(*new_group));
 
@@ -1467,7 +1467,7 @@ static void addressbookwnd_init(void)
 	/* translate the menu entries */
 	if (!addressbook_newmenu)
 	{
-		if (!(addressbook_newmenu = malloc(sizeof(nm_untranslated)))) return;
+		if (!(addressbook_newmenu = (struct NewMenu *)malloc(sizeof(nm_untranslated)))) return;
 		memcpy(addressbook_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)

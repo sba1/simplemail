@@ -1039,15 +1039,16 @@ char *utf8strdup(char *str, int utf8)
 
 /*****************************************************************************/
 
-char *identify_file(char *fname)
+const char *identify_file(const char *fname)
 {
-	char *ctype = "application/octet-stream";
+	const char *ctype = "application/octet-stream";
 	FILE *fh;
 
 	if ((fh = fopen(fname, "r")))
 	{
 		int len;
-		static char buffer[1024], *ext;
+		static char buffer[1024];
+		const char *ext;
 
 		len = fread(buffer, 1, 1023, fh);
 		buffer[len] = 0;

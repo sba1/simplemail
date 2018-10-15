@@ -384,13 +384,13 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		/* Initialize a bitmap where all plane pointers points to the mask */
 		InitBitMap(&hook.maskBitMap,src_depth,GetBitMapAttr(srcBitMap,BMA_WIDTH),GetBitMapAttr(srcBitMap,BMA_HEIGHT));
 		while (src_depth)
-			hook.maskBitMap.Planes[--src_depth] = bltMask;
+			hook.maskBitMap.Planes[--src_depth] = (PLANEPTR)bltMask;
 
 		/* Blit onto the Rastport */
 		DoHookClipRects(&hook.hook,destRP,&rect);
 	} else
 	{
-		BltMaskBitMapRastPort(srcBitMap, xSrc, ySrc, destRP, xDest, yDest, xSize, ySize, minterm, bltMask);
+		BltMaskBitMapRastPort(srcBitMap, xSrc, ySrc, destRP, xDest, yDest, xSize, ySize, minterm, (PLANEPTR)bltMask);
 	}
 }
 

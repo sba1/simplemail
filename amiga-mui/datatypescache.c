@@ -280,9 +280,9 @@ void dt_init(void)
 			{
 				int filename_len = filename_end - buf + strlen(gui_get_images_directory()) + 20;
 
-				if ((filename = malloc(filename_len)))
+				if ((filename = (char *)malloc(filename_len)))
 				{
-					struct icon_desc *node = malloc(sizeof(struct icon_desc));
+					struct icon_desc *node = (struct icon_desc *)malloc(sizeof(struct icon_desc));
 					if (node)
 					{
 						char *lastchar;
@@ -301,7 +301,7 @@ void dt_init(void)
 						/* Optional mason name */
 						if (*lastchar == ',')
 						{
-							char *masonname = malloc(strlen(lastchar) + 12);
+							char *masonname = (char *)malloc(strlen(lastchar) + 12);
 							if (masonname)
 							{
 								strcpy(masonname,"TBIMAGES:");

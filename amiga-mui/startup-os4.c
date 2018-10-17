@@ -107,7 +107,7 @@ int _start(void)
 	return rc;
 }
 
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
 {
 	struct Library *lib = IExec->OpenLibrary(name,version);
 	struct Interface *iface;
@@ -125,7 +125,7 @@ struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_p
 
 void CloseLibraryInterface(struct Library *lib, void *interface)
 {
-	IExec->DropInterface(interface);
+	IExec->DropInterface((struct Interface *)interface);
 	IExec->CloseLibrary(lib);
 }
 
@@ -719,7 +719,7 @@ void *malloc (size_t size)
 
 	IExec->ObtainSemaphore(&pool_sem);
 #ifndef MEMGRIND
-	mem = IExec->AllocPooled(pool,memsize);
+	mem = (ULONG *)IExec->AllocPooled(pool,memsize);
 #else
 	{
 		struct page *p = first_page;
@@ -933,7 +933,7 @@ FILE *fopen(const char *filename, const char *mode)
 	/* erase tempfile indication (is erased by fclose, but it's better to this twice) */
 	file_is_temp[_file] = 0;
 
-	file = malloc(sizeof(struct myfile));
+	file = (struct myfile *)malloc(sizeof(struct myfile));
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
 
@@ -1270,7 +1270,7 @@ DIR *opendir(const char *name)
 {
 	BPTR dh;
 	struct FileInfoBlock *fib;
-	struct mydir *dir = malloc(sizeof(*dir) + sizeof(struct dirent));
+	struct mydir *dir = (struct mydir *)malloc(sizeof(*dir) + sizeof(struct dirent));
 	if (!dir) return NULL;
 
 	if (!(dh = IDOS->Lock((STRPTR)name,ACCESS_READ)))
@@ -1279,7 +1279,7 @@ DIR *opendir(const char *name)
 		return NULL;
 	}
 
-	if (!(fib = IDOS->AllocDosObject(DOS_FIB,NULL)))
+	if (!(fib = (struct FileInfoBlock *)IDOS->AllocDosObject(DOS_FIB,NULL)))
 	{
 		IDOS->UnLock(dh);
 		free(dir);

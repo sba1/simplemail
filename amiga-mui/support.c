@@ -51,7 +51,7 @@
 #include "support.h"
 #include "support_indep.h"
 
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 
 #ifndef __AMIGAOS4__
@@ -165,7 +165,7 @@ char *sm_path_part(char *filename)
 
 /*****************************************************************************/
 
-void sm_show_ascii_file(char *folder, char *filename)
+void sm_show_ascii_file(const char *folder, const char *filename)
 {
 	BPTR lock;
 	int len;
@@ -182,7 +182,7 @@ void sm_show_ascii_file(char *folder, char *filename)
 	if (!dirname) return;
 
 	len = strlen(dirname)+strlen(filename) + 6;
-	if (!(buf = malloc(len+40)))
+	if (!(buf = (char *)malloc(len+40)))
 	{
 		FreeVec(dirname);
 		return;
@@ -570,7 +570,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 #endif
 #endif
 
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL) || defined(__cplusplus)
 			const
 #endif
 			unsigned char *p = (unsigned char*)buf;
@@ -581,7 +581,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7,AmiSSLBase,IAmiSSL);
 				if (pkcs7_data)
 				{
-					char *mem = malloc(pkcs7_data->d.data->length+1);
+					char *mem = (char *)malloc(pkcs7_data->d.data->length+1);
 					if (*dest_ptr)
 					{
 						memcpy(mem,pkcs7_data->d.data->data,pkcs7_data->d.data->length);

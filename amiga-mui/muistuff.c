@@ -30,15 +30,10 @@
 #include <proto/exec.h>
 
 #include "compiler.h"
+#include "hookentry.h"
 #include "muistuff.h"
 
 #include "debug.h"
-
-/* HookEntry stuff */
-#ifdef __AMIGAOS4__
-extern void hookEntry(void);
-extern ULONG muiDispatcherEntry(void);
-#endif
 
 /*****************************************************************************/
 
@@ -54,7 +49,7 @@ IPTR xget(Object * obj, ULONG attribute)
 #ifdef __AMIGAOS4__
 #include <stdarg.h>
 
-APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
+Object *VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 {
 	Object *o;
 	va_list args;
@@ -117,16 +112,16 @@ APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 #if defined(__AMIGAOS4__)
 
-struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *super_mcc, int instDataSize, ULONG (*dispatcher)(struct IClass *, Object *, Msg))
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, ULONG (*dispatcher)(struct IClass *, Object *, Msg))
 {
 	struct MUI_CustomClass *cl;
 
 	if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 	{
-		cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
+		cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, (void *)dispatcher);
 	} else
 	{
-		if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, &muiDispatcherEntry)))
+		if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, (void *) &muiDispatcherEntry)))
 		{
 			cl->mcc_Class->cl_UserData = (ULONG)dispatcher;
 		}

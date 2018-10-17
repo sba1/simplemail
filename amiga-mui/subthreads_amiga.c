@@ -1147,7 +1147,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
 		thread_t thread = thread_get();
-		struct TimerMessage *timer_msg = AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
+		struct TimerMessage *timer_msg = (struct TimerMessage *)AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
 		if (timer_msg)
 		{
 			timer_msg->time_req = *thread->timer_req;
@@ -1195,7 +1195,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 		if (tmsg->arg1 && argcount >= 1)
 		{
-			STRPTR str = AllocVec(strlen((char*)tmsg->arg1)+1,MEMF_PUBLIC);
+			STRPTR str = (STRPTR)AllocVec(strlen((char*)tmsg->arg1)+1,MEMF_PUBLIC);
 			if (str)
 			{
 				strcpy(str,(char*)tmsg->arg1);
@@ -1249,7 +1249,7 @@ struct semaphore_s
 
 semaphore_t thread_create_semaphore(void)
 {
-	semaphore_t sem = malloc(sizeof(struct semaphore_s));
+	semaphore_t sem = (semaphore_t)malloc(sizeof(struct semaphore_s));
 	if (sem)
 	{
 		InitSemaphore(&sem->sem);

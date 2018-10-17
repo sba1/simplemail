@@ -133,23 +133,23 @@ static const struct MUIS_SMToolbar_Button sm_mainwnd_buttons[] =
     {PIC(1,8), SM_MAINWND_BUTTON_MOVE,       0, N_("_Move"), NULL, "MailMove"},
     {PIC(1,4), SM_MAINWND_BUTTON_DELETE,     0, N_("De_lete"), NULL,"MailDelete"},
     {PIC(1,6), SM_MAINWND_BUTTON_GETADDRESS, 0, N_("Ge_tAdd"), NULL,"MailGetAddress"},
-    {MUIV_SMToolbar_Space},
+    {(ULONG)MUIV_SMToolbar_Space},
     {PIC(1,9), SM_MAINWND_BUTTON_NEW,     0, N_("_New"), NULL,"MailNew"},
     {PIC(1,5), SM_MAINWND_BUTTON_REPLY,   0, N_("_Reply"),NULL,"MailReply"},
     {PIC(2,3), SM_MAINWND_BUTTON_FORWARD, 0, N_("For_ward"),NULL,"MailForward"},
-    {MUIV_SMToolbar_Space},
+    {(ULONG)MUIV_SMToolbar_Space},
     {PIC(2,5), SM_MAINWND_BUTTON_FETCH, 0, N_("_Fetch"),NULL,"MailsFetch"},
     {PIC(2,7), SM_MAINWND_BUTTON_SEND,  0, N_("_Send"),NULL,"MailsSend"},
-    {MUIV_SMToolbar_Space},
+    {(ULONG)MUIV_SMToolbar_Space},
     {PIC(3,5), SM_MAINWND_BUTTON_SEARCH,  0, N_("Searc_h"),N_("Opens a window where you can search through your mail folder."),"Search"},
     {PIC(0,9), SM_MAINWND_BUTTON_FILTER,  0, N_("F_ilter"),N_("Process every mail within the current selected folder via the filters."),"Filter"},
     {PIC(3,6), SM_MAINWND_BUTTON_SPAM,    0, N_("S_pam"),N_("Checks the current selected folder for spam.\nIf a potential spam mail has been found it will be marked."),"SpamCheck"},
     {PIC(3,7), SM_MAINWND_BUTTON_ISOLATE, 0, N_("Is_olate"),N_("Isolates all spam marked mails within the current selected folder."),"SpamIsolate"},
-    {MUIV_SMToolbar_Space},
+    {(ULONG)MUIV_SMToolbar_Space},
     {PIC(0,1), SM_MAINWND_BUTTON_ADDRESSBOOK, 0, N_("_Abook"),NULL,"Addressbook"},
     {PIC(1,0), SM_MAINWND_BUTTON_EDITFILTER,  0, N_("Filters"),N_("Opens a window where the filters can be edited."),"FilterEdit"},
     {PIC(0,3), SM_MAINWND_BUTTON_CONFIG,      0, N_("_Config"),NULL,"Config"},
-    {MUIV_SMToolbar_End},
+    {(ULONG)MUIV_SMToolbar_End},
 };
 
 /*****************************************************/
@@ -624,7 +624,7 @@ static void menu_execute_script(int *val_ptr)
 	int val = *val_ptr;
 	if (val == -1)
 	{
-		struct FileRequester *file_req = AllocAslRequest(ASL_FileRequest, NULL);
+		struct FileRequester *file_req = (struct FileRequester *)AllocAslRequest(ASL_FileRequest, NULL);
 		if (file_req)
 		{
 			static char *initial_drawer;
@@ -964,9 +964,9 @@ int main_window_init(void)
 
 	/* translate the menu entries */
 #ifdef __AMIGAOS4__
-	if (!(main_newmenu = AllocVec(sizeof(nm_untranslated),MEMF_SHARED))) return 0;
+	if (!(main_newmenu = (struct NewMenu *)AllocVec(sizeof(nm_untranslated),MEMF_SHARED))) return 0;
 #else
-	if (!(main_newmenu = AllocVec(sizeof(nm_untranslated),MEMF_ANY))) return 0;
+	if (!(main_newmenu = (struct NewMenu *)AllocVec(sizeof(nm_untranslated),MEMF_ANY))) return 0;
 #endif
 	memcpy(main_newmenu,nm_untranslated,sizeof(nm_untranslated));
 

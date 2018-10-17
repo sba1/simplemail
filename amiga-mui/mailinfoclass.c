@@ -275,8 +275,8 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 
 	char buf[64];
 
-	if (!(f = malloc(sizeof(*f)))) return 0;
-	if (!(t = malloc(sizeof(*t))))
+	if (!(f = (struct field *)malloc(sizeof(*f)))) return 0;
+	if (!(t = (struct text_node *)malloc(sizeof(*t))))
 	{
 		free(f);
 		return 0;
@@ -314,7 +314,7 @@ static struct field *field_add_addresses(struct list *list, char *name, struct a
 
 	char buf[64];
 
-	if (!(f = malloc(sizeof(*f)))) return 0;
+	if (!(f = (struct field *)malloc(sizeof(*f)))) return 0;
 
 	mystrlcpy(buf,name,sizeof(buf)-1);
 	strcat(buf,":");
@@ -946,7 +946,7 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	struct TagItem *tstate, *tag;
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 

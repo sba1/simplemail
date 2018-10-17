@@ -276,7 +276,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
 
-	for ((tags = msg->ops_AttrList); (tag = NextTagItem((APTR)&tags));)
+	for ((tags = msg->ops_AttrList); (tag = NextTagItem(&tags));)
 	{
 		switch (tag->ti_Tag)
 		{

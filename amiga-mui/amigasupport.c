@@ -43,17 +43,10 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "debug.h"
+#include "hookentry.h"
 #include "support_indep.h"
 
-#ifdef __AMIGAOS4__
-extern ULONG hookEntry();
-#else
-#if defined(__MORPHOS__) || defined(__AROS__)
-#define hookEntry HookEntry
-#endif
-#endif
-
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))

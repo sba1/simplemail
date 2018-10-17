@@ -335,7 +335,7 @@ STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *ms
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 

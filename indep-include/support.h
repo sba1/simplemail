@@ -83,7 +83,7 @@ char *sm_path_part(char *filename);
  * @param filename defines the filename of the document to be displayed,
  *  relative to the given folder to be displayed.
  */
-void sm_show_ascii_file(char *folder, char *filename);
+void sm_show_ascii_file(const char *folder, const char *filename);
 
 /**
  * Play a sound asynchronously.

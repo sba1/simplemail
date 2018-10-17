@@ -87,15 +87,15 @@ static const struct MUIS_SMToolbar_Button sm_readwnd_buttons[] =
 {
 	{PIC(2,1), SM_READWND_BUTTON_PREV,    0, N_("_Prev"), NULL, "MailPrev"},
 	{PIC(2,0), SM_READWND_BUTTON_NEXT,    0, N_("_Next"), NULL, "MailNext"},
-	{MUIV_SMToolbar_Space},
+	{(ULONG)MUIV_SMToolbar_Space},
 	{PIC(2,4), SM_READWND_BUTTON_SAVE,    0, N_("_Save"), NULL, "MailSave"},
 	{PIC(2,9), SM_READWND_BUTTON_PRINT,   0, N_("Pr_int"), NULL, "Print"},
-	{MUIV_SMToolbar_Space},
+	{(ULONG)MUIV_SMToolbar_Space},
 	{PIC(1,8), SM_READWND_BUTTON_MOVE,    0, N_("_Move"), NULL, "MailMove"},
 	{PIC(1,4), SM_READWND_BUTTON_DELETE,  0, N_("_Delete"), NULL, "MailDelete"},
 	{PIC(1,5), SM_READWND_BUTTON_REPLY,   0, N_("_Reply"), NULL, "MailReply"},
 	{PIC(2,3), SM_READWND_BUTTON_FORWARD, 0, N_("_Forward"), NULL, "MailForward"},
-	{MUIV_SMToolbar_End},
+	{(ULONG)MUIV_SMToolbar_End},
 };
 
 /*****************************************************/
@@ -181,7 +181,7 @@ static int read_cleanup(struct Read_Data *data)
 			do
 			{
 				struct ExAllData *ead;
-				more = ExAll(dirlock, EAData, 1024, ED_NAME, eac);
+				more = ExAll(dirlock, (struct ExAllData *)EAData, 1024, ED_NAME, eac);
 				if ((!more) && (IoErr() != ERROR_NO_MORE_ENTRIES)) break;
 				if (eac->eac_Entries == 0) continue;
 
@@ -591,8 +591,8 @@ static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, 
 				void *cont; /* mails content */
 				int cont_len;
 
-				char *charset;
-				char *user_charset;
+				const char *charset;
+				const char *user_charset;
 
 				if (!(charset = mail->content_charset)) charset = "ISO-8859-1";
 				user_charset = user.config.default_codeset?user.config.default_codeset->name:"ISO-8858-1";
@@ -1348,7 +1348,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	if (!read_newmenu)
 	{
 		/* translate the menu entries */
-		if (!(read_newmenu = malloc(sizeof(nm_untranslated)))) return -1;
+		if (!(read_newmenu = (struct NewMenu *)malloc(sizeof(nm_untranslated)))) return -1;
 		memcpy(read_newmenu, nm_untranslated,sizeof(nm_untranslated));
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
@@ -1482,7 +1482,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 
 			data->html_simplehtml = html_simplehtml;
 #endif
-			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
+			data->file_req = (struct FileRequester *)MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 			data->attachments_group = attachments_group;
 			data->num = num;
 			data->direction = 1; /* next */

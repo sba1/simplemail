@@ -31,6 +31,14 @@
 #include "compiler.h"
 #endif
 
+#ifndef PROTO_INTUITION_H
+#include <proto/intuition.h>
+#endif
+
+#ifndef LIBRARIES_MUI_H
+#include <libraries/mui.h>
+#endif
+
 /* useful MUI supports */
 
 /**
@@ -53,7 +61,7 @@ IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...) __stackparm;
 APTR MyNewObject (struct IClass *cl, CONST_STRPTR id, Tag tag1, ...) __stackparm;
 #else
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
-APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
+Object *VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
 #endif
 
 /**

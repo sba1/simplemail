@@ -108,7 +108,7 @@ struct imap_folder_entry
 
 STATIC ASM SAVEDS APTR imap_folders_construct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1,struct imap_folder_entry *entry))
 {
-	struct imap_folder_entry *new_entry = malloc(sizeof(*entry));
+	struct imap_folder_entry *new_entry = (struct imap_folder_entry *)malloc(sizeof(*entry));
 	if (new_entry)
 	{
 		new_entry->name = (utf8*)mystrdup((char*)entry->name);
@@ -601,7 +601,7 @@ void folder_edit(struct folder *f)
 		struct string_node *node;
 
 		int buf_len = mystrlen(f->imap_server) + mystrlen(f->imap_path) + mystrlen(f->imap_user) + 40;
-		char *buf = malloc(buf_len);
+		char *buf = (char *)malloc(buf_len);
 
 		if (buf)
 		{
@@ -730,7 +730,7 @@ void folder_edit_new_path(char *init_path)
 
 	if (init_path)
 	{
-		char *buf = malloc(strlen(FilePart(init_path))+1);
+		char *buf = (char *)malloc(strlen(FilePart(init_path))+1);
 		if (buf)
 		{
 			strcpy(buf,FilePart(init_path));

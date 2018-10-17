@@ -68,8 +68,6 @@ struct Interface *IGraphics;
 struct Interface *ILayers;
 struct Interface *IExpat;
 
-struct Locale *DefaultLocale;
-
 int main(int argc, char *argv[]);
 
 static int start(struct WBStartup *wbs);
@@ -147,8 +145,6 @@ static int start(struct WBStartup *wbs)
 
 		if (open_libs())
 		{
-			DefaultLocale = ILocale->OpenLocale(NULL);
-
 			if (init_mem())
 			{
 				BPTR dirlock = IDOS->DupLock(pr->pr_CurrentDir);
@@ -165,7 +161,6 @@ static int start(struct WBStartup *wbs)
 					IDOS->UnLock(IDOS->CurrentDir(odir));
 				}
 			}
-			if (DefaultLocale) ILocale->CloseLocale(DefaultLocale);
 			close_libs();
 		}
 

@@ -81,6 +81,9 @@ static void deinit_io(void);
 
 static const char __attribute((__used__)) stack[] = "$STACK: 60000";
 
+#ifdef __cplusplus
+extern "C"
+#endif
 int _start(void)
 {
 	struct Process *pr;

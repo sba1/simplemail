@@ -27,6 +27,46 @@
 #include "coroutines.h"
 #endif
 
+#if __cplusplus >= 201103L
+/* This is for the support to let the compiler check that the types of the
+ * various varargs functions are correct. We implement some of them on our own
+ * template classes so avoid the need to include too many files.
+ */
+#include <type_traits>
+
+namespace simplemail
+{
+
+template<typename... As>
+struct tuple {
+};
+
+template<typename A, typename... As>
+struct tuple<A, As...> {
+};
+
+template<>
+struct tuple<> {
+};
+
+template<typename A, typename B>
+struct is_convertible;
+
+template<typename A, typename... As, typename B, typename... Bs>
+struct is_convertible<tuple<A, As...>, tuple<B, Bs...>>
+{
+    static constexpr bool convertible = is_convertible<tuple<As...>,tuple<Bs...>>::convertible && std::is_convertible<B, A>::value;
+};
+
+template<>
+struct is_convertible<tuple<>, tuple<>>
+{
+    static constexpr bool convertible = true;
+};
+}
+
+#endif
+
 #define THREAD_FUNCTION(x) ((int (*)(void*))x)
 
 /**
@@ -140,8 +180,15 @@ int thread_aborted(void);
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_call_function_sync(thread_t, R (*Func)(A...), int argcount, A... args);
+template<typename R, typename... A, typename... B>
+int thread_call_function_sync(thread_t thread, R (*function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_function_sync(thread, (void *)function, argcount, args...);
+}
 #endif
 
 /**
@@ -155,8 +202,15 @@ int thread_call_function_sync(thread_t, R (*Func)(A...), int argcount, A... args
 int thread_call_function_async(thread_t thread, void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_call_function_async(thread_t, R (*Func)(A...), int argcount, A... args);
+template<typename R, typename... A, typename... B>
+int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_function_async(thread, (void *)function, argcount, args...);
+}
 #endif
 
 /**
@@ -185,8 +239,16 @@ int thread_call_function_async_future(future_t *future_t, thread_t thread, void 
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_call_parent_function_sync(int *success, R (*Func)(A...), int argcount, A... args);
+template<typename R, typename... A, typename... B>
+int thread_call_parent_function_sync(int *success, R (function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_parent_function_sync(success, (void *)function, argcount, args...);
+
+}
 #endif
 
 /**
@@ -200,8 +262,15 @@ int thread_call_parent_function_sync(int *success, R (*Func)(A...), int argcount
 int thread_call_parent_function_async_string(void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_call_parent_function_async_string(R (*Func)(const char *, A...), int argcount, const char *str, A... args);
+template<typename R, typename... A, typename... B>
+static inline int thread_call_parent_function_async_string(R (*function)(const char *, A...), int argcount, const char *str, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_parent_function_async_string((void *)function, argcount, str, args...);
+}
 #endif
 
 

@@ -301,8 +301,15 @@ int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct c
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, R (*Func)(A...), int argcount, A... args);
+template<typename R, typename... A, typename... B>
+static inline int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, R (*function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_parent_function_sync_timer_callback(timer_callback, timer_data, millis, (void *)function, argcount, args...);
+}
 #endif
 
 /**
@@ -326,8 +333,15 @@ int thread_push_function(void *function, int argcount, ...);
 int thread_push_function_delayed(int millis, void *function, int argcount, ...);
 
 #if __cplusplus >= 201103L
-template<typename R, typename... A>
-int thread_push_function_delayed(int millis, R (*Func)(A...), int argcount, A... args);
+template<typename R, typename... A, typename... B>
+static inline int thread_push_function_delayed(int millis, R (*function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_push_function_delayed(millis, function, argcount, args...);
+}
 #endif
 
 /**

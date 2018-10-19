@@ -391,4 +391,12 @@ char *utf8topunycode(const utf8 *str, int sourcelen);
  */
 utf8 *punycodetoutf8(const char *source, int sourcelen);
 
+/**
+ * Return wether the given sequence between source and source end (inclusive)
+ * is a legal one.
+ *
+ * @return 1 or 0 depending wether it is legal or not.
+ */
+int utf8islegal(const char *source, const char *sourceend);
+
 #endif

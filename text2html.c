@@ -73,10 +73,6 @@ const static struct smily smily[] =
 	{":-e","smily_angry"}
 };
 
-/* from codesets.c */
-/* typedef unsigned char	Boolean; */
-unsigned char isLegalUTF8Sequence(utf8 *source, utf8 *sourceEnd);
-
 static int write_unicode(utf8 *src, string *str)
 {
 	int len;
@@ -377,7 +373,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					unsigned int unicode;
 					int len = 0;
 					/* check if it really could be a utf8 char */
-					if (isLegalUTF8Sequence((utf8*)buffer, (utf8*)(buffer+buffer_len)))
+					if (utf8islegal((utf8*)buffer, (utf8*)(buffer+buffer_len)))
 					{
 						len = utf8tochar((utf8*)buffer, &unicode, user.config.default_codeset);
 					}

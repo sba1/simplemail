@@ -174,7 +174,14 @@ ConversionResult ConvertUTF8toUTF32 (
 		UTF8** sourceStart, UTF8* sourceEnd,
 		UTF32** targetStart, const UTF32* targetEnd, ConversionFlags flags);
 
-Boolean isLegalUTF8Sequence(UTF8 *source, UTF8 *sourceEnd);
+static Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
+
+/* --------------------------------------------------------------------- */
+
+int utf8islegal(const char *source, const char *sourceend)
+{
+	return isLegalUTF8Sequence((const UTF8*)source, (const UTF8*)sourceend);
+}
 
 /* --------------------------------------------------------------------- */
 
@@ -431,9 +438,9 @@ ConversionResult ConvertUTF16toUTF8 (
  * definition of UTF-8 goes up to 4-byte sequences.
  */
 
-static Boolean isLegalUTF8(UTF8 *source, int length) {
+static Boolean isLegalUTF8(const UTF8 *source, int length) {
 	UTF8 a;
-	UTF8 *srcptr = source+length;
+	const UTF8 *srcptr = source+length;
 	switch (length) {
 	default: return false;
 		/* Everything else falls through when "true"... */
@@ -459,7 +466,7 @@ static Boolean isLegalUTF8(UTF8 *source, int length) {
  * Exported function to return whether a UTF-8 sequence is legal or not.
  * This is not used here; it's just exported.
  */
-Boolean isLegalUTF8Sequence(UTF8 *source, UTF8 *sourceEnd) {
+Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd) {
 	int length = trailingBytesForUTF8[*source]+1;
 	if (source+length > sourceEnd) {
 	    return false;

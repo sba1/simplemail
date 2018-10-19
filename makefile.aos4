@@ -4,6 +4,9 @@
 # Define USE_OPENSSL if you want to compile using OpenSSL.
 # Otherwise, AmiSSL is used.
 #
+# Define USE_CPLUSPLUS if you want to compile everything with g++
+# instead of gcc.
+#
 
 # If Kickstart isn't defined, we don't run on AmigaOS
 ifndef Kickstart
@@ -20,7 +23,13 @@ MKDIR = makedir
 DATE =
 endif
 
+ifndef USE_CPLUSPLUS
 CC     = $(CROSS_COMPILE)gcc
+CFLAGS_LANG = -std=c11 -Wdeclaration-after-statement
+else
+CC     = $(CROSS_COMPILE)g++
+CFLAGS_LANG = -std=c++17
+endif
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as
 LD     = $(CROSS_COMPILE)ld
@@ -90,8 +99,7 @@ CFLAGS = \
 	-Wno-deprecated-declarations\
 	-fno-strict-aliasing\
 	-mcrt=clib2\
-	-std=c11\
-	-Wdeclaration-after-statement\
+	$(CFLAGS_LANG) \
 	-Wstack-usage=2048\
 	$(CFLAGS_PERMISSIVE)
 

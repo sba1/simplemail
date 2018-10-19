@@ -48,9 +48,6 @@
 #include <proto/amissl.h>
 #include <proto/amisslmaster.h>
 
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
-
 #endif
 
 #include "version.h"

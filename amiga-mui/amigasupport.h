@@ -25,6 +25,9 @@
 
 #include <dos/dos.h>
 
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+
 void SecondsToString( char *buf, unsigned int seconds);
 void SecondsToStringLong( char *buf, unsigned int seconds);
 void SecondsToDateString( char *buf, unsigned int seconds);

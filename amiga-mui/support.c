@@ -51,9 +51,6 @@
 #include "support.h"
 #include "support_indep.h"
 
-struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
-
 #ifndef __AMIGAOS4__
 void kprintf(char *, ...);
 #endif

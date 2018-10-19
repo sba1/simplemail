@@ -46,8 +46,39 @@
 #include "hookentry.h"
 #include "support_indep.h"
 
-struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
+#ifdef __AMIGAOS4__
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
+{
+	struct Library *lib = OpenLibrary(name,version);
+	struct Interface *iface;
+	if (!lib) return NULL;
+
+	iface = GetInterface(lib,"main",1,NULL);
+	if (!iface)
+	{
+		CloseLibrary(lib);
+		return NULL;
+	}
+	*((struct Interface**)interface_ptr) = iface;
+	return lib;
+}
+
+void CloseLibraryInterface(struct Library *lib, void *interface)
+{
+	DropInterface((struct Interface *)interface);
+	CloseLibrary(lib);
+}
+#else
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
+{
+	return OpenLibrary(name,version);
+}
+
+void CloseLibraryInterface(struct Library *lib, void *interface)
+{
+	CloseLibrary(lib);
+}
+#endif
 
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
 {

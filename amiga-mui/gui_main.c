@@ -119,24 +119,12 @@ struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
 struct Interface *ITTEngine;
 struct CyberGfxIFace *ICyberGfx;
-struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
 #else
 void *IMUIMaster;
 void *IRexxSys;
 void *ISimpleHTML;
 void *ITTEngine;
 void *ICyberGfx;
-
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
-{
-	return OpenLibrary(name,version);
-}
-
-void CloseLibraryInterface(struct Library *lib, void *interface)
-{
-	CloseLibrary(lib);
-}
 #endif
 
 struct Locale *DefaultLocale;

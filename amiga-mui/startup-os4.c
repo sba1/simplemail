@@ -31,6 +31,7 @@
 
 /*#define MYDEBUG*/
 #include "amigadebug.h"
+#include "amigasupport.h"
 #include "timesupport.h"
 
 struct Library *SysBase;
@@ -106,28 +107,6 @@ int _start(void)
 		IExec->ReplyMsg((struct Message *)wbs);
 	}	else rc = start(NULL);
 	return rc;
-}
-
-struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
-{
-	struct Library *lib = IExec->OpenLibrary(name,version);
-	struct Interface *iface;
-	if (!lib) return NULL;
-
-	iface = IExec->GetInterface(lib,"main",1,NULL);
-	if (!iface)
-	{
-		IExec->CloseLibrary(lib);
-		return NULL;
-	}
-	*((struct Interface**)interface_ptr) = iface;
-	return lib;
-}
-
-void CloseLibraryInterface(struct Library *lib, void *interface)
-{
-	IExec->DropInterface((struct Interface *)interface);
-	IExec->CloseLibrary(lib);
 }
 
 static int start(struct WBStartup *wbs)

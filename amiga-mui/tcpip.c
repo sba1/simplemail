@@ -64,6 +64,7 @@
 #endif
 #endif
 
+#include "amigasupport.h"
 #include "ssl.h"
 #include "tcpip.h"
 #include "subthreads_amiga.h"
@@ -74,9 +75,6 @@
 #endif
 #define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
 #endif
-
-struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
 
 /**
  * Opens the socket lib. Must be done for every thread which want to use

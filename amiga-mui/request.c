@@ -94,7 +94,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 
 /*****************************************************************************/
 
-int sm_request(char *title, char *text, char *gadgets, ...)
+int sm_request(const char *title, const char *text, const char *gadgets, ...)
 {
 	int rc;
 	char *text_buf;
@@ -130,7 +130,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 
 /*****************************************************************************/
 
-char *sm_request_string(char *title, char *text, char *contents, int secret)
+char *sm_request_string(const char *title, const char *text, const char *contents, int secret)
 {
 	char *ret = NULL;
 	Object *string;

@@ -42,7 +42,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension);
  * @param gadgets
  * @return
  */
-int sm_request(char *title, char *text, char *gadgets, ...);
+int sm_request(const char *title, const char *text, const char *gadgets, ...);
 
 /**
  * Opens a requester to enter a string.
@@ -53,7 +53,7 @@ int sm_request(char *title, char *text, char *gadgets, ...);
  * @param secret
  * @return NULL on error, otherwise the string as entered by the user.
  */
-char *sm_request_string(char *title, char *text, char *contents, int secret);
+char *sm_request_string(const char *title, const char *text, const char *contents, int secret);
 
 /**
  * Opens a requester to enter a user id and a passwort. Returns 1 on

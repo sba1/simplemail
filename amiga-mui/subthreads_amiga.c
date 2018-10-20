@@ -912,7 +912,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 /*****************************************************************************/
 
-int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
+int thread_call_function_async_(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;
 	int rc = 0;

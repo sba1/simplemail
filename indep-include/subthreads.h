@@ -199,18 +199,39 @@ int thread_call_function_sync(thread_t thread, R (*function)(A...), int argcount
  * @param argcount number of function parameters
  * @return whether the call was successfully forwarded.
  */
-int thread_call_function_async(thread_t thread, void *function, int argcount, ...);
+int thread_call_function_async_(thread_t thread, void *function, int argcount, ...);
 
-#if __cplusplus >= 201103L
+#if __cplusplus > 201703L
+
+template<int N, typename R, typename... A, typename... B>
+static inline int thread_call_function_async_2(thread_t thread, R (*function)(A...), int argcount, B... args)
+{
+	using namespace simplemail;
+	static_assert(N == sizeof...(B));
+	static_assert(sizeof...(A) == sizeof...(B));
+	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+	return thread_call_function_async_(thread, (void *)function, argcount, args...);
+}
+#define thread_call_function_async(thread, function, argcount, ...) \
+		thread_call_function_async_2<argcount>(thread, function, argcount __VA_OPT__(,) __VA_ARGS__)
+
+#elif __cplusplus >= 201103L
+
 template<typename R, typename... A, typename... B>
-int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
+static inline int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
 {
 	using namespace simplemail;
 	static_assert(sizeof...(A) == sizeof...(B));
 	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
 
-	return thread_call_function_async(thread, (void *)function, argcount, args...);
+	return thread_call_function_async_(thread, (void *)function, argcount, args...);
 }
+
+#else
+
+#define thread_call_function_async thread_call_function_async_
+
 #endif
 
 /**

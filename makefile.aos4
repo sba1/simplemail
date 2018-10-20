@@ -28,7 +28,7 @@ CC     = $(CROSS_COMPILE)gcc
 CFLAGS_LANG = -std=c11 -Wdeclaration-after-statement
 else
 CC     = $(CROSS_COMPILE)g++
-CFLAGS_LANG = -std=c++17
+CFLAGS_LANG = -std=c++2a
 endif
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as

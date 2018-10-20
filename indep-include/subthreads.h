@@ -18,6 +18,10 @@
 
 /**
  * @file subthreads.h
+ *
+ * Various functions to call functions on a context of a different thread.
+ * This file can be compiled with a C++ compiler, in which some compile-time
+ * checks are performed.
  */
 
 #ifndef SM__SUBTHREADS_H

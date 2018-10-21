@@ -59,6 +59,11 @@ SSL_LINK =
 SSL_LIB =
 endif
 
+ifdef USE_CPLUSPLUS
+OBJSDIRSUFFIX := $(OBJSDIRSUFFIX)-cplusplus
+TARGETSUFFIX := $(TARGETSUFFIX)-cplusplus
+endif
+
 # COMMITID, COMMITS, and VERSION_TAG macros
 include common-version-tag.mk
 

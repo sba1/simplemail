@@ -39,7 +39,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 
 /*****************************************************************************/
 
-int sm_request(char *title, char *text, char *gadgets, ...)
+int sm_request(const char *title, const char *text, const char *gadgets, ...)
 {
 #ifdef HAVE_GTK_GTK_H
 	int gadno = 1;
@@ -118,7 +118,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
  Opens a requester to enter a string. Returns NULL on error.
  Otherwise the malloc()ed string
 *******************************************************************/
-char *sm_request_string(char *title, char *text, char *contents, int secret)
+char *sm_request_string(const char *title, const char *text, const char *contents, int secret)
 {
 	printf("sm_request_string()\n");
 	return NULL;

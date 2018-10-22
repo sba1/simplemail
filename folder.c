@@ -3117,7 +3117,7 @@ struct folder *folder_find_special(int sp)
 
 /*****************************************************************************/
 
-struct folder *folder_find_by_imap(char *user, char *server, char *path)
+struct folder *folder_find_by_imap(const char *user, const char *server, const char *path)
 {
 	struct folder *f = folder_first();
 	while (f)

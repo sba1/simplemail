@@ -438,7 +438,7 @@ struct folder *folder_find_by_mail(struct mail_info *mail);
  * @param path defines the path of the folder.
  * @return
  */
-struct folder *folder_find_by_imap(char *user, char *server, char *path);
+struct folder *folder_find_by_imap(const char *user, const char *server, const char *path);
 
 /**
  * Returns the mail at the given position respecting the sorted order.

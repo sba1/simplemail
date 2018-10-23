@@ -1316,7 +1316,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	/* add the folders */
 	for (i = 0; i < num_rf; i++)
 	{
-		callbacks->add_imap_folder(options->imap_server->login, options->imap_server->name, rf[i].name);
+		callbacks->add_imap_folder(options->imap_server->login, options->imap_server->name, rf[i].name, rf[i].delim);
 	}
 	callbacks->refresh_folders();
 

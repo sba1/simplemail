@@ -145,7 +145,7 @@ struct imap_connect_to_server_callbacks
 {
 	void (*set_status)(const char *str);
 	int (*request_login)(char *text, char *login, char *password, int len);
-	void (*add_imap_folder)(char *user, char *server, char *path);
+	void (*add_imap_folder)(char *user, char *server, char *path, char delim);
 	void (*refresh_folders)(void);
 };
 

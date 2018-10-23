@@ -70,7 +70,7 @@ static int appicon_last_show;
 
 static struct DiskObject *HideIcon;
 
-static STRPTR appicon_names[SM_APPICON_MAX] =
+static CONST_STRPTR appicon_names[SM_APPICON_MAX] =
 {
 	"check",
 	"empty",

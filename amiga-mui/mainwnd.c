@@ -1580,7 +1580,7 @@ void main_build_accounts(void)
 	{
 		if (account->pop && account->pop->name)
 		{
-			static char *digits[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+			static const char *digits[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 			const int num_digits = sizeof(digits) / sizeof(digits[0]);
 			char buf[100];
 			Object *entry;

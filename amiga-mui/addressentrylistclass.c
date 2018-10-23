@@ -109,7 +109,7 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)msg->entry;
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)h->h_Data;
 
-	int i, count;
+	unsigned int i, count;
 
 	if (entry)
 	{

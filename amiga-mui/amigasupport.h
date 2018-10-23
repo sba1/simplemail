@@ -39,7 +39,7 @@ STRPTR NameOfLock( BPTR lock );
 VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask );
 LONG GetControlChar(const char *buf);
 VOID FreeTemplate(APTR m);
-APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results);
+APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results);
 LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize);
 
 

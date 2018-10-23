@@ -1366,7 +1366,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 		DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
 	}
 #else
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
 		struct mail_info *m2;

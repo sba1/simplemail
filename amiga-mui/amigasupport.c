@@ -440,7 +440,7 @@ VOID FreeTemplate(APTR m)
 
 /* Parse a line for a template. Result should be freed via
    FreeTemplate() */
-APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
+APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results)
 {
 	ULONG *mem = (ULONG*)AllocVec(12,0);
 	if(mem)

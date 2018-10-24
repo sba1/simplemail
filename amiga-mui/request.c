@@ -48,7 +48,7 @@
 
 /*****************************************************************************/
 
-char *sm_request_file(char *title, char *path, int save, char *extension)
+char *sm_request_file(const char *title, const char *path, int save, const char *extension)
 {
 	char *rc = NULL;
 	struct FileRequester *fr;

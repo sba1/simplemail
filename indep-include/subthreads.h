@@ -69,6 +69,23 @@ struct is_convertible<tuple<>, tuple<>>
 };
 }
 
+/* Define marcos that is used for inline callback functions to check
+ * for the arguments at compile time.
+ */
+#if __cplusplus > 201703L
+#define SM__CHECK_ARGS \
+		using namespace simplemail; \
+		static_assert(N == sizeof...(B)); \
+		static_assert(sizeof...(A) == sizeof...(B)); \
+		static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+#else
+#define SM__CHECK_ARGS \
+		using namespace simplemail; \
+		static_assert(sizeof...(A) == sizeof...(B)); \
+		static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+#endif
+
 #endif
 
 #define THREAD_FUNCTION(x) ((int (*)(void*))x)
@@ -210,10 +227,7 @@ int thread_call_function_async_(thread_t thread, void *function, int argcount, .
 template<int N, typename R, typename... A, typename... B>
 static inline int thread_call_function_async_2(thread_t thread, R (*function)(A...), int argcount, B... args)
 {
-	using namespace simplemail;
-	static_assert(N == sizeof...(B));
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+	SM__CHECK_ARGS;
 
 	return thread_call_function_async_(thread, (void *)function, argcount, args...);
 }
@@ -225,9 +239,7 @@ static inline int thread_call_function_async_2(thread_t thread, R (*function)(A.
 template<typename R, typename... A, typename... B>
 static inline int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
 {
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+	SM__CHECK_ARGS;
 
 	return thread_call_function_async_(thread, (void *)function, argcount, args...);
 }

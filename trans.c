@@ -185,9 +185,9 @@ static void trans_mail_has_been_sent(char *filename)
 	thread_call_parent_function_async_string(callback_mail_has_been_sent,1,filename);
 }
 
-static void trans_add_imap_folder(char *user, char *server, char *path)
+static void trans_add_imap_folder(char *user, char *server, char *path, char delim)
 {
-	thread_call_parent_function_sync(NULL,callback_add_imap_folder,3, user, server, path);
+	thread_call_parent_function_sync(NULL,callback_add_imap_folder,3, user, server, path, delim);
 }
 
 static void trans_refresh_folders(void)

@@ -604,7 +604,7 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 			/* add the folders */
 			for (i = 0; i < num_rf; i++)
 			{
-				callbacks->add_imap_folder(server->login, server->name, rf[i].name);
+				callbacks->add_imap_folder(server->login, server->name, rf[i].name, rf[i].delim);
 			}
 			callbacks->refresh_folders();
 

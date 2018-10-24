@@ -1838,7 +1838,7 @@ void callback_mail_has_not_been_sent(const char *filename)
 
 /*****************************************************************************/
 
-void callback_add_imap_folder(char *user, char *server, char *path)
+void callback_add_imap_folder(char *user, char *server, char *path, char delim)
 {
 	struct folder *folder;
 

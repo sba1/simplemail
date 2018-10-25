@@ -222,34 +222,6 @@ int thread_call_function_sync(thread_t thread, R (*function)(A...), int argcount
  */
 int thread_call_function_async_(thread_t thread, void *function, int argcount, ...);
 
-#if __cplusplus > 201703L
-
-template<int N, typename R, typename... A, typename... B>
-static inline int thread_call_function_async_2(thread_t thread, R (*function)(A...), int argcount, B... args)
-{
-	SM__CHECK_ARGS;
-
-	return thread_call_function_async_(thread, (void *)function, argcount, args...);
-}
-#define thread_call_function_async(thread, function, argcount, ...) \
-		thread_call_function_async_2<argcount>(thread, function, argcount __VA_OPT__(,) __VA_ARGS__)
-
-#elif __cplusplus >= 201103L
-
-template<typename R, typename... A, typename... B>
-static inline int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
-{
-	SM__CHECK_ARGS;
-
-	return thread_call_function_async_(thread, (void *)function, argcount, args...);
-}
-
-#else
-
-#define thread_call_function_async thread_call_function_async_
-
-#endif
-
 /**
  * @brief Call a function in the context of the given thread in an asynchronous manner
  *  with the possibility to retrieve the result.
@@ -380,6 +352,9 @@ static inline int thread_push_function_delayed(int millis, R (*function)(A...), 
 	return thread_push_function_delayed(millis, function, argcount, args...);
 }
 #endif
+
+/* Include auto-generated verifiers */
+#include "subthreads-verifiers.h"
 
 /**
  * Return the main (UI) thread.

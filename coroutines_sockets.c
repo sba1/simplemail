@@ -28,7 +28,35 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifndef __MORPHOS__
 #include <sys/select.h>
+#else
+#include <proto/exec.h>
+#include <signal.h>
+#include <termios.h>
+#include <unistd.h>
+#undef getpid
+// libcrypto stubs
+pid_t getpid()
+{
+	return (pid_t) FindTask(NULL);
+}
+
+int sigaction(int a, const struct sigaction *b, struct sigaction *c)
+{
+	return 0;
+}
+
+int tcsetattr(int a, int b, const struct termios *c)
+{
+	return 0;
+}
+
+int tcgetattr(int a, struct termios *b)
+{
+	return 0;
+}
+#endif
 
 #include "coroutines_internal.h"
 

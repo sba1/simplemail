@@ -89,7 +89,7 @@ coroutine_t coroutine_add(coroutine_scheduler_t scheduler, coroutine_entry_t ent
 {
 	coroutine_t coroutine;
 
-	if (!(coroutine = malloc(sizeof(*coroutine))))
+	if (!(coroutine = (coroutine_t)malloc(sizeof(*coroutine))))
 		return NULL;
 	coroutine->entry = entry;
 	coroutine->context = context;

@@ -114,7 +114,7 @@ STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *
 			}
 		} else
 		{
-			*msg->Array++ = attach->filename?(char*)FilePart(attach->filename):"";
+			*msg->Array++ = attach->filename?(char*)FilePart(attach->filename):(char *)"";
 			*msg->Array++ = NULL;
 			*msg->Array++ = attach->content_type;
 			*msg->Array++ = attach->description;

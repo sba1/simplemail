@@ -117,7 +117,7 @@ static bnode *bnode_create(struct index_external *idx)
 {
 	struct bnode_header *bnode;
 
-	if (!(bnode = malloc(idx->block_size + sizeof(struct bnode_element))))
+	if (!(bnode = (struct bnode_header*)malloc(idx->block_size + sizeof(struct bnode_element))))
 		return NULL;
 
 	memset(bnode, 0, idx->block_size + sizeof(struct bnode_element));
@@ -217,7 +217,7 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 		str_len = idx->max_substring_len;
 
 	fseek(idx->string_file, element->str_offset, SEEK_SET);
-	if (!(str = malloc(str_len + 1)))
+	if (!(str = (char *)malloc(str_len + 1)))
 		return 0;
 	if (fread(str, 1, str_len, idx->string_file) != str_len)
 		return 0;
@@ -743,7 +743,7 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 		struct bnode_path path;
 		int block;
 
-		if (!(iter = malloc(sizeof(*iter))))
+		if (!(iter = (struct bnode_string_iter_data *)malloc(sizeof(*iter))))
 			return NULL;
 
 		if (!(iter->node = bnode_create(idx)))

@@ -75,7 +75,7 @@ static char *get_tagline(void)
 	{
 		int len = taglines_positions[nr+1] - taglines_positions[nr];
 
-		if ((tagline = malloc(len+1)))
+		if ((tagline = (char *)malloc(len+1)))
 		{
 			fseek(fh,taglines_positions[nr],SEEK_SET);
 			fread(tagline,1,len,fh);
@@ -102,7 +102,7 @@ char *taglines_add_tagline(char *buf)
 		{
 			char *new_buf;
 			len = strlen(buf) + strlen(tagline) - 2;
-			if ((new_buf = malloc(len+1)))
+			if ((new_buf = (char *)malloc(len+1)))
 			{
 				strncpy(new_buf,buf,fmt-buf);
 				new_buf[fmt-buf]=0;
@@ -123,13 +123,13 @@ char *taglines_add_tagline(char *buf)
 			char *new_text;
 			unsigned int len = myfsize(fh);
 
-			if ((new_text = malloc(len+1)))
+			if ((new_text = (char *)malloc(len+1)))
 			{
 				char *new_buf;
 				fread(new_text,len,1,fh);
 				new_text[len]=0;
 				len = strlen(buf) + strlen(new_text) - 2;
-				if ((new_buf = malloc(len+1)))
+				if ((new_buf = (char *)malloc(len+1)))
 				{
 					strncpy(new_buf,buf,fmt-buf);
 					new_buf[fmt-buf]=0;
@@ -159,7 +159,7 @@ static void taglines_create_index(char *filename, char *indexname)
 	FILE *tagfh, *indexfh;
 	char *buf;
 
-	if (!(buf = malloc(512))) return;
+	if (!(buf = (char *)malloc(512))) return;
 
 	if ((tagfh = fopen(filename,"r")))
 	{
@@ -209,7 +209,7 @@ void taglines_init(char *filename)
 
 	taglines_cleanup();
 
-	if (!(indexname = malloc(mystrlen(filename)+10)))
+	if (!(indexname = (char *)malloc(mystrlen(filename)+10)))
 		return;
 
 	if (!(filename = mystrdup(filename)))
@@ -241,7 +241,7 @@ void taglines_init(char *filename)
 			if (ver == TAGLINES_INDEX_VERSION)
 			{
 				fh_size = myfsize(fh);
-				if ((taglines_positions = malloc(fh_size - 8 + sizeof(int))))
+				if ((taglines_positions = (int *)malloc(fh_size - 8 + sizeof(int))))
 				{
 					fread(taglines_positions,1,fh_size - 8,fh);
 					taglines_num = (fh_size - 8) / sizeof(int);

@@ -62,7 +62,7 @@ struct progmon_info
 	int id;
 
 	utf8 *name;
-	utf8 *working_on;
+	const utf8 *working_on;
 	unsigned int work;
 	unsigned int work_done;
 

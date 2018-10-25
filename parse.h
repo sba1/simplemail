@@ -46,7 +46,7 @@ int needs_quotation(char *str);
  * @param len number of bytes to check
  * @return 1, if str needs quotation marks.
  */
-int needs_quotation_len(char *str, int len);
+int needs_quotation_len(const char *str, int len);
 
 /**
  * Check if the given string is a RFC822 token.

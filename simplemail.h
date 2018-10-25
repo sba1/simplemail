@@ -482,7 +482,7 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
  * @param filename the filename of the mail to be added.
  * @return the newly created mail_info.
  */
-struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
+struct mail_info *callback_new_mail_to_folder_by_file(const char *filename);
 
 /**
  * @brief A new mail has been arrived within the incoming folder.
@@ -497,7 +497,7 @@ struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
  * @note FIXME: This functionality takes (mis)usage of next_thread_mail field
  *       FIXME: When SM is quit while mails are downloaded those mails get not presented to the user the next time.
  */
-void callback_new_mail_arrived_filename(char *filename, int spam);
+void callback_new_mail_arrived_filename(const char *filename, int spam);
 
 /**
  * @brief A new mail arrived into an imap folder
@@ -562,14 +562,14 @@ void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned 
  * @param filename specifies the name of the mail. This has to be present in the
  *  index with the folder being the standard outgoing folder.
  */
-void callback_mail_has_been_sent(char *filename);
+void callback_mail_has_been_sent(const char *filename);
 
 /**
  * A mail has NOT been sent, something went wrong, set ERROR status.
  *
  * @param filename specifies the name of the mail that has not been sent.
  */
-void callback_mail_has_not_been_sent(char *filename);
+void callback_mail_has_not_been_sent(const char *filename);
 
 /**
  * Add a new imap folder.

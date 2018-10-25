@@ -102,7 +102,7 @@ static void trans_init_mail(int maximal)
 
 static void trans_set_mail(int current, int current_size)
 {
-	thread_call_function_async(thread_get_main(), status_set_mail, current, current_size);
+	thread_call_function_async(thread_get_main(), status_set_mail, 2, current, current_size);
 }
 
 static int trans_request_login(char *text, char *login, char *password, int len)
@@ -419,7 +419,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 static int mails_dl_common(int called_by_auto, struct account *ac)
 {
 	struct mails_dl_msg *msg;
-	if (!(msg = malloc(sizeof(*msg))))
+	if (!(msg = (struct mails_dl_msg *)malloc(sizeof(*msg))))
 		return 0;
 
 	memset(msg, 0, sizeof(*msg));

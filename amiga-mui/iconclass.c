@@ -125,7 +125,7 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 

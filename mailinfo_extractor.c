@@ -250,7 +250,7 @@ int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
 
 	if (!(folder_path = mystrdup(f->path)))
 		return 0;
-	if (!(node = malloc(sizeof(*node))))
+	if (!(node = (struct mail_info_node *)malloc(sizeof(*node))))
 	{
 		free(folder_path);
 		return 0;

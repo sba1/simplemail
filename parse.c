@@ -89,7 +89,7 @@ int needs_quotation(char *str)
 
 /*****************************************************************************/
 
-int needs_quotation_len(char *str, int len)
+int needs_quotation_len(const char *str, int len)
 {
 	char c;
 	while ((c = *str++) && len)
@@ -151,7 +151,7 @@ static char *parse_atom(char *atom, char **pbuf)
 	len = atom - atom_start;
 	if (!len) return NULL;
 
-	if ((buf = malloc(len+1)))
+	if ((buf = (char *)malloc(len+1)))
 	{
 		strncpy(buf,atom_start,len);
 		buf[len] = 0;
@@ -709,7 +709,7 @@ void parse_text_string(char *text, utf8 **pbuf)
 				int old_pos = buf_ptr - buf;
 				if (old_pos + word_utf8_size + 1 >= buf_allocated)
 				{
-					if ((buf = realloc(buf,old_pos + word_utf8_size + 1 + 8)))
+					if ((buf = (char *)realloc(buf,old_pos + word_utf8_size + 1 + 8)))
 					{
 						buf_ptr = buf + old_pos;
 						buf_allocated = old_pos + word_utf8_size + 1 + 8;
@@ -739,7 +739,7 @@ void parse_text_string(char *text, utf8 **pbuf)
 
 			if (old_pos + 2 + 1 >= buf_allocated)
 			{
-				if ((buf = realloc(buf,old_pos + 2 + 1 + 8)))
+				if ((buf = (char *)realloc(buf,old_pos + 2 + 1 + 8)))
 				{
 					buf_ptr = buf + old_pos;
 					buf_allocated = old_pos + 2 + 1 + 8;
@@ -807,7 +807,7 @@ char *parse_token(char *token, char **pbuf)
 	len = token - token_start;
 	if (!len) return NULL;
 
-	if ((buf = malloc(len+1)))
+	if ((buf = (char *)malloc(len+1)))
 	{
 		strncpy(buf,token_start,len);
 		buf[len] = 0;
@@ -884,7 +884,7 @@ char *parse_etoken(char *token, char **pbuf)
 	len = token - token_start;
 	if (!len) return NULL;
 
-	if ((buf = malloc(len+1)))
+	if ((buf = (char *)malloc(len+1)))
 	{
 		strncpy(buf,token_start,len);
 		buf[len] = 0;

@@ -41,6 +41,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "imap.h"
+#include "imap_helper.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -107,7 +108,7 @@ struct imap_folder_entry
 
 STATIC ASM SAVEDS APTR imap_folders_construct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1,struct imap_folder_entry *entry))
 {
-	struct imap_folder_entry *new_entry = malloc(sizeof(*entry));
+	struct imap_folder_entry *new_entry = (struct imap_folder_entry *)malloc(sizeof(*entry));
 	if (new_entry)
 	{
 		new_entry->name = (utf8*)mystrdup((char*)entry->name);
@@ -600,7 +601,7 @@ void folder_edit(struct folder *f)
 		struct string_node *node;
 
 		int buf_len = mystrlen(f->imap_server) + mystrlen(f->imap_path) + mystrlen(f->imap_user) + 40;
-		char *buf = malloc(buf_len);
+		char *buf = (char *)malloc(buf_len);
 
 		if (buf)
 		{
@@ -623,7 +624,7 @@ void folder_edit(struct folder *f)
 			entry.subscribed = !!string_list_find(&f->imap_sub_folder_list,node->string);
 
 			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
-			node = (struct string_node*)node_next(&node->node);
+			node = string_node_next(node);
 		}
 	}
 
@@ -633,22 +634,23 @@ void folder_edit(struct folder *f)
 
 /*****************************************************************************/
 
-void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list)
+void folder_fill_lists(struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
-	if (imap_folders_list)
-	{
-		struct string_node *node;
-		DoMethod(imap_folders_list,MUIM_NList_Clear);
-		node = string_list_first(list);
-		while (node)
-		{
-			struct imap_folder_entry entry;
-			entry.name = (utf8*)node->string;
-			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
+	int i;
 
-			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
-			node = (struct string_node*)node_next(&node->node);
-		}
+	if (!imap_folders_list)
+	{
+		return;
+	}
+
+	DoMethod(imap_folders_list,MUIM_NList_Clear);
+	for (i = 0; i < num_all_folders; i++)
+	{
+		struct imap_folder_entry entry;
+		entry.name = (utf8*)all_folders[i].name;
+		entry.subscribed = !!imap_remote_folder_exists(sub_folders, num_sub_folders, entry.name);
+
+		DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
 	}
 }
 
@@ -728,7 +730,7 @@ void folder_edit_new_path(char *init_path)
 
 	if (init_path)
 	{
-		char *buf = malloc(strlen(FilePart(init_path))+1);
+		char *buf = (char *)malloc(strlen(FilePart(init_path))+1);
 		if (buf)
 		{
 			strcpy(buf,FilePart(init_path));

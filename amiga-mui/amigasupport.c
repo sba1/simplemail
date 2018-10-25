@@ -43,18 +43,42 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "debug.h"
+#include "hookentry.h"
 #include "support_indep.h"
 
 #ifdef __AMIGAOS4__
-extern ULONG hookEntry();
-#else
-#if defined(__MORPHOS__) || defined(__AROS__)
-#define hookEntry HookEntry
-#endif
-#endif
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
+{
+	struct Library *lib = OpenLibrary(name,version);
+	struct Interface *iface;
+	if (!lib) return NULL;
 
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
+	iface = GetInterface(lib,"main",1,NULL);
+	if (!iface)
+	{
+		CloseLibrary(lib);
+		return NULL;
+	}
+	*((struct Interface**)interface_ptr) = iface;
+	return lib;
+}
+
+void CloseLibraryInterface(struct Library *lib, void *interface)
+{
+	DropInterface((struct Interface *)interface);
+	CloseLibrary(lib);
+}
+#else
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr)
+{
+	return OpenLibrary(name,version);
+}
+
+void CloseLibraryInterface(struct Library *lib, void *interface)
+{
+	CloseLibrary(lib);
+}
+#endif
 
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
 {
@@ -384,13 +408,13 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		/* Initialize a bitmap where all plane pointers points to the mask */
 		InitBitMap(&hook.maskBitMap,src_depth,GetBitMapAttr(srcBitMap,BMA_WIDTH),GetBitMapAttr(srcBitMap,BMA_HEIGHT));
 		while (src_depth)
-			hook.maskBitMap.Planes[--src_depth] = bltMask;
+			hook.maskBitMap.Planes[--src_depth] = (PLANEPTR)bltMask;
 
 		/* Blit onto the Rastport */
 		DoHookClipRects(&hook.hook,destRP,&rect);
 	} else
 	{
-		BltMaskBitMapRastPort(srcBitMap, xSrc, ySrc, destRP, xDest, yDest, xSize, ySize, minterm, bltMask);
+		BltMaskBitMapRastPort(srcBitMap, xSrc, ySrc, destRP, xDest, yDest, xSize, ySize, minterm, (PLANEPTR)bltMask);
 	}
 }
 
@@ -416,7 +440,7 @@ VOID FreeTemplate(APTR m)
 
 /* Parse a line for a template. Result should be freed via
    FreeTemplate() */
-APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
+APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results)
 {
 	ULONG *mem = (ULONG*)AllocVec(12,0);
 	if(mem)

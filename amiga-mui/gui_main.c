@@ -119,24 +119,12 @@ struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
 struct Interface *ITTEngine;
 struct CyberGfxIFace *ICyberGfx;
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
 #else
 void *IMUIMaster;
 void *IRexxSys;
 void *ISimpleHTML;
 void *ITTEngine;
 void *ICyberGfx;
-
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
-{
-	return OpenLibrary(name,version);
-}
-
-void CloseLibraryInterface(struct Library *lib, void *interface)
-{
-	CloseLibrary(lib);
-}
 #endif
 
 struct Locale *DefaultLocale;
@@ -736,7 +724,7 @@ int gui_parseargs(int argc, char *argv[])
 					buflen += strlen(initial_attachments[i]) + 20;
 			}
 
-			if ((buf = malloc(buflen)))
+			if ((buf = (char *)malloc(buflen)))
 			{
 				int i;
 
@@ -751,7 +739,7 @@ int gui_parseargs(int argc, char *argv[])
 		{
 			if (initial_message)
 			{
-				char *buf = malloc(mystrlen(initial_message)+100);
+				char *buf = (char *)malloc(mystrlen(initial_message)+100);
 				if (buf)
 				{
 					sprintf(buf,"OPENMESSAGE \"\"\"%s\"",initial_message); /* Don't ask me why the quotating marks have to be stated so strange...it only works that way */

@@ -646,7 +646,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 /*		ULONG tidata = tag->ti_Data;*/
 
@@ -1366,7 +1366,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 		DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
 	}
 #else
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
 		struct mail_info *m2;
@@ -1451,18 +1451,18 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		case  MUIM_NList_ContextMenuBuild: return MailTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 
-		case	MUIM_MailTreelist_Clear: return MailTreelist_Clear(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_InsertMail: return MailTreelist_InsertMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_Clear: return MailTreelist_Clear(cl, obj, msg);
+		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (struct MUIP_MailTreelist_SetFolderMails *)msg);
+		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl, obj, msg);
+		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl, obj, msg);
+		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, msg);
+		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (struct MUIP_MailTreelist_GetFirstSelected *)msg);
+		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (struct MUIP_MailTreelist_GetNextSelected *)msg);
+		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(struct MUIP_MailTreelist_RefreshMail *)msg);
+		case	MUIM_MailTreelist_InsertMail: return MailTreelist_InsertMail(cl,obj,(struct MUIP_MailTreelist_InsertMail *)msg);
+		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(struct MUIP_MailTreelist_RemoveMail *)msg);
+		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(struct MUIP_MailTreelist_ReplaceMail *)msg);
+		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

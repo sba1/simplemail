@@ -439,7 +439,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 					addr_end_buf_pos++;
 				}
 
-				if ((new_contents = malloc(strlen(contents) + strlen(active_str) + 1)))
+				if ((new_contents = (char *)malloc(strlen(contents) + strlen(active_str) + 1)))
 				{
 					strncpy(new_contents, contents, addr_start_buf_pos);
 					strcpy(&new_contents[addr_start_buf_pos], active_str);

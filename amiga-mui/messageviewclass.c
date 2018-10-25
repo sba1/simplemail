@@ -134,8 +134,8 @@ static void save_contents_to(struct MessageView_Data *data, struct mail_complete
 				void *cont; /* mails content */
 				int cont_len;
 
-				char *charset;
-				char *user_charset;
+				const char *charset;
+				const char *user_charset;
 
 				if (!(charset = mail->content_charset)) charset = "ISO-8859-1";
 				user_charset = user.config.default_codeset?user.config.default_codeset->name:"ISO-8858-1";
@@ -500,7 +500,7 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 			do
 			{
 				struct ExAllData *ead;
-				more = ExAll(dirlock, EAData, 1024, ED_NAME, eac);
+				more = ExAll(dirlock, (struct ExAllData *)EAData, 1024, ED_NAME, eac);
 				if ((!more) && (IoErr() != ERROR_NO_MORE_ENTRIES)) break;
 				if (eac->eac_Entries == 0) continue;
 
@@ -539,7 +539,7 @@ static void messageview_append_as_mail(struct MessageView_Data *data, struct mai
 	{
 		if (!mystricmp(mail->content_type,"text") && !mystricmp(mail->content_subtype,"plain"))
 		{
-			char *html_txt = text2html(decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+			char *html_txt = text2html((unsigned char *)decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 			string_append(str,html_txt);
 			free(html_txt);
 		} else
@@ -806,7 +806,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
-	if (!(data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE)))
+	if (!(data->file_req = (struct FileRequester *)MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE)))
 	{
 		CoerceMethod(cl,obj,OM_DISPOSE);
 		return 0;

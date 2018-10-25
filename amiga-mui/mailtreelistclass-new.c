@@ -285,6 +285,9 @@ struct ColumnInfo
 
 enum DrawUpdate
 {
+	/** Update everything */
+	UPDATE_ALL = 0,
+
 	/** Any selection state has been changed */
 	UPDATE_SELECTION_CHANGED = 1,
 
@@ -1790,7 +1793,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 
@@ -1813,7 +1816,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							if (data->entries_active != old_active)
 							{
 								/* frist update the active line display */
-								data->drawupdate = 1;
+								data->drawupdate = UPDATE_SELECTION_CHANGED;
 								MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 								/* and now make sure the active line is visible */
@@ -2099,7 +2102,7 @@ STATIC ULONG MailTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Exp
 		count = 6 + MAX_COLUMNS*3;
 
 		if (data->exp_data) FreeVec(data->exp_data);
-		data->exp_data = AllocVec(sizeof(ULONG) * count, MEMF_CLEAR);
+		data->exp_data = (ULONG *)AllocVec(sizeof(ULONG) * count, MEMF_CLEAR);
 
 		if (data->exp_data)
 		{
@@ -2355,7 +2358,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 	rc = DoSuperMethodA(cl,obj,(Msg)msg);
 
 	/* Clear draw update in any case */
-	data->drawupdate = 0;
+	data->drawupdate = UPDATE_ALL;
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
@@ -2635,7 +2638,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	int start,cur,end;
 	int window_clip_left, window_clip_width;
 	int y,listy;
-	int drawupdate;
+	enum DrawUpdate drawupdate;
 	int background;
 
 	/* Don't do anything when being in quite mode (e.g. used for custom background drawing) */
@@ -2645,9 +2648,9 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
 	if (msg->flags & MADF_DRAWUPDATE) drawupdate = data->drawupdate;
-	else drawupdate = 0;
+	else drawupdate = UPDATE_ALL;
 
-	data->drawupdate = 0;
+	data->drawupdate = UPDATE_ALL;
 
 	/* Don't do anything if removed element was invisble */
 	if (drawupdate == UPDATE_SINGLE_ENTRY_REMOVED &&
@@ -2725,7 +2728,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			else
 				window_clip_width = -diffx;
 
-			drawupdate = 0; /* So that the title gets updated */
+			drawupdate = UPDATE_ALL; /* So that the title gets updated */
 		}
 	}
 
@@ -2829,7 +2832,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		 * is stored */
 		for (cur = start; cur < end; cur++,y += data->entry_maxheight)
 		{
-			background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y, window_clip_left, window_clip_width);
+			background = DrawEntryOptimized(cl, obj, cur, drawupdate == UPDATE_SELECTION_CHANGED, background, data->buffer_rp, old_rp, y, window_clip_left, window_clip_width);
 		}
 	}
 
@@ -2992,7 +2995,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 *************************************************************************/
 static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 
 	int after = msg->after;
 	struct mail_info *mail = msg->m;
@@ -3061,7 +3064,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 *************************************************************************/
 STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int pos)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int removed_active;
 
 	/* Variable pos needs to be inside valid bounds */
@@ -3079,7 +3082,7 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 
 	/* Issue render update */
-	data->drawupdate = 3;
+	data->drawupdate = UPDATE_SINGLE_ENTRY_REMOVED;
 	data->drawupdate_position = pos;
 	MUI_Redraw(obj,MADF_DRAWUPDATE);
 
@@ -3088,7 +3091,7 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	if (data->entries_active >= data->entries_num) data->entries_active = data->entries_num - 1;
 
 	/* Ensure proper displayed selection states */
-	data->drawupdate = 1;
+	data->drawupdate = UPDATE_SELECTION_CHANGED;
 	MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 	if (removed_active)
@@ -3102,7 +3105,7 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 *************************************************************************/
 STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RemoveMail *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int index;
 
 	index = FindIndexOfMailInfo(data, msg->m);
@@ -3118,7 +3121,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 *************************************************************************/
 STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int i = 0,j,from = -1, to = -1;
 
 	if (data->entries_maxselected == -1 && data->entries_active != -1)
@@ -3185,7 +3188,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 *************************************************************************/
 STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_ReplaceMail *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int index;
 
 	index = FindIndexOfMailInfo(data, msg->oldmail);
@@ -3208,7 +3211,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 *************************************************************************/
 STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RefreshMail *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int index;
 
 	/* Noop when not being between setup/cleanup phase */
@@ -3229,7 +3232,7 @@ STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUI
 *************************************************************************/
 STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 
 	int i;
 	int num_to_be_refreshed;
@@ -3263,7 +3266,7 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 *************************************************************************/
 static ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int *handle_ptr = (int*)msg->handle;
 	int handle;
 
@@ -3291,7 +3294,7 @@ static ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struc
 *************************************************************************/
 static ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int *handle_ptr = (int*)msg->handle;
 	int handle = *handle_ptr;
 	struct mail_info *m;
@@ -3323,7 +3326,7 @@ static ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct
 *************************************************************************/
 static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 
 	if (msg->imsg)
 	{
@@ -3508,7 +3511,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 											data->entries_active = new_entries_active;
 
 											/* Refresh */
-											data->drawupdate = 1;
+											data->drawupdate = UPDATE_SELECTION_CHANGED;
 											MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 											IssueTreelistActiveNotify(cl,obj,data);
@@ -3613,7 +3616,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->title_column_click = -1;
 										data->title_column_click2 = -1;
 										data->title_column_selected = -1;
-										data->drawupdate = 4;
+										data->drawupdate = UPDATE_TITLE;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 										MailTreelist_MouseButton_Released(data,obj);
@@ -3714,7 +3717,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								if (data->title_column_selected != old_selected)
 								{
 									/* refresh title column */
-									data->drawupdate = 4;
+									data->drawupdate = UPDATE_TITLE;
 									MUI_Redraw(obj,MADF_DRAWUPDATE);
 								}
 							} else
@@ -3752,7 +3755,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->entries_active = new_entries_active;
 
 										/* Refresh */
-										data->drawupdate = 1;
+										data->drawupdate = UPDATE_SELECTION_CHANGED;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 										/* TODO: Replace by a modified EnsureActiveEntryVisibility? */
@@ -3789,7 +3792,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 *************************************************************************/
 static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUIP_HandleInput *msg)
 {
-	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 	int new_entries_active;
 	int change_amount = 1;
 	LONG new_horiz_first = -1;
@@ -3898,7 +3901,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 		data->entries_active = new_entries_active;
 
 		/* Refresh */
-		data->drawupdate = 1;
+		data->drawupdate = UPDATE_SELECTION_CHANGED;
 		MUI_Redraw(obj,MADF_DRAWUPDATE);
 
 		/* TODO: Replace by a modified EnsureActiveEntryVisibility? */
@@ -3937,7 +3940,7 @@ static ULONG MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct
 	struct MUI_DragImage *img = (struct MUI_DragImage *)AllocVec(sizeof(struct MUIP_CreateDragImage),MEMF_CLEAR);
 	if (img)
 	{
-		struct MailTreelist_Data *data = INST_DATA(cl, obj);
+		struct MailTreelist_Data *data = (struct MailTreelist_Data *)INST_DATA(cl, obj);
 		LONG depth = GetBitMapAttr(_screen(obj)->RastPort.BitMap,BMA_DEPTH);
 		int txt_len,num_selected=0;
 		int i;
@@ -4279,22 +4282,22 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_DeleteDragImage: return MailTreelist_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage *)msg);
 		case	MUIM_CreateShortHelp: return MailTreelist_CreateShortHelp(cl,obj,(struct MUIP_CreateShortHelp *)msg);
 		case	MUIM_ContextMenuBuild: return MailTreelist_ContextMenuBuild(cl,obj,(struct MUIP_ContextMenuBuild *)msg);
-		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl,obj,(APTR)msg);
+		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice *)msg);
 
-		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_InsertMail:	return MailTreelist_InsertMail(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (APTR)msg);
-		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_SelectAll: return MailTreelist_SelectAll(cl,obj,(APTR)msg);
-		case	MUIM_MailTreelist_ClearSelection: return MailTreelist_ClearSelection(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (Msg)msg);
+		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (struct MUIP_MailTreelist_SetFolderMails *)msg);
+		case	MUIM_MailTreelist_InsertMail:	return MailTreelist_InsertMail(cl, obj, (struct MUIP_MailTreelist_InsertMail *)msg);
+		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (struct MUIP_MailTreelist_GetFirstSelected *)msg);
+		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (struct MUIP_MailTreelist_GetNextSelected *)msg);
+		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(struct MUIP_MailTreelist_RemoveMail *)msg);
+		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (Msg)msg);
+		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (struct MUIP_MailTreelist_ReplaceMail *)msg);
+		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(struct MUIP_MailTreelist_RefreshMail *)msg);
+		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(Msg)msg);
+		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl,obj,(Msg)msg);
+		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl,obj,(Msg)msg);
+		case	MUIM_MailTreelist_SelectAll: return MailTreelist_SelectAll(cl,obj,(Msg)msg);
+		case	MUIM_MailTreelist_ClearSelection: return MailTreelist_ClearSelection(cl,obj,(Msg)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

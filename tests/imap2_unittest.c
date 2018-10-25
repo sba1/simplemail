@@ -175,7 +175,7 @@ void *test_imap_quit_callback(void *data)
 	thread_abort(thread_get_main());
 }
 
-void test_imap_get_folder_list_callback(struct imap_server *server, struct string_list *all_list, struct string_list *sub_list)
+void test_imap_get_folder_list_callback(struct imap_server *server, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
 }
 

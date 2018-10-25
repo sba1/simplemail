@@ -167,8 +167,8 @@ void test_imap_get_folders(void)
 	struct connection *c;
 	struct mock_connection *m;
 
-	struct string_list *folders;
-	struct string_node *s;
+	struct remote_folder *rf;
+	int num_rf;
 
 	imap_reset_command_counter();
 
@@ -188,28 +188,47 @@ void test_imap_get_folders(void)
 			" * LIST () \"/\" \"sent\"\r\n"
 			"0003 OK\r\n");
 
-	folders = imap_get_folders(c, 1);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) == NULL);
-	string_list_free(folders);
+	expect_write(m, "0004 LIST \"\" *\r\n",
+			" * LIST () \"/\" \"folder/subfolder\"\r\n"
+			"0004 OK\r\n");
+
+	expect_write(m, "0005 LIST \"\" *\r\n",
+			" * LIST () \".\" \"folder.subfolder\"\r\n"
+			"0005 OK\r\n");
+
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT(num_rf == 0);
+	imap_folders_free(rf, num_rf);
 
 	/* Here we expect an INBOX folder at least */
-	folders = imap_get_folders(c, 0);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) != NULL);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "INBOX");
-	string_list_free(folders);
+	rf = imap_get_folders(c, 0, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT(num_rf == 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "INBOX");
+	imap_folders_free(rf, num_rf);
 
 	/* Here we expect an inbox folder at least */
-	folders = imap_get_folders(c, 1);
-	CU_ASSERT(folders != NULL);
-	CU_ASSERT(string_list_first(folders) != NULL);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)->string, "inbox");
-	s = string_list_remove_head(folders);
-	free(s->string);
-	free(s);
-	CU_ASSERT_STRING_EQUAL(string_list_first(folders)-> string, "sent");
-	string_list_free(folders);
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT(rf != NULL);
+	CU_ASSERT_EQUAL(num_rf, 2);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "inbox");
+	CU_ASSERT_STRING_EQUAL(rf[1].name, "sent");
+	imap_folders_free(rf, num_rf);
+
+	/* Here we expect folder/subfolder */
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT_EQUAL(num_rf, 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder/subfolder");
+	CU_ASSERT_EQUAL(rf[0].delim, '/');
+	imap_folders_free(rf, num_rf);
+
+	/* Here we expect folder/subfolder */
+	rf = imap_get_folders(c, 1, &num_rf);
+	CU_ASSERT_EQUAL(num_rf, 1);
+	CU_ASSERT_STRING_EQUAL(rf[0].name, "folder.subfolder");
+	CU_ASSERT_EQUAL(rf[0].delim, '.');
+	imap_folders_free(rf, num_rf);
 
 	mock_free(m);
 	tcp_disconnect(c);
@@ -519,8 +538,8 @@ void test_imap_really_download_mails()
 	expect_writef(m, "0001 FETCH 1:4 (UID FLAGS RFC822.SIZE BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)])\r\n",
 			" * 1 FETCH (UID 1 RFC822.SIZE 1234 BODY{%d}\r\n%s)\r\n"
 			" * 2 FETCH (UID 2 RFC822.SIZE 8888 BODY{%d}\r\n%s)\r\n"
-			" * 3 FETCH (UID 3 RFC822.SIZE 2222 BODY{%d}\r\n%s)\r\n"
-			" * 4 FETCH (UID 4 RFC822.SIZE 4321 BODY{%d}\r\n%s)\r\n"
+			" * 3 FETCH (UID 3 RFC822.SIZE 2222 FLAGS (\\Seen \\Flagged) BODY{%d}\r\n%s)\r\n"
+			" * 4 FETCH (UID 4 RFC822.SIZE 4321 FLAGS (\\Seen \\Answered) BODY{%d}\r\n%s)\r\n"
 			"0001 OK\r\n",
 			strlen(mail_headers[0]), mail_headers[0],
 			strlen(mail_headers[1]), mail_headers[1],
@@ -536,6 +555,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 1");
 	mail_info_free(mi);
 
@@ -545,24 +565,27 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 2");
 	mail_info_free(mi);
 
-	snprintf(path, sizeof(path), "%s/u3", f->path);
+	snprintf(path, sizeof(path), "%s/u3.g", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 3");
 	mail_info_free(mi);
 
-	snprintf(path, sizeof(path), "%s/u4", f->path);
+	snprintf(path, sizeof(path), "%s/u4.3", f->path);
 	CU_ASSERT((fh = fopen(path, "rb")) != NULL);
 	fclose(fh);
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 4");
 	mail_info_free(mi);
 
@@ -571,8 +594,8 @@ void test_imap_really_download_mails()
 	CU_ASSERT(test_imap_new_mails_arrived_num_filenames == 4);
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[0], "u1");
 	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[1], "u2");
-	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[2], "u3");
-	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[2], "u3.g");
+	CU_ASSERT_STRING_EQUAL(test_imap_new_mails_arrived_filenames[3], "u4.3");
 
 	expect_write(m, "0002 EXAMINE \"INBOX\"\r\n",
 			"* 4 EXISTS\r\n"
@@ -629,6 +652,7 @@ void test_imap_really_download_mails()
 	mi = mail_info_create_from_file(NULL, path);
 	CU_ASSERT(mi != NULL);
 	CU_ASSERT_STRING_EQUAL(mi->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(mi->from_addr, "mail@sebastianbauer.info");
 	CU_ASSERT_STRING_EQUAL(mi->subject, "Mail 5");
 	mail_info_free(mi);
 

@@ -106,7 +106,7 @@ void callback_save_active_mail(void)
 	if ((dest = sm_request_file("SimpleMail", "", 1, NULL)))
 	{
 		int src_len = strlen(f->path) + strlen(mail_filename) + 10;
-		char *src = malloc(src_len);
+		char *src = (char *)malloc(src_len);
 		if (src)
 		{
 			strcpy(src,f->path);
@@ -134,7 +134,7 @@ static int touch_mail(struct folder *f, struct mail_info *mail)
 
 	if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD)
 	{
-		folder_set_mail_status(f, mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
+		folder_set_mail_status(f, mail, (mail_status_t)(MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK))));
 		refresh = 1;
 	}
 
@@ -519,7 +519,7 @@ void callback_reply_mails(char *folder_path, int num, struct mail_info **to_repl
 
 	if (getcwd(buf, sizeof(buf)) == NULL) return;
 
-	if ((mail_array = malloc(num*sizeof(struct mail_complete *))))
+	if ((mail_array = (struct mail_complete **)malloc(num*sizeof(struct mail_complete *))))
 	{
 		struct mail_complete *reply;
 		int err = 0;
@@ -590,7 +590,7 @@ void callback_reply_selected_mails(void)
 
 	if (!num) return;
 
-	if ((mail_array = malloc(sizeof(struct mail_info *)*num)))
+	if ((mail_array = (struct mail_info **)malloc(sizeof(struct mail_info *)*num)))
 	{
 		int i = 0;
 
@@ -632,7 +632,7 @@ void callback_forward_mails(char *folder_path, int num, struct mail_info **to_fo
 
 	chdir(folder_path);
 
-	if ((filename_array = malloc(num*sizeof(char *))))
+	if ((filename_array = (char **)malloc(num*sizeof(char *))))
 	{
 		struct mail_complete *forward;
 
@@ -676,7 +676,7 @@ void callback_forward_selected_mails(void)
 
 	if (!num) return;
 
-	if ((mail_array = malloc(sizeof(struct mail_info *)*num)))
+	if ((mail_array = (struct mail_info **)malloc(sizeof(struct mail_info *)*num)))
 	{
 		int i = 0;
 
@@ -1479,7 +1479,7 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
 
 /*****************************************************************************/
 
-struct mail_info *callback_new_mail_to_folder_by_file(char *filename)
+struct mail_info *callback_new_mail_to_folder_by_file(const char *filename)
 {
 	int pos;
 	char buf[256];
@@ -1671,7 +1671,7 @@ static void simplemail_gather_mails(void)
 
 /*****************************************************************************/
 
-void callback_new_mail_arrived_filename(char *filename, int is_spam)
+void callback_new_mail_arrived_filename(const char *filename, int is_spam)
 {
 	struct mail_info *mail;
 	char buf[256];
@@ -1788,7 +1788,7 @@ void callback_new_mail_written(struct mail_info *mail)
 
 /*****************************************************************************/
 
-void callback_mail_has_been_sent(char *filename)
+void callback_mail_has_been_sent(const char *filename)
 {
 	struct filter *f;
 	struct folder *out = folder_outgoing();
@@ -1820,7 +1820,7 @@ void callback_mail_has_been_sent(char *filename)
 
 /*****************************************************************************/
 
-void callback_mail_has_not_been_sent(char *filename)
+void callback_mail_has_not_been_sent(const char *filename)
 {
 	struct folder *out = folder_outgoing();
 	struct mail_info *m;
@@ -1880,7 +1880,7 @@ void callback_mails_mark(int mark)
 
 		if (new_status != mail->status)
 		{
-			folder_set_mail_status(folder,mail,new_status);
+			folder_set_mail_status(folder,mail,(mail_status_t)new_status);
 			main_refresh_mail(mail);
 		}
 
@@ -1928,7 +1928,7 @@ void callback_mails_set_status(int status)
 
 		if (new_status != mail->status)
 		{
-			folder_set_mail_status(folder,mail,new_status);
+			folder_set_mail_status(folder,mail,(mail_status_t)new_status);
 			if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
 			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
@@ -2164,12 +2164,12 @@ int callback_failed_ssl_verification(const char *server_name, const char *reason
  * @param all_folder_list
  * @param sub_folder_list
  */
-static void callback_received_imap_folders(struct imap_server *server, struct string_list *all_folder_list, struct string_list *sub_folder_list)
+static void callback_received_imap_folders(struct imap_server *server, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders)
 {
 	struct folder *f = folder_find_by_imap(server->login, server->name, "");
 	if (!f) return;
-	folder_imap_set_folders(f, all_folder_list, sub_folder_list);
-	folder_fill_lists(all_folder_list, sub_folder_list);
+	folder_imap_set_folders(f, all_folders, num_all_folders, sub_folders, num_sub_folders);
+	folder_fill_lists(all_folders, num_all_folders, sub_folders, num_sub_folders);
 	folder_config_save(f);
 }
 

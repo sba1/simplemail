@@ -70,7 +70,7 @@ static int appicon_last_show;
 
 static struct DiskObject *HideIcon;
 
-static STRPTR appicon_names[SM_APPICON_MAX] =
+static CONST_STRPTR appicon_names[SM_APPICON_MAX] =
 {
 	"check",
 	"empty",
@@ -345,7 +345,7 @@ static void appicon_load_position(void)
 	}
 
 	/* now, try to load the position from the appicon config file */
-	if ((buf = malloc(512)))
+	if ((buf = (char *)malloc(512)))
 	{
 		FILE *fh;
 

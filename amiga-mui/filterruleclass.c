@@ -475,7 +475,7 @@ STATIC ULONG FilterRule_DragQuery(struct IClass *cl,Object *obj,struct MUIP_Drag
  */
 static struct mail_info *FilterRule_Get_First_Mail_Info(void *handle, void *userdata)
 {
-	return (struct mail_info*)DoMethod(userdata, MUIM_MailTreelist_GetFirstSelected, (ULONG)handle);
+	return (struct mail_info*)DoMethod((Object *)userdata, MUIM_MailTreelist_GetFirstSelected, (ULONG)handle);
 }
 
 /**
@@ -487,7 +487,7 @@ static struct mail_info *FilterRule_Get_First_Mail_Info(void *handle, void *user
  */
 static struct mail_info *FilterRule_Get_Next_Mail_Info(void *handle, void *userdata)
 {
-	return (struct mail_info*)DoMethod(userdata, MUIM_MailTreelist_GetNextSelected, (ULONG)handle);
+	return (struct mail_info*)DoMethod((Object *)userdata, MUIM_MailTreelist_GetNextSelected, (ULONG)handle);
 }
 
 

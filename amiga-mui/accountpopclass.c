@@ -80,7 +80,7 @@ STATIC ASM SAVEDS VOID account_destruct(REG(a0,struct Hook *h),REG(a2,Object *ob
 
 STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
-	struct AccountPop_Data *data = h->h_Data;
+	struct AccountPop_Data *data = (struct AccountPop_Data *)h->h_Data;
 
 	if (msg->entry)
 	{
@@ -125,7 +125,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 	struct TagItem *tstate, *tag;
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 

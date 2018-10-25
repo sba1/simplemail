@@ -167,7 +167,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 
 				num_of_todel_mails += set_local_mail_array_entry(local_mail_array, i, fn);
 
-				sn = (struct string_node*)node_next(&sn->node);
+				sn = string_node_next(sn);
 				i++;
 			}
 			string_list_clear(&filename_list);
@@ -590,38 +590,34 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 
 	if (imap_really_connect_and_login_to_server(&conn, server, &login_callbacks))
 	{
-		struct string_list *folder_list;
+		struct remote_folder *rf = NULL;
+		int num_rf;
+
 		callbacks->set_status_static(_("Login successful"));
 		callbacks->set_status_static(_("Checking for folders"));
 
 		SM_DEBUGF(10,("Get folders\n"));
-		if ((folder_list = imap_get_folders(conn,0)))
+		if ((rf = imap_get_folders(conn,0,&num_rf)))
 		{
-			struct string_node *node;
+			int i;
 
 			/* add the folders */
-			node = string_list_first(folder_list);
-			while (node)
+			for (i = 0; i < num_rf; i++)
 			{
-				callbacks->add_imap_folder(server->login,server->name,node->string);
-				node = (struct string_node*)node_next(&node->node);
+				callbacks->add_imap_folder(server->login, server->name, rf[i].name);
 			}
 			callbacks->refresh_folders();
 
 			/* sync the folders */
-			node = string_list_first(folder_list);
-			while (node)
+			for (i = 0; i < num_rf; i++)
 			{
-				if (!(imap_synchonize_folder(conn, server, node->string, callbacks)))
+				if (!(imap_synchonize_folder(conn, server, rf[i].name, callbacks)))
 				{
-					sm_snprintf(head_buf,sizeof(head_buf),_("Failed to sync folder \"%s\""),node->string);
+					sm_snprintf(head_buf,sizeof(head_buf),_("Failed to sync folder \"%s\""), rf[i].name);
 					callbacks->set_status(head_buf);
 					break;
 				}
-				node = (struct string_node*)node_next(&node->node);
 			}
-
-			string_list_free(folder_list);
 		}
 
 		tcp_disconnect(conn);
@@ -664,8 +660,8 @@ out:
 /*****************************************************************************/
 
 int imap_get_folder_list_really(struct imap_get_folder_list_options *options,
-	struct string_list **all_folder_list_out,
-	struct string_list **sub_folder_list_out)
+	struct remote_folder **all_folders_out, int *num_all_folders_out,
+	struct remote_folder **sub_folders_out, int *num_sub_folders_out)
 {
 	struct imap_get_folder_list_callbacks *callbacks = &options->callbacks;
 	struct connection *conn = NULL;
@@ -708,14 +704,11 @@ int imap_get_folder_list_really(struct imap_get_folder_list_options *options,
 	}
 
 	callbacks->set_status_static(_("Reading folders..."));
-	if (!(all_folder_list = imap_get_folders(conn,1)))
+	if (!(*all_folders_out = imap_get_folders(conn, 1, num_all_folders_out)))
 		goto bailout;
 
-	if (!(sub_folder_list = imap_get_folders(conn,0)))
+	if (!(*sub_folders_out = imap_get_folders(conn, 0, num_sub_folders_out)))
 		goto bailout;
-
-	*all_folder_list_out = all_folder_list;
-	*sub_folder_list_out = sub_folder_list;
 
 	rc = 1;
 bailout:
@@ -741,8 +734,9 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 	struct connect_options conn_opts = {0};
 	char head_buf[100];
 	int error_code;
-	struct string_list *all_folder_list = NULL;
-	struct string_list *sub_folder_list = NULL;
+	struct remote_folder *all_folders = NULL;
+	struct remote_folder *sub_folders = NULL;
+	int i, num_all_folders = 0, num_sub_folders = 0;
 
 	char *line;
 	char tag[20];
@@ -776,17 +770,16 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 		goto out;
 
 	callbacks->set_status_static(_("Reading folders..."));
-	if (!(all_folder_list = imap_get_folders(conn,1)))
+	if (!(all_folders = imap_get_folders(conn, 1, &num_all_folders)))
 		goto out;
 
 	callbacks->set_status_static(_("Reading subscribed folders..."));
-	if (!(sub_folder_list = imap_get_folders(conn,0)))
+	if (!(sub_folders = imap_get_folders(conn, 0, &num_sub_folders)))
 		goto out;
 
-	node = string_list_first(list);
-	while (node)
+	for (node = string_list_first(list); node; node = string_node_next(node))
 	{
-		if (!string_list_find(sub_folder_list,node->string))
+		if (!imap_remote_folder_exists(sub_folders, num_sub_folders, node->string))
 		{
 			char *path = utf8toiutf7(node->string,strlen(node->string));
 			if (path)
@@ -819,18 +812,17 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 			}
 			free(path);
 		}
-		node = (struct string_node*)node_next(&node->node);
 	}
 
-	node = string_list_first(sub_folder_list);
-	while (node)
+	/* Unsubscribe from all folders that are not listed in the given list */
+	for (i = 0; i < num_sub_folders; i++)
 	{
-		if (!string_list_find(list,node->string))
+		if (!string_list_find(list, sub_folders[i].name))
 		{
 			char *path = utf8toiutf7(node->string,strlen(node->string));
 			if (path)
 			{
-				/* subscribe this folder */
+				/* Unsubscribe this folder */
 				sprintf(tag,"%04x",imap_val++);
 				sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,path);
 				tcp_write(conn,send,strlen(send));
@@ -853,11 +845,10 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 				free(path);
 			}
 		}
-		node = (struct string_node*)node_next(&node->node);
 	}
 out:
-	string_list_free(sub_folder_list);
-	string_list_free(all_folder_list);
+	imap_folders_free(all_folders, num_all_folders);
+	imap_folders_free(sub_folders, num_sub_folders);
 	tcp_disconnect(conn);
 	close_socket_lib();
 }
@@ -1284,10 +1275,10 @@ dl_done:
 
 void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_server_options *options)
 {
+	int i, num_rf;
 	char status_buf[160];
+	struct remote_folder *rf = NULL;
 	struct progmon *pm = NULL;
-	struct string_list *folder_list = NULL;
-	struct string_node *node;
 	struct imap_connect_to_server_callbacks *callbacks = &options->callbacks;
 	struct imap_download_mails_options download_options = {0};
 	struct imap_connect_and_login_to_server_callbacks connect_and_login_callbacks = {0};
@@ -1319,30 +1310,24 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	callbacks->set_status(status_buf);
 
 	/* We have now connected to the server, check for the folders at first */
-	folder_list = imap_get_folders(*imap_connection, 0);
-	if (!folder_list)
+	if (!(rf = imap_get_folders(*imap_connection, 0, &num_rf)))
 		goto bailout;
 
 	/* add the folders */
-	node = string_list_first(folder_list);
-	while (node)
+	for (i = 0; i < num_rf; i++)
 	{
-		callbacks->add_imap_folder(options->imap_server->login,options->imap_server->name,node->string);
-		node = (struct string_node*)node_next(&node->node);
+		callbacks->add_imap_folder(options->imap_server->login, options->imap_server->name, rf[i].name, rf[i].delim);
 	}
 	callbacks->refresh_folders();
-
-	string_list_free(folder_list);
-	folder_list = NULL;
 
 	download_options.imap_folder = options->imap_folder;
 	download_options.imap_local_path = options->imap_local_path;
 	download_options.imap_server = options->imap_server;
 	download_options.callbacks = options->download_callbacks;
 	imap_really_download_mails(*imap_connection, &download_options);
+
 bailout:
-	if (folder_list)
-		string_list_free(folder_list);
+	imap_folders_free(rf, num_rf);
 
 	if (pm)
 	{
@@ -1512,7 +1497,7 @@ int imap_really_append_mail(struct connection *imap_connection, struct mail_info
 		return 0;
 	}
 
-	if (!(line_buf = malloc(line_buf_size)))
+	if (!(line_buf = (char *)malloc(line_buf_size)))
 	{
 		fclose(fh);
 		fclose(tfh);

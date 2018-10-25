@@ -60,7 +60,7 @@ static int dbx_read_message(FILE *fh, FILE *out, unsigned int addr)
 {
 	/* This can be static as this function is the leave of the recursion */
 	static unsigned char buf[0x210];
-	int size;
+	size_t size;
 
 	while (addr)
 	{
@@ -99,7 +99,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	int i;
 	int rc = 0;
 	int length_of_idxs;
-	int num_of_idxs;
+	unsigned int num_of_idxs;
 	unsigned int object_marker;
 	unsigned char *entries[32];
 

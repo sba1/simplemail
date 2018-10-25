@@ -47,7 +47,7 @@ int array_add(struct array *array, void *el)
 	if (array->num_el == array->num_el_allocated)
 	{
 		int new_num_el_allocated = array->num_el_allocated * 3 / 4 + 4;
-		void *new_els = realloc(array->els, new_num_el_allocated * sizeof(void*));
+		void **new_els = (void **)realloc(array->els, new_num_el_allocated * sizeof(void*));
 		if (!new_els)
 		{
 			return -1;
@@ -90,7 +90,7 @@ int iarray_add(struct iarray *array, int elm)
 	if (array->num_el == array->num_el_allocated)
 	{
 		int new_num_el_allocated = array->num_el_allocated * 3 / 4 + 4;
-		void *new_els = realloc(array->els, new_num_el_allocated * sizeof(void*));
+		int *new_els = (int *)realloc(array->els, new_num_el_allocated * sizeof(int));
 		if (!new_els)
 		{
 			return -1;

@@ -35,6 +35,7 @@
 #include "subthreads.h"
 #endif
 
+struct remote_folder;
 struct search_options;
 
 struct folder
@@ -258,7 +259,7 @@ int folder_number_of_new_mails(struct folder *folder);
  * @param mail
  * @param status_new
  */
-void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int status_new);
+void folder_set_mail_status(struct folder *folder, struct mail_info *mail, mail_status_t status_new);
 
 /**
  * Set the flags of a mail.
@@ -284,7 +285,7 @@ int folder_count_signatures(char *def_signature);
  * @param filename
  * @return
  */
-struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename);
+struct mail_info *folder_find_mail_by_filename(struct folder *folder, const char *filename);
 
 /**
  * Find a mail with a given uid (which maps to a filename) in the
@@ -307,12 +308,8 @@ int folder_is_filename_mail(const char *fn);
 /**
  * Sets the imap folder lists of a given folders. The list elements
  * are copied.
- *
- * @param folder
- * @param all_folders_list
- * @param sub_folders_list
  */
-void folder_imap_set_folders(struct folder *folder, struct string_list *all_folders_list, struct string_list *sub_folders_list);
+void folder_imap_set_folders(struct folder *folder, struct remote_folder *all_folders, int num_all_folders, struct remote_folder *sub_folders, int num_sub_folders);
 
 /**
  * Set some folder attributes. Returns 1 if the folder must be
@@ -423,7 +420,7 @@ struct folder *folder_find_by_path(char *name);
  *        the folder may be not the only one)
  * @return
  */
-struct folder *folder_find_by_file(char *filename);
+struct folder *folder_find_by_file(const char *filename);
 
 /**
  * Finds the folder of a mail.
@@ -441,7 +438,7 @@ struct folder *folder_find_by_mail(struct mail_info *mail);
  * @param path defines the path of the folder.
  * @return
  */
-struct folder *folder_find_by_imap(char *user, char *server, char *path);
+struct folder *folder_find_by_imap(const char *user, const char *server, const char *path);
 
 /**
  * Returns the mail at the given position respecting the sorted order.

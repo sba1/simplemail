@@ -107,7 +107,7 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem ((APTR)&tstate)))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{
@@ -126,7 +126,7 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	{
 		struct TagItem *newtags = CloneTagItems(msg->ops_AttrList);
 		int len = mystrlen(new_contents);
-		char *newcont = malloc(len+1);
+		char *newcont = (char *)malloc(len+1);
 		ULONG rc;
 
 		if (newcont)

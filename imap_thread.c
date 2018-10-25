@@ -84,7 +84,7 @@ static void imap_delete_mail_by_uid(char *user, char *server, char *path, unsign
 	thread_call_parent_function_sync(NULL, callback_delete_mail_by_uid, 4, user, server, path, uid);
 }
 
-static void imap_add_imap_folder(char *user, char *server, char *path)
+static void imap_add_imap_folder(char *user, char *server, char *path, char delim)
 {
 	thread_call_parent_function_sync(NULL, callback_add_imap_folder, 3, user, server, path);
 }
@@ -102,7 +102,7 @@ static void imap_refresh_folders(void)
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
-	void (*callback)(struct imap_server *, struct string_list *, struct string_list *);
+	imap_get_folder_list_callback_t callback;
 };
 
 /**
@@ -114,13 +114,14 @@ struct imap_get_folder_list_entry_msg
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	void (*callback)(struct imap_server *, struct string_list *, struct string_list *) = msg->callback;
+	imap_get_folder_list_callback_t callback = msg->callback;
 
 	if (thread_parent_task_can_contiue())
 	{
 		struct imap_get_folder_list_options options = {0};
-		struct string_list *all_folder_list;
-		struct string_list *sub_folder_list;
+		struct remote_folder *all_folders;
+		struct remote_folder *sub_folders;
+		int num_all_folders, num_sub_folders;
 
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		thread_call_function_async(thread_get_main(),status_open,0);
@@ -133,12 +134,10 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 		options.callbacks.set_title = imap_set_title;
 		options.callbacks.set_title_utf8 = imap_set_title_utf8;
 
-		if (!(imap_get_folder_list_really(&options, &all_folder_list, &sub_folder_list)))
+		if (!(imap_get_folder_list_really(&options, &all_folders, &num_all_folders, &sub_folders, &num_sub_folders)))
 			return 0;
 
-		thread_call_parent_function_sync(NULL, callback, 3, server, all_folder_list, sub_folder_list);
-		string_list_free(all_folder_list);
-		string_list_free(sub_folder_list);
+		thread_call_parent_function_sync(NULL, callback, 5, server, all_folders, num_all_folders, sub_folders, num_sub_folders);
 
 		thread_call_function_async(thread_get_main(),status_close,0);
 	}
@@ -147,7 +146,7 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 
 /*****************************************************************************/
 
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *all_list, struct string_list *sub_list))
+int imap_get_folder_list(struct imap_server *server, imap_get_folder_list_callback_t callback)
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;
@@ -183,7 +182,7 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 	while (node)
 	{
 		string_list_insert_tail(&list,node->string);
-		node = (struct string_node*)node_next(&node->node);
+		node = string_node_next(node);
 	}
 
 
@@ -536,7 +535,7 @@ void imap_thread_connect(struct folder *folder)
 		goto bailout;
 	}
 
-	thread_call_function_async(imap_thread, imap_thread_connect_to_server, 4, server, imap_folder, imap_local_path, folder->imap_download);
+	thread_call_function_async(imap_thread, imap_thread_connect_to_server, 3, server, imap_folder, imap_local_path);
 bailout:
 	SM_LEAVE;
 }
@@ -551,7 +550,7 @@ int imap_download_mail(struct folder *f, struct mail_info *m)
 	if (!(server = account_find_imap_server_by_folder(f))) return 0;
 	if (!imap_start_thread()) return 0;
 
-	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 5, server, f->path, m, NULL, NULL))
+	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 5, server, f->path, m, (void (*)(struct mail_info *, void *))NULL, (void *)NULL))
 	{
 		folder_set_mail_flags(f, m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
 		return 1;
@@ -625,7 +624,7 @@ int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callb
 	SM_ENTER;
 
 	if (!imap_start_thread()) goto bailout;
-	if (!(d = malloc(sizeof(*d)))) goto bailout;
+	if (!(d = (struct imap_download_data *)malloc(sizeof(*d)))) goto bailout;
 	memset(d,0,sizeof(*d));
 	d->userdata = userdata;
 	if (!(d->server = account_find_imap_server_by_folder(f))) goto bailout;
@@ -636,7 +635,7 @@ int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callb
 	mail_reference(m);
 	d->callback = callback;
 
-	if (!thread_call_function_async(imap_thread, imap_thread_download_mail, 5, d->server, d->local_path, m, imap_download_mail_async_callback, d))
+	if (!thread_call_function_async(imap_thread, imap_thread_download_mail, 5, d->server, d->local_path, m, imap_download_mail_async_callback, (void*)d))
 		goto bailout;
 	SM_RETURN(1,"%ld");
 	return 1;

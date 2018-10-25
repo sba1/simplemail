@@ -64,7 +64,9 @@ typedef enum
 	IMAP4_FAILED = 2,
 	SMTP_FAILED = 4,
 	RESOURCE_FAILED = 8
-} account_tested_callback_success_t;
+} account_tested_callback_success_values;
+
+typedef int account_tested_callback_success_t;
 
 /**
  * Callback type for mails_test_account().

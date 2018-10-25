@@ -71,7 +71,7 @@ PrintHandle * sysprint_prepare(void)
 {
 	PrintHandle *rc = NULL;
 
-	rc = malloc(sizeof(PrintHandle));
+	rc = (PrintHandle *)malloc(sizeof(PrintHandle));
 	if(rc != NULL)
 	{
 		rc->printer = Open("PRT:", MODE_NEWFILE);

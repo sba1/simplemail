@@ -31,6 +31,14 @@
 #include "compiler.h"
 #endif
 
+#ifndef PROTO_INTUITION_H
+#include <proto/intuition.h>
+#endif
+
+#ifndef LIBRARIES_MUI_H
+#include <libraries/mui.h>
+#endif
+
 /* useful MUI supports */
 
 /**
@@ -53,7 +61,7 @@ IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...) __stackparm;
 APTR MyNewObject (struct IClass *cl, CONST_STRPTR id, Tag tag1, ...) __stackparm;
 #else
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
-APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
+Object *VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
 #endif
 
 /**
@@ -115,7 +123,7 @@ VOID DisposeAllFamilyChilds(Object *o);
 VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help);
 
 /* Custom class creation helper */
-struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *super_mcc, int instDataSize, APTR dispatcher);
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *super_mcc, int instDataSize, ULONG (*dispatcher)(struct IClass *, Object *, Msg));
 
 /* global application object, defined in gui_main.c */
 extern Object *App;
@@ -222,6 +230,26 @@ struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; 
 #define MY_BOOPSI_DISPATCHER(rettype,name,cl,obj,msg) rettype name(struct IClass *cl, Object *obj, Msg msg)
 #else
 #define MY_BOOPSI_DISPATCHER(rettype,name,cl,obj,msg)  ASM SAVEDS rettype name(REG(a0,struct IClass *cl),REG(a2,Object *obj), REG(a1, Msg msg))
+#endif
+
+#ifdef __cplusplus
+#define set(o, a, v) SetAttrs(o, (a), (v), TAG_DONE)
+#define nnset(o, a, v) SetAttrs((o), MUIA_NoNotify, TRUE, (a), (v), TAG_DONE)
+static inline void setstring(Object *o, const char *s)
+{
+	set(o, MUIA_String_Contents, s);
+}
+template<typename T>
+static inline void get(Object *obj, ULONG attr, T *store)
+{
+	static_assert(sizeof(T) == sizeof(uint32));
+	GetAttr(attr, obj, (uint32*)store);
+}
+
+static inline void setcheckmark(Object *obj, bool val)
+{
+	set(obj, MUIA_Selected, val);
+}
 #endif
 
 #endif /* SM_MUISTUFF_H */

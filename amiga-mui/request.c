@@ -57,13 +57,13 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 
 	if (extension)
 	{
-		if (!(aosext = malloc(strlen(extension)+10)))
+		if (!(aosext = (char *)malloc(strlen(extension)+10)))
 			return NULL;
 		strcpy(aosext,"#?");
 		strcat(aosext,extension);
 	} else aosext = NULL;
 
-	if ((fr = AllocAslRequestTags(ASL_FileRequest,
+	if ((fr = (struct FileRequester *)AllocAslRequestTags(ASL_FileRequest,
 				TAG_DONE)))
 	{
 		if (AslRequestTags(fr,
@@ -75,7 +75,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 		{
 			int len = strlen(fr->fr_File) + strlen(fr->fr_Drawer) + 5;
 
-			if ((rc = malloc(len)))
+			if ((rc = (char *)malloc(len)))
 			{
 				strcpy(rc, fr->fr_Drawer);
 				if(!AddPart(rc, fr->fr_File, len) || !strlen(fr->fr_File))
@@ -94,7 +94,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 
 /*****************************************************************************/
 
-int sm_request(char *title, char *text, char *gadgets, ...)
+int sm_request(const char *title, const char *text, const char *gadgets, ...)
 {
 	int rc;
 	char *text_buf;
@@ -102,7 +102,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 
   extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
 
-	if (!(text_buf = malloc(2048)))
+	if (!(text_buf = (char *)malloc(2048)))
 		return 0;
 
   va_start(ap, gadgets);
@@ -130,7 +130,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 
 /*****************************************************************************/
 
-char *sm_request_string(char *title, char *text, char *contents, int secret)
+char *sm_request_string(const char *title, const char *text, const char *contents, int secret)
 {
 	char *ret = NULL;
 	Object *string;
@@ -290,7 +290,7 @@ char *sm_request_pgp_id(char *text)
 			DoMethod(pgp_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&key);
 			if (key)
 			{
-				ret = malloc(16);
+				ret = (char *)malloc(16);
 				sprintf(ret,"0x%08X",key->keyid);
 			}
 		}

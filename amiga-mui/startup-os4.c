@@ -31,6 +31,7 @@
 
 /*#define MYDEBUG*/
 #include "amigadebug.h"
+#include "amigasupport.h"
 #include "timesupport.h"
 
 struct Library *SysBase;
@@ -68,8 +69,6 @@ struct Interface *IGraphics;
 struct Interface *ILayers;
 struct Interface *IExpat;
 
-struct Locale *DefaultLocale;
-
 int main(int argc, char *argv[]);
 
 static int start(struct WBStartup *wbs);
@@ -83,6 +82,9 @@ static void deinit_io(void);
 
 static const char __attribute((__used__)) stack[] = "$STACK: 60000";
 
+#ifdef __cplusplus
+extern "C"
+#endif
 int _start(void)
 {
 	struct Process *pr;
@@ -107,28 +109,6 @@ int _start(void)
 	return rc;
 }
 
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
-{
-	struct Library *lib = IExec->OpenLibrary(name,version);
-	struct Interface *iface;
-	if (!lib) return NULL;
-
-	iface = IExec->GetInterface(lib,"main",1,NULL);
-	if (!iface)
-	{
-		IExec->CloseLibrary(lib);
-		return NULL;
-	}
-	*((struct Interface**)interface_ptr) = iface;
-	return lib;
-}
-
-void CloseLibraryInterface(struct Library *lib, void *interface)
-{
-	IExec->DropInterface(interface);
-	IExec->CloseLibrary(lib);
-}
-
 static int start(struct WBStartup *wbs)
 {
 	int rc = 20;
@@ -147,8 +127,6 @@ static int start(struct WBStartup *wbs)
 
 		if (open_libs())
 		{
-			DefaultLocale = ILocale->OpenLocale(NULL);
-
 			if (init_mem())
 			{
 				BPTR dirlock = IDOS->DupLock(pr->pr_CurrentDir);
@@ -165,7 +143,6 @@ static int start(struct WBStartup *wbs)
 					IDOS->UnLock(IDOS->CurrentDir(odir));
 				}
 			}
-			if (DefaultLocale) ILocale->CloseLocale(DefaultLocale);
 			close_libs();
 		}
 
@@ -719,7 +696,7 @@ void *malloc (size_t size)
 
 	IExec->ObtainSemaphore(&pool_sem);
 #ifndef MEMGRIND
-	mem = IExec->AllocPooled(pool,memsize);
+	mem = (ULONG *)IExec->AllocPooled(pool,memsize);
 #else
 	{
 		struct page *p = first_page;
@@ -933,7 +910,7 @@ FILE *fopen(const char *filename, const char *mode)
 	/* erase tempfile indication (is erased by fclose, but it's better to this twice) */
 	file_is_temp[_file] = 0;
 
-	file = malloc(sizeof(struct myfile));
+	file = (struct myfile *)malloc(sizeof(struct myfile));
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
 
@@ -1270,7 +1247,7 @@ DIR *opendir(const char *name)
 {
 	BPTR dh;
 	struct FileInfoBlock *fib;
-	struct mydir *dir = malloc(sizeof(*dir) + sizeof(struct dirent));
+	struct mydir *dir = (struct mydir *)malloc(sizeof(*dir) + sizeof(struct dirent));
 	if (!dir) return NULL;
 
 	if (!(dh = IDOS->Lock((STRPTR)name,ACCESS_READ)))
@@ -1279,7 +1256,7 @@ DIR *opendir(const char *name)
 		return NULL;
 	}
 
-	if (!(fib = IDOS->AllocDosObject(DOS_FIB,NULL)))
+	if (!(fib = (struct FileInfoBlock *)IDOS->AllocDosObject(DOS_FIB,NULL)))
 	{
 		IDOS->UnLock(dh);
 		free(dir);

@@ -233,7 +233,8 @@ static void person_group_added(struct Person_Data **pdata)
 	DoMethod(data->group_wnd_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&new_group_name);
 	if (new_group_name)
 	{
-		int found = 0, i;
+		int found = 0;
+		unsigned int i;
 
 		/* check if already belonging to the group */
 
@@ -306,7 +307,7 @@ static void person_add_group(struct Person_Data **pdata)
 
 		if (data->group_wnd)
 		{
-			int i;
+			unsigned int i;
 
 			for (i=0;i<xget(group_list, MUIA_NList_Entries);i++)
 			{
@@ -417,10 +418,10 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
-	if ((new_entry = malloc(sizeof(*new_entry))))
+	if ((new_entry = (struct addressbook_entry_new *)malloc(sizeof(*new_entry))))
 	{
 		LONG pos;
-		int i;
+		unsigned int i;
 		char *text_buf;
 
 		memset(new_entry,0,sizeof(*new_entry));
@@ -1137,7 +1138,7 @@ static void group_window_ok(struct Group_Data **pdata)
 
 	set(data->wnd, MUIA_Window_Open, FALSE);
 
-	if ((new_group = malloc(sizeof(*new_group))))
+	if ((new_group = (struct addressbook_group *)malloc(sizeof(*new_group))))
 	{
 		memset(new_group,0,sizeof(*new_group));
 
@@ -1282,7 +1283,7 @@ static void group_window_open(struct addressbook_group *group)
  */
 void addressbookwnd_store(void)
 {
-	int i;
+	unsigned int i;
 
 	for (i=0;i<xget(group_list,MUIA_NList_Entries);i++)
 	{
@@ -1462,12 +1463,12 @@ static void addressbookwnd_init(void)
 	Object *add_contact_button, *edit_contact_button, *rem_contact_button;
 	Object *save_button, *close_button;
 
-	int i;
+	unsigned int i;
 
 	/* translate the menu entries */
 	if (!addressbook_newmenu)
 	{
-		if (!(addressbook_newmenu = malloc(sizeof(nm_untranslated)))) return;
+		if (!(addressbook_newmenu = (struct NewMenu *)malloc(sizeof(nm_untranslated)))) return;
 		memcpy(addressbook_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)

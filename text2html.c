@@ -41,8 +41,8 @@ static const char legalchars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij
 
 struct smily
 {
-	char *ascii;
-	char *gfx;
+	const char *ascii;
+	const char *gfx;
 };
 
 const static struct smily smily[] =
@@ -72,10 +72,6 @@ const static struct smily smily[] =
 	{":*","smily_kiss"},
 	{":-e","smily_angry"}
 };
-
-/* from codesets.c */
-/* typedef unsigned char	Boolean; */
-unsigned char isLegalUTF8Sequence(utf8 *source, utf8 *sourceEnd);
 
 static int write_unicode(utf8 *src, string *str)
 {
@@ -204,8 +200,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 					if (level != new_level)
 					{
-						char *begin_quote_string = "<TABLE BGCOLOR=\"#%06x\" WIDTH=\"100%%\" STYLE=\"border-left: 3px solid #%06x; border-right: 3px solid #%06x;\"><TD><FONT COLOR=\"#%06x\">";
-						char *end_quote_string = "</FONT></TD></TABLE>";
+						const char *begin_quote_string = "<TABLE BGCOLOR=\"#%06x\" WIDTH=\"100%%\" STYLE=\"border-left: 3px solid #%06x; border-right: 3px solid #%06x;\"><TD><FONT COLOR=\"#%06x\">";
+						const char *end_quote_string = "</FONT></TD></TABLE>";
 
 						/* If new level is larger */
 						for (;level < new_level; level++)
@@ -223,8 +219,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				{
 					if (last_color != new_color)
 					{
-						char *begin_quote_string = "<FONT COLOR=\"#%x\">";
-						char *end_quote_string = "</FONT>";
+						const char *begin_quote_string = "<FONT COLOR=\"#%x\">";
+						const char *end_quote_string = "</FONT>";
 
 						if (!initial_color) string_append(&str,end_quote_string);
 						if (new_color == 1)
@@ -377,7 +373,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					unsigned int unicode;
 					int len = 0;
 					/* check if it really could be a utf8 char */
-					if (isLegalUTF8Sequence((utf8*)buffer, (utf8*)(buffer+buffer_len)))
+					if (utf8islegal((utf8*)buffer, (utf8*)(buffer+buffer_len)))
 					{
 						len = utf8tochar((utf8*)buffer, &unicode, user.config.default_codeset);
 					}

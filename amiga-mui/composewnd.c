@@ -87,16 +87,16 @@ static const struct MUIS_SMToolbar_Button sm_composewnd_buttons[] =
 	{PIC(0,4), SM_COMPOSEWND_BUTTON_COPY,  0, N_("Copy"),  NULL, "Copy"},
 	{PIC(0,5), SM_COMPOSEWND_BUTTON_CUT,   0, N_("Cut"),   NULL, "Cut"},
 	{PIC(2,8), SM_COMPOSEWND_BUTTON_PASTE, 0, N_("Paste"), NULL, "Paste"},
-	{MUIV_SMToolbar_Space},
+	{(ULONG)MUIV_SMToolbar_Space},
 	{PIC(3,3), SM_COMPOSEWND_BUTTON_UNDO, 0, N_("Undo"), NULL, "Undo"},
 	{PIC(3,0), SM_COMPOSEWND_BUTTON_REDO, 0, N_("Redo"), NULL, "Redo"},
-	{MUIV_SMToolbar_Space},
+	{(ULONG)MUIV_SMToolbar_Space},
 	{PIC(0,0), SM_COMPOSEWND_BUTTON_ATTACH, 0, N_("_Attach"), NULL, "AddAttachment"},
-	{MUIV_SMToolbar_Space},
+	{(ULONG)MUIV_SMToolbar_Space},
 	{PIC(0,8), SM_COMPOSEWND_BUTTON_ENCRYPT, MUIV_SMToolbar_ButtonFlag_Toggle, N_("Encrypt"), NULL, "Encrypt"},
 	/* signbutton temporary not created because not implemented */
 	/* {PIC(3,2), SM_COMPOSEWND_BUTTON_SIGN,    MUIV_SMToolbar_ButtonFlag_Toggle, N_("Si_gn"),   NULL, "Sign"}, */
-	{MUIV_SMToolbar_End},
+	{(ULONG)MUIV_SMToolbar_End},
 };
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
@@ -436,7 +436,7 @@ static void compose_add_file_as_an_attachment(struct Compose_Data *data, char *f
 	struct attachment attach;
 	memset(&attach, 0, sizeof(attach));
 
-	attach.content_type = identify_file(filename);
+	attach.content_type = (char *)identify_file(filename);
 	attach.editable = 0;
 	attach.filename = filename;
 	attach.unique_id = data->attachment_unique_id++;
@@ -772,12 +772,13 @@ static void compose_mail(struct Compose_Data *data, int hold)
 			if (data->ref_mail && mail_get_status_type(data->ref_mail) != MAIL_STATUS_SENT
 												 && mail_get_status_type(data->ref_mail) != MAIL_STATUS_WAITSEND)
 			{
+				int marked = data->ref_mail->status & MAIL_STATUS_FLAG_MARKED;
 				if (data->compose_action == COMPOSE_ACTION_REPLY)
 				{
 					struct folder *f = folder_find_by_mail(data->ref_mail);
 					if (f)
 					{
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, (mail_status_t)(MAIL_STATUS_REPLIED|marked));
 						main_refresh_mail(data->ref_mail);
 						main_refresh_folder(f);
 					}
@@ -786,7 +787,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					if (data->compose_action == COMPOSE_ACTION_FORWARD)
 					{
 						struct folder *f = folder_find_by_mail(data->ref_mail);
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, (mail_status_t)(MAIL_STATUS_FORWARD|marked));
 						main_refresh_mail(data->ref_mail);
 					}
 				}
@@ -870,7 +871,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail_complete *ma
 	if (mail->content_description && *mail->content_description)
 	{
 		int len = strlen(mail->content_description)+1;
-		if ((attach.description = malloc(len)))
+		if ((attach.description = (char *)malloc(len)))
 		{
 			utf8tostr(mail->content_description, attach.description, len, user.config.default_codeset);
 		}
@@ -1526,7 +1527,7 @@ int compose_window_open(struct compose_args *args)
 			data->signatures_cycle = signatures_cycle;
 			data->importance_cycle = importance_cycle;
 
-			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
+			data->file_req = (struct FileRequester *)MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
 			/* mark the window as opened */
 			compose_open[num] = data;

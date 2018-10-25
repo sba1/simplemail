@@ -25,6 +25,9 @@
 
 #include <dos/dos.h>
 
+struct Library *OpenLibraryInterface(CONST_STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+
 void SecondsToString( char *buf, unsigned int seconds);
 void SecondsToStringLong( char *buf, unsigned int seconds);
 void SecondsToDateString( char *buf, unsigned int seconds);
@@ -36,7 +39,7 @@ STRPTR NameOfLock( BPTR lock );
 VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask );
 LONG GetControlChar(const char *buf);
 VOID FreeTemplate(APTR m);
-APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results);
+APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results);
 LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize);
 
 

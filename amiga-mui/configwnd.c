@@ -273,7 +273,7 @@ void config_accounts_can_be_tested(int tested)
 
 void config_accounts_update_fingerprint(const char *server, const char *fingerprint)
 {
-	int i;
+	unsigned int i;
 
 	if (!config_wnd) return;
 

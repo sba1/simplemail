@@ -81,12 +81,12 @@ ringbuffer_t ringbuffer_create(size_t size, ringbuffer_free_callback_t free_call
 	size &= ~(4-1);
 	if (!size) return NULL;
 
-	if (!(rb = malloc(sizeof(*rb))))
+	if (!(rb = (ringbuffer_t)malloc(sizeof(*rb))))
 		return NULL;
 
 	memset(rb, 0, sizeof(*rb));
 
-	if (!(rb->mem = malloc(size)))
+	if (!(rb->mem = (unsigned char*)malloc(size)))
 	{
 		ringbuffer_dispose(rb);
 		return NULL;

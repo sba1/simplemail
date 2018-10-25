@@ -91,6 +91,12 @@ int imap_login(struct connection *conn, struct imap_server *server);
  */
 int imap_send_simple_command(struct connection *conn, const char *cmd);
 
+struct remote_folder
+{
+	char *name;
+	char delim;
+};
+
 /**
  * Returns a list with string_node nodes which describes the folder names.
  * If you only want the subscribed folders set all to 0. Note that the
@@ -98,9 +104,25 @@ int imap_send_simple_command(struct connection *conn, const char *cmd);
  *
  * @param conn the connection to write against
  * @param all whether all folders shall be returned or only the subscribed ones.
- * @return the list with string_nodes
+ * @param num_remote_folders length of the returned array
+ * @return an array of all remote folders.
  */
-struct string_list *imap_get_folders(struct connection *conn, int all);
+struct remote_folder *imap_get_folders(struct connection *conn, int all, int *num_remote_folders);
+
+/**
+ * Free all memory associated with the given array of remote folders as
+ * returned by imap_get_folders().
+ *
+ * @param rf array of remote folders as returned by imap_get_folders().
+ * @param num_remote_folders length of the array.
+ */
+void imap_folders_free(struct remote_folder *rf, int num_remote_folders);
+
+/**
+ * @return whether the folder with the given name exists in the given remote
+ *  folder array.
+ */
+int imap_remote_folder_exists(struct remote_folder *rf, int num_rf, const char *name);
 
 struct imap_select_mailbox_args
 {
@@ -118,7 +140,7 @@ struct imap_select_mailbox_args
 };
 
 /**
- * Selects the given mailbox (as identified by path).
+ * Selects the given mailbox (as identified by args->path).
  *
  * @param args defines arguments and options.
  * @return a remote_mailbox for further processing. Field remote_mail_array will be NULL.

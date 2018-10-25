@@ -196,7 +196,7 @@ void test_mail_info_create_from_file_with_common_context(void)
 
 /*************************************************************/
 
-static unsigned char *simple_mail_with_attachment_filename = "attachment.eml";
+static unsigned char *simple_mail_with_attachment_filename = "../attachment.eml";
 
 /* @Test */
 void test_simple_mail_info_with_attachment(void)

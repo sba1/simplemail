@@ -174,7 +174,14 @@ ConversionResult ConvertUTF8toUTF32 (
 		UTF8** sourceStart, UTF8* sourceEnd,
 		UTF32** targetStart, const UTF32* targetEnd, ConversionFlags flags);
 
-Boolean isLegalUTF8Sequence(UTF8 *source, UTF8 *sourceEnd);
+static Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
+
+/* --------------------------------------------------------------------- */
+
+int utf8islegal(const char *source, const char *sourceend)
+{
+	return isLegalUTF8Sequence((const UTF8*)source, (const UTF8*)sourceend);
+}
 
 /* --------------------------------------------------------------------- */
 
@@ -431,9 +438,9 @@ ConversionResult ConvertUTF16toUTF8 (
  * definition of UTF-8 goes up to 4-byte sequences.
  */
 
-static Boolean isLegalUTF8(UTF8 *source, int length) {
+static Boolean isLegalUTF8(const UTF8 *source, int length) {
 	UTF8 a;
-	UTF8 *srcptr = source+length;
+	const UTF8 *srcptr = source+length;
 	switch (length) {
 	default: return false;
 		/* Everything else falls through when "true"... */
@@ -459,7 +466,7 @@ static Boolean isLegalUTF8(UTF8 *source, int length) {
  * Exported function to return whether a UTF-8 sequence is legal or not.
  * This is not used here; it's just exported.
  */
-Boolean isLegalUTF8Sequence(UTF8 *source, UTF8 *sourceEnd) {
+Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd) {
 	int length = trailingBytesForUTF8[*source]+1;
 	if (source+length > sourceEnd) {
 	    return false;
@@ -1154,7 +1161,7 @@ void codesets_cleanup(void)
 
 /*****************************************************************************/
 
-struct codeset *codesets_find(char *name)
+struct codeset *codesets_find(const char *name)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
 
@@ -1171,10 +1178,10 @@ struct codeset *codesets_find(char *name)
 
 /*****************************************************************************/
 
-int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len)
+int codesets_unconvertable_chars(struct codeset *codeset, const char *text, int text_len)
 {
 	struct single_convert conv;
-	char *text_ptr = text;
+	const char *text_ptr = text;
 	int i;
 	int errors = 0;
 
@@ -1199,7 +1206,7 @@ int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_l
 
 /*****************************************************************************/
 
-struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr)
+struct codeset *codesets_find_best(const char *text, int text_len, int *error_ptr)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
 	struct codeset *best_codeset = NULL;
@@ -1315,7 +1322,7 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
 
 /*****************************************************************************/
 
-utf8 *utf8create(void *from, char *charset)
+utf8 *utf8create(void *from, const char *charset)
 {
   /* utf8create_len() will stop on a null byte */
 	return utf8create_len(from,charset,0x7fffffff);
@@ -1362,7 +1369,7 @@ int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
 
 /*****************************************************************************/
 
-utf8 *utf8create_len(void *from, char *charset, int from_len)
+utf8 *utf8create_len(void *from, const char *charset, int from_len)
 {
 	int dest_size = 0;
 	char *dest;
@@ -1464,7 +1471,7 @@ char *utf8tostrcreate(const utf8 *str, struct codeset *codeset)
 
 /*****************************************************************************/
 
-int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
+int utf8tochar(const utf8 *str, unsigned int *chr, struct codeset *codeset)
 {
 	struct single_convert conv;
 	struct single_convert *f;

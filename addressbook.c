@@ -184,7 +184,7 @@ static void addressbook_hash_entry(struct addressbook_entry_new *e)
 
 			if ((dup_email && (he = (struct address_hash_entry*)hash_table_insert(&address_hash, dup_email, 0))))
 			{
-				if (!(he->abe = malloc(sizeof(*he->abe)*4)))
+				if (!(he->abe = (struct addressbook_entry_new **)malloc(sizeof(*he->abe)*4)))
 					goto out;
 
 				he->num_abe_allocated = 4;
@@ -199,7 +199,7 @@ static void addressbook_hash_entry(struct addressbook_entry_new *e)
 				int new_num_abe_allocated = he->num_abe_allocated*3/2;
 				struct addressbook_entry_new **new_abe;
 
-				if (!(new_abe = realloc(he->abe, new_num_abe_allocated*sizeof(*new_abe))))
+				if (!(new_abe = (struct addressbook_entry_new **)realloc(he->abe, new_num_abe_allocated*sizeof(*new_abe))))
 					goto out;
 
 				he->abe = new_abe;
@@ -1679,7 +1679,7 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 {
 	struct addressbook_completion_node *acn;
 
-	if (!(acn = malloc(sizeof(*acn))))
+	if (!(acn = (struct addressbook_completion_node *)malloc(sizeof(*acn))))
 		return 0;
 	memset(acn, 0, sizeof(*acn));
 	acn->type = type;
@@ -1687,7 +1687,7 @@ static int addressbook_completion_list_add(struct addressbook_completion_list *c
 	if (m)
 	{
 		int l = utf8len(complete);
-		if ((acn->match_mask = malloc(match_bitmask_size(l))))
+		if ((acn->match_mask = (match_mask_t*)malloc(match_bitmask_size(l))))
 		{
 			memcpy(acn->match_mask, m, match_bitmask_size(l));
 		}
@@ -1703,7 +1703,7 @@ struct addressbook_completion_node *addressbook_completion_node_duplicate(struct
 	struct addressbook_completion_node *nc;
 	int l;
 
-	if (!(nc = malloc(sizeof(*nc))))
+	if (!(nc = (struct addressbook_completion_node *)malloc(sizeof(*nc))))
 	{
 		return NULL;
 	}
@@ -1714,7 +1714,7 @@ struct addressbook_completion_node *addressbook_completion_node_duplicate(struct
 	}
 
 	l = utf8len(nc->complete);
-	if ((nc->match_mask = malloc(match_bitmask_size(l))))
+	if ((nc->match_mask = (match_mask_t *)malloc(match_bitmask_size(l))))
 	{
 		memcpy(nc->match_mask, n->match_mask, match_bitmask_size(l));
 	} else
@@ -1793,11 +1793,11 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		max = ~0;
 	}
 
-	if (!(cl = malloc(sizeof(*cl))))
+	if (!(cl = (struct addressbook_completion_list *)malloc(sizeof(*cl))))
 		return NULL;
 	list_init(&cl->l);
 
-	if (!(m = malloc(match_bitmask_size(m_len))))
+	if (!(m = (match_mask_t *)malloc(match_bitmask_size(m_len))))
 	{
 		free(cl);
 		return NULL;
@@ -1806,7 +1806,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 	{
 		struct addressbook_entry_new *entry;
 		struct addressbook_group *group;
-		int total_entries = 0;
+		unsigned int total_entries = 0;
 
 		/* find matching group */
 		group = addressbook_first_group();

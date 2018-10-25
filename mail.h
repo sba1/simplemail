@@ -443,7 +443,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
  * @param filename that points to the file that represents the mail.
  * @return the mail or NULL.
  */
-struct mail_complete *mail_complete_create_from_file(mail_context *mc, char *filename);
+struct mail_complete *mail_complete_create_from_file(mail_context *mc, const char *filename);
 
 /**
  * Creates a mail that is a reply to the given mails. That means change the
@@ -476,7 +476,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array);
  * @param filename
  * @return the mail or NULL.
  */
-struct mail_info *mail_info_create_from_file(mail_context *mc, char *filename);
+struct mail_info *mail_info_create_from_file(mail_context *mc, const char *filename);
 
 /**
  * Frees all memory associated with a mail.
@@ -511,7 +511,7 @@ int mail_process_headers(struct mail_complete *mail);
  * @param folder
  * @param mail
  */
-void mail_read_contents(char *folder, struct mail_complete *mail);
+void mail_read_contents(const char *folder, struct mail_complete *mail);
 
 /**
  * Decodes the given mail. A text mail is always converted to UTF8 and
@@ -561,7 +561,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers);
  * @param name
  * @return
  */
-char *mail_find_header_contents(struct mail_complete *mail, char *name);
+char *mail_find_header_contents(struct mail_complete *mail, const char *name);
 
 /**
  * Returns a unique filename for a new mail that should have the
@@ -612,7 +612,7 @@ void mail_dereference(struct mail_info *mail);
  * @param name
  * @return
  */
-struct header *mail_find_header(struct mail_complete *mail, char *name);
+struct header *mail_find_header(struct mail_complete *mail, const char *name);
 
 /* mail scan functions */
 

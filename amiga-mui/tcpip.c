@@ -64,6 +64,7 @@
 #endif
 #endif
 
+#include "amigasupport.h"
 #include "ssl.h"
 #include "tcpip.h"
 #include "subthreads_amiga.h"
@@ -74,9 +75,6 @@
 #endif
 #define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
 #endif
-
-struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
-void CloseLibraryInterface(struct Library *lib, void *interface);
 
 /**
  * Opens the socket lib. Must be done for every thread which want to use
@@ -334,7 +332,7 @@ void close_ssl_lib(void)
 
 	if (!(--thread->ssllib_opencnt))
 	{
-		SSL_CTX_free(thread->ssl_ctx);
+		SSL_CTX_free((SSL_CTX*)thread->ssl_ctx);
 		thread->ssl_ctx = NULL;
 
 #ifndef USE_OPENSSL
@@ -361,7 +359,7 @@ SSL_CTX *ssl_context(void)
 	if (!thread) return NULL; /* assert */
 
 	SM_DEBUGF(20,("ssl context = %p\n",thread->ssl_ctx));
-	return thread->ssl_ctx;
+	return (SSL_CTX *)thread->ssl_ctx;
 }
 #endif
 

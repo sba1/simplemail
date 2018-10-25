@@ -211,17 +211,21 @@ int imap_send_simple_command(struct connection *conn, const char *cmd)
 
 /******************************************************************************/
 
-struct string_list *imap_get_folders(struct connection *conn, int all)
+struct remote_folder *imap_get_folders(struct connection *conn, int all, int *num_remote_folders)
 {
-	int ok;
+	int i, ok;
+	int has_inbox = 0;
 	char *line;
 	char tag[20];
 	char send[200];
 	char buf[100];
 
-	struct string_list *list = (struct string_list*)malloc(sizeof(struct string_list));
-	if (!list) return NULL;
-	string_list_init(list);
+	int num_rf = 0;
+	struct remote_folder *rf = NULL;
+	struct string_list list;
+	struct string_node *sn;
+
+	string_list_init(&list);
 
 	ok = 0;
 
@@ -232,6 +236,7 @@ struct string_list *imap_get_folders(struct connection *conn, int all)
 
 	SM_DEBUGF(20,("%s",send));
 
+	/* Capture all lines expect ok */
 	while ((line = tcp_readln(conn)))
 	{
 		SM_DEBUGF(20,("%s\n",line));
@@ -244,31 +249,59 @@ struct string_list *imap_get_folders(struct connection *conn, int all)
 			break;
 		} else
 		{
-			char *utf_name;
-
-			/* command */
-			line = imap_get_result(line,buf,sizeof(buf));
-
-			/* read flags */
-			line = imap_get_result(line,buf,sizeof(buf));
-
-			/* read delim */
-			line = imap_get_result(line,buf,sizeof(buf));
-
-			/* read name */
-			line = imap_get_result(line,buf,sizeof(buf));
-
-			if ((utf_name = iutf7ntoutf8(buf, strlen(buf))))
-			{
-				string_list_insert_tail(list,utf_name);
-				free(utf_name);
-			}
+			string_list_insert_tail(&list, line);
+			num_rf++;
 		}
 	}
 
+	if (!ok)
+	{
+		goto bailout;
+	}
+
+	/* Reserve memory for folders plus an additional for INBOX */
+	if (!(rf = (struct remote_folder *)malloc(sizeof(*rf) * (num_rf + 1))))
+	{
+		goto bailout;
+	}
+
+	for (sn = string_list_first(&list), i=0; sn; sn = string_node_next(sn), i++)
+	{
+		unsigned char delim = 0;
+
+		line = sn->string;
+
+		/* command */
+		line = imap_get_result(line,buf,sizeof(buf));
+
+		/* read flags */
+		line = imap_get_result(line,buf,sizeof(buf));
+
+		/* read delim */
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (strcmp("NIL", buf) && strlen(buf) == 1)
+		{
+			delim = buf[0];
+		}
+
+		/* read name */
+		line = imap_get_result(line,buf,sizeof(buf));
+
+		rf[i].delim = delim;
+		if (!(rf[i].name = iutf7ntoutf8(buf, strlen(buf))))
+		{
+			goto bailout;
+		}
+		if (!strcmp(rf[i].name, "INBOX"))
+		{
+			has_inbox = 1;
+		}
+	}
+
+
 	/* Some IMAP servers don't list the INBOX server on LSUB and don't allow subscribing of it,
-   * so we add it manually in case it exists*/
-	if (ok && !all && !string_list_find(list,"INBOX"))
+	 * so we add it manually in case it exists*/
+	if (!all && !has_inbox)
 	{
 		sprintf(tag,"%04x",imap_val++);
 		sprintf(send,"%s STATUS INBOX (MESSAGES)\r\n",tag);
@@ -285,16 +318,53 @@ struct string_list *imap_get_folders(struct connection *conn, int all)
 			{
 				line = imap_get_result(line,buf,sizeof(buf));
 				if (!mystricmp(buf,"OK"))
-					string_list_insert_tail(list,"INBOX");
+				{
+					rf[i++].name = mystrdup("INBOX");
+				}
 				break;
 			}
 		}
 	}
 
-	if (ok) return list;
+	*num_remote_folders = i;
 
-	string_list_free(list);
-	return NULL;
+bailout:
+	string_list_clear(&list);
+	return rf;
+}
+
+/******************************************************************************/
+
+void imap_folders_free(struct remote_folder *rf, int num_remote_folders)
+{
+	int i;
+
+	if (!rf)
+	{
+		return;
+	}
+
+	for (i = 0; i< num_remote_folders; i++)
+	{
+		free(rf[i].name);
+	}
+	free(rf);
+}
+
+/******************************************************************************/
+
+int imap_remote_folder_exists(struct remote_folder *rf, int num_rf, const char *name)
+{
+	int i;
+
+	for (i = 0; i < num_rf; i++)
+	{
+		if (!strcmp(rf[i].name, name))
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /******************************************************************************/
@@ -579,7 +649,7 @@ struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *
 		goto bailout;
 	}
 
-	if (!(buf = malloc(buf_size)))
+	if (!(buf = (char *)malloc(buf_size)))
 		goto bailout;
 
 	if (!uid_start) uid_end = 0;

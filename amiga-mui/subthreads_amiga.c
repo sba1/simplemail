@@ -550,7 +550,7 @@ int thread_parent_task_can_contiue(void)
  * @param eudata
  * @return
  */
-static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
+static thread_t thread_start_new(const char *thread_name, int (*entry)(void*), void *eudata)
 {
 	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread)
@@ -663,7 +663,7 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 
  /*****************************************************************************/
 
-thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
+thread_t thread_add(const char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_node *thread_node = (struct thread_node*)AllocVec(sizeof(struct thread_node),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread_node)
@@ -912,7 +912,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 /*****************************************************************************/
 
-int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
+int thread_call_function_async_(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;
 	int rc = 0;
@@ -1147,7 +1147,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
 		thread_t thread = thread_get();
-		struct TimerMessage *timer_msg = AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
+		struct TimerMessage *timer_msg = (struct TimerMessage *)AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
 		if (timer_msg)
 		{
 			timer_msg->time_req = *thread->timer_req;
@@ -1195,7 +1195,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 		if (tmsg->arg1 && argcount >= 1)
 		{
-			STRPTR str = AllocVec(strlen((char*)tmsg->arg1)+1,MEMF_PUBLIC);
+			STRPTR str = (STRPTR)AllocVec(strlen((char*)tmsg->arg1)+1,MEMF_PUBLIC);
 			if (str)
 			{
 				strcpy(str,(char*)tmsg->arg1);
@@ -1249,7 +1249,7 @@ struct semaphore_s
 
 semaphore_t thread_create_semaphore(void)
 {
-	semaphore_t sem = malloc(sizeof(struct semaphore_s));
+	semaphore_t sem = (semaphore_t)malloc(sizeof(struct semaphore_s));
 	if (sem)
 	{
 		InitSemaphore(&sem->sem);

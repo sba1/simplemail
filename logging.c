@@ -101,7 +101,7 @@ logg_t logg_next(logg_t current)
 
 		logg_lock();
 
-		first = ringbuffer_next(logg_rb, NULL);
+		first = (logg_t)ringbuffer_next(logg_rb, NULL);
 		while (first)
 		{
 			if (ringbuffer_entry_id(first) >= logg_start_id)
@@ -111,7 +111,7 @@ logg_t logg_next(logg_t current)
 		logg_unlock();
 		return NULL;
 	}
-	if (!(next = ringbuffer_next(logg_rb, current)))
+	if (!(next = (logg_t)ringbuffer_next(logg_rb, current)))
 		logg_unlock();
 	return next;
 }
@@ -188,7 +188,7 @@ static struct list logg_update_listener_list;
 
 logg_listener_t logg_add_update_listener(logg_update_callback_t logg_update_callback, void *userdata)
 {
-	logg_listener_t l = malloc(sizeof(*l));
+	logg_listener_t l = (logg_listener_t)malloc(sizeof(*l));
 	if (!l) return NULL;
 	memset(l, 0, sizeof(*l));
 
@@ -248,7 +248,7 @@ void logg(logging_severity_t severity, int tid, const char *filename, const char
 
 	size = sizeof(*logg) + strlen(text) + 1;
 	logg_lock();
-	if (!(logg = ringbuffer_alloc(logg_rb, size)))
+	if (!(logg = (logg_t)ringbuffer_alloc(logg_rb, size)))
 	{
 		logg_unlock();
 		return;

@@ -13,7 +13,7 @@
  */
 mail_context *mail_context_create(void)
 {
-	mail_context *c = malloc(sizeof(*c));
+	mail_context *c = (mail_context *)malloc(sizeof(*c));
 	if (!c)
 	{
 		return NULL;

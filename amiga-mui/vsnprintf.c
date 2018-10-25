@@ -387,7 +387,7 @@ reswitch: switch (ch) {
          * NUL in the first `prec' characters, and
          * strlen() will go further.
          */
-        char *p = memchr(cp, 0, (size_t)prec);
+        char *p = (char *)memchr(cp, 0, (size_t)prec);
 
         if (p != NULL) {
           size = p - cp;

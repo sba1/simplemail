@@ -76,8 +76,8 @@ class FuncDefVisitor(c_ast.NodeVisitor):
       print('\tstatic_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);')
       print('\treturn {0}({1});'.format(name_str, ", ".join(argnames_strs)))
       print('}')
-      print('#define {0}({1}, function, argcount, ...) \\'.format(name_str[:-1], ", ".join(argnames_strs[:-3])))
-      print('\t{0}<argcount>({1}, function, argcount __VA_OPT__(,) __VA_ARGS__)'.format(name_str + '2', ", ".join(argnames_strs[:-3])))
+      print('#define {0}({1}, argcount, ...) \\'.format(name_str[:-1], ", ".join(argnames_strs[:-3] + ['function'])))
+      print('\t{0}<argcount>({1}, argcount __VA_OPT__(,) __VA_ARGS__)'.format(name_str + '2', ", ".join(argnames_strs[:-3]+['function'])))
 
       # Second, code that works with at least a C++11 compiler. It lacks the
       # verification of the argcount parameter

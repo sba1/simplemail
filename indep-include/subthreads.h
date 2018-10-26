@@ -69,6 +69,23 @@ struct is_convertible<tuple<>, tuple<>>
 };
 }
 
+/* Define marcos that is used for inline callback functions to check
+ * for the arguments at compile time.
+ */
+#if __cplusplus > 201703L
+#define SM__CHECK_ARGS \
+		using namespace simplemail; \
+		static_assert(N == sizeof...(B)); \
+		static_assert(sizeof...(A) == sizeof...(B)); \
+		static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+
+#else
+#define SM__CHECK_ARGS \
+		using namespace simplemail; \
+		static_assert(sizeof...(A) == sizeof...(B)); \
+		static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
+#endif
+
 #endif
 
 #define THREAD_FUNCTION(x) ((int (*)(void*))x)
@@ -181,19 +198,7 @@ int thread_aborted(void);
  * @param argcount
  * @return
  */
-int thread_call_function_sync(thread_t thread, void *function, int argcount, ...);
-
-#if __cplusplus >= 201103L
-template<typename R, typename... A, typename... B>
-int thread_call_function_sync(thread_t thread, R (*function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_call_function_sync(thread, (void *)function, argcount, args...);
-}
-#endif
+int thread_call_function_sync_(thread_t thread, void *function, int argcount, ...);
 
 /**
  * @brief Call a function in the context of the given thread in an asynchronous manner.
@@ -204,39 +209,6 @@ int thread_call_function_sync(thread_t thread, R (*function)(A...), int argcount
  * @return whether the call was successfully forwarded.
  */
 int thread_call_function_async_(thread_t thread, void *function, int argcount, ...);
-
-#if __cplusplus > 201703L
-
-template<int N, typename R, typename... A, typename... B>
-static inline int thread_call_function_async_2(thread_t thread, R (*function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(N == sizeof...(B));
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_call_function_async_(thread, (void *)function, argcount, args...);
-}
-#define thread_call_function_async(thread, function, argcount, ...) \
-		thread_call_function_async_2<argcount>(thread, function, argcount __VA_OPT__(,) __VA_ARGS__)
-
-#elif __cplusplus >= 201103L
-
-template<typename R, typename... A, typename... B>
-static inline int thread_call_function_async(thread_t thread, R (*function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_call_function_async_(thread, (void *)function, argcount, args...);
-}
-
-#else
-
-#define thread_call_function_async thread_call_function_async_
-
-#endif
 
 /**
  * @brief Call a function in the context of the given thread in an asynchronous manner
@@ -261,20 +233,7 @@ int thread_call_function_async_future(future_t *future_t, thread_t thread, void 
  * @param argcount
  * @return
  */
-int thread_call_parent_function_sync(int *success, void *function, int argcount, ...);
-
-#if __cplusplus >= 201103L
-template<typename R, typename... A, typename... B>
-int thread_call_parent_function_sync(int *success, R (function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_call_parent_function_sync(success, (void *)function, argcount, args...);
-
-}
-#endif
+int thread_call_parent_function_sync_(int *success, void *function, int argcount, ...);
 
 /**
  * Call the given function asynchronous in the context of the parent thread
@@ -323,19 +282,7 @@ int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct c
  * @param argcount
  * @return
  */
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);
-
-#if __cplusplus >= 201103L
-template<typename R, typename... A, typename... B>
-static inline int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, R (*function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_call_parent_function_sync_timer_callback(timer_callback, timer_data, millis, (void *)function, argcount, args...);
-}
-#endif
+int thread_call_parent_function_sync_timer_callback_(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);
 
 /**
  * Pushes a function call in the function queue of the callers task context.
@@ -344,7 +291,7 @@ static inline int thread_call_parent_function_sync_timer_callback(void (*timer_c
  * @param argcount
  * @return 1 for success else 0.
  */
-int thread_push_function(void *function, int argcount, ...);
+int thread_push_function_(void *function, int argcount, ...);
 
 /**
  * Pushes a function call in the function queue of the callers task context
@@ -355,19 +302,10 @@ int thread_push_function(void *function, int argcount, ...);
  * @param argcount
  * @return return 1 for success else 0.
  */
-int thread_push_function_delayed(int millis, void *function, int argcount, ...);
+int thread_push_function_delayed_(int millis, void *function, int argcount, ...);
 
-#if __cplusplus >= 201103L
-template<typename R, typename... A, typename... B>
-static inline int thread_push_function_delayed(int millis, R (*function)(A...), int argcount, B... args)
-{
-	using namespace simplemail;
-	static_assert(sizeof...(A) == sizeof...(B));
-	static_assert(is_convertible<tuple<A...>, tuple<B...>>::convertible == true);
-
-	return thread_push_function_delayed(millis, function, argcount, args...);
-}
-#endif
+/* Include auto-generated verifiers */
+#include "subthreads-verifiers.h"
 
 /**
  * Return the main (UI) thread.

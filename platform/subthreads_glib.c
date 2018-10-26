@@ -304,7 +304,7 @@ void thread_signal(thread_t thread_to_signal)
 
 /*****************************************************************************/
 
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
+int thread_call_parent_function_sync_timer_callback_(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
@@ -410,7 +410,7 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 
 /*****************************************************************************/
 
-int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+int thread_call_function_sync_(thread_t thread, void *function, int argcount, ...)
 {
 	int rc;
 	uintptr_t function_rc;
@@ -630,7 +630,7 @@ static gboolean thread_push_function_entry(gpointer user_data)
 
 /*****************************************************************************/
 
-int thread_push_function(void *function, int argcount, ...)
+int thread_push_function_(void *function, int argcount, ...)
 {
 	struct thread_call_function_sync_data *data;
 	int i;
@@ -664,7 +664,7 @@ int thread_push_function(void *function, int argcount, ...)
 
 /*****************************************************************************/
 
-int thread_push_function_delayed(int millis, void *function, int argcount, ...)
+int thread_push_function_delayed_(int millis, void *function, int argcount, ...)
 {
 	struct thread_call_function_sync_data *data;
 	int i;
@@ -698,7 +698,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 
 /*****************************************************************************/
 
-int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
+int thread_call_parent_function_sync_(int *success, void *function, int argcount, ...)
 {
 	uintptr_t rc;
 	int s;

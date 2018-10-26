@@ -86,7 +86,7 @@ static void imap_delete_mail_by_uid(char *user, char *server, char *path, unsign
 
 static void imap_add_imap_folder(char *user, char *server, char *path, char delim)
 {
-	thread_call_parent_function_sync(NULL, callback_add_imap_folder, 3, user, server, path);
+	thread_call_parent_function_sync(NULL, callback_add_imap_folder, 4, user, server, path, delim);
 }
 
 static void imap_refresh_folders(void)

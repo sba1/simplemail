@@ -301,7 +301,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 		  	if (user.config.read_smilies)
 		  	{
-		  		int i;
+		  		unsigned int i;
 		  		int smily_used = 0;
 			  	/* No look into the smily table, this is slow and needs to be improved */
 		  		for (i=0;i<sizeof(smily)/sizeof(struct smily);i++)

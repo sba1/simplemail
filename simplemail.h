@@ -577,8 +577,9 @@ void callback_mail_has_not_been_sent(const char *filename);
  * @param user the login used to differentiate the folder from others.
  * @param server the server.
  * @param path the path on the server.
+ * @param delim the path delimiter used on the server
  */
-void callback_add_imap_folder(char *user, char *server, char *path);
+void callback_add_imap_folder(char *user, char *server, char *path, char delim);
 
 /**
  * Replace the oldmail in the folder with the newmail. The oldmail will be

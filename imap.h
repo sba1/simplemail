@@ -221,7 +221,7 @@ struct imap_synchronize_callbacks
 	void (*set_title_utf8)(const char *title);
 	void (*set_title)(const char *title);
 	int (*request_login)(char *text, char *login, char *password, int len);
-	void (*add_imap_folder)(char *user, char *server, char *path);
+	void (*add_imap_folder)(char *user, char *server, char *path, char delim);
 	void (*refresh_folders)(void);
 	void (*init_gauge_as_bytes)(int maximal);
 	void (*set_gauge)(int value);

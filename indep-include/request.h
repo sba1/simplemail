@@ -31,7 +31,7 @@
  * @param extension
  * @return
  */
-char *sm_request_file(char *title, char *path, int save, char *extension);
+char *sm_request_file(const char *title, const char *path, int save, const char *extension);
 
 /**
  * Opens a requester. Returns 0 if the rightmost gadgets is pressed

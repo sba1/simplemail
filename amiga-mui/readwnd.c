@@ -1283,7 +1283,8 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	Object *space;
 	Object *read_menu;
 	Object *toolbar;
-	int i, num;
+	unsigned int i;
+	int num;
 
 	enum {
 		MENU_PROJECT,

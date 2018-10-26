@@ -811,7 +811,7 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 
 /*****************************************************************************/
 
-int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
+int thread_call_parent_function_sync_(int *success, void *function, int argcount, ...)
 {
 	va_list argptr;
 	int rc = 0;
@@ -864,7 +864,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 /* TODO: Should call thread_handle()m needs better return values, and should
  * be optimized in case thread == thread_get()
  */
-int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+int thread_call_function_sync_(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;
 	int rc = 0;
@@ -960,7 +960,7 @@ int thread_call_coroutine(thread_t thread, coroutine_entry_t coroutine, struct c
 
 /*****************************************************************************/
 
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
+int thread_call_parent_function_sync_timer_callback_(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	va_list argptr;
 	int rc = 0;
@@ -1115,7 +1115,7 @@ int thread_wait(coroutine_scheduler_t sched, void (*timer_callback(void*)), void
 
 /*****************************************************************************/
 
-int thread_push_function(void *function, int argcount, ...)
+int thread_push_function_(void *function, int argcount, ...)
 {
 	int rc = 0;
 	struct ThreadMessage *tmsg;
@@ -1136,7 +1136,7 @@ int thread_push_function(void *function, int argcount, ...)
 
 /*****************************************************************************/
 
-int thread_push_function_delayed(int millis, void *function, int argcount, ...)
+int thread_push_function_delayed_(int millis, void *function, int argcount, ...)
 {
 	int rc = 0;
 	struct ThreadMessage *tmsg;

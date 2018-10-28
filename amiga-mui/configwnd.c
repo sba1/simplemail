@@ -591,8 +591,9 @@ static void phrase_load(void)
  */
 static int config_use(void)
 {
-	int i,j,err;
 	char **internet_emails, **spam_white_emails, **spam_black_emails;
+	unsigned int i, j;
+	int err;
 
 	/* check if there are any duplicate addresses */
 	account_store();
@@ -1133,7 +1134,7 @@ static void account_refresh_signature_cycle(void)
 {
 	struct list tmp_signature_list;
 	struct signature *sign, *new_sign;
-	int i;
+	unsigned int i;
 
 	/* temporary signature list for SignatureCycle to display the new signatures */
 	list_init(&tmp_signature_list);
@@ -1218,7 +1219,7 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
  */
 static int init_account_group(void)
 {
-	static char *recv_entries[3];
+	static const char *recv_entries[3];
 	static char *recv_secure_labels[4];
 	static char *apop_labels[4];
 	static char *send_secure_labels[4];
@@ -1561,7 +1562,7 @@ static int init_write_group(void)
  */
 static int init_mails_readmisc_group(void)
 {
-	int i;
+	unsigned int i;
 
 	SM_ENTER;
 
@@ -1821,7 +1822,8 @@ static void signature_remove(void)
 	if (sign)
 	{
 		struct account *ac;
-		int i, use_count_accounts = 0, use_count_folders = 0;
+		unsigned int i;
+		int use_count_accounts = 0, use_count_folders = 0;
 
 		/* Check if the signature is used in any of the accounts */
 		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
@@ -2626,7 +2628,7 @@ void close_config(void)
 {
 	if (config_wnd)
 	{
-		int i;
+		unsigned int i;
 
 		set(config_wnd, MUIA_Window_Open, FALSE);
 		DoMethod(App, OM_REMMEMBER, (ULONG)config_wnd);

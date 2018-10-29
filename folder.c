@@ -2422,7 +2422,7 @@ struct folder *folder_add_imap_server(char *local_name, const char *server, cons
 
 /*****************************************************************************/
 
-struct folder *folder_add_imap(struct folder *parent, char *imap_path)
+struct folder *folder_add_imap(struct folder *parent, char *imap_path, char delim)
 {
 	char *name;
 
@@ -2453,7 +2453,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 		goto bailout;
 	if (!(node->folder.imap_path = mystrdup(imap_path)))
 		goto bailout;
-	node->folder.imap_hierarchy_delimiter = ".";
+	node->folder.imap_hierarchy_delimiter = '.';
 	node->folder.num_index_mails = -1;
 	string_list_init(&node->folder.imap_all_folder_list);
 	string_list_init(&node->folder.imap_sub_folder_list);
@@ -2697,11 +2697,14 @@ void folder_add_to_tree(struct folder *f,struct folder *parent)
  * by opening the config.
  *
  * @param folder_path
+ * @param delim pointer to a variable where to store the delimiter
  * @return the imap path or NULL.
  */
-static char *folder_config_get_imap_path(char *folder_path)
+static char *folder_config_get_imap_path(char *folder_path, char *delimiter)
 {
 	char buf[256];
+	char *imap_path = NULL;
+	char delim = 0;
 	FILE *fh;
 
 	sm_snprintf(buf, sizeof(buf), "%s.config", folder_path);
@@ -2716,11 +2719,25 @@ static char *folder_config_get_imap_path(char *folder_path)
 			{
 				if (!mystrnicmp("IMapPath=",buf,9))
 				{
-					return mystrdup(&buf[9]);
+					imap_path = mystrdup(&buf[9]);
+					if (delim)
+						break;
+				} else if (!mystrnicmp("IMapPathDelimiter=",buf,18))
+				{
+					delim = atoi(&buf[18]);
+					if (imap_path)
+						break;
 				}
 			}
 		}
+		fclose(fh);
 	}
+	if (!delim)
+	{
+		delim = '.';
+	}
+	*delimiter = delim;
+	return imap_path;
 	return NULL;
 }
 
@@ -2789,6 +2806,10 @@ static int folder_config_load(struct folder *f)
 				{
 					free(f->imap_path);
 					f->imap_path = mystrdup(&buf[9]);
+				}
+				else if (!mystrnicmp("IMapPathDelimiter=",buf,18))
+				{
+					f->imap_hierarchy_delimiter = atoi(&buf[18]);
 				}
 				else if (!mystrnicmp("IMapServer=",buf,11))
 				{
@@ -2860,6 +2881,7 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"IsIMap=%d\n",f->is_imap);
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
+		fprintf(fh,"IMapPathDelimiter=%u\n", (unsigned char)f->imap_hierarchy_delimiter);
 		fprintf(fh,"IMapServer=%s\n",f->imap_server?f->imap_server:"");
 		if (f->imap_dont_use_uids)
 			fprintf(fh,"IMapDontUseUids=1\n");
@@ -4618,15 +4640,16 @@ void folder_create_imap(void)
 								if (st->st_mode & S_IFDIR)
 								{
 									char *imap_path;
+									char delim;
 
 									/* If possible determine the true imap path that is stored in the config */
-									if ((imap_path = folder_config_get_imap_path(buf)))
+									if ((imap_path = folder_config_get_imap_path(buf, &delim)))
 									{
-										folder_add_imap(f, imap_path);
+										folder_add_imap(f, imap_path, delim);
 										free(imap_path);
 									} else
 									{
-										folder_add_imap(f, sm_file_part(buf));
+										folder_add_imap(f, sm_file_part(buf), '.');
 									}
 								}
 							}

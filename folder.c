@@ -2453,7 +2453,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path, char deli
 		goto bailout;
 	if (!(node->folder.imap_path = mystrdup(imap_path)))
 		goto bailout;
-	node->folder.imap_hierarchy_delimiter = '.';
+	node->folder.imap_hierarchy_delimiter = delim;
 	node->folder.num_index_mails = -1;
 	string_list_init(&node->folder.imap_all_folder_list);
 	string_list_init(&node->folder.imap_sub_folder_list);

@@ -72,7 +72,7 @@ struct string_pool *string_pool_create(void)
 
 /*****************************************************************************/
 
-static int string_pool_ensure_space(struct string_pool *p, int wanted_size)
+static int string_pool_ensure_space(struct string_pool *p, unsigned int wanted_size)
 {
 	unsigned int new_ref_strings_allocated;
 	struct ref_string *new_ref_strings;

@@ -1845,7 +1845,7 @@ void callback_add_imap_folder(char *user, char *server, char *path, char delim)
 	folders_lock();
 	if ((folder = folder_find_by_imap(user, server,"")))
 	{
-		folder_add_imap(folder, path);
+		folder_add_imap(folder, path, delim);
 	}
 	folders_unlock();
 }

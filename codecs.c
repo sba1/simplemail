@@ -703,7 +703,7 @@ char *encode_header_field_utf8(const char *field_name, const char *field_content
 
 /*****************************************************************************/
 
-char *encode_address_field(char *field_name, struct address_list *address_list)
+char *encode_address_field(const char *field_name, struct address_list *address_list)
 {
 	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
 	int header_len;
@@ -842,7 +842,7 @@ char *encode_address_puny(utf8 *email)
 
 /*****************************************************************************/
 
-char *encode_address_field_utf8(char *field_name, struct address_list *address_list)
+char *encode_address_field_utf8(const char *field_name, struct address_list *address_list)
 {
 	struct address *address;
 

@@ -193,7 +193,7 @@ utf8 *utf8create_len(void *from, const char *charset, int from_len);
  * @param dest_size
  * @return number of bytes within the destination buffer
  */
-int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, int dest_size);
+int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, unsigned int dest_size);
 
 /**
  * Converts a utf8 string to a given charset. Return the number of bytes
@@ -206,7 +206,7 @@ int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, int dest_size);
  * @param codeset
  * @return
  */
-int utf8tostr(const utf8 *str, char *dest, int dest_size, struct codeset *codeset);
+int utf8tostr(const utf8 *str, char *dest, unsigned int dest_size, struct codeset *codeset);
 
 /**
  *  Converts a UTF8 string to a representation as given by the charset.

@@ -106,7 +106,7 @@ struct boyermoore_context *boyermoore_create_context(char *p, int plen)
 	context->plen = plen;
 
 	/* Prepare bad character skip table */
-	for (i = 0; i < (int)sizeof(context->skip_table)/sizeof(context->skip_table[0]); i++)
+	for (i = 0; i < (int)(sizeof(context->skip_table)/sizeof(context->skip_table[0])); i++)
 		context->skip_table[i] = plen;
 	for (i = 0; i < plen - 1; i++)
 		context->skip_table[(unsigned char)p[i]] = plen - i - 1;

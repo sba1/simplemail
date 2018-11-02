@@ -18,7 +18,7 @@
  * @param str
  * @return
  */
-struct address_list *address_list_create(char *str)
+struct address_list *address_list_create(const char *str)
 {
 	struct address_list *list;
 	if (!str) return NULL;

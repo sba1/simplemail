@@ -110,7 +110,7 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb);
  * @param dest
  * @return NULL for an parse error or the pointer to the next unparsed character
  */
-char *parse_address(char *address, struct parse_address *dest);
+char *parse_address(const char *address, struct parse_address *dest);
 
 /**
  * Frees all memory for a given address that was allocated in parse_address

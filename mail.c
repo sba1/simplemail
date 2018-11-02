@@ -2624,7 +2624,7 @@ void composed_mail_add(struct composed_mail *parent, struct composed_mail *mail)
  * @param header_contents the contents of the field.
  * @return failure (0), or success.
  */
-static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *header_contents)
+static int mail_compose_write_addr_header(FILE *fp,  const char *header_name, const char *header_contents)
 {
 	int rc = 0;
 	struct address_list *list = address_list_create(header_contents);

@@ -143,7 +143,7 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *st
 
 /*****************************************************************************/
 
-char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
+char *text2html(unsigned char *buffer, int buffer_len, int flags, const char *fonttag)
 {
 	unsigned char *saved_buffer = buffer;
 	string str;

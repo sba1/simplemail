@@ -631,7 +631,7 @@ static char *parse_group(char *group, struct parse_address *dest)
 
 /*****************************************************************************/
 
-char *parse_address(char *address, struct parse_address *dest)
+char *parse_address(const char *address, struct parse_address *dest)
 {
 	char *retval;
 	memset(dest,0,sizeof(struct parse_address));

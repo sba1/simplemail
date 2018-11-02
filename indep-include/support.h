@@ -98,7 +98,7 @@ void sm_play_sound(char *filename);
  * @param name the name of the env variable to get
  * @return the contents of the env variable in a static buffer.
  */
-char *sm_getenv(char *name);
+char *sm_getenv(const char *name);
 
 /**
  * Set the environment variable to the given value.
@@ -106,14 +106,14 @@ char *sm_getenv(char *name);
  * @param name defines the name of the env variable to be set
  * @param value the new value of the variable
  */
-void sm_setenv(char *name, char *value);
+void sm_setenv(const char *name, const char *value);
 
 /**
  * Unset an environment variable.
  *
  * @param name name of the env variable to be unset
  */
-void sm_unsetenv(char *name);
+void sm_unsetenv(const char *name);
 
 /**
  * Execute the command and put its standard output into a file.

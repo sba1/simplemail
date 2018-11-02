@@ -253,7 +253,7 @@ static void init_error(void)
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, all_errors_list = NListObject,
-					MUIA_NList_Format, ",PREPARSE="MUIX_C",",
+					MUIA_NList_Format, ",PREPARSE=" MUIX_C ",",
 					MUIA_NList_DisplayHook2, &error_display_hook,
 					MUIA_NList_Title, TRUE,
 					End,

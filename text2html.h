@@ -32,7 +32,7 @@
  * @param fonttag a string that is used for the font tag
  * @return the html representation.
  */
-char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag);
+char *text2html(unsigned char *buffer, int buffer_len, int flags, const char *fonttag);
 
 #define TEXT2HTML_BODY_TAG				(1 << 0)
 #define TEXT2HTML_ENDBODY_TAG		(1 << 1)

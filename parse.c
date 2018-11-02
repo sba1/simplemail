@@ -28,7 +28,7 @@
 #include "codecs.h"
 #include "support_indep.h"
 
-static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset);
+static char *parse_encoded_word(const char *encoded_word, char **pbuf, char **pcharset);
 
 /**
  * Is the char a rfc822 special.
@@ -133,7 +133,7 @@ static char *skip_spaces(const char *buf)
  * @param pbuf pointer where the parsed atom is stored
  * @return NULL for a parse error or the pointer to the next unparsed character
  */
-static char *parse_atom(char *atom, char **pbuf)
+static const char *parse_atom(const char *atom, char **pbuf)
 {
 	const char *atom_start;
 	char *buf;
@@ -172,9 +172,9 @@ static char *parse_atom(char *atom, char **pbuf)
  * @param pbuf pointer where the parsed quoted string is stored
  * @return NULL for a parse error or the pointer to the next unparsed character
  */
-static char *parse_quoted_string(char *quoted_string, char **pbuf)
+static const char *parse_quoted_string(const char *quoted_string, char **pbuf)
 {
-	char *quoted_string_start;
+	const char *quoted_string_start;
 	unsigned char c;
 	int escape = 0;
 
@@ -191,7 +191,7 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 			char *buf = (char*)malloc(len+1);
 			if (buf)
 			{
-				char *src = quoted_string_start;
+				const char *src = quoted_string_start;
 				char *dest = buf;
 				int i = 0;
 
@@ -243,9 +243,9 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
  * @param pbuf where the word is stored
  * @return
  */
-static char *parse_word_simple(char *word, char **pbuf)
+static const char *parse_word_simple(const char *word, char **pbuf)
 {
-	char *ret;
+	const char *ret;
 
 	ret = parse_quoted_string(word,pbuf);
 	if (!ret) ret = parse_atom(word,pbuf);
@@ -259,7 +259,7 @@ static char *parse_word_simple(char *word, char **pbuf)
  * @param pbuf where the word is stored
  * @return NULL for an error or the pointer to the next unparsed character
  */
-static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)
+static char *parse_encoded_word_utf8(const char *word, utf8 **pbuf)
 {
   char *ret;
 	char *charset;
@@ -290,9 +290,9 @@ static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)
  * @param quoted where the information is stored if it was a quoted word
  * @return NULL for an error or the pointer to the next unparsed character
  */
-static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
+static const char *parse_word_new_utf8(const char *word, utf8 **pbuf, int *quoted)
 {
-	char *ret;
+	const char *ret;
 
 	if ((ret = parse_encoded_word_utf8(word,pbuf)))
 	{
@@ -330,11 +330,11 @@ static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
  * @param pbuf where the local part is stored
  * @return NULL for an error or the pointer to the next unparsed character
  */
-static char *parse_local_part(char *local_part, char **pbuf)
+static const char *parse_local_part(const char *local_part, char **pbuf)
 {
 	char *buf;
-	char *ret = parse_word_simple(local_part,&buf);
-	char *ret_save;
+	const char *ret = parse_word_simple(local_part,&buf);
+	const char *ret_save;
 	if (!ret) return NULL;
 
 	ret_save = ret;
@@ -373,9 +373,10 @@ static char *parse_local_part(char *local_part, char **pbuf)
  * @param pbuf where the sub domain is stored
  * @return NULL for an error or the pointer to the next unparsed character
  */
-static char *parse_sub_domain(char *sub_domain, char **pbuf)
+static const char *parse_sub_domain(const char *sub_domain, char **pbuf)
 {
-	char *ret, *ref;
+	const char *ret;
+	char *ref;
 
 	if ((ret = parse_atom(sub_domain,&ref)))
 	{
@@ -401,11 +402,11 @@ static char *parse_sub_domain(char *sub_domain, char **pbuf)
  * @param pbuf where the domain is stored
  * @return NULL for an error or the pointer to the next unparsed character
  */
-static char *parse_domain(char *domain, char **pbuf)
+static const char *parse_domain(const char *domain, char **pbuf)
 {
 	char *buf;
-	char *ret = parse_sub_domain(domain,&buf);
-	char *ret_save;
+	const char *ret = parse_sub_domain(domain,&buf);
+	const char *ret_save;
 	if (!ret) return NULL;
 
 	ret_save = ret;
@@ -437,10 +438,10 @@ static char *parse_domain(char *domain, char **pbuf)
 
 /*****************************************************************************/
 
-char *parse_addr_spec(char *addr_spec, char **pbuf)
+const char *parse_addr_spec(const char *addr_spec, char **pbuf)
 {
 	char *local_part, *domain = NULL;
-	char *ret;
+	const char *ret;
 
 	string addr_str;
 
@@ -485,12 +486,12 @@ out:
  * @param pbuf pointer where the parsed phrase is stored
  * @return NULL for a parse error or the pointer to the next unparsed character
  */
-static char *parse_phrase(char *phrase, utf8 **pbuf)
+static const char *parse_phrase(const char *phrase, utf8 **pbuf)
 {
 	utf8 *buf;
 	int q;
-	char *ret = parse_word_new_utf8(phrase,&buf,&q);
-	char *ret_save;
+	const char *ret = parse_word_new_utf8(phrase,&buf,&q);
+	const char *ret_save;
 	if (!ret) return NULL;
 
 	ret_save = ret;
@@ -522,9 +523,9 @@ static char *parse_phrase(char *phrase, utf8 **pbuf)
 
 /*****************************************************************************/
 
-char *parse_mailbox(char *mailbox, struct mailbox *mbox)
+const char *parse_mailbox(const char *mailbox, struct mailbox *mbox)
 {
-	char *ret;
+	const char *ret;
 	struct mailbox mb;
 
 	if (!mailbox) return NULL;
@@ -534,14 +535,14 @@ char *parse_mailbox(char *mailbox, struct mailbox *mbox)
 	if ((ret = parse_addr_spec(mailbox, &mb.addr_spec)))
 	{
 		/* the phrase can now be placed in the brackets */
-		char *buf = ret;
+		const char *buf = ret;
 
 		/* don't use skip_spaces() because it skips comments */
 		while (isspace((unsigned char)(*buf))) buf++;
 
 		if (*buf == '(')
 		{
-			char *comment_start = ++buf;
+			const char *comment_start = ++buf;
 
 			while (*buf)
 			{
@@ -592,9 +593,9 @@ bailout:
  * @param dest pointer where the parsed address is stored
  * @return NULL for a parse error or the pointer to the next unparsed character
  */
-static char *parse_group(char *group, struct parse_address *dest)
+static const char *parse_group(const char *group, struct parse_address *dest)
 {
-	char *ret = parse_phrase(group,(utf8**)&dest->group_name);
+	const char *ret = parse_phrase(group,(utf8**)&dest->group_name);
 	if (!ret) return NULL;
 	ret = skip_spaces(ret);
 
@@ -631,9 +632,9 @@ static char *parse_group(char *group, struct parse_address *dest)
 
 /*****************************************************************************/
 
-char *parse_address(const char *address, struct parse_address *dest)
+const char *parse_address(const char *address, struct parse_address *dest)
 {
-	char *retval;
+	const char *retval;
 	memset(dest,0,sizeof(struct parse_address));
 	list_init(&dest->mailbox_list);
 
@@ -791,7 +792,7 @@ int is_token(char *token)
 
 /*****************************************************************************/
 
-char *parse_token(char *token, char **pbuf)
+const char *parse_token(const char *token, char **pbuf)
 {
 	const char *token_start = token;
 	char *buf;
@@ -825,20 +826,20 @@ char *parse_token(char *token, char **pbuf)
 
 /*****************************************************************************/
 
-char *parse_value(char *value, char **pbuf)
+const char *parse_value(const char *value, char **pbuf)
 {
-	char *ret;
+	const char *ret;
 	if ((ret = parse_token(value,pbuf))) return ret;
 	return parse_quoted_string(value,pbuf);
 }
 
 /*****************************************************************************/
 
-char *parse_parameter(char *parameter, struct parse_parameter *dest)
+const char *parse_parameter(const char *parameter, struct parse_parameter *dest)
 {
 	char *attr;
 	char *value;
-	char *ret = parse_token(parameter,&attr);
+	const char *ret = parse_token(parameter,&attr);
   if (!ret) return NULL;
   ret = skip_spaces(ret); /* This doesn't conform to the RFC */
   if (*ret++ == '=')
@@ -913,7 +914,7 @@ char *parse_etoken(char *token, char **pbuf)
  * @param pcharset the charset or NULL
  * @return NULL for a parse error or the pointer to the next unparsed character
  */
-static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset)
+static char *parse_encoded_word(const char *encoded_word, char **pbuf, char **pcharset)
 {
 	char *ret,*encoding_start;
 	char *charset;

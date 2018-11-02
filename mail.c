@@ -1356,7 +1356,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 
 /*****************************************************************************/
 
-int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
+int extract_name_from_address(const char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
 {
 	struct parse_address paddr;
 
@@ -1731,7 +1731,7 @@ int mail_process_headers(struct mail_complete *mail)
 				if (!mail->content_name)
 				{
 					struct list parameter_list;
-					char *param;
+					const char *param;
 
 					char *fn = mystristr(buf,"filename=");
 					if (fn)
@@ -1800,7 +1800,7 @@ int mail_process_headers(struct mail_complete *mail)
 			case HEADER_CONTENT_TYPE:
 			{
 				/* content  := "Content-Type"  ":" type "/" subtype  *(";" parameter) */
-				char *subtype = strchr(buf,'/');
+				const char *subtype = strchr(buf,'/');
 				if (subtype)
 				{
 					int len = subtype - buf;

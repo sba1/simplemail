@@ -26,7 +26,7 @@ struct address_list *address_list_create(const char *str)
 	if ((list = (struct address_list*)malloc(sizeof(*list))))
 	{
 		struct parse_address addr;
-		char *ret;
+		const char *ret;
 
 		list_init(&list->list);
 

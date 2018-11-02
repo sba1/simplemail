@@ -54,7 +54,7 @@ char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_p
 	if ((addresses = (char*)DoMethod(editor, MUIM_TextEditor_ExportText)))
 	{
 		struct mailbox mb;
-		char *buf = addresses;
+		const char *buf = addresses;
 
 		while (isspace((unsigned char)*buf) && *buf) buf++;
 

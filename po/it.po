@@ -2294,7 +2294,7 @@ msgid ""
 "before creating new mails"
 msgstr ""
 "Attenzione, dati inseriti nel campo \"Da\" non validi.\n"
-"è necessario configurare un account prima di poter\n
+"è necessario configurare un account prima di poter\n"
 "creare nuovi messaggi"
 
 #: mail.c:3222
@@ -2430,7 +2430,7 @@ msgstr "Impossibile accedere alla directory dei file in entrata!"
 
 #: pop3.c:1039
 msgid "Couldn't download the mail!\n"
-msgstr "Impossibile scaricare il messaggio di posta!"
+msgstr "Impossibile scaricare il messaggio di posta!\n"
 
 #: pop3.c:1055
 msgid "Marking mail as deleted..."
@@ -2466,7 +2466,7 @@ msgstr "Impossibile creare un file temporaneo"
 
 #: simplemail.c:122 simplemail.c:186
 msgid "Cannot delete mails, because folder is in use.\n"
-msgstr "Impossibile cancellare il messaggio di posta, la cartella è già in uso"
+msgstr "Impossibile cancellare il messaggio di posta, la cartella è già in uso.\n"
 
 #: simplemail.c:139
 msgid "Do you really want to delete the selected mail permanently?"
@@ -2540,7 +2540,7 @@ msgstr "Scegli un nome per il file da esportare"
 
 #: simplemail.c:1162
 msgid "Couldn't start process for exporting.\n"
-msgstr "Impossible iniziare il processo di esportazione"
+msgstr "Impossible iniziare il processo di esportazione.\n"
 
 #: simplemail.c:1480
 msgid "Select an addressbook-file."

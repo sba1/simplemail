@@ -143,7 +143,7 @@ char *sm_path_part(char *filename)
 /******************************************************************
  Get environment variables
 *******************************************************************/
-char *sm_getenv(char *name)
+char *sm_getenv(const char *name)
 {
 	return getenv(name);
 }
@@ -151,14 +151,14 @@ char *sm_getenv(char *name)
 /******************************************************************
  Set environment variables
 *******************************************************************/
-void sm_setenv(char *name, char *value)
+void sm_setenv(const char *name, const char *value)
 {
 }
 
 /******************************************************************
  Unset environment variables
 *******************************************************************/
-void sm_unsetenv(char *name)
+void sm_unsetenv(const char *name)
 {
 }
 

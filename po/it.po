@@ -1,227 +1,1024 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.37\n"
-"POT-Creation-Date: 2011-06-09 \n"
-"PO-Revision-Date: \n"
-"Last-Translator: Jambalah <geepney@hotmail.it>\n"
-"Language-Team: \n"
+"Project-Id-Version: SimpleMail 0.45\n"
+"POT-Creation-Date: 2018-10-31 19:53+0000\n"
+"PO-Revision-Date: 2018-10-31 20:24+0000\n"
+"Last-Translator: Jambalah <geepney@hotmail.it>\nSamir Hawamdeh <s.hawamdeh@teletu.it>"
+"Language-Team: Italian\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "%d KB / %d KB (time left: %s)"
-msgstr "%d Ko / %d Kb (tempo rimanente: %s)"
+#: amiga-mui/addressbookwnd.c:222
+msgid ""
+"The date of birth is given in a invalid format.\n"
+"Please use dd mon yyyy or dd mm yyyy."
+msgstr ""
+"Attenzione, la data di nascita ha un formato non valido.\n"
+"Prova ad usare il formato GG MMM AAAA o GG MM AAAA"
 
-msgid "%d min %d s"
-msgstr "%d min %d s"
+#: amiga-mui/addressbookwnd.c:223 amiga-mui/configwnd.c:434
+#: amiga-mui/configwnd.c:447 amiga-mui/configwnd.c:467
+#: amiga-mui/configwnd.c:481 amiga-mui/configwnd.c:517 amiga-mui/mainwnd.c:762
+#: mail.c:2088 mail.c:3050 simplemail.c:122 simplemail.c:186 simplemail.c:1143
+#: simplemail.c:1162
+msgid "Ok"
+msgstr "_Ok"
 
-msgid "%d s"
-msgstr "%d s"
+#: amiga-mui/addressbookwnd.c:400
+msgid "Personal"
+msgstr "Personale"
 
-msgid "%ld bytes"
-msgstr "%ld bytes"
+#: amiga-mui/addressbookwnd.c:401
+msgid "Private"
+msgstr "Privato"
 
-msgid "%s (T:%d N:%d U:%d)"
-msgstr "%s (T: %ld N: %ld NL: %ld)"
+#: amiga-mui/addressbookwnd.c:402
+msgid "Work"
+msgstr "Lavoro"
 
-msgid "%s (next autocheck at %s)"
-msgstr "%s (prossimo controllo automatico alle %s)"
+#: amiga-mui/addressbookwnd.c:403
+msgid "Notes"
+msgstr "Note"
 
-msgid "*Ok"
-msgstr "*Ok"
+#: amiga-mui/addressbookwnd.c:418
+msgid "SimpleMail - Edit Person"
+msgstr "SimpleMail - Editor Contatti"
 
-msgid "*_Yes|_Cancel"
-msgstr "*_Si|_Annulla"
+#: amiga-mui/addressbookwnd.c:426 amiga-mui/addressbookwnd.c:913
+#: amiga-mui/addresstreelistclass.c:151
+msgid "Alias"
+msgstr "Nick"
 
-msgid "*_Yes|_No"
-msgstr "*_Si|_No"
+#: amiga-mui/addressbookwnd.c:433
+msgid "Real Name"
+msgstr "Nome reale"
 
-msgid "-- New Account --"
-msgstr "-- Nuovo account --"
+#: amiga-mui/addressbookwnd.c:440 amiga-mui/addressbookwnd.c:920
+#: amiga-mui/addresstreelistclass.c:152 amiga-mui/attachmentlistclass.c:118
+#: amiga-mui/composewnd.c:1245 amiga-mui/composewnd.c:1248
+msgid "Description"
+msgstr "Descrizione"
 
-msgid "-- New Phrase --"
-msgstr "-- Nuova frase --"
+#: amiga-mui/addressbookwnd.c:447
+msgid "PGP Key-ID"
+msgstr "ID Chiave PGP"
 
-msgid "-- New Signature --"
-msgstr "-- Nuova firma --"
+#: amiga-mui/addressbookwnd.c:463
+msgid "Homepage"
+msgstr "Sito web"
 
-msgid ".:Execute ARexx Script..."
-msgstr ".:Esegui uno script ARexx..."
+#: amiga-mui/addressbookwnd.c:474
+msgid "Date of birth"
+msgstr "Data di nascita"
 
-msgid "<Default>"
-msgstr "<Predefinito>"
+#: amiga-mui/addressbookwnd.c:480
+msgid ""
+"The date of the birth of the person.\n"
+"The format is dd mon yyyy or dd mm yyyy."
+msgstr ""
+"La data di nascita della persona.\n"
+"Il formato è GG MMM AAAA o GG MM AAAA"
 
-msgid "<No Recipient>"
-msgstr "<Nessun destinatario>"
+#: amiga-mui/addressbookwnd.c:482
+msgid "Sex"
+msgstr "Sesso"
 
-msgid "> %ld KB"
-msgstr "> %ld Kb"
+#: amiga-mui/addressbookwnd.c:492
+msgid "Female"
+msgstr "Femminile"
 
-msgid "?:About..."
-msgstr "?:Informazioni..."
+#: amiga-mui/addressbookwnd.c:502
+msgid "Male"
+msgstr "Maschile"
 
-msgid "?addressbook:YAM Imports"
-msgstr "?rubrica: Importa da YAM"
+#: amiga-mui/addressbookwnd.c:508
+msgid "Portrait"
+msgstr "Foto"
 
-msgid "?attachment:Save"
-msgstr "?allegato:Salva"
+#: amiga-mui/addressbookwnd.c:528
+msgid "E-Mail addresses"
+msgstr "Indirizzi di posta"
 
-msgid "?attachment:View"
-msgstr "?allegato:Visualizza"
+#: amiga-mui/addressbookwnd.c:539 amiga-mui/addressbookwnd.c:637
+msgid "Street"
+msgstr "Via"
 
-msgid "?config:_Save"
-msgstr "?config:_Salva"
+#: amiga-mui/addressbookwnd.c:548 amiga-mui/addressbookwnd.c:646
+msgid "City"
+msgstr "Città"
 
-msgid "?filter:_Save"
-msgstr "?filtro:_Salva"
+#: amiga-mui/addressbookwnd.c:555 amiga-mui/addressbookwnd.c:653
+msgid "ZIP/Postal Code"
+msgstr "Codice postale"
 
+#: amiga-mui/addressbookwnd.c:562 amiga-mui/addressbookwnd.c:660
+msgid "State/Province"
+msgstr "Regione/Provincia"
+
+#: amiga-mui/addressbookwnd.c:569 amiga-mui/addressbookwnd.c:667
+msgid "Country"
+msgstr "Nazione"
+
+#: amiga-mui/addressbookwnd.c:583 amiga-mui/addressbookwnd.c:681
+msgid "Phone numbers"
+msgstr "Numeri di telefono"
+
+#: amiga-mui/addressbookwnd.c:590 amiga-mui/addressbookwnd.c:688
+msgid "Mobile"
+msgstr "Cellulare"
+
+#: amiga-mui/addressbookwnd.c:604 amiga-mui/addressbookwnd.c:702
+msgid "Fax"
+msgstr "Fax"
+
+#: amiga-mui/addressbookwnd.c:618
+msgid "Title"
+msgstr "Titolo"
+
+#: amiga-mui/addressbookwnd.c:625
+msgid "Organization"
+msgstr "Organizzazione"
+
+#: amiga-mui/addressbookwnd.c:723 amiga-mui/addressbookwnd.c:931
+#: amiga-mui/folderwnd.c:386
+msgid "_Ok"
+msgstr "_Ok"
+
+#: amiga-mui/addressbookwnd.c:724 amiga-mui/addressbookwnd.c:932
+#: amiga-mui/composewnd.c:1263 amiga-mui/configwnd.c:2080
+#: amiga-mui/filterwnd.c:565 amiga-mui/folderwnd.c:387
+#: amiga-mui/folderwnd.c:623
+msgid "_Cancel"
+msgstr "_Annulla"
+
+#: amiga-mui/addressbookwnd.c:908
+msgid "SimpleMail - Edit Group"
+msgstr "SimpleMail - Editor Gruppi"
+
+#: amiga-mui/addressbookwnd.c:1102
+msgid "SimpleMail - Addressbook"
+msgstr "SimpleMail - Rubrica"
+
+#: amiga-mui/addressbookwnd.c:1108
+msgid "_To:"
+msgstr "_A:"
+
+#: amiga-mui/addressbookwnd.c:1109
+msgid "_CC:"
+msgstr "_CC"
+
+#: amiga-mui/addressbookwnd.c:1110
+msgid "_BCC:"
+msgstr "_BCC"
+
+#: amiga-mui/addressbookwnd.c:1116
+msgid "_Import"
+msgstr "_Importa"
+
+#. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
+#: amiga-mui/addressbookwnd.c:1117 amiga-mui/readwnd.c:1079
+msgid "_Save"
+msgstr "_Salva"
+
+#. Child, MakeButton("Search"),
+#: amiga-mui/addressbookwnd.c:1119
+msgid "_Person"
+msgstr "_Contatto"
+
+#. Child, MakeButton("New List"),
+#: amiga-mui/addressbookwnd.c:1121
+msgid "_Group"
+msgstr "_Gruppo"
+
+#: amiga-mui/addressbookwnd.c:1122 amiga-mui/mainwnd.c:647
+msgid "_Edit"
+msgstr "_Modifica"
+
+#: amiga-mui/addressbookwnd.c:1123 amiga-mui/readwnd.c:1086
+msgid "_Delete"
+msgstr "_Cancella"
+
+#: amiga-mui/addresstreelistclass.c:150 amiga-mui/configwnd.c:997
 msgid "?people:Name"
 msgstr "?people:Nome"
 
-msgid "?phrases:Close"
-msgstr "?phrases:Chiusura"
+#: amiga-mui/addresstreelistclass.c:153
+msgid "Address"
+msgstr "E-Mail"
 
-msgid "?textbutton:_Close"
-msgstr "?textbutton:_Chiudi"
+#: amiga-mui/addresstreelistclass.c:217
+msgid "Addresslist Settings"
+msgstr "Impostazioni archivio indirizzi"
 
-msgid "?textbutton:_Save"
-msgstr "?textbutton:_Salva"
+#: amiga-mui/addresstreelistclass.c:218
+msgid "Show Realname?"
+msgstr "Mostra nome reale?"
 
+#: amiga-mui/addresstreelistclass.c:219
+msgid "Show Nickname?"
+msgstr "Mostra nick?"
+
+#: amiga-mui/addresstreelistclass.c:220
+msgid "Show Description?"
+msgstr "Mostra descrizione?"
+
+#: amiga-mui/addresstreelistclass.c:221
+msgid "Show E-Mail Address?"
+msgstr "Mostra indirizzi e-mail?"
+
+#: amiga-mui/addresstreelistclass.c:223 amiga-mui/foldertreelistclass.c:266
+#: amiga-mui/mailtreelistclass.c:553
+msgid "Default Width: this"
+msgstr "Larghezza predefinita: questa"
+
+#: amiga-mui/addresstreelistclass.c:224 amiga-mui/foldertreelistclass.c:267
+#: amiga-mui/mailtreelistclass.c:554
+msgid "Default Width: all"
+msgstr "Larghezza predefinita: tutta"
+
+#: amiga-mui/addresstreelistclass.c:225 amiga-mui/foldertreelistclass.c:268
+#: amiga-mui/mailtreelistclass.c:555
+msgid "Default Order: this"
+msgstr "Ordine predefinito: questo"
+
+#: amiga-mui/addresstreelistclass.c:226 amiga-mui/foldertreelistclass.c:269
+#: amiga-mui/mailtreelistclass.c:556
+msgid "Default Order: all"
+msgstr "Ordine predefinito: tutto"
+
+#: amiga-mui/attachmentlistclass.c:103
+msgid "Editable Mailtext"
+msgstr "Testo editabile del messaggio"
+
+#: amiga-mui/attachmentlistclass.c:115
+msgid "File Name"
+msgstr "Nome del file"
+
+#: amiga-mui/attachmentlistclass.c:116 amiga-mui/folderwnd.c:279
+#: amiga-mui/folderwnd.c:289 amiga-mui/mailtreelistclass.c:497
+#: amiga-mui/transwndclass.c:128
+msgid "Size"
+msgstr "Dimensione"
+
+#: amiga-mui/attachmentlistclass.c:117
+msgid "Contents"
+msgstr "Contenuti"
+
+#: amiga-mui/composewnd.c:1043 amiga-mui/mailtreelistclass.c:839
+#: amiga-mui/readwnd.c:1007
+msgid "Mail"
+msgstr "Messaggio"
+
+#: amiga-mui/composewnd.c:1044
+msgid "Attachments"
+msgstr "Allegati"
+
+#. This two MUST always be the last objects of this group!
+#. because the SignatureCycle() gets removed and reinserted for update.
+#: amiga-mui/composewnd.c:1082 amiga-mui/configwnd.c:1017
+#: amiga-mui/folderwnd.c:362
+msgid "Signature"
+msgstr "Firma"
+
+#: amiga-mui/composewnd.c:1101
+msgid "SimpleMail - Compose Message"
+msgstr "SimpleMail - Crea Messaggio"
+
+#: amiga-mui/composewnd.c:1109 amiga-mui/searchwnd.c:175
+msgid "_From"
+msgstr "_Da"
+
+#: amiga-mui/composewnd.c:1113
+msgid "R"
+msgstr "R"
+
+#: amiga-mui/composewnd.c:1116 amiga-mui/composewnd.c:1120
+msgid "_Replies To"
+msgstr "_Risposta A"
+
+#: amiga-mui/composewnd.c:1124 amiga-mui/composewnd.c:1130
+#: amiga-mui/searchwnd.c:183
+msgid "_To"
+msgstr "_A"
+
+#: amiga-mui/composewnd.c:1136 amiga-mui/composewnd.c:1142
+msgid "C_opies To"
+msgstr "_Copie a (CC)"
+
+#: amiga-mui/composewnd.c:1148 amiga-mui/composewnd.c:1152
+msgid "S_ubject"
+msgstr "_Oggetto"
+
+#: amiga-mui/composewnd.c:1171
+msgid "Copy"
+msgstr "Copia"
+
+#: amiga-mui/composewnd.c:1172
+msgid "Cut"
+msgstr "Taglia"
+
+#: amiga-mui/composewnd.c:1173
+msgid "Paste"
+msgstr "Incolla"
+
+#: amiga-mui/composewnd.c:1178
+msgid "Undo"
+msgstr "Annulla"
+
+#: amiga-mui/composewnd.c:1179
+msgid "Redo"
+msgstr "Ripristina"
+
+#: amiga-mui/composewnd.c:1184
+msgid "_Attach"
+msgstr "All_ega"
+
+#: amiga-mui/composewnd.c:1189
+msgid "_Encrypt"
+msgstr "_Critta"
+
+#: amiga-mui/composewnd.c:1190
+msgid "Si_gn"
+msgstr "Fir_ma"
+
+#: amiga-mui/composewnd.c:1252
+msgid "Add text"
+msgstr "Aggiungi testo"
+
+#: amiga-mui/composewnd.c:1253
+msgid "Add multipart"
+msgstr "Aggiungi multiparte"
+
+#: amiga-mui/composewnd.c:1254
+msgid "Add file(s)"
+msgstr "Aggiungi file"
+
+#: amiga-mui/composewnd.c:1255 amiga-mui/filterwnd.c:264
+msgid "Remove"
+msgstr "Elimina"
+
+#: amiga-mui/composewnd.c:1260
+msgid "_Send now"
+msgstr "Invia _ora"
+
+#: amiga-mui/composewnd.c:1261
+msgid "Send _later"
+msgstr "Invia _dopo"
+
+#: amiga-mui/composewnd.c:1262
+msgid "_Hold"
+msgstr "I_n sospeso"
+
+#: amiga-mui/configwnd.c:432
 msgid ""
-"A black list contains email address which you don't thrust.\n"
-"Mails from these addresses are always marked as spam."
+"SimpleMail currently doesn't support the same email address for\n"
+"multiple accounts. Please ensure that every email address is unique.\n"
+"However, you can set the reply address field to your prefered addresse."
 msgstr ""
-"Una lista nera contiene indirizzi email che si ritiene siano non affidabili.\n"
-"I messaggi provenienti da questi indirizzi vengono sempre classificati come spam."
+"SimpleMail attualmente non supporta l'uso dello stesso indirizzo e-mail\n"
+"su account multipli, assicurati che ciascun indirizzo e-mail sia univoco.\n"
+"Tuttavia è possibile impostare il campo 'risposta' con l'indirizzo che si\n"
+"preferisce."
 
+#: amiga-mui/configwnd.c:447
+msgid "No valid email address entered. Please correct it."
+msgstr "L'indirizzo di posta inserito non è valido, per favore correggilo"
+
+#: amiga-mui/configwnd.c:467
+msgid "This Signaturename is not allowed."
+msgstr "Questa firma sul nome non è permessa"
+
+#: amiga-mui/configwnd.c:481
+msgid "Signaturenames must be unique."
+msgstr "La firma per i nomi deve essere univoca"
+
+#: amiga-mui/configwnd.c:517
 msgid ""
-"A white list contains email address of people you usually\n"
-"thrust. This can be used to speed up the spam checking as\n"
-"mails with a listed sender address are skipped."
+"You have changed the folder direcory! You must quit and restart SimpleMail "
+"to see an effect."
 msgstr ""
-"Una lista bianca contiene gli indirizzi email di persone delle quali vi fidate.\n"
-"Questa può essere usata per velocizzare il controllo dello spam, dato che\n"
-"i mittenti presenti su questa lista verranno ignorati."
+"La directory della cartella è stata modificata.\n"
+"E' necessario chiudere e riavviare SimpleMail\n"
+"per rendere effettive le modifiche"
 
-msgid "A:Select All Messages"
-msgstr "X:Seleziona tutti i messaggi"
+#: amiga-mui/configwnd.c:678
+#, fuzzy
+msgid "Always"
+msgstr "Sempre"
 
-msgid "APOP"
-msgstr "APOP"
+#: amiga-mui/configwnd.c:679
+msgid "Iconified"
+msgstr "Iconificato"
 
+#: amiga-mui/configwnd.c:680
+#, fuzzy
+msgid "Never"
+msgstr "Mai"
+
+#: amiga-mui/configwnd.c:687 amiga-mui/configwnd.c:688
+msgid "Add adjustment for daylight saving time"
+msgstr "Imposta automaticamente l'ora legale"
+
+#: amiga-mui/configwnd.c:692
+msgid "Folder directory"
+msgstr "Directory delle cartelle"
+
+#: amiga-mui/configwnd.c:703
+msgid "Charset used to display text"
+msgstr "Set di caratteri usato per mostrare il testo"
+
+#: amiga-mui/configwnd.c:714 amiga-mui/configwnd.c:715
+msgid "AppIcon Show"
+msgstr "Mostra AppIcon"
+
+#: amiga-mui/configwnd.c:716
+msgid "AppIcon Label"
+msgstr "Intestazione AppIcon"
+
+#: amiga-mui/configwnd.c:740
+msgid "Disabled"
+msgstr "Disattivata"
+
+#: amiga-mui/configwnd.c:741
+msgid "Only Sizes"
+msgstr "Solo dimensioni"
+
+#: amiga-mui/configwnd.c:742
+msgid "Enabled"
+msgstr "Attivata"
+
+#: amiga-mui/configwnd.c:749
+msgid "Preselection"
+msgstr "Preselezione"
+
+#: amiga-mui/configwnd.c:768
+msgid "Automatic operation"
+msgstr "Operazione automatica"
+
+#: amiga-mui/configwnd.c:770
+msgid "Check for new mail every"
+msgstr "Controlla la posta ogni"
+
+#: amiga-mui/configwnd.c:777
+msgid "minutes"
+msgstr "minuti"
+
+#: amiga-mui/configwnd.c:778 amiga-mui/configwnd.c:779
+msgid "On startup"
+msgstr "All'avvio"
+
+#: amiga-mui/configwnd.c:780 amiga-mui/configwnd.c:781
+msgid "If online"
+msgstr "Se connesso"
+
+#: amiga-mui/configwnd.c:783
+msgid "New mails"
+msgstr "Nuovi messaggi"
+
+#: amiga-mui/configwnd.c:785 amiga-mui/configwnd.c:786
 msgid "ARexx"
 msgstr "ARexx"
 
-msgid "AUTH failed. User couldn't be authenticated. Please recheck your settings."
-msgstr "AUTH non riuscita. L'utente non può essere identificato. Verificare le impostazioni."
+#: amiga-mui/configwnd.c:798 amiga-mui/configwnd.c:799
+msgid "Sound"
+msgstr "Suono"
 
-msgid "Aborted - Disconnecting..."
-msgstr "Interrotto - Disconnessione..."
+#: amiga-mui/configwnd.c:822
+msgid "-- New Account --"
+msgstr "-- Nuovo Account --"
 
-msgid "Aborted - Sending QUIT..."
-msgstr "Interrotto - Invio QUIT..."
+#: amiga-mui/configwnd.c:939 amiga-mui/configwnd.c:1573
+#: amiga-mui/configwnd.c:1623 amiga-mui/foldertreelistclass.c:165
+#: amiga-mui/folderwnd.c:602
+msgid "Name"
+msgstr "Nome"
 
-msgid "About MUI..."
-msgstr "Info su  MUI..."
+#: amiga-mui/configwnd.c:940
+msgid "EMail"
+msgstr "E-Mail"
 
+#: amiga-mui/configwnd.c:941 amiga-mui/configwnd.c:1023
+msgid "Receive"
+msgstr "Ricezione"
+
+#: amiga-mui/configwnd.c:942 amiga-mui/configwnd.c:1103
+msgid "Send"
+msgstr "Invio"
+
+#: amiga-mui/configwnd.c:962
+msgid "Try"
+msgstr "Prova"
+
+#: amiga-mui/configwnd.c:963
+msgid "Enforce"
+msgstr "Imponi"
+
+#: amiga-mui/configwnd.c:964
+msgid "Don't try"
+msgstr "Ignora"
+
+#: amiga-mui/configwnd.c:981
+msgid "_Add Account"
+msgstr "Ag_giungi account"
+
+#: amiga-mui/configwnd.c:983
+msgid "_Remove Account"
+msgstr "Ri_muovi account"
+
+#: amiga-mui/configwnd.c:988
 msgid "Account Name"
-msgstr "Nome Account"
+msgstr "Nome account"
 
-msgid "Accounts"
-msgstr "Accounts"
+#: amiga-mui/configwnd.c:995
+msgid "User"
+msgstr "Utente"
 
-msgid "Action"
-msgstr "Azione"
+#: amiga-mui/configwnd.c:1003
+msgid "E-Mail Address"
+msgstr "Indirizzo e-mail"
 
-msgid "Activate this if the SMTP server requires authentication."
-msgstr "Attivare questa opzione se il server SMTP richiede l'autenticazione."
+#: amiga-mui/configwnd.c:1009
+msgid "Reply Address"
+msgstr "Indirizzo di risposta"
 
+#: amiga-mui/configwnd.c:1025
+msgid "Type"
+msgstr "Tipo"
+
+#: amiga-mui/configwnd.c:1033
+msgid "Server"
+msgstr "Server"
+
+#: amiga-mui/configwnd.c:1040 amiga-mui/configwnd.c:1113
+msgid "Port"
+msgstr "Porta"
+
+#: amiga-mui/configwnd.c:1049 amiga-mui/configwnd.c:1122
+msgid "Login"
+msgstr "Login"
+
+#: amiga-mui/configwnd.c:1056 amiga-mui/configwnd.c:1130
+msgid "Password"
+msgstr "Password"
+
+#: amiga-mui/configwnd.c:1063 amiga-mui/configwnd.c:1064
+msgid "Ask"
+msgstr "Chiedi"
+
+#: amiga-mui/configwnd.c:1071 amiga-mui/configwnd.c:1073
+msgid "Active"
+msgstr "Attivo"
+
+#: amiga-mui/configwnd.c:1077 amiga-mui/configwnd.c:1078
+#, fuzzy
+msgid "APOP"
+msgstr "APOP"
+
+#: amiga-mui/configwnd.c:1084 amiga-mui/configwnd.c:1085
+msgid "Avoid duplicates"
+msgstr "Evita duplicati"
+
+#: amiga-mui/configwnd.c:1087 amiga-mui/configwnd.c:1088
+msgid "_Delete mails"
+msgstr "_Cancella messaggi"
+
+#: amiga-mui/configwnd.c:1094 amiga-mui/configwnd.c:1095
+#: amiga-mui/configwnd.c:1143 amiga-mui/configwnd.c:1144
+msgid "Secure"
+msgstr "Sicura"
+
+#: amiga-mui/configwnd.c:1097 amiga-mui/configwnd.c:1098
+msgid "with STLS"
+msgstr "con STLS"
+
+#: amiga-mui/configwnd.c:1106
+msgid "SMTP Server"
+msgstr "Server SMTP"
+
+#: amiga-mui/configwnd.c:1138 amiga-mui/configwnd.c:1139
+msgid "Use SMTP AUTH"
+msgstr "Usa SMTP AUTH"
+
+#: amiga-mui/configwnd.c:1146 amiga-mui/configwnd.c:1147
+msgid "Log into POP3 server first"
+msgstr "Accedi prima al server POP3"
+
+#: amiga-mui/configwnd.c:1149 amiga-mui/configwnd.c:1150
+msgid "Use IP as domain"
+msgstr "Usa IP come dominio"
+
+#: amiga-mui/configwnd.c:1183
+msgid "Your full name (required)"
+msgstr "Il nome completo (necessario)"
+
+#: amiga-mui/configwnd.c:1184
+msgid "Your E-Mail address for this account (required)"
+msgstr "L'indirizzo di posta per questo account (necessario)"
+
+#: amiga-mui/configwnd.c:1185
 msgid ""
-"Activate this if you provider needs that\n"
-"you first log into its POP3 sever."
+"Address where the replies of the mails should\n"
+"be sent (required only if different from the e-mail address)."
 msgstr ""
-"Attivare questa opzione se il provider richiede\n"
-"che vi connettiate prima al server POP3."
+"L'indirizzo verso il quale i messaggi di risposta dovranno essere\n"
+"inviati (richiesto solamente se diverso dall'indirizzo di posta)"
 
+#: amiga-mui/configwnd.c:1186
+msgid "The default signature for this account"
+msgstr "La firma predefinita per questo account"
+
+#: amiga-mui/configwnd.c:1187
+msgid ""
+"The name of the so called POP3 server from\n"
+"which you download your e-Mails (required; ask your\n"
+"provider if unknown)."
+msgstr ""
+"Il nome del server POP3 dal quale verranno\n"
+"prelevate le e-mail (sarà necessario chiedere\n"
+"al proprio provider se non lo si conosce)"
+
+#: amiga-mui/configwnd.c:1188
+msgid "The port number. Usually 110"
+msgstr "Il numero della porta (generalmente 110)"
+
+#: amiga-mui/configwnd.c:1189
+msgid "The login/UserID which you got from your ISP."
+msgstr "L'identificativo che ti è stato assegnato dall'ISP"
+
+#: amiga-mui/configwnd.c:1190
+msgid ""
+"Your very own password to access the mails\n"
+"located on the POP3 server."
+msgstr ""
+"La tua password personale per l'accesso\n"
+"ai messaggi contenuti nel server POP3"
+
+#: amiga-mui/configwnd.c:1191
+msgid ""
+"Deactivate this if you don't want SimpleMail to\n"
+"download the e-Mails when pressing on 'Fetch'."
+msgstr ""
+"Disattiva questa opzione se non si desidera che SimpleMail\n"
+"prelevi i messaggi alla pressione del pulsante 'Ricezione'"
+
+#: amiga-mui/configwnd.c:1192
+msgid ""
+"After successul downloading the mails should be deleted\n"
+"on the POP3 server."
+msgstr ""
+"Attiva questa opzione per cancellare i messaggi\n"
+"sul server POP3 una volta terminata la ricezione"
+
+#: amiga-mui/configwnd.c:1193
+msgid ""
+"When not deleteding e-Mails on the server SimpleMail\n"
+"tries to avoid downloading a message twice the next time."
+msgstr ""
+"Qualora i messaggi non vengano cancellati dal server SimpleMail\n"
+"cercherà di non scaricare nuovamente gli stessi messaggi"
+
+#: amiga-mui/configwnd.c:1194
+msgid ""
+"Choose how APOP is handled. If you encounter login probelms\n"
+"you might change this setting to \"Don't try\"."
+msgstr ""
+"Scegli in che modo l'APOP verrà utilizzato, qualora si riscontrassero problemi\n"
+"di login sarà possibile cambiare questa impostazione settando su \"Ignora\""
+
+#: amiga-mui/configwnd.c:1195
+msgid ""
+"If activated SimpleMail tries to make the connection secure.\n"
+"This is not supported on all servers, so decativate if it doesn't work."
+msgstr ""
+"Se attivato SimpleMail tenterà di effettuare una connessione sicura.\n"
+"Questa non è supportata da tutti i server quindi, se necessario lo si\n"
+"potrà disattivare se non funzionante"
+
+#: amiga-mui/configwnd.c:1196
+msgid ""
+"The name of the so called SMTP server which is responlible\n"
+"to send your e-Mails."
+msgstr ""
+"Il nome del server SMTP responsabile\n"
+"dell'invio dei messaggi di posta"
+
+#: amiga-mui/configwnd.c:1197
+msgid "The port number. Usually 25"
+msgstr "Il numero della porta (generalmente 25)"
+
+#: amiga-mui/configwnd.c:1198
+msgid ""
+"Your login/UserID for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"Il proprio identificativo per il server SMTP.\n"
+"Necessario solamente se il server richiede l'autenticazione"
+
+#: amiga-mui/configwnd.c:1199
+msgid ""
+"Your password for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"La password per il server SMTP.\n"
+"Necessaria solo se il server richiede l'autenticazione"
+
+#: amiga-mui/configwnd.c:1200
+msgid "Activate this if the SMTP server requires authentication."
+msgstr "Attiva questa opzione se il server SMTP richiede l'autenticazione"
+
+#: amiga-mui/configwnd.c:1201
 msgid ""
 "Activate this if you want a secure connection\n"
 "to the SMTP server. Deactivate this if your SMTP server\n"
 "doesn't support it"
 msgstr ""
-"Attivare questa opzione per una connessione sicura\n"
-"sul server SMTP. Disattivarla se il vostro server SMTP\n"
-"non la supporta."
+"Attiva questa opzione per una connessione sicura sul\n"
+"server SMTP, disattivala se il tuo server SMTP non la\n"
+"supporta"
 
-msgid "Active"
-msgstr "Attivo"
+#: amiga-mui/configwnd.c:1202
+msgid ""
+"Activate this if you provider needs that\n"
+"you first log into its POP3 sever."
+msgstr ""
+"Attiva questa opzione se il provider richiede\n"
+"prima una connessione al server POP3"
 
-msgid "Activtiy"
-msgstr "Attivazione"
+#: amiga-mui/configwnd.c:1203
+msgid ""
+"Send your current IP address together with the intial greetings.\n"
+"This avoids some error headers on some providers."
+msgstr ""
+"Invia il tuo indirizzo IP in uso con i saluti iniziali.\n"
+"Ciò evita alcuni errori di intestazione su alcuni providers"
 
-msgid "Add"
-msgstr "Aggiungi"
-
-msgid "Add \"%s\" to following groups"
-msgstr "Aggiungi \"%s\" ai gruppi seguenti"
-
+#: amiga-mui/configwnd.c:1204
 msgid "Add a new account."
-msgstr "Aggiunge un nuovo account."
+msgstr "Aggiunge un nuovo account"
 
-msgid "Add adjustment for daylight saving time"
-msgstr "Imposta automaticamente l'ora legale"
+#: amiga-mui/configwnd.c:1205
+msgid "Remove the current account."
+msgstr "Elimina l'account attuale"
 
-msgid "Add contact to following groups"
-msgstr "Aggiungi il contatto ai seguenti gruppi"
+#: amiga-mui/configwnd.c:1222
+msgid "off"
+msgstr "disattivato"
 
-msgid "Add file(s)"
-msgstr "Aggiungi file"
+#: amiga-mui/configwnd.c:1223
+msgid "as you type"
+msgstr "quando scrivi"
 
-msgid "Add multipart"
-msgstr "Aggiungi multiparte"
+#: amiga-mui/configwnd.c:1224
+msgid "before storing"
+msgstr "prima di salvare"
 
-msgid "Add new rule"
-msgstr "Aggiungi nuova regola"
+#: amiga-mui/configwnd.c:1231
+msgid "Editor"
+msgstr "Editor"
 
-msgid "Add text"
-msgstr "Aggiungi testo"
+#: amiga-mui/configwnd.c:1233
+msgid "Word wrap"
+msgstr "Margine automatico"
 
-msgid "Add to addressbook..."
-msgstr "Aggiungi alla rubrica..."
+#: amiga-mui/configwnd.c:1237
+msgid "Replying"
+msgstr "Risposta"
 
-msgid "Add..."
-msgstr "Aggiungi..."
+#: amiga-mui/configwnd.c:1240 amiga-mui/configwnd.c:1241
+msgid "Wrap before quoting"
+msgstr "Margine automatico prima di quotare"
 
+#: amiga-mui/configwnd.c:1243 amiga-mui/configwnd.c:1244
+msgid "Strip signature before quoting"
+msgstr "Abbrevia la firma prima di quotare"
+
+#: amiga-mui/configwnd.c:1246 amiga-mui/configwnd.c:1247
+msgid "Quote empty lines"
+msgstr "Quota le linee vuote"
+
+#: amiga-mui/configwnd.c:1271
+msgid "Header Configuration"
+msgstr "Configurazione intestazione"
+
+#: amiga-mui/configwnd.c:1274 amiga-mui/configwnd.c:1275
+msgid "Show all headers"
+msgstr "Mostra tutte le intestazioni"
+
+#: amiga-mui/configwnd.c:1282 amiga-mui/configwnd.c:1283
+#: amiga-mui/folderwnd.c:343 amiga-mui/mailtreelistclass.c:492
+#: amiga-mui/transwndclass.c:129 mail.c:3166 print.c:53
+msgid "From"
+msgstr "Da"
+
+#: amiga-mui/configwnd.c:1285 amiga-mui/configwnd.c:1286
+#: amiga-mui/mailtreelistclass.c:493 mail.c:3194 print.c:71
+msgid "To"
+msgstr "A"
+
+#: amiga-mui/configwnd.c:1288 amiga-mui/configwnd.c:1289
+msgid "CC"
+msgstr "CC"
+
+#: amiga-mui/configwnd.c:1291 amiga-mui/configwnd.c:1292
+#: amiga-mui/filterruleclass.c:89 amiga-mui/folderwnd.c:276
+#: amiga-mui/folderwnd.c:286 amiga-mui/mailtreelistclass.c:494
+#: amiga-mui/transwndclass.c:130 mail.c:3248 print.c:119
+msgid "Subject"
+msgstr "Oggetto"
+
+#: amiga-mui/configwnd.c:1294 amiga-mui/configwnd.c:1295
+#: amiga-mui/folderwnd.c:278 amiga-mui/folderwnd.c:288
+#: amiga-mui/mailtreelistclass.c:496 mail.c:3260 print.c:124
+msgid "Date"
+msgstr "Data"
+
+#: amiga-mui/configwnd.c:1297 amiga-mui/configwnd.c:1298
+msgid "Reply-To"
+msgstr "Risposta-a"
+
+#: amiga-mui/configwnd.c:1305
 msgid "Additional headers"
 msgstr "Intestazioni addizionali"
 
-msgid "Address"
-msgstr "E-Mail"
+#: amiga-mui/configwnd.c:1341
+msgid "Background"
+msgstr "Sfondo"
 
-msgid "Address Book..."
-msgstr "Rubrica..."
+#: amiga-mui/configwnd.c:1342
+msgid "Text"
+msgstr "Testo"
 
-msgid ""
-"Address where the replies of the mails should\n"
-"be sent (required only if different from the e-mail address)."
-msgstr ""
-"L'indirizzo verso il quale le mail di risposta devono essere\n"
-"inviate (richiesto solamente se diverso dall'indirizzo e-mail)."
+#: amiga-mui/configwnd.c:1343
+msgid "Quoted Text"
+msgstr "Testo quotato"
 
-msgid "Addresslist Settings"
-msgstr "Impostazioni archivio indirizzi"
+#: amiga-mui/configwnd.c:1344
+msgid "Old Quoted Text"
+msgstr "Vecchio testo quotato"
 
-msgid "Add|Don't add"
-msgstr "Aggiungi|Non aggiungere"
+#: amiga-mui/configwnd.c:1345
+msgid "Link Text"
+msgstr "Collega testo"
 
+#: amiga-mui/configwnd.c:1346
+msgid "Header Background"
+msgstr "Sfondo intestazione"
+
+#: amiga-mui/configwnd.c:1394
+msgid "Fonts"
+msgstr "Font"
+
+#: amiga-mui/configwnd.c:1396
+msgid "Proportional Font"
+msgstr "Font proporzionale"
+
+#: amiga-mui/configwnd.c:1403
+msgid "Fixed Font"
+msgstr "Font fisso"
+
+#: amiga-mui/configwnd.c:1412
+msgid "Colors"
+msgstr "Colori"
+
+#: amiga-mui/configwnd.c:1422 amiga-mui/configwnd.c:1423
+msgid "Wordwrap plain text"
+msgstr "Ritorno margine automatico sul testo"
+
+#: amiga-mui/configwnd.c:1424 amiga-mui/configwnd.c:1425
+msgid "Underline links"
+msgstr "Collegamenti sottolineati"
+
+#: amiga-mui/configwnd.c:1426 amiga-mui/configwnd.c:1427
+msgid "Use graphical smilies"
+msgstr "Usa emoticon grafiche"
+
+#: amiga-mui/configwnd.c:1449
+msgid "Allow to download images from the internet from"
+msgstr "Autorizza download delle immagini internet da"
+
+#: amiga-mui/configwnd.c:1472
+msgid "-- New Signature --"
+msgstr "-- Nuova firma --"
+
+#: amiga-mui/configwnd.c:1508
+#, c-format
+msgid "The signature is used in %d account(s)."
+msgstr "La firma è utilizzata su %d account"
+
+#: amiga-mui/configwnd.c:1508 amiga-mui/configwnd.c:1513
+#: amiga-mui/configwnd.c:1516
+msgid "Remove|*Cancel"
+msgstr "_Elimina|*A_nnulla"
+
+#: amiga-mui/configwnd.c:1513
+#, c-format
+msgid "The signature is used in %d folder(s)."
+msgstr "La firma è utilizzata su %d cartella(e)"
+
+#: amiga-mui/configwnd.c:1516
+#, c-format
+msgid "The signature is used in %d account(s) and %d folder(s)."
+msgstr "La firma è utilizzata su %d account e su %d cartella(e)"
+
+#: amiga-mui/configwnd.c:1599 amiga-mui/configwnd.c:1600
+msgid "Us_e signatures"
+msgstr "U_sa firme"
+
+#: amiga-mui/configwnd.c:1614 amiga-mui/configwnd.c:1799
+msgid "_Add"
+msgstr "A_ggiungi"
+
+#: amiga-mui/configwnd.c:1616 amiga-mui/configwnd.c:1803
+#: amiga-mui/filterwnd.c:487
+msgid "_Remove"
+msgstr "_Rimuovi"
+
+#: amiga-mui/configwnd.c:1642
+msgid "Insert random tagline"
+msgstr "Inserisci una tagline casuale"
+
+#: amiga-mui/configwnd.c:1643
+msgid "Insert ENV:Signature"
+msgstr "Inserisci ENV:Firma"
+
+#: amiga-mui/configwnd.c:1674
+msgid "-- New Phrase --"
+msgstr "-- Nuova frase --"
+
+#: amiga-mui/configwnd.c:1738
+msgid "All"
+msgstr "Tutti"
+
+#: amiga-mui/configwnd.c:1742
+msgid "On addresses"
+msgstr "Sugli indirizzi"
+
+#: amiga-mui/configwnd.c:1801
+msgid "_Duplicate"
+msgstr "_Duplica"
+
+#: amiga-mui/configwnd.c:1808
+msgid "Use on addresses which contain"
+msgstr "Usa con gli indirizzi che contengono"
+
+#: amiga-mui/configwnd.c:1815 amiga-mui/configwnd.c:2115
+msgid "Write"
+msgstr "Scrittura"
+
+#: amiga-mui/configwnd.c:1817 amiga-mui/configwnd.c:1836
+msgid "Welcome"
+msgstr "Messaggio di benvenuto"
+
+#: amiga-mui/configwnd.c:1823
+msgid "Welcome with address"
+msgstr "Con indirizzo/intestazione"
+
+#: amiga-mui/configwnd.c:1827 amiga-mui/configwnd.c:1846
+msgid "Close"
+msgstr "Chiusura"
+
+#: amiga-mui/configwnd.c:1834 amiga-mui/folderwnd.c:277
+#: amiga-mui/folderwnd.c:287 amiga-mui/mailtreelistclass.c:495
+msgid "Reply"
+msgstr "Indirizzo di risposta"
+
+#: amiga-mui/configwnd.c:1841
+msgid "Intro"
+msgstr "Introduzione"
+
+#: amiga-mui/configwnd.c:1851 amiga-mui/mailtreelistclass.c:872
+msgid "Forward"
+msgstr "Inoltra"
+
+#: amiga-mui/configwnd.c:1853
+msgid "Initial"
+msgstr "Inizio"
+
+#: amiga-mui/configwnd.c:1858
+msgid "Finish"
+msgstr "Fine"
+
+#: amiga-mui/configwnd.c:1886
 msgid ""
 "After reseting the ham statistics the spam filter won't work reliable\n"
 "until you have classified some mails as ham.\n"
 "Are you sure to continue?"
 msgstr ""
 "Dopo aver resettato le statistiche ham, il filtro spam non funzionerà\n"
-"correttamente finchè qualche mail non verrà classificata come ham.\n"
+"correttamente finchè altre e-mail non verranno classificata come ham.\n"
 "Sei sicuro di voler continuare?"
 
+#: amiga-mui/configwnd.c:1889
+msgid "Reset the statistics|Cancel"
+msgstr "_Resetta statistiche|_Annulla"
+
+#: amiga-mui/configwnd.c:1904
 msgid ""
 "After reseting the spam statistics the spam filter won't work reliable\n"
 "until you have classified some mails as spam. However, if requested the\n"
@@ -229,293 +1026,1479 @@ msgid ""
 "How to proceed?"
 msgstr ""
 "Dopo aver resettato le statistiche, il filtro spam non funzionerà più\n"
-"correttamente finchè non avrete classificato qualche mail come spam.\n"
-"Tuttavia, se si preferisce, le statistiche possono essere generate dalle\n"
-"mail presenti nella cartella spam.\n"
+"correttamente finchè altre e-mail non verranno classificato come spam.\n"
+"Tuttavia, se si preferisce le statistiche potranno essere generate dalle\n"
+"e-mail presenti nella cartella spam.\n"
 "Come si desidera procedere?"
 
+#: amiga-mui/configwnd.c:1908
+msgid "Reset the statistics|Reset and rebuild|Cancel"
+msgstr "_Resetta statistiche|Re_setta e ricostruisci|_Annulla"
+
+#: amiga-mui/configwnd.c:1940
+msgid "General spam settings"
+msgstr "Impostazioni generali dello spam"
+
+#: amiga-mui/configwnd.c:1943 amiga-mui/configwnd.c:1944
+msgid "Mark mails as spam before moved to the spam folder"
+msgstr "Contrassegna i messaggi come spam prima di spostarli"
+
+#: amiga-mui/configwnd.c:1945
 msgid ""
-"After successul downloading the mails should be deleted\n"
-"on the POP3 server."
+"If you activate this option any mail you move to the spam folder\n"
+"is marked as spam before the operation. Note that only mails\n"
+"marked as spam can be moved into the spam folder."
 msgstr ""
-"Attivare questa opzione per cancellare i messaggi\n"
-"sul server POP3 una volta terminata la ricezione."
+"Attiva questa opzione per far si che ogni mail spostata nella cartella spam\n"
+"sia marcata come tale prima dello spostamento, da notare che solo le mail\n"
+"contrassegnate come tali potranno essere spostate nella cartella apposita"
 
-msgid "Alias"
-msgstr "Nick"
+#: amiga-mui/configwnd.c:1951 amiga-mui/configwnd.c:1952
+msgid "Check new mails for spam content"
+msgstr "Verifica il contenuto della posta in arrivo"
 
-msgid "All"
-msgstr "Tutti"
-
-msgid "All folders"
-msgstr "Tutte le cartelle"
-
-msgid "All messages"
-msgstr "Tutti i messaggi"
-
-msgid "Allow to download images from the internet from"
-msgstr "Autorizza il download delle immagini da internet da:"
-
-msgid "Allows you to filter for messages containing the given texts within their From or Subject fields."
+#: amiga-mui/configwnd.c:1953
+msgid ""
+"If you activate this option any new mail is being checked for its\n"
+"spam content. This only works if you have more than 500 mails for\n"
+"every class within the statistics."
 msgstr ""
-"Permette di filtrare i messaggi che contengono i testi iseriti nei campi \"Da\" e \"Oggetto\".\n"
-"Il filtro tuttavia non si applica che alle cartelle in corso di visualizzazione."
+"Attiva questa opzione per controllare se ogni nuova mail possiede un\n"
+"contenuto spam, ciò funziona solamente se ci sono più di 500 mail per\n"
+"ogni classe all'interno delle statistiche"
 
+#: amiga-mui/configwnd.c:1960
+msgid ""
+"A white list contains email address of people you usually\n"
+"thrust. This can be used to speed up the spam checking as\n"
+"mails with a listed sender address are skipped."
+msgstr ""
+"La lista bianca contiene indirizzi e-mail di persone delle quali vi fidate.\n"
+"Questa può essere usata per velocizzare il controllo dello spam, dato\n"
+"che i mittenti presenti su questa lista verranno ignorati"
+
+#: amiga-mui/configwnd.c:1963
+msgid "White list"
+msgstr "Lista blanca"
+
+#: amiga-mui/configwnd.c:1970
+msgid ""
+"If enabled all addresses within you addressbook are also\n"
+"considered to be safe."
+msgstr ""
+"Attiva questa opzione per fare in modo che tutti gli indirizzi nella rubrica\n"
+"vengano considerati come sicuri"
+
+#: amiga-mui/configwnd.c:1972 amiga-mui/configwnd.c:1973
 msgid "Also all addresses within the addressbook"
-msgstr "Anche tutti gli indirizzi della rubrica"
+msgstr "Anche per tutti gli indirizzi della rubrica"
 
-msgid "Always"
-msgstr "Sempre"
+#: amiga-mui/configwnd.c:1978
+msgid ""
+"A black list contains email address which you don't thrust.\n"
+"Mails from these addresses are always marked as spam."
+msgstr ""
+"La lista nera contiene indirizzi e-mail che si ritiene siano inaffidabili.\n"
+"I messaggi provenienti da questi indirizzi verranno sempre classificati\n"
+"come spam"
 
-msgid "AppIcon label"
-msgstr "Intestazione dell'appicon"
-
-msgid "AppIcon Show"
-msgstr "Mostra l'appicon"
-
-msgid "Apply now"
-msgstr "Applica adesso"
-
-msgid "Apply to new mails"
-msgstr "Applica ai nuovi messaggi"
-
-msgid "Are you sure that you want to start this executable?"
-msgstr "Sei sicuro di voler avviare questo eseguibile?"
-
-msgid "Ask"
-msgstr "Chiedi"
-
-msgid "Attachment"
-msgstr "Allegato"
-
-msgid "Attachments"
-msgstr "Allegati"
-
-msgid "Authentificate via APOP..."
-msgstr "Autenticazione via APOP..."
-
-msgid "Automatic operation"
-msgstr "Operazione automatica"
-
-msgid "Avoid duplicates"
-msgstr "Evita duplicati"
-
-msgid "B"
-msgstr "N"
-
-msgid "Background"
-msgstr "Sfondo"
-
-msgid "Belonging groups"
-msgstr "Gruppi di appartenenza"
-
-msgid "Binary generated using gcc %d.%d.%d"
-msgstr "Codice binario generato usando gcc %d.%d.%d"
-
+#: amiga-mui/configwnd.c:1980
 msgid "Black list"
 msgstr "Lista nera"
 
-msgid "CC"
-msgstr "CC"
+#: amiga-mui/configwnd.c:1989
+msgid "Statistics"
+msgstr "Statistiche"
 
-msgid "C_opies To"
-msgstr "_Copie a (CC)"
+#: amiga-mui/configwnd.c:1992
+msgid "Number of mails classified as ham"
+msgstr "Numero di messaggi classificati come ham"
 
-msgid "Can't access income-folder!"
-msgstr "Impossibile accedere alla directory dei file in entrata!"
+#: amiga-mui/configwnd.c:1994 amiga-mui/configwnd.c:1999
+msgid "Reset statistics..."
+msgstr "Resetta statistiche..."
 
-msgid "Can't access printer!"
-msgstr "Impossibile accedere alla stampante!"
+#: amiga-mui/configwnd.c:1997
+msgid "Number of mails classified as spam"
+msgstr "Numero di messaggi classificati come spam"
 
-msgid "Can't create temporary file."
-msgstr "Impossibile creare un file temporaneo."
+#: amiga-mui/configwnd.c:2011
+msgid "Resets all ham statistics."
+msgstr "Resetta tutte le statistiche ham"
 
-msgid "Can't delete folder because it is actually in use."
-msgstr "Impossibile cancellare la cartella selezionata poichè è attualmente in uso."
+#: amiga-mui/configwnd.c:2012
+msgid "Resets all spam statistics."
+msgstr "Resetta tutte le statistiche spam"
 
-msgid "Can't get new filename!"
-msgstr "Impossibile avere un nuovo nome per il file!"
+#: amiga-mui/configwnd.c:2045
+msgid "SimpleMail - Configuration"
+msgstr "SimpleMail - Configurazione"
 
-msgid "Can't mark mail as deleted!"
-msgstr "Impossibile contrassegnare la mail come eliminata!!"
+#: amiga-mui/configwnd.c:2078
+msgid "?config:_Save"
+msgstr "?config:_Salva"
 
-msgid "Can't open mail file!"
-msgstr "Impossibile aprire il file di posta!!"
+#: amiga-mui/configwnd.c:2079 amiga-mui/filterwnd.c:564
+msgid "_Use"
+msgstr "_Usa"
 
-msgid "Cannot delete mails, because folder is in use.\n"
-msgstr "Impossibile cancellare le mail, perchè la cartella è in uso.\n"
+#: amiga-mui/configwnd.c:2112
+msgid "General"
+msgstr "Generale"
 
-msgid "Cannot locate host. Try again later"
-msgstr "Impossibbile localizzare l'host. Rirpova più tardi"
+#: amiga-mui/configwnd.c:2113
+msgid "Accounts"
+msgstr "Accounts"
 
-msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
-msgstr "Impossibile aprire la bsdsocket.library. Avvia uno stack TCP/IP, per favore."
+#: amiga-mui/configwnd.c:2114
+msgid "Receive mail"
+msgstr "Ricezione posta"
 
-msgid "Cannot open the bsdsocket.library!"
-msgstr "Impossibile aprire la bsdsocket.library!"
+#: amiga-mui/configwnd.c:2116
+msgid "Reading"
+msgstr "Lettura"
 
-msgid "Carbon Copy"
-msgstr "Copia per conoscenza"
+#: amiga-mui/configwnd.c:2117
+msgid "Reading plain"
+msgstr "Lettura testo"
 
-msgid "Case sensitive"
-msgstr "Distinzione maiuscole/minuscole"
+#: amiga-mui/configwnd.c:2118
+msgid "Reading HTML"
+msgstr "Lettura HTML"
 
-msgid "Central/East (Windows)"
-msgstr "Centrale/dell'Est (Windows)"
+#: amiga-mui/configwnd.c:2119
+msgid "Phrases"
+msgstr "Frasi"
 
-msgid "Central/East European"
-msgstr "Europa centrale/dell'Est"
+#: amiga-mui/configwnd.c:2120
+msgid "Signatures"
+msgstr "Firme"
 
-msgid "Change|Ignore once|Ignore always"
-msgstr "Cambia|Ignora una sola volta|Ignora sempre"
+#: amiga-mui/configwnd.c:2121
+msgid "Spam"
+msgstr "Spam"
 
-msgid "Charset used to display text"
-msgstr "Set di caratteri usato per mostrare il testo"
+#: amiga-mui/configwnd.c:2127
+msgid "Save the configuration permanently."
+msgstr "Salva la configurazione permanentemente"
 
-msgid "Check for new mail every"
-msgstr "Controlla la posta ogni"
+#: amiga-mui/configwnd.c:2128
+msgid "Use the configuration, but don't save it."
+msgstr "Usa la configurazione ma senza salvarla"
 
-msgid "Check new mails for spam content"
-msgstr "Controlla il contenuto della posta in arrivo"
+#: amiga-mui/configwnd.c:2129
+msgid "Discards all the changes you have made."
+msgstr "Annullla tutti i cambiamenti effettuati"
 
-msgid "Check Single Account"
-msgstr "Controlla un singolo account"
+#: amiga-mui/filterruleclass.c:69 amiga-mui/foldertreelistclass.c:167
+msgid "New"
+msgstr "Nuovi"
 
-msgid "Checking for folders"
-msgstr "Verifica delle cartelle"
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:848
+msgid "Read"
+msgstr "Letti"
 
-msgid "Checking for mail duplicates..."
-msgstr "Verifica dei duplicati..."
+#: amiga-mui/filterruleclass.c:69 amiga-mui/foldertreelistclass.c:168
+#: amiga-mui/mailtreelistclass.c:849
+msgid "Unread"
+msgstr "Non letti"
 
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:869
+msgid "Replied"
+msgstr "Risposti"
+
+#: amiga-mui/filterruleclass.c:69
+msgid "Forwarded"
+msgstr "Inoltrati"
+
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:846
+msgid "Pending"
+msgstr "In attesa"
+
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:863
+msgid "Sent"
+msgstr "Inviati"
+
+#: amiga-mui/filterruleclass.c:87
+msgid "Sender"
+msgstr "Mittente"
+
+#: amiga-mui/filterruleclass.c:88
+msgid "Receiver"
+msgstr "Destinatario"
+
+#: amiga-mui/filterruleclass.c:90
+msgid "Header"
+msgstr "Intestazione"
+
+#: amiga-mui/filterruleclass.c:91
+msgid "Has attachments"
+msgstr "Possiede allegati"
+
+#: amiga-mui/filterruleclass.c:92
+msgid "Status is"
+msgstr "Lo stato è"
+
+#: amiga-mui/filterruleclass.c:113 amiga-mui/filterruleclass.c:117
+#: amiga-mui/filterruleclass.c:121 amiga-mui/filterruleclass.c:126
+msgid "contains"
+msgstr "contiene"
+
+#: amiga-mui/filterwnd.c:464
+msgid "SimpleMail - Edit Filter"
+msgstr "SimpleMail - Editor Filtri"
+
+#: amiga-mui/filterwnd.c:486 amiga-mui/mainwnd.c:655
+msgid "_New"
+msgstr "_Nuovo"
+
+#: amiga-mui/filterwnd.c:492
+msgid "Activtiy"
+msgstr "Attivazione"
+
+#: amiga-mui/filterwnd.c:496
+msgid "On request"
+msgstr "Su richiesta"
+
+#: amiga-mui/filterwnd.c:499
+msgid "On sent mails"
+msgstr "Sui messaggi inviati"
+
+#: amiga-mui/filterwnd.c:502
+msgid "Remotly on POP3 server"
+msgstr "In remoto sul server POP3"
+
+#: amiga-mui/filterwnd.c:505
+msgid "On new mails"
+msgstr "Sui nuovi messaggi"
+
+#: amiga-mui/filterwnd.c:510
+msgid "Rules"
+msgstr "Regole"
+
+#: amiga-mui/filterwnd.c:518
+msgid "Add new rule"
+msgstr "Aggiungi nuova regola"
+
+#: amiga-mui/filterwnd.c:519
+msgid "Apply now"
+msgstr "Applica adesso"
+
+#: amiga-mui/filterwnd.c:521
+msgid "Action"
+msgstr "Azione"
+
+#: amiga-mui/filterwnd.c:524 amiga-mui/filterwnd.c:525
+msgid "Move to Folder"
+msgstr "Sposta nella cartella"
+
+#: amiga-mui/filterwnd.c:540 amiga-mui/filterwnd.c:541
+msgid "Execute ARexx Script"
+msgstr "Esegui script Arexx"
+
+#: amiga-mui/filterwnd.c:552 amiga-mui/filterwnd.c:553
+msgid "Play Sound"
+msgstr "Riproduci suono"
+
+#: amiga-mui/filterwnd.c:563
+msgid "?filter:_Save"
+msgstr "?filtro:_Salva"
+
+#: amiga-mui/filterwnd.c:572
+msgid ""
+"If activated the filter will be used remotly on POP3 servers\n"
+"which support the TOP command. Mails which matches the filter\n"
+"are presented to the user and automatically marked as to be ignored."
+msgstr ""
+"Attiva questa opzione per usare il filtro in modalità remota sui server POP3 che\n"
+"supportano il comando TOP, le mail che combaciano con il filtro verranno\n"
+"mostrate all'utente e automaticamente marcate in modo da essere ignorate"
+
+#: amiga-mui/folderwnd.c:269
+msgid "received"
+msgstr "ricevuto"
+
+#: amiga-mui/folderwnd.c:270
+msgid "sent"
+msgstr "inviato"
+
+#: amiga-mui/folderwnd.c:271
+msgid "received and sent"
+msgstr "ricevuto e inviato"
+
+#: amiga-mui/folderwnd.c:272
+msgid "mailinglist"
+msgstr "indirizzi raggruppati"
+
+#: amiga-mui/folderwnd.c:274 amiga-mui/folderwnd.c:284
+#: amiga-mui/mailtreelistclass.c:491
+msgid "Status"
+msgstr "Stato"
+
+#: amiga-mui/folderwnd.c:275
+msgid "From/To"
+msgstr "MIttente/Destinatario"
+
+#: amiga-mui/folderwnd.c:280 amiga-mui/folderwnd.c:290
+#: amiga-mui/mailtreelistclass.c:498
+msgid "Filename"
+msgstr "Nome del file"
+
+#: amiga-mui/folderwnd.c:281 amiga-mui/folderwnd.c:291
+msgid "POP3"
+msgstr "POP3"
+
+#: amiga-mui/folderwnd.c:282 amiga-mui/folderwnd.c:292
+#: amiga-mui/mailtreelistclass.c:500
+msgid "Received"
+msgstr "Ricevuto"
+
+#: amiga-mui/folderwnd.c:285
+msgid "From/TO"
+msgstr "MIttente/Destinatario"
+
+#: amiga-mui/folderwnd.c:301
+msgid "Folder Properties"
+msgstr "Proprietà della cartella"
+
+#: amiga-mui/folderwnd.c:303
+msgid "N_ame"
+msgstr "N_ome"
+
+#: amiga-mui/folderwnd.c:311
+msgid "IMAP Server"
+msgstr "Server IMAP"
+
+#: amiga-mui/folderwnd.c:317 amiga-mui/folderwnd.c:609
+msgid "Path"
+msgstr "Percorso"
+
+#: amiga-mui/folderwnd.c:323 amiga-mui/folderwnd.c:324
+msgid "_Type"
+msgstr "_Tipo"
+
+#: amiga-mui/folderwnd.c:326 amiga-mui/folderwnd.c:328
+msgid "_Primary sort"
+msgstr "Ordinamento _primario"
+
+#: amiga-mui/folderwnd.c:329 amiga-mui/folderwnd.c:330
+#: amiga-mui/folderwnd.c:336 amiga-mui/folderwnd.c:337
+msgid "Reverse"
+msgstr "Inverso"
+
+#: amiga-mui/folderwnd.c:333 amiga-mui/folderwnd.c:335
+msgid "_Secondary sort"
+msgstr "_Ordinamento secondario"
+
+#: amiga-mui/folderwnd.c:341
+msgid "Compose Mail Properties"
+msgstr "Componi proprietà della posta"
+
+#: amiga-mui/folderwnd.c:346 amiga-mui/folderwnd.c:350
+msgid "T_o"
+msgstr "_A"
+
+#: amiga-mui/folderwnd.c:353 amiga-mui/folderwnd.c:357
+msgid "_Reply To"
+msgstr "_Rispondi A"
+
+#: amiga-mui/folderwnd.c:367
+msgid "IMAP Properties"
+msgstr "Proprietà IMAP"
+
+#: amiga-mui/folderwnd.c:377
+msgid "Subscribe"
+msgstr "Iscriviti"
+
+#: amiga-mui/folderwnd.c:378
+msgid "Unsubscribe"
+msgstr "Disiscriviti"
+
+#: amiga-mui/folderwnd.c:379
+msgid "Reload from server"
+msgstr "Ricarica dal server"
+
+#: amiga-mui/folderwnd.c:380
+msgid "Submit to server"
+msgstr "Invia al server"
+
+#: amiga-mui/folderwnd.c:422
+msgid "SimpleMail - Edit IMAP Server"
+msgstr "SimpleMail - Editor server IMAP"
+
+#: amiga-mui/folderwnd.c:428
+msgid "SimpleMail - Edit folder group"
+msgstr "SimpleMail - Editor gruppo di cartelle"
+
+#: amiga-mui/folderwnd.c:457
+msgid "SimpleMail - Edit folder"
+msgstr "SimpleMail - Editor cartella"
+
+#: amiga-mui/folderwnd.c:622
+msgid "_OK"
+msgstr "_OK"
+
+#: amiga-mui/foldertreelistclass.c:166
+msgid "Mails"
+msgstr "Messaggi"
+
+#: amiga-mui/foldertreelistclass.c:234
+msgid "Folders"
+msgstr "Cartelle"
+
+#: amiga-mui/foldertreelistclass.c:235
+msgid "New Folder..."
+msgstr "Nuova cartella..."
+
+#: amiga-mui/foldertreelistclass.c:236
+msgid "New Group..."
+msgstr "Nuovo gruppo..."
+
+#: amiga-mui/foldertreelistclass.c:237
+msgid "Remove..."
+msgstr "Elimina..."
+
+#: amiga-mui/foldertreelistclass.c:239
+msgid "Settings..."
+msgstr "Impostazioni..."
+
+#: amiga-mui/foldertreelistclass.c:241 amiga-mui/mainwnd.c:574
+msgid "Order"
+msgstr "Ordina"
+
+#: amiga-mui/foldertreelistclass.c:242 amiga-mui/mainwnd.c:575
+msgid "Save"
+msgstr "Salva"
+
+#: amiga-mui/foldertreelistclass.c:243 amiga-mui/mainwnd.c:576
+msgid "Reset"
+msgstr "Ripristina"
+
+#: amiga-mui/foldertreelistclass.c:261
+msgid "Folder Settings"
+msgstr "Impostazioni della cartella"
+
+#: amiga-mui/foldertreelistclass.c:262
+msgid "Show Mail?"
+msgstr "Mostra messaggi?"
+
+#: amiga-mui/foldertreelistclass.c:263
+msgid "Show New?"
+msgstr "Mostra nuovi?"
+
+#: amiga-mui/foldertreelistclass.c:264
+msgid "Show Unread?"
+msgstr "Mostra non letti?"
+
+#: amiga-mui/foldertreelistclass.c:522 amiga-mui/searchwnd.c:79
+msgid "All folders"
+msgstr "Tutte le cartelle"
+
+#: amiga-mui/gui_main.c:324
+msgid "Failed to create the application\n"
+msgstr "Impossibile creare l'applicazione\n"
+
+#: amiga-mui/gui_main.c:325
+msgid "Could not create mui custom classes\n"
+msgstr "Impossibile creare la classe custom MUI\n"
+
+#: amiga-mui/gui_main.c:326
+#, fuzzy
+msgid "Couldn't create appicon port\n"
+msgstr "Impossibile creare la porta AppIcon\n"
+
+#: amiga-mui/gui_main.c:327
+msgid "Couldn't create arexx port\n"
+msgstr "Impossibile creare la porta ARexx\n"
+
+#: amiga-mui/gui_main.c:328 amiga-mui/gui_main.c:329 amiga-mui/gui_main.c:330
+#, c-format
+msgid "Couldn't open %s version %d\n"
+msgstr "Impossibile aprire %s versione %d\n"
+
+#: amiga-mui/mailtreelistclass.c:159
+msgid "<No Recipient>"
+msgstr "<Nessun destinatario>"
+
+#. Help bubble text
+#: amiga-mui/mailtreelistclass.c:394
+msgid "Current Message"
+msgstr "Messaggio corrente"
+
+#: amiga-mui/mailtreelistclass.c:499
+msgid "POP3 Server"
+msgstr "Server POP3"
+
+#: amiga-mui/mailtreelistclass.c:543
+msgid "Mail Settings"
+msgstr "Impostazioni messaggio"
+
+#: amiga-mui/mailtreelistclass.c:544
+msgid "Show From/To?"
+msgstr "Mostra mittente/destinatario?"
+
+#: amiga-mui/mailtreelistclass.c:545
+msgid "Show Subject?"
+msgstr "Mostra oggetto?"
+
+#: amiga-mui/mailtreelistclass.c:546
+msgid "Show Reply-To?"
+msgstr "Mostra rispondi-a?"
+
+#: amiga-mui/mailtreelistclass.c:547
+msgid "Show Date?"
+msgstr "Mostra data?"
+
+#: amiga-mui/mailtreelistclass.c:548
+msgid "Show Size?"
+msgstr "Mostra dimensione?"
+
+#: amiga-mui/mailtreelistclass.c:549
+msgid "Show Filename?"
+msgstr "Mostra nome file?"
+
+#: amiga-mui/mailtreelistclass.c:550
+msgid "Show POP3 Server?"
+msgstr "Mostra server POP3?"
+
+#: amiga-mui/mailtreelistclass.c:551
+msgid "Show Received?"
+msgstr "Mostra ricevuto?"
+
+#: amiga-mui/mailtreelistclass.c:840
+msgid "Spam Check"
+msgstr "Verifica spam"
+
+#: amiga-mui/mailtreelistclass.c:841
+msgid "Set status"
+msgstr "Imposta stato su"
+
+#: amiga-mui/mailtreelistclass.c:842
+msgid "Mark"
+msgstr "Contrassegnato"
+
+#: amiga-mui/mailtreelistclass.c:843
+msgid "Unmark"
+msgstr "Deselezionato"
+
+#: amiga-mui/mailtreelistclass.c:845
+msgid "Hold"
+msgstr "In sospeso"
+
+#: amiga-mui/mailtreelistclass.c:851
+msgid "Is Spam"
+msgstr "'É uno spam"
+
+#: amiga-mui/mailtreelistclass.c:852
+msgid "Is Ham"
+msgstr "É un ham"
+
+#: amiga-mui/mailtreelistclass.c:854 amiga-mui/mainwnd.c:586
+#: amiga-mui/transwndclass.c:171
+msgid "Delete"
+msgstr "Cancella"
+
+#: amiga-mui/mailtreelistclass.c:866
+msgid "Error"
+msgstr "Errore"
+
+#: amiga-mui/mailtreelistclass.c:875
+msgid "Repl. & Forw."
+msgstr "Risposta e inoltro"
+
+#: amiga-mui/mainwnd.c:146
+msgid "SimpleMail - About"
+msgstr "SimpleMail - Informazioni"
+
+#: amiga-mui/mainwnd.c:147
+msgid "*Ok"
+msgstr "*_Ok"
+
+#: amiga-mui/mainwnd.c:149
+#, fuzzy
+msgid "Copyright (c)"
+msgstr "Copyright ©"
+
+#: amiga-mui/mainwnd.c:149
+msgid "and"
+msgstr "e"
+
+#: amiga-mui/mainwnd.c:149
+msgid "Released under the terms of the GNU Public License"
+msgstr "Rilasciato secondo i termini della Licenza Pubblica Generica (GPL)"
+
+#: amiga-mui/mainwnd.c:546 amiga-mui/readwnd.c:1002
+msgid "Project"
+msgstr "Progetto"
+
+#: amiga-mui/mainwnd.c:547 amiga-mui/readwnd.c:1003
+msgid "?:About..."
+msgstr "?:Informazioni..."
+
+#: amiga-mui/mainwnd.c:548 amiga-mui/readwnd.c:1004
+msgid "About MUI..."
+msgstr "Informazioni su MUI..."
+
+#: amiga-mui/mainwnd.c:550
+msgid "Delete all indexfiles"
+msgstr "Cancella tutti gli indici dei file"
+
+#: amiga-mui/mainwnd.c:551
+msgid "Save all indexfiles"
+msgstr "Salva tutti gli indici dei file"
+
+#: amiga-mui/mainwnd.c:553 amiga-mui/mainwnd.c:565
+msgid "Import mbox file..."
+msgstr "Importa file mbox..."
+
+#: amiga-mui/mainwnd.c:555
+msgid "S:Send queued mails..."
+msgstr "H:Invia posta in attesa..."
+
+#: amiga-mui/mainwnd.c:556
+msgid "F:Check all active accounts..."
+msgstr "K:Verifica tutti gli account attivi..."
+
+#: amiga-mui/mainwnd.c:557
+msgid "Check single account"
+msgstr "Verifica un singolo account"
+
+#: amiga-mui/mainwnd.c:559 amiga-mui/readwnd.c:1006
+msgid "Q:Quit"
+msgstr "Q:Esci"
+
+#: amiga-mui/mainwnd.c:560
+msgid "Folder"
+msgstr "Cartella"
+
+#: amiga-mui/mainwnd.c:561
+msgid "New..."
+msgstr "Nuovo..."
+
+#: amiga-mui/mainwnd.c:562
+msgid "New group..."
+msgstr "Nuovo gruppo..."
+
+#: amiga-mui/mainwnd.c:564
+msgid "Delete..."
+msgstr "Cancella..."
+
+#: amiga-mui/mainwnd.c:566
+msgid "Export as mbox..."
+msgstr "Esporta come mbox..."
+
+#: amiga-mui/mainwnd.c:567
+msgid "Rescan"
+msgstr "Nuova scansione"
+
+#: amiga-mui/mainwnd.c:568
+msgid "Options..."
+msgstr "Opzioni..."
+
+#: amiga-mui/mainwnd.c:570
+msgid "P:Run spam mail check"
+msgstr "S:Avvia controllo dello spam"
+
+#: amiga-mui/mainwnd.c:571
+msgid "O:Isolate spam mails"
+msgstr "O:Isola messaggi spam"
+
+#: amiga-mui/mainwnd.c:572
+msgid "H:Classify all mails as ham"
+msgstr "H:Classifica tutti i messaggi come ham"
+
+#: amiga-mui/mainwnd.c:577
+msgid "Message"
+msgstr "Messaggio"
+
+#: amiga-mui/mainwnd.c:578
+msgid "N:New..."
+msgstr "N:Nuovo..."
+
+#: amiga-mui/mainwnd.c:579
+msgid "D:Read..."
+msgstr "g:Leggi..."
+
+#: amiga-mui/mainwnd.c:580
+msgid "E:Edit..."
+msgstr "M:Modifica..."
+
+#: amiga-mui/mainwnd.c:581
+msgid "R:Reply..."
+msgstr "R:Rispondi..."
+
+#: amiga-mui/mainwnd.c:582
+msgid "W:Forward..."
+msgstr "t:Inoltra..."
+
+#: amiga-mui/mainwnd.c:584
+msgid "M:Move..."
+msgstr "o:Sposta..."
+
+#: amiga-mui/mainwnd.c:585
+msgid "Copy..."
+msgstr "Copia..."
+
+#.
+#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+#. {NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
+#. {NM_ITEM, "Save", NULL, NM_ITEMDISABLED, 0L, NULL},
+#. {NM_SUB, "Complete Message...", NULL, 0, 0, NULL},
+#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+#. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
+#.
+#: amiga-mui/mainwnd.c:595 amiga-mui/readwnd.c:1011
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: amiga-mui/mainwnd.c:596
+msgid "Show folders?"
+msgstr "Mostra cartelle?"
+
+#: amiga-mui/mainwnd.c:597
+msgid "Show addressbook?"
+msgstr "Mostra rubrica?"
+
+#: amiga-mui/mainwnd.c:598
+msgid "Show selected message?"
+msgstr "Mostra messaggio selezionato?"
+
+#: amiga-mui/mainwnd.c:600
+msgid "Configuration..."
+msgstr "Configurazione..."
+
+#: amiga-mui/mainwnd.c:601
+msgid "Filters..."
+msgstr "Filtri..."
+
+#: amiga-mui/mainwnd.c:602
+msgid "MUI..."
+msgstr "MUI..."
+
+#: amiga-mui/mainwnd.c:604
+msgid "Save Settings"
+msgstr "Salva impostazioni"
+
+#: amiga-mui/mainwnd.c:605
+msgid "Scripts"
+msgstr "Script"
+
+#: amiga-mui/mainwnd.c:606
+msgid ".:Execute ARexx Script..."
+msgstr ".:Esegui script ARexx..."
+
+#: amiga-mui/mainwnd.c:646
+msgid "Rea_d"
+msgstr "Le_ggi"
+
+#: amiga-mui/mainwnd.c:648 amiga-mui/readwnd.c:1085
+msgid "_Move"
+msgstr "Sp_osta"
+
+#: amiga-mui/mainwnd.c:649
+msgid "De_lete"
+msgstr "_Cancella"
+
+#: amiga-mui/mainwnd.c:650
+msgid "Ge_tAdd"
+msgstr "Aggi_ungi"
+
+#: amiga-mui/mainwnd.c:656 amiga-mui/readwnd.c:1087
+msgid "_Reply"
+msgstr "_Rispondi"
+
+#: amiga-mui/mainwnd.c:657
+msgid "For_ward"
+msgstr "Inol_tra"
+
+#: amiga-mui/mainwnd.c:661
+msgid "_Fetch"
+msgstr "_Preleva"
+
+#: amiga-mui/mainwnd.c:662
+msgid "_Send"
+msgstr "_Invia"
+
+#: amiga-mui/mainwnd.c:667
+msgid "Searc_h"
+msgstr "C_erca"
+
+#: amiga-mui/mainwnd.c:668
+msgid "F_ilter"
+msgstr "F_iltra"
+
+#: amiga-mui/mainwnd.c:669
+msgid "S_pam"
+msgstr "S_pam"
+
+#: amiga-mui/mainwnd.c:670
+msgid "Is_olate"
+msgstr "Isol_a"
+
+#: amiga-mui/mainwnd.c:675
+msgid "_Abook"
+msgstr "Ru_brica"
+
+#: amiga-mui/mainwnd.c:676
+msgid "Fi_lters"
+msgstr "_Filtri"
+
+#: amiga-mui/mainwnd.c:677
+msgid "_Config"
+msgstr "_Config."
+
+#: amiga-mui/mainwnd.c:761
+#, c-format
+msgid ""
+"SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI "
+"subclass!\n"
+"It's available from %s"
+msgstr "SimpleMail richiede almeno la versione %ld.%ld della classe MUI NListtree.mcc"
+
+#. Short Help
+#: amiga-mui/mainwnd.c:771
+msgid "Opens a window where you can search through your mail folder."
+msgstr ""
+"Apre una finestra dove sarà possibile effetture\n"
+"ricerche all'interno delle cartelle"
+
+#: amiga-mui/mainwnd.c:772
+msgid "Process every mail within the current selected folder via the filters."
+msgstr "Elabora tramite il filtro ciascun messaggio di posta all'interno della cartella selezionata"
+
+#: amiga-mui/mainwnd.c:773
+msgid "Opens a window where the filters can be edited."
+msgstr "Apre una finestra dove sarà possible configurare i filtri"
+
+#: amiga-mui/mainwnd.c:774
 msgid ""
 "Checks the current selected folder for spam.\n"
 "If a potential spam mail has been found it will be marked."
 msgstr ""
-"Controlla la cartella attualmente selezionata per lo spam.\n"
-"Se verrà trovato un potenziale spam, sarà marcato."
+"Verifica potenziale contenuto spam nella cartella attualmente selezionata.\n"
+"Se verrà trovato dello spam questo sarà correttamente marcato"
 
-msgid "Choose export filename"
-msgstr "Scegliere il nome del file da esportare"
+#: amiga-mui/mainwnd.c:775
+msgid "Isolates all spam marked mails within the current selected folder."
+msgstr "Isola e trasferisce tutti i messaggi contrassegnati come spam nella cartella apposita"
 
+#: amiga-mui/mainwnd.c:920
+msgid "Folder:"
+msgstr "Cartella:"
+
+#: amiga-mui/mainwnd.c:920
+msgid "Total:"
+msgstr "Totale:"
+
+#: amiga-mui/mainwnd.c:920
+msgid "New:"
+msgstr "Nuovo/i:"
+
+#: amiga-mui/mainwnd.c:920
+msgid "Unread:"
+msgstr "Non letti:"
+
+#: amiga-mui/mainwnd.c:929
+#, c-format
+msgid "Total:%d New:%d Unread:%d"
+msgstr "Totale: %d Nuovi: %d Non letti: %d"
+
+#: amiga-mui/mainwnd.c:951
+#, c-format
+msgid "%s (T:%ld N:%ld U:%ld)"
+msgstr "%s (T:%ld N:%ld L:%ld)"
+
+#: amiga-mui/mainwnd.c:1178
+msgid "No fetchable account specified"
+msgstr "Nessun account accessibile specificato"
+
+#: amiga-mui/pgplistclass.c:79
+msgid "PGP Key ID"
+msgstr "ID Chiave PGP"
+
+#: amiga-mui/pgplistclass.c:80
+msgid "User ID"
+msgstr "ID utente"
+
+#: amiga-mui/searchwnd.c:158
+msgid "SimpleMail - Search"
+msgstr "SimpleMail - Ricerca"
+
+#: amiga-mui/searchwnd.c:161
+msgid "Search _into"
+msgstr "Cerca _in"
+
+#: amiga-mui/searchwnd.c:191
+msgid "_Subject"
+msgstr "_Oggetto"
+
+#: amiga-mui/searchwnd.c:210
+msgid "S_tart search"
+msgstr "I_nizia ricerca"
+
+#: amiga-mui/searchwnd.c:211
+msgid "Sto_p search"
+msgstr "Fer_ma ricerca"
+
+#: amiga-mui/shutdownwnd.c:88
+msgid "Shutting down..."
+msgstr "Chiusura..."
+
+#: amiga-mui/readwnd.c:205
+msgid "Are you sure that you want to start this executable?"
+msgstr "Sei sicuro di voler avviare questo eseguibile?"
+
+#: amiga-mui/readwnd.c:205
+msgid "*_Yes|_Cancel"
+msgstr "_Si|_Annulla"
+
+#: amiga-mui/readwnd.c:489
+#, c-format
 msgid ""
-"Choose how APOP is handled. If you encounter login probelms\n"
-"you might change this setting to \"Don't try\"."
+"File %s already exists in %s.\n"
+"Do you really want to replace it?"
 msgstr ""
-"Scegliere in che modo l'APOP verrà utilizzato. Se si incontrano problemi\n"
-"di login, è possibile cambiare questa impostazione in \"Ignora\"."
+"Il file %s è già esistente all'interno di %s\n"
+"Si desidera realmente sostituirlo?"
 
-msgid "Choose the file which you like to import"
-msgstr "Scegliere il file che si desidera importare"
+#: amiga-mui/readwnd.c:529
+#, c-format
+msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
+msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla"
 
-msgid "City"
-msgstr "Città"
+#: amiga-mui/readwnd.c:530
+msgid ""
+"The orginal charset of the attached file differs from yours.\n"
+"In which charset do you want the file being saved?"
+msgstr ""
+"Il tipo di font nel file allegato sembra differente rispetto a quelli presenti nel sistema\n"
+"Con quale font si desidera salvare il file?"
 
-msgid "Cleanup deleted folder on exit"
-msgstr "Elimina le cartelle cancellate in uscita"
+#: amiga-mui/readwnd.c:1008
+msgid "Show raw format..."
+msgstr "Mostra formato grezzo..."
 
-msgid "Close"
-msgstr "Chiusura"
+#: amiga-mui/readwnd.c:1010
+msgid "Print visible mailpart"
+msgstr "Stampa multiparte visibile"
 
-msgid "Close read window on list end"
-msgstr "Chiudi la finestra di lettura sul fine lista"
+#: amiga-mui/readwnd.c:1012
+msgid "Show all headers?"
+msgstr "Mostra tutte le Intestazioni?"
 
-msgid "Colors"
-msgstr "Colori"
+#: amiga-mui/readwnd.c:1062
+msgid "SimpleMail - Read Message"
+msgstr "SimpleMail - Lettura messaggio"
 
-msgid "Compose Mail Properties"
-msgstr "Componi proprietà della posta"
+#: amiga-mui/readwnd.c:1072
+msgid "_Prev"
+msgstr "_Precedente"
 
-msgid "Configuration..."
-msgstr "Configurazione..."
+#: amiga-mui/readwnd.c:1073
+msgid "_Next"
+msgstr "_Successivo"
 
-msgid "Connected"
-msgstr "Connesso"
+#: amiga-mui/readwnd.c:1080
+msgid "Pr_int"
+msgstr "Sta_mpa"
 
-msgid "Connecting timed out"
-msgstr "Connessione scaduta"
+#: amiga-mui/readwnd.c:1088
+msgid "_Forward"
+msgstr "Inol_tra"
 
-msgid "Connecting to server %s..."
-msgstr "Connessione al serverr %s..."
+#: amiga-mui/readwnd.c:1137 amiga-mui/readwnd.c:1154
+msgid "Attachment"
+msgstr "Allegato"
 
-msgid "Connecting to the server failed"
-msgstr "La connessione al server è fallita"
+#: amiga-mui/readwnd.c:1139
+msgid "Open"
+msgstr "Apri"
 
+#: amiga-mui/readwnd.c:1143
+msgid "Save As..."
+msgstr "Salva come..."
+
+#: amiga-mui/readwnd.c:1147
+msgid "Print as text"
+msgstr "Stampa come testo"
+
+#: amiga-mui/readwnd.c:1156
+msgid "Save as..."
+msgstr "Salva come..."
+
+#: amiga-mui/readwnd.c:1160
+msgid "Save whole document as..."
+msgstr "Salva l'intero documento come..."
+
+#: amiga-mui/transwndclass.c:127
+msgid "Mail No"
+msgstr "Messaggio Nr"
+
+#: amiga-mui/transwndclass.c:169
+msgid "Ignore"
+msgstr "Ignora"
+
+#: amiga-mui/transwndclass.c:170
+msgid "Download"
+msgstr "Scarica"
+
+#: amiga-mui/transwndclass.c:172
+msgid "Download & Delete"
+msgstr "Scarica e Cancella"
+
+#: amiga-mui/transwndclass.c:173
+msgid "_Start"
+msgstr "_Inizia"
+
+#: amiga-mui/transwndclass.c:176
+msgid "Select All"
+msgstr "Seleziona tutto"
+
+#: amiga-mui/transwndclass.c:177
+msgid "Select None"
+msgstr "Inverti selezione"
+
+#: amiga-mui/transwndclass.c:178 amiga-mui/transwndclass.c:179
+msgid "Ignore not listed mails"
+msgstr "Ignora messaggi non listati"
+
+#. MUIA_Window_Title,"SimpleMail",
+#: amiga-mui/transwndclass.c:185 amiga-mui/transwndclass.c:334
+#: amiga-mui/transwndclass.c:335 amiga-mui/transwndclass.c:338
+msgid "Waiting..."
+msgstr "Attendere..."
+
+#: amiga-mui/transwndclass.c:195
+msgid "_Abort"
+msgstr "_Annulla"
+
+#: amiga-mui/signaturecycleclass.c:167 amiga-mui/signaturecycleclass.c:345
+msgid "No Signature"
+msgstr "Nessuna firma"
+
+#: amiga-mui/signaturecycleclass.c:171 amiga-mui/signaturecycleclass.c:353
+msgid "<Default>"
+msgstr "<Predefinito>"
+
+#: Charsets/cp1252.txt:3
+msgid "West European (Windows)"
+msgstr "Europa dell'Ovest (Windows)"
+
+#: Charsets/iso8859-10.txt:3
+msgid "Nordic"
+msgstr "Nordico"
+
+#: codesets.c:835
+msgid "West European (with EURO)"
+msgstr "Europa dell'Ovest (con EURO)"
+
+#: codesets.c:857
+msgid "West European"
+msgstr "Europa dell'Ovest"
+
+#: codesets.c:878
+msgid "Central/East European"
+msgstr "Europa centrale/dell'Est"
+
+#: codesets.c:900
+msgid "South European"
+msgstr "Europa del Sud"
+
+#: codesets.c:922
+msgid "North European"
+msgstr "Nord Europeo"
+
+#: codesets.c:944
+msgid "Russian"
+msgstr "Russo"
+
+#: codesets.c:966
+msgid "Slavic languages"
+msgstr "Lingue Slave"
+
+#: codesets.c:988
+msgid "Turkish"
+msgstr "Turco"
+
+#: codesets.c:1010
+msgid "West European II"
+msgstr "Europa dell'Ovest II"
+
+#: imap.c:343
+#, c-format
+msgid "Examining folder %s"
+msgstr "Esame della cartella %s"
+
+#: imap.c:378
+#, c-format
+msgid "Identified %d mails in %s"
+msgstr "Identificati %d messaggi all'interno di %s"
+
+#: imap.c:490
+msgid "Failed examining the folder"
+msgstr "Esame della cartella non riuscito"
+
+#: imap.c:760
+#, c-format
+msgid "Fetching mail %d from server"
+msgstr "Prelevamento del messaggio %d dal server"
+
+#: imap.c:857
+#, c-format
+msgid "Synchronizing mails with %s"
+msgstr "Sincronizzazione dei messaggi con %s"
+
+#: imap.c:891 imap.c:976 imap.c:1054 pop3.c:947
+msgid "Waiting for login..."
+msgstr "In attesa di autenticazione..."
+
+#: imap.c:894 imap.c:979 imap.c:1057
+msgid "Login..."
+msgstr "Identificazione..."
+
+#: imap.c:898
+msgid "Login successful"
+msgstr "Accesso eseguito"
+
+#: imap.c:899
+msgid "Checking for folders"
+msgstr "Verifica delle cartelle"
+
+#: imap.c:925
+msgid "Login failed!"
+msgstr "Connessione fallita!"
+
+#: imap.c:945 pop3.c:1096
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Impossibile aprire la libreria bsdsocket.library!"
+
+#: imap.c:966
+#, c-format
+msgid "Reading folders of %s"
+msgstr "Lettura delle cartelle di %s"
+
+#: imap.c:983 imap.c:1061
+msgid "Reading folders..."
+msgstr "Lettura delle cartelle..."
+
+#: imap.c:1044
+#, c-format
+msgid "Submitting subscribed folders to %s"
+msgstr "Invio delle cartelle iscritte a %s"
+
+#: imap.c:1065
+msgid "Reading subscribed folders..."
+msgstr "Lettura delle cartelle iscritte..."
+
+#: imap.c:1105
+msgid "Subscribing folders failed!"
+msgstr "Iscrizione delle cartelle non riuscita!"
+
+#: imap.c:1142
+msgid "Unsubscribing folders failed!"
+msgstr "Cancellazione dell'iscrizione delle cartelle fallita!"
+
+#. Display "Connecting" - status message
+#: imap.c:1428 smtp.c:861
 msgid "Connecting..."
 msgstr "Connessione..."
 
-msgid "Connection could not be made secure because the SMTP server doesn't seem to support it!"
-msgstr "La connessione non può essere resa sicura perchè il server SMTP non la supporta!"
+#. Display "Loggin in" - status message
+#: imap.c:1436
+msgid "Logging in..."
+msgstr "Connessione a..."
 
-msgid "Connection could not be made secure."
-msgstr "La connessione non può essere resa sicura."
+#. Display "Connected" - status message
+#: imap.c:1442 imap.c:1512
+msgid "Connected"
+msgstr "Connesso"
 
-msgid "Connection couldn't be made secure"
-msgstr "La connessione non può essere resa sicura"
+#: imap.c:1448
+msgid "Loggin in failed. Check Username and Password for this account"
+msgstr "Connessione fallita, verifica nome utente e password per questo account"
+""
 
-msgid "Connection refused"
-msgstr "Connessione rifiutata"
+#. Display "Failed to connect" - status message
+#: imap.c:1455
+msgid "Connecting to the server failed"
+msgstr "La connessione al server è fallita"
 
-msgid "Contacts"
-msgstr "Contatti"
+#. Display "Retrieving mail" - status message
+#: imap.c:1490
+msgid "Retrieving mail folders..."
+msgstr "Recupero cartelle dei messaggi..."
 
-msgid "Contents"
-msgstr "Contenuti"
+#: mail.c:1178
+#, c-format
+msgid ""
+"Sender address (From) is <%s>, but\n"
+"return address (Reply-To) is <%s>.\n"
+"Which address do you want to use?"
+msgstr ""
+"L'indirizzo del mittente è <%s>, ma\n"
+"l'indirizzo di risposta è <%s>.\n"
+"Quale indirizzo si desidera usare?"
 
-msgid "Contributor of SimpleMail"
-msgstr "Collaboratore di SimpleMail"
+#: mail.c:1181
+msgid "_From|*_Reply-To|_Both|_Cancel"
+msgstr "_Da|*_Rispondi-A|_Tutti|_Annulla"
 
+#: mail.c:1224
+msgid ""
+"This e-mail has multiple recipients. Should it be answered to all recipients?"
+msgstr "Questo messaggio di posta ha diversi destinatari. Rispondere a tutti?"
+""
+
+#: mail.c:1225
+msgid "*_Yes|_No"
+msgstr "*_Si|_No"
+
+#: mail.c:2002
+msgid "This mail is encrypted. Please enter your passphrase now"
+msgstr "Questo messaggio di posta è criptato. Per favore inserisci la tua passphrase"
+
+#: mail.c:2086
+msgid ""
+"Decrypting failed! Eighter because the passphrase was incorrect\n"
+"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x "
+"supported for now)!"
+msgstr ""
+"Decrittazione non riuscita! Potrebbe essere accaduto perchè la passphrase è sbagliata oppure\n"
+"perchè la crittazione scelta non è ancora supportata da SimpleMail (al momento è supportata\n"
+"solo la versione 2.6.x di PGP)!"
+
+#: mail.c:2100
+msgid "Unsupported encryption"
+msgstr "Crittazione non supportata"
+
+#: mail.c:2752
+#, c-format
+msgid "Please select a key for %s <%s>"
+msgstr "Seleziona un tasto per %s <%s>"
+
+#: mail.c:2904
 msgid ""
 "Converting this e-mail will cause the loss of some characters.\n"
 "SimpleMail can store the mail as Unicode so this doesn't happen."
 msgstr ""
 "La conversione di questa mail provocherà la perdita di qualche carattere.\n"
-"SimpleMail può archiviarla in formato Unicode in modo che ciò non accada."
+"SimpleMail può archiviarla in formato Unicode in modo che ciò non accada"
 
+#: mail.c:2906
+msgid "Use Unicode|No Unicode"
+msgstr "_Usa Unicode|_Non usare Unicode"
+
+#: mail.c:3049
+msgid ""
+"No valid from field specified. You must configure some Accounts\n"
+"before creating new mails"
+msgstr ""
+"Attenzione, dati inseriti nel campo \"Da\" non validi.\n"
+"è necessario configurare un account prima di poter\n"
+"creare nuovi messaggi"
+
+#: mail.c:3222
 msgid "Copies to"
 msgstr "Copie per"
 
-msgid "Copy"
-msgstr "Copia"
+#: mail.c:3276 print.c:131
+msgid "Replies To"
+msgstr "Risponde a"
 
-msgid "Copy..."
-msgstr "Copia..."
+#: mbox.c:94
+#, c-format
+msgid "Exporting folder %s to %s"
+msgstr "Esportazione della cartella %s verso %s"
 
-msgid "Copyright (c)"
-msgstr "Copyright (c)"
+#: mbox.c:96
+msgid "SimpleMail - Exporting folder"
+msgstr "SimpleMail - Esportazione cartella"
 
-msgid "Could not create mui custom classes\n"
-msgstr "Impossibile creare la classe custom MUI\n"
+#: mbox.c:218
+#, fuzzy, c-format
+msgid "Importing %s to %s"
+msgstr "Importazione di %s verso %s"
 
+#: mbox.c:221
+#, c-format
+msgid "Importing %s"
+msgstr "Importazione di %s"
+
+#: mbox.c:225
+msgid "SimpleMail - Importing a mbox file"
+msgstr "SimpleMail - Importazione file mbox"
+
+#: pop3.c:73
+msgid "Error receiving data from host!"
+msgstr "Errore durante la ricezione dei dati dall'host!"
+
+#: pop3.c:163
+msgid "Failed to authentificate via APOP. Server hasn't delivered a timestamp."
+msgstr "Autentificazione via APOP fallita, il server non ha rilasciato un timestamp"
+
+#: pop3.c:174
+msgid "Authentificate via APOP..."
+msgstr "Autenticazione via APOP..."
+
+#: pop3.c:200
+msgid "Failed to authentificate via APOP"
+msgstr "Autenticazione via APOP non riuscita!"
+
+#: pop3.c:206 pop3.c:234
+msgid "Login successful!"
+msgstr "Connessione riuscita!"
+
+#: pop3.c:212
+msgid "Sending username..."
+msgstr "Invio del nome utente..."
+
+#: pop3.c:219 pop3.c:230
+msgid "Error while identifing the user"
+msgstr "Errore durante l'identificazione utente"
+
+#: pop3.c:224
+msgid "Sending password..."
+msgstr "Invio password..."
+
+#: pop3.c:453
+msgid "Checking for mail duplicates..."
+msgstr "Verifica dei messaggi duplicati..."
+
+#: pop3.c:497
+#, c-format
+msgid "Found %d mail duplicates"
+msgstr "Trovati %d messaggi duplicati"
+
+#: pop3.c:535
+msgid "Getting statistics..."
+msgstr "Acquisizione statistiche..."
+
+#: pop3.c:541
 msgid "Could not get server statistics"
-msgstr "Impossibile avere le statistiche del server"
+msgstr "Impossibile ottenere le statistiche dal server"
 
-msgid "Couldn't create appicon port\n"
-msgstr "Impossibile creare la porta appicon\n"
+#: pop3.c:582
+msgid "Getting mail sizes..."
+msgstr "Acquisizione dimensioni dei messaggi di posta..."
 
-msgid "Couldn't create arexx port\n"
-msgstr "Impossibile creare la porta arexx\n"
+#. no errors and the user wants a more informative preselection or there are any remote filters
+#: pop3.c:643
+msgid "Getting mail infos..."
+msgstr "Acquisizione informazioni sui messaggi di posta..."
 
-msgid "Couldn't download the mail!\n"
-msgstr "Impossibile scaricare la mail!\n"
-
-msgid "Couldn't open %s version %d\n"
-msgstr "Impossibile aprire la versione %d di %s\n"
-
+#. -ERR has been returned and nobody breaked the connection, what means that TOP is not supported
+#: pop3.c:669
 msgid "Couldn't receive more statistics"
 msgstr "Impossibile ricevere ulteriori statistiche"
 
+#: pop3.c:752
+msgid "Waiting for user interaction"
+msgstr "In attesa dell'attività utente"
+
+#: pop3.c:773
+msgid "Logging out..."
+msgstr "Disconnessione..."
+
+#: pop3.c:793
+msgid "Can't get new filename!"
+msgstr "Impossibile ottenere un nuovo nome per il file!"
+
+#: pop3.c:802
+msgid "Can't open mail file!"
+msgstr "Impossibile aprire il messaggio di posta!"
+
+#: pop3.c:810
 msgid "Couldn't receive the mail"
-msgstr "Impossibile ricevere la mail"
+msgstr "Impossibile ricevere il messaggio di posta!"
 
-msgid "Couldn't start process for exporting.\n"
-msgstr "Impossible iniziare il processo di esportazione.\n"
+#: pop3.c:825
+msgid "Error while receiving the mail"
+msgstr "Errore durante la ricezione del messaggio di posta!"
 
-msgid "Couldn't start process for importing.\n"
-msgstr "Impossibile iniziare il processo di importazione.\n"
+#: pop3.c:842
+msgid "Error while writing the mail onto disk"
+msgstr "Errore durante la scrittura del messaggio su disco!"
 
-msgid "Country"
-msgstr "Nazione"
+#: pop3.c:912
+#, c-format
+msgid "Fetching mails from %s"
+msgstr "Prelevamento messaggi da %s"
 
+#: pop3.c:994
+msgid "Can't access income-folder!"
+msgstr "Impossibile accedere alla directory dei file in entrata!"
+
+#: pop3.c:1039
+msgid "Couldn't download the mail!\n"
+msgstr "Impossibile scaricare il messaggio di posta!\n"
+
+#: pop3.c:1055
+msgid "Marking mail as deleted..."
+msgstr "Marcatura dei messaggi come cancellati..."
+
+#: pop3.c:1058
+msgid "Can't mark mail as deleted!"
+msgstr "Impossibile contrassegnare il messaggio come eliminato!"
+
+#: print.c:93
+msgid "Carbon Copy"
+msgstr "Copia per conoscenza"
+
+#: print.c:199
+msgid "I/O-Error."
+msgstr "Errore di I/O"
+
+#: print.c:199 print.c:205 print.c:210 print.c:217
+msgid "Okay"
+msgstr "_Ok"
+
+#: print.c:205
+msgid "Not enough memory."
+msgstr "Memoria insufficiente"
+
+#: print.c:210
+msgid "Internal error."
+msgstr "Errore interno"
+
+#: print.c:217
+msgid "Can't create temporary file."
+msgstr "Impossibile creare un file temporaneo"
+
+#: simplemail.c:122 simplemail.c:186
+msgid "Cannot delete mails, because folder is in use.\n"
+msgstr "Impossibile cancellare il messaggio di posta, la cartella è già in uso.\n"
+
+#: simplemail.c:139
+msgid "Do you really want to delete the selected mail permanently?"
+msgstr "Si desidera cancellare definitivamente il messaggio di posta selezionato?"
+
+#: simplemail.c:140
+#, c-format
+msgid "Do you really want to delete %d mails permanently?"
+msgstr "Si desidera cancellare definitivamente i %d messaggi di posta selezionati?"
+
+#: simplemail.c:141
+msgid "_Yes|_No"
+msgstr "_Si|_No"
+
+#: simplemail.c:683 simplemail.c:724
+msgid "Please select the folder where to move the mails"
+msgstr "Seleziona una cartella dove spostare i messaggi"
+
+#: simplemail.c:780
+msgid "spam and ham"
+msgstr "spam e ham'"
+
+#: simplemail.c:781
+msgid "spam"
+msgstr "'Spam'"
+
+#: simplemail.c:782
+msgid "ham"
+msgstr "'Ham'"
+
+#: simplemail.c:784
+#, c-format
 msgid ""
 "Currently there are too few mails classified as %s.\n"
 "Statistical spam identification works only reliable if you classify\n"
@@ -528,1898 +2511,216 @@ msgid ""
 "\n"
 "Continue to try to look for spam mails?"
 msgstr ""
-"Attualmente non ci sono abbastanza mail classificate come %s.\n"
-"Le statistiche  di identificazione  dello spam  funzionano solo se prima\n"
+"Attualmente non ci sono abbastanza messaggi classificati come %s.\n"
+"Le statistiche  di identificazione dello spam funzionano solo se prima\n"
 "vengono classificati messaggi sufficienti allo scopo.\n"
-"500 messaggi per ciasuna classe sono considerati sufficienti, ma più ne\n"
-"verranno classificati correttamente e meglio funzionerà.\n"
+"500 messaggi per ciascuna classe sono considerati sufficienti, ma più\n"
+"ne verranno classificati correttamente e meglio funzionerà.\n"
 "\n"
 "Numero di messaggi classificati come spam (indesiderati): %ld\n"
 "Numero di messaggi classificati come ham (buoni): %ld\n"
 "\n"
-"Continuare a cercare messaggi spam?"
+"Continuare la ricerca dei messaggi spam?"
 
-msgid "Cut"
-msgstr "Taglia"
-
-msgid "Cyrillic (Windows)"
-msgstr "Cirillico (Windows)"
-
-msgid "D:Read..."
-msgstr "g:Leggi..."
-
-msgid "DATA failed."
-msgstr "DATA falliti."
-
-msgid "DATA-Cmd failed."
-msgstr "DATA-Cmd falliti."
-
-msgid "Date"
-msgstr "Data"
-
-msgid "Date of birth"
-msgstr "Data di nascita"
-
-msgid "De_lete"
-msgstr "_Cancella"
-
-msgid ""
-"Deactivate this if you don't want SimpleMail to\n"
-"download the e-Mails when pressing on 'Fetch'."
-msgstr ""
-"Disattivare questa opzione se non volete che SimpleMail\n"
-"prelevi le e-mail premendo il pulsante 'Ricezione'."
-
-msgid ""
-"Decrypting failed! Eighter because the passphrase was incorrect\n"
-"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!"
-msgstr ""
-"Decrittazione non riuscita! Potrebbe essere accaduto perchè la passphrase è sbagliata\n"
-"o perchè la crittazione non è ancora supportata da SimpleMail (solo PGP 2.6.x per ora)!"
-
-msgid "Default Order"
-msgstr "Ordinamento predefinito"
-
-msgid "Default Order: all"
-msgstr "Ordinamento predefinito: tutte"
-
-msgid "Default Order: this"
-msgstr "Ordinamento predefinito: questo"
-
-msgid "Default Width: all"
-msgstr "Larghezza predefinita: tutte"
-
-msgid "Default Width: this"
-msgstr "Larghezza predefinita: questa"
-
-msgid "Delete"
-msgstr "Cancella"
-
-msgid "Delete All Indexfiles"
-msgstr "Cancella tutti gli indici dei file"
-
-msgid "Delete..."
-msgstr "Cancella..."
-
-msgid "Description"
-msgstr "Descrizione"
-
-msgid "Disabled"
-msgstr "Disattivata"
-
-msgid "Discards all the changes you have made."
-msgstr "Annullla tutti i cambiamenti effettuati."
-
-msgid "Disconnecting..."
-msgstr "Disconnessione..."
-
-msgid "Do you really want to delete %d mails permanently?"
-msgstr "Vuoi davvero cancellare le %d mail selezionate definitivamente?"
-
-msgid ""
-"Do you really want to delete the folder\n"
-"and all its mails?"
-msgstr ""
-"Vuoi veramente cancellare la cartella\n"
-"e tutti i messaggi che contiene?"
-
-msgid "Do you really want to delete the selected mail permanently?"
-msgstr "Vuoi davvero cancellare la mail selezionata definitivamente?"
-
-msgid ""
-"Do you really want to delete this group?\n"
-"Only the group entry is deleted,\n"
-"not the folders inside the group"
-msgstr ""
-"Vuoi veramente cancellare questo gruppo?\n"
-"Solo il gruppo in se stesso verrà cancellato,\n"
-"non le cartelle contenute al suo interno."
-
-msgid "Don't try"
-msgstr "Ignora"
-
-msgid "Download"
-msgstr "Download"
-
-msgid "Download & Delete"
-msgstr "Download e cancellazione"
-
-msgid "Dragging %d messages"
-msgstr "Spostamento di %d messaggi"
-
-msgid "Dragging a single message"
-msgstr "Spostamento di un singolo messaggio"
-
-msgid "E-Mail Address"
-msgstr "Indirizzo e-mail"
-
-msgid "E-Mail addresses"
-msgstr "Indirizzi e-mail"
-
-msgid "E:Edit..."
-msgstr "M:Modifica..."
-
-msgid "EMail"
-msgstr "EMail"
-
-msgid "Edit..."
-msgstr "Modifica..."
-
-msgid "Editable Mailtext"
-msgstr "Testo editabile del messaggio"
-
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Enabled"
-msgstr "Attiva"
-
-msgid "Encrypt"
-msgstr "Crittazione"
-
-msgid "Enforce"
-msgstr "Imponi"
-
-msgid "Error"
-msgstr "Errore"
-
-msgid "Error receiving data from host!"
-msgstr "Errore durante la ricezione dei dati dall'host!"
-
-msgid "Error while identifing the user"
-msgstr "Errore durante l'identificazione dell'utente"
-
-msgid "Error while identifying the user"
-msgstr "Errore durante l'identificazione dell'utente"
-
-msgid "Error while receiving the mail"
-msgstr "Errore durante la ricezione della mail"
-
-msgid "Error while writing the mail onto disk"
-msgstr "errore durante la scrittura della mail su disco"
-
-msgid "Examining folder %s"
-msgstr "Esamino la cartella %s"
-
-msgid "Excerpt"
-msgstr "Estratto"
-
-msgid "Execute ARexx Script"
-msgstr "Esegui uno script Arexx"
-
-msgid "Export As mbox..."
-msgstr "Esporta come mbox..."
-
-msgid "Exporting folder %s to %s"
-msgstr "Esportazione della cartella %s verso %s"
-
-msgid "F:Check All Active Accounts..."
-msgstr "K:Controlla tutti gli account attivi..."
-
-msgid "FROM failed."
-msgstr "FROM non riuscito."
-
-msgid "F_ilter"
-msgstr "_Filtra"
-
-msgid "Failed examining the folder"
-msgstr "Esame della cartella non riuscito"
-
-msgid "Failed to authentificate via APOP"
-msgstr "Autenticazione via APOP non riuscita..."
-
-msgid "Failed to authentificate via APOP. Server hasn't delivered a timestamp."
-msgstr "Autentificazione via APOP fallita. Il server non ha rilasciato un timestamp."
-
-msgid "Failed to connect to the server"
-msgstr "Impossibile connettersi al server"
-
-msgid "Failed to create the application\n"
-msgstr "Impossibile creare l'applicazione\n"
-
-msgid "Failed while sending data to printer!"
-msgstr "Invio dei dati alla stampante non riuscito!"
-
-msgid "Fax"
-msgstr "Fax"
-
-msgid "Female"
-msgstr "Femmina"
-
-msgid "Fetching mail %d from server"
-msgstr "Prelevo il messaggio %d dal server"
-
-msgid "Fetching mails from %s"
-msgstr "Prelevo i messaggi da %s"
-
-msgid ""
-"File %s already exists in %s.\n"
-"Do you really want to replace it?"
-msgstr ""
-"Il file %s esiste già dentro %s.\n"
-"Vuoi veramente rimpiazzarlo?"
-
-msgid "File Name"
-msgstr "Nome del file"
-
-msgid "Filename"
-msgstr "Nome del file"
-
-msgid "Filters"
-msgstr "Fi_ltri"
-
-msgid "Filters..."
-msgstr "Filtri..."
-
-msgid "Finish"
-msgstr "Fine"
-
-msgid "Fixed Font"
-msgstr "Font fisso"
-
-msgid "Folder"
-msgstr "Cartella"
-
-msgid "Folder Properties"
-msgstr "Proprietà della cartella"
-
-msgid "Folder Settings"
-msgstr "Impostazioni della cartella"
-
-msgid "Folder directory"
-msgstr "Directory delle cartelle"
-
-msgid "Folder to display at startup"
-msgstr "Cartella da mostrare all'avvio"
-
-msgid "Folder:"
-msgstr "Cartella: "
-
-msgid "Folders"
-msgstr "Cartelle"
-
-msgid "Fonts"
-msgstr "Fonts"
-
-msgid "For_ward"
-msgstr "Inol_tra"
-
-msgid "Forward"
-msgstr "Inoltra"
-
-msgid "Forward mails as attachments"
-msgstr "Inoltra le mail come allegati"
-
-msgid "Forwarded"
-msgstr "Inoltrata"
-
-msgid "Forwarding"
-msgstr "Inoltro"
-
-msgid "Found %d mail duplicates"
-msgstr "Trovati %d duplicati"
-
-msgid "From"
-msgstr "Da"
-
-msgid "From/TO"
-msgstr "MIttente/Destinatario"
-
-msgid "From/To"
-msgstr "MIttente/Destinatario"
-
-msgid "Ge_tAdd"
-msgstr "Aggi_ungi"
-
-msgid "General"
-msgstr "Generale"
-
-msgid "General spam settings"
-msgstr "Impostazioni generali dello spam"
-
-msgid "Getting mail infos..."
-msgstr "Acquisizione inormazioni sulle mail..."
-
-msgid "Getting mail sizes..."
-msgstr "Acquisizione dimensioni delle mail..."
-
-msgid "Getting statistics..."
-msgstr "Acquisizione statistiche..."
-
-msgid "Graphical quote bar"
-msgstr "Cornice intorno all'area quotata"
-
-msgid "Greek"
-msgstr "Greco"
-
-msgid "Group with the given name \"%s\" already exists"
-msgstr "Un gruppo col nome \"%s\" esiste già"
-
-msgid "Groups"
-msgstr "Gruppi"
-
-msgid "H:Classify All Mails As Ham"
-msgstr "H:Classifica tutti i messaggi come ham"
-
-msgid "HELO failed"
-msgstr "HELO fallito"
-
-msgid "Has attachments"
-msgstr "Possiede degli allegati"
-
-msgid "Header"
-msgstr "Intestazione"
-
-msgid "Header Background"
-msgstr "Sfondo testata"
-
-msgid "Header Configuration"
-msgstr "Configurazione testata"
-
-msgid "High"
-msgstr "Alta"
-
-msgid "Hold"
-msgstr "In sospeso"
-
-msgid "Homepage"
-msgstr "Pagina iniziale"
-
-msgid "Host wasn't found"
-msgstr "L'host non è stato trovato"
-
-msgid "I/O-Error."
-msgstr "Errore di I/O"
-
-msgid "I:Isolate Spam Mails"
-msgstr "A:Isola le mail spam"
-
-msgid "IMAP Properties"
-msgstr "Propietà IMAP"
-
-msgid "IMAP Server"
-msgstr "Server IMAP"
-
-msgid "Iconified"
-msgstr "Iconificato"
-
-msgid "Identified %d mails in %s"
-msgstr "Identificazione di %d messaggi dentro %s"
-
-msgid "If activated SimpleMail aborts transfer if APOP authentification fails."
-msgstr "Se attivata, SimpèleMail interromperà il trasferimento se l'autenticazione APOP fallisce."
-
-msgid ""
-"If activated SimpleMail tries to make the connection secure.\n"
-"This is not supported on all servers, so decativate if it doesn't work."
-msgstr ""
-"Se attivata, SimpleMail tenterà di effettuare una connessione sicura.\n"
-"Questa non è supportata da tutti i server quindi, se necessario,\n"
-"disattivarla se non funziona."
-
-msgid ""
-"If activated the filter will be used remotly on POP3 servers\n"
-"which support the TOP command. Mails which matches the filter\n"
-"are presented to the user and automatically marked as to be ignored."
-msgstr ""
-"Attivare questa opzione per usare il filtro in modalità remota sui server POP3\n"
-"che supportano il comando TOP. Le mail che combaciano con il filtro verranno\n"
-"mostrate all'utente e automaticamente marcate in modo da essere ignorate."
-
-msgid "If activated the search is case sensitive."
-msgstr "Se attivata, la ricerca distinguerà tra maiuscole e minuscole."
-
-msgid ""
-"If activated the string is an AmigaDOS pattern\n"
-"and patternmatching will be performed.\n"
-"Special chars are: ? # | ~ ( ) [ ] % '"
-msgstr ""
-"Se attiva, la stringa sarà un pattern AmigaDOS\n"
-"e verrà effettuato un confronto fra pattern.\n"
-"I caratteri speciali sono: ? # | ~ ( ) [ ] % '"
-
-msgid ""
-"If activated the string must only be a part\n"
-"of the searched field."
-msgstr ""
-"Se attivata, la stringa dovrà essere solo una\n"
-"parte del campo ricercato."
-
-msgid ""
-"If enabled all addresses within you addressbook are also\n"
-"considered to be safe."
-msgstr ""
-"Attivare questa opzione per fare in modo che tutti gli indirizzi nella rubrica\n"
-"vengano considerati come sicuri."
-
-msgid "If online"
-msgstr "Se connesso"
-
-msgid "If this option is enabled, SimpleMail will close the read window after all mails in the folder have been processed (e.g. deleted) by the user completly in the current direction. Otherwise SimpleMail tries to browse into the other direction and closes the window only if no other mail exists within the folder."
-msgstr "Se questa opzione è attiva, SimpleMail chiuderà la finestra di testo dopo che l'intera cartella con le mail sarà stata elaborata (es. in cancellazione) nella direzione corrente. Altrimenti tenterà di procedere nell'altra direzione e chiuderà la finestra solo se non troverà nessun'altra mail nella cartella."
-
-msgid ""
-"If you activate this option any mail you move to the spam folder\n"
-"is marked as spam before the operation. Note that only mails\n"
-"marked as spam can be moved into the spam folder."
-msgstr ""
-"Attivare questa opzione per far si che ogni mail spostata nella cartella spam\n"
-"sia marcata come tale prima dello spostamento. Da notare che solo le mail\n"
-"contrassegnate come tali possono essere spostate nella cartella apposita."
-
-msgid ""
-"If you activate this option any new mail is being checked for its\n"
-"spam content. This only works if you have more than 500 mails for\n"
-"every class within the statistics."
-msgstr ""
-"Attivare questa opzione per controllare se ogni nuova mail possiede un\n"
-"contenuto spam. Funziona solamente se ci sono più di 500 mail per ogni\n"
-"classe all'interno delle statistiche."
-
-msgid "Ignore"
-msgstr "Ignora"
-
-msgid "Ignore not listed mails"
-msgstr "Ignora i messaggi non in lista"
-
-msgid "Import addressbook..."
-msgstr "Importa la rubrica..."
-
-msgid "Import dbx File..."
-msgstr "importa file dbx..."
-
-msgid "Import mbox File..."
-msgstr "Importa file mbox..."
-
-msgid "Importance"
-msgstr "Priorità"
-
-msgid "Importing %s"
-msgstr "Importazione di %s"
-
-msgid "Importing %s to %s"
-msgstr "Importazione di %s verso %s"
-
-msgid "Initial"
-msgstr "Inizio"
-
-msgid "Insert ENV:Signature"
-msgstr "Inserisci ENV:Firma"
-
-msgid "Insert random tagline"
-msgstr "Inserisci una tagline casuale"
-
-msgid "Internal error."
-msgstr "errore interno."
-
-msgid "Intro"
-msgstr "Introduzione"
-
-msgid "Is Ham"
-msgstr "É un ham"
-
-msgid "Is Spam"
-msgstr "É uno spam"
-
-msgid "Is_olate"
-msgstr "Isol_a"
-
-msgid "Isolates all spam marked mails within the current selected folder."
-msgstr "Trasferisce le mail contrassegnate come spam nella cartella apposita."
-
-msgid "Link Text"
-msgstr "Collega testo"
-
-msgid "Log into POP3 Server...."
-msgstr "Connessione al serverr POP3..."
-
-msgid "Log into POP3 server first"
-msgstr "Accedi prima sul server POP3"
-
-msgid "Loggin in failed. Check Username and Password for this account"
-msgstr "Identificazione falliita. Verificare nome utente e password per questo account"
-
-msgid "Logging in..."
-msgstr "Connessione..."
-
-msgid "Logging out..."
-msgstr "Disconnessione..."
-
-msgid "Login"
-msgstr "Identificativo"
-
-msgid "Login failed!"
-msgstr "Connessione fallita!"
-
-msgid "Login successful"
-msgstr "Accesso eseguito"
-
-msgid "Login successful!"
-msgstr "Connessione riuscita!"
-
-msgid "Login..."
-msgstr "Identificazione..."
-
-msgid "Login/UserID"
-msgstr "Identificativo/ID utente"
-
-msgid "Low"
-msgstr "Bassa"
-
-msgid "M:Move..."
-msgstr "o:Sposta..."
-
-msgid "MUI..."
-msgstr "MUI..."
-
-msgid "Mail"
-msgstr "Messaggio"
-
-msgid "Mail No"
-msgstr "Messaggio Nr"
-
-msgid "Mail Settings"
-msgstr "Impostazioni messaggio"
-
-msgid "Mails"
-msgstr "Messaggi"
-
-msgid "Main Message"
-msgstr "Messaggio principale"
-
-msgid "Male"
-msgstr "Maschio"
-
-msgid "Mark"
-msgstr "Contrassegna"
-
-msgid "Mark mails as spam before moved to the spam folder"
-msgstr "Contrassegna i messaggi come spam prima di spostarli"
-
-msgid "Marking mail as deleted..."
-msgstr "Marcatura dei messaggi come cancellati..."
-
-msgid "Message"
-msgstr "Messaggio"
-
-msgid "Mobile"
-msgstr "Cellulare"
-
-msgid "MorphOS maintainer of SimpleMail"
-msgstr "Curatore di SimpleMail per MorphOS"
-
-msgid "Move Down"
-msgstr "Giù"
-
-msgid "Move to Folder"
-msgstr "Sposta in una cartella"
-
-msgid "Move up"
-msgstr "Su"
-
-msgid "N:New..."
-msgstr "N:Nuovo..."
-
-msgid "N_ame"
-msgstr "_Nome"
-
-msgid "Name"
-msgstr "Nome"
-
-msgid "Network unreachable"
-msgstr "Rete irraggiungibile"
-
-msgid "Never"
-msgstr "Mai"
-
-msgid "New"
-msgstr "Nuovi"
-
-msgid "New Folder..."
-msgstr "Nuova cartella..."
-
-msgid "New Group"
-msgstr "Nuovo gruppo"
-
-msgid "New Group..."
-msgstr "Nuovo gruppo..."
-
-msgid "New group..."
-msgstr "Nuovo gruppo..."
-
-msgid "New mails"
-msgstr "Nuovi messaggi"
-
-msgid "New..."
-msgstr "Nuova..."
-
-msgid "New:"
-msgstr "Nuovi: "
-
-msgid "No IP associated with name"
-msgstr "Nessun IP associato al nome"
-
-msgid "No Signature"
-msgstr "Nessuna firma"
-
-msgid "No fetchable account specified"
-msgstr "Nessun account accessibile specificato"
-
-msgid ""
-"No subject was specified. It is not recommended to create mails\n"
-"without any subject. Do you want to add a subject line?"
-msgstr ""
-"Non è stato specificato alcun oggetto. Non è raccomandato creare\n"
-"messaggi senza un oggetto. Vuoi aggiungerne uno?"
-
-msgid "No valid email address entered. Please correct it."
-msgstr "L'indirizzo email inserito non è valido. Prego, correggilo."
-
-msgid ""
-"No valid from field specified. You must configure some Accounts\n"
-"before creating new mails"
-msgstr ""
-"Dati inseriti nel campo \"Da\" non validi. Devi configurare un\n"
-"account prima di creare nuovi messaggi."
-
-msgid "Nordic"
-msgstr "Nordico"
-
-msgid "Normal"
-msgstr "Normale"
-
-msgid "North European"
-msgstr "Nord Europeo"
-
-msgid "Not enough memory"
-msgstr "Memoria insufficiente"
-
-msgid "Not enough memory."
-msgstr "Memoria insufficiente."
-
-msgid "Notes"
-msgstr "Note"
-
-msgid "Number of mails classified as ham"
-msgstr "Numero di messaggi classificati come ham"
-
-msgid "Number of mails classified as spam"
-msgstr "Numero di messaggi classificati come spam"
-
-msgid "O:Open Message..."
-msgstr "J:Carica messaggio..."
-
-msgid "OK"
-msgstr "OK"
-
-msgid "Ok"
-msgstr "Ok"
-
-msgid "Okay"
-msgstr "Ok"
-
-msgid "Old Quoted Text"
-msgstr "Vecchio testo quotato"
-
-msgid "On addresses"
-msgstr "Sugli indirizzi"
-
-msgid "On new mails"
-msgstr "Sui nuovi messaggi"
-
-msgid "On request"
-msgstr "Su richiesta"
-
-msgid "On sent mails"
-msgstr "Sui messaggi inviati"
-
-msgid "On startup"
-msgstr "All'avvio"
-
-msgid "Only Sizes"
-msgstr "Solo dimensioni"
-
-msgid "Open"
-msgstr "Apri"
-
-msgid "Opens a window where the filters can be edited."
-msgstr "Apre una finestra dove è possible configurare i filtri."
-
-msgid "Opens a window where you can search through your mail folder."
-msgstr ""
-"Apre una finestra dove è possibile fare delle ricerche\n"
-"all'interno delle cartelle."
-
-msgid "Options..."
-msgstr "Opzioni..."
-
-msgid "Order"
-msgstr "Ordina"
-
-msgid "Organization"
-msgstr "Organizzazione"
-
-msgid "Original author of SimpleMail"
-msgstr "Autore originale di SimpleMail"
-
-msgid "P:Run Spam Mail Check"
-msgstr "S:Avvia il controllo dello spam"
-
-msgid "PGP Key ID"
-msgstr "ID Chiave PGP"
-
-msgid "PGP Key-ID"
-msgstr "ID Chiave PGP"
-
-msgid "POP3"
-msgstr "POP3"
-
-msgid "POP3 Server"
-msgstr "Server POP3"
-
-msgid ""
-"Parsing the XML file failed because of\n"
-"%s (code %d)\n"
-"at line %d column %d"
-msgstr ""
-"L'interpretazione del file XML è fallita a causa di\n"
-"%s (codice %d)\n"
-"alla linea %d colonna %d"
-
-msgid "Password"
-msgstr "Password"
-
-msgid "Paste"
-msgstr "Incolla"
-
-msgid "Path"
-msgstr "Directory"
-
-msgid "Pattern"
-msgstr "Motivo"
-
-msgid "Pending"
-msgstr "In attesa"
-
-msgid "Personal"
-msgstr "Personale"
-
-msgid "Phone numbers"
-msgstr "Numeri di telefono"
-
-msgid "Phrases"
-msgstr "Frasi"
-
-msgid "Play Sound"
-msgstr "Riproduci suono"
-
-msgid "Please enter the login for %s"
-msgstr "Inserisci l'identificativo per %s"
-
-msgid "Please select a key for %s <%s>"
-msgstr "Seleziona un tasto per %s <%s>"
-
-msgid "Please select the folder where to move the mail"
-msgstr "Selezionare la cartella dove spostare il messaggio"
-
-msgid "Please select the folder where to move the mails"
-msgstr "Selezionare la cartella dove spostare il messaggio"
-
-msgid "Port"
-msgstr "Porta"
-
-msgid "Portrait"
-msgstr "Foto"
-
-msgid "Pr_int"
-msgstr "Sta_mpa"
-
-msgid "Preselection"
-msgstr "Preselezione"
-
-msgid "Print As Text"
-msgstr "Stampa come testo"
-
-msgid "Print Visible Mail Part"
-msgstr "Stampa la parte visibile del messaggio"
-
-msgid "Private"
-msgstr "Privato"
-
-msgid "Process every mail within the current selected folder via the filters."
-msgstr "Elabora ciascuna mail all'interno della cartella selezionata usando il filtro."
-
-msgid "Processing mail %d (%d KB) of %d"
-msgstr "Elaborazione messaggio %d (%d Ko) di %d"
-
-msgid "Project"
-msgstr "Progetto"
-
-msgid "Proportional Font"
-msgstr "Font proporzionale"
-
-msgid "Q:Quit"
-msgstr "Q:Termina"
-
-msgid "Quote empty lines"
-msgstr "Quotare le linee vuote"
-
-msgid "Quoted Text"
-msgstr "Testo quotato"
-
-msgid "R"
-msgstr "R"
-
-msgid "R:Reply..."
-msgstr "R:Rispondi..."
-
-msgid "RCPT failed."
-msgstr "RCPT fallito."
-
-msgid "Rea_d"
-msgstr "Le_ggi"
-
-msgid "Read"
-msgstr "Letti"
-
-msgid "Read window"
-msgstr "Finestra di lettura"
-
-msgid "Reading"
-msgstr "Lettura"
-
-msgid "Reading HTML"
-msgstr "Lettura HTML"
-
-msgid "Reading folders of %s"
-msgstr "Lettura delle cartelle di %s"
-
-msgid "Reading folders..."
-msgstr "Lettura delle cartelle..."
-
-msgid "Reading plain"
-msgstr "Lettura testo"
-
-msgid "Reading subscribed folders..."
-msgstr "Lettura delle cartelle iscritte..."
-
-msgid "Real Name"
-msgstr "Nome reale"
-
-msgid "Receive"
-msgstr "Ricezione"
-
-msgid "Receive mail"
-msgstr "Ricezione posta"
-
-msgid "Received"
-msgstr "Ricevuto"
-
-msgid "Receiver"
-msgstr "Destinatario"
-
-msgid "Redo"
-msgstr "Ripeti"
-
-msgid "Released under the terms of the GNU Public License"
-msgstr "Realizzato sotto i termini della Licenza Pubblica GNU (GPL)"
-
-msgid "Reload from server"
-msgstr "Ricarica dal server"
-
-msgid "Remotly on POP3 server"
-msgstr "In remoto sul server POP3"
-
-msgid "Remove"
-msgstr "Elimina"
-
-msgid "Remove the current account."
-msgstr "Elimina l'account attuale."
-
-msgid "Remove..."
-msgstr "Elimina..."
-
-msgid "Remove|*Cancel"
-msgstr "Elimina|*Annulla"
-
-msgid "Repl. & Forw."
-msgstr "Risposta e inoltro"
-
-msgid "Replied"
-msgstr "Risposto"
-
-msgid "Replies To"
-msgstr "Risponde a"
-
-msgid "Reply"
-msgstr "Indirizzo di risposta"
-
-msgid "Reply Address"
-msgstr "Indirizzo di risposta"
-
-msgid "Reply-To"
-msgstr "Risposta a:"
-
-msgid "Replying"
-msgstr "Risposta"
-
-msgid "Rescan"
-msgstr "Nuova scansione"
-
-msgid "Reset"
-msgstr "Ripristina"
-
-msgid "Reset all columns' widths"
-msgstr "Ripristina la larghezza di tutte le colonne"
-
-msgid "Reset statistics..."
-msgstr "Resetta statistiche..."
-
-msgid "Reset the statistics|Cancel"
-msgstr "_Resetta statistiche|_Annulla"
-
-msgid "Reset the statistics|Reset and rebuild|Cancel"
-msgstr "_Resetta statistiche|Re_setta e ricostruisci|_Annulla"
-
-msgid "Reset this column's width"
-msgstr "Ripristina la larghezza di questa colonna"
-
-msgid "Resets all ham statistics."
-msgstr "Resetta tutte le statistiche ham."
-
-msgid "Resets all spam statistics."
-msgstr "Resetta tutte le statistiche spam."
-
-msgid "Retrieving mail folders..."
-msgstr "Recupero delle cartelle dei messaggi..."
-
-msgid "Reverse"
-msgstr "Inverti"
-
-msgid "Rules"
-msgstr "Regole"
-
-msgid "Russian"
-msgstr "Russo"
-
-msgid "S:Send Queued Mails..."
-msgstr "H:Invia posta in attesa..."
-
-msgid "SMTP Server"
-msgstr "Server SMTP"
-
-msgid "STARTTLS failed. Connection could not be made secure."
-msgstr "STARTTLS fallito. La connessione potrebbe non essere sicura."
-
-msgid "S_pam"
-msgstr "_Spam"
-
-msgid "S_tart search"
-msgstr "I_nizia ricerca"
-
-msgid "S_ubject"
-msgstr "_Oggetto"
-
-msgid "Save"
-msgstr "Salva"
-
-msgid "Save All Attachments..."
-msgstr "Salva tutti gli allegati..."
-
-msgid "Save All Indexfiles"
-msgstr "Salva tutti gli indici dei file"
-
-msgid "Save As..."
-msgstr "Salva come..."
-
-msgid "Save Settings"
-msgstr "Salva le impostazioni"
-
-msgid "Save the configuration permanently."
-msgstr "Salva la configurazione permanentemente."
-
-msgid "Save Whole Document As..."
-msgstr "Salva l'intero documento come..."
-
-msgid "Scripts"
-msgstr "Scripts"
-
-msgid "Searc_h"
-msgstr "C_erca"
-
-msgid "Search _into"
-msgstr "Cerca _in"
-
-msgid "Secure"
-msgstr "Sicura"
-
-msgid "Select All"
-msgstr "Seleziona tutto"
-
-msgid "Select None"
-msgstr "Inverti selezione"
-
-msgid "Select an addressbook-file."
-msgstr "Seleziona un file dalla rubrica.."
-
-msgid "Send"
-msgstr "Invio"
-
-msgid "Send _later"
-msgstr "Invia _successivamente"
-
-msgid ""
-"Send your current IP address together with the intial greetings.\n"
-"This avoids some error headers on some providers."
-msgstr ""
-"Invia il proprio indirizzo IP in uso con i saluti iniziali.\n"
-"Ciò evita alcuni errori di intestazione su alcuni providers."
-
-msgid "Sender"
-msgstr "Mittente"
-
-msgid ""
-"Sender address (From) is <%s>, but\n"
-"return address (Reply-To) is <%s>.\n"
-"Which address do you want to use?"
-msgstr ""
-"L'indirizzo del mittente è <%s>, ma\n"
-"l'indirizzo di risposta è <%s>.\n"
-"Quale indirizzo vuoi usare?"
-
-msgid "Sending AUTH..."
-msgstr "Invio AUTH..."
-
-msgid "Sending DATA..."
-msgstr "Invio DATA..."
-
-msgid "Sending EHLO..."
-msgstr "Invio EHLO..."
-
-msgid "Sending FROM..."
-msgstr "Invio FROM..."
-
-msgid "Sending HELO..."
-msgstr "Invio HELO..."
-
-msgid "Sending QUIT..."
-msgstr "Invio QUIT..."
-
-msgid "Sending RCPT..."
-msgstr "Invio RCPT..."
-
-msgid "Sending STARTTLS..."
-msgstr "Invio STARTTLS..."
-
-msgid "Sending mails to %s"
-msgstr "Invio la posta a %s"
-
-msgid "Sending mails to %s, connecting to %s first"
-msgstr "Invio la posta a %s, connettendomi prima a %s"
-
-msgid "Sending password..."
-msgstr "Invio la password..."
-
-msgid "Sending secured EHLO..."
-msgstr "Invio EHLO sicuro..."
-
-msgid "Sending secured HELO..."
-msgstr "Invio HELO sicuro..."
-
-msgid "Sending username..."
-msgstr "Invio il nome utente..."
-
-msgid "Sent"
-msgstr "Spedito"
-
-msgid "Server"
-msgstr "Server"
-
-msgid "Service not ready."
-msgstr "Il servizio non è disponibile."
-
-msgid "Set status"
-msgstr "Imposta stato su"
-
-msgid "Settings"
-msgstr "Impostazioni"
-
-msgid "Settings..."
-msgstr "Impostazioni..."
-
-msgid "Sex"
-msgstr "Sesso"
-
-msgid "Show Address Book?"
-msgstr "Mostrare rubrica?"
-
-msgid "Show AppIcon"
-msgstr "Mostra AppIcon"
-
-msgid "Show Date?"
-msgstr "Data"
-
-msgid "Show Description?"
-msgstr "Descrizione"
-
-msgid "Show E-Mail Address?"
-msgstr "E-Mail"
-
-msgid "Show Excerpt?"
-msgstr "Estratto"
-
-msgid "Show Filename?"
-msgstr "Nome del File"
-
-msgid "Show Folders?"
-msgstr "Mostrare cartelle?"
-
-msgid "Show From/To?"
-msgstr "Mittente/Destinatario"
-
-msgid "Show Groups?"
-msgstr "Gruppi"
-
-msgid "Show Mail?"
-msgstr "Messaggi"
-
-msgid "Show New?"
-msgstr "Nuovi"
-
-msgid "Show Nickname?"
-msgstr "Nick"
-
-msgid "Show POP3 Server?"
-msgstr "Server POP3"
-
-msgid "Show Realname?"
-msgstr "Nome"
-
-msgid "Show Received?"
-msgstr "Ricevuto"
-
-msgid "Show Reply-To?"
-msgstr "Rispondi"
-
-msgid "Show Size?"
-msgstr "Dimensione"
-
-msgid "Show Subject?"
-msgstr "Oggetto"
-
-msgid "Show Unread?"
-msgstr "Non letti"
-
-msgid "Show all headers"
-msgstr "Mostra tutte le intestazioni"
-
-msgid "Show All Headers?"
-msgstr "Mostra tutte le Intestazioni"
-
-msgid "M:Show Folders?"
-msgstr "M:Mostrare Cartelle?"
-
-msgid "Show members of selected group"
-msgstr "Mostra i membri del gruppo selezionato"
-
-msgid "Show next mail after move"
-msgstr "Mostra la mail successiva dopo lo spostamento"
-
-msgid "Show Quick Filter?"
-msgstr "Mostrare filtro rapido?"
-
-msgid "Show Raw Format..."
-msgstr "Mostra formato grezzo..."
-
-msgid "Show Raw..."
-msgstr "Mostra formato grezzo..."
-
-msgid "Show Selected Message?"
-msgstr "Mostrare il messaggio selezionato?"
-
-msgid "Shutting down..."
-msgstr "In uscita..."
-
-msgid "Si_gn"
-msgstr "_Firma"
-
-msgid "Signature"
-msgstr "Firma"
-
-msgid "Signaturenames must be unique."
-msgstr "I nomi per la firma debbono essere unici."
-
-msgid "Signatures"
-msgstr "Firme"
-
-msgid "SimpleMail - About"
-msgstr "SimpleMail -  Informazioni"
-
-msgid "SimpleMail - Add Groups"
-msgstr "SimpleMail - Aggiungi Gruppi"
-
-msgid "SimpleMail - Addressbook"
-msgstr "SimpleMail - Rubrica"
-
-msgid "SimpleMail - Compose Message"
-msgstr "SimpleMail - Crea Messaggio"
-
-msgid "SimpleMail - Configuration"
-msgstr "SimpleMail - Configurazione"
-
-msgid "SimpleMail - Edit Filter"
-msgstr "SimpleMail - Editor Filtri"
-
-msgid "SimpleMail - Edit Group"
-msgstr "SimpleMail - Editor Gruppi"
-
-msgid "SimpleMail - Edit IMAP Server"
-msgstr "SimpleMail - Editor Server IMAP"
-
-msgid "SimpleMail - Edit Person"
-msgstr "SimpleMail - Editor Contatti"
-
-msgid "SimpleMail - Edit folder"
-msgstr "SimpleMail - Editor Cartella"
-
-msgid "SimpleMail - Edit folder group"
-msgstr "SimpleMail - Editor Gruppo di Cartelle"
-
-msgid "SimpleMail - Error"
-msgstr "SimpleMail - Errore"
-
-msgid "SimpleMail - Exporting folder"
-msgstr "SimpleMail - Esportazione cartella"
-
-msgid "SimpleMail - Importing a dbx file"
-msgstr "SimpleMail - Importazione di un file dbx"
-
-msgid "SimpleMail - Importing a mbox file"
-msgstr "SimpleMail - Importazione di un file mbox"
-
-msgid "SimpleMail - New folder"
-msgstr "SimpleMail - Nuova cartella"
-
-msgid "SimpleMail - Read Message"
-msgstr "SimpleMail - Lettura Messaggio"
-
-msgid "SimpleMail - Search"
-msgstr "SimpleMail - Ricerca"
-
-msgid "SimpleMail - Select PGP Key"
-msgstr "SimpeMail - Slezione Chiave PGP"
-
-msgid "SimpleMail - Select a Folder"
-msgstr "SimpleMail - Selezione Cartella"
-
-msgid ""
-"SimpleMail currently doesn't support the same email address for\n"
-"multiple accounts. Please ensure that every email address is unique.\n"
-"However, you can set the reply address field to your prefered addresse."
-msgstr ""
-"SimpleMail attualmete non supporta l'uso dello stesso indirizzo email per\n"
-"account multipli. Assicurarsi che ciascun indirizzo email sia unico.\n"
-"Tuttavia, è possibile impostare il campo 'risposta' con l'indirizzo che si\n"
-"preferisce."
-
-msgid ""
-"SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
-"It's available from %s"
-msgstr ""
-"SimpleMail ncessita almeno della versione %ld.%ld della sotto-classe MUI NList.mcc!\n"
-"Questa classe è disponibile su %s"
-
-msgid ""
-"SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\n"
-"It's available from %s"
-msgstr ""
-"SimpleMail ncessita almeno della versione %ld.%ld della sotto-classe MUI NListtree.mcc!\n"
-"Questa classe è disponibile su %s"
-
-msgid "Size"
-msgstr "Dimensione"
-
-msgid "Slavic languages"
-msgstr "Lingue Slave"
-
-msgid "Sound"
-msgstr "Suono"
-
-msgid "South European"
-msgstr "Europa del Sud"
-
-msgid "South-Eastern European"
-msgstr "Sud-Est Europeo"
-
-msgid "Spam"
-msgstr "Spam"
-
-msgid "Spam Check"
-msgstr "Controlla spam"
-
-msgid "State/Province"
-msgstr "Regione"
-
-msgid "Statistics"
-msgstr "Statistche"
-
-msgid "Status"
-msgstr "Stato"
-
-msgid "Status is"
-msgstr "Lo stato è"
-
-msgid "Sto_p search"
-msgstr "Fer_ma ricerca"
-
-msgid "Street"
-msgstr "Via"
-
-msgid "Strip signature before quoting"
-msgstr "Abbrevia la firma prima di quotare"
-
-msgid "Subject"
-msgstr "Oggetto"
-
-msgid "Submit to server"
-msgstr "Invia al server"
-
-msgid "Submitting subscribed folders to %s"
-msgstr "Invio delle cartelle iscritte a %s"
-
-msgid "Subscribe"
-msgstr "Iscrivi"
-
-msgid "Subscribing folders failed!"
-msgstr "Iscrizione delle cartelle non riuscita!"
-
-msgid "Substring"
-msgstr "Iscrizione"
-
-msgid "Synchronizing mails with %s"
-msgstr "Sincronizzazione dei messaggi con %s"
-
-msgid "T_o"
-msgstr "_A"
-
-msgid "Text"
-msgstr "Testo"
-
-msgid ""
-"The charset configured for SimpleMail (%s) doesn't match\n"
-"the system's default charset (%s)! How to proceed?"
-msgstr ""
-"Il font (%s) impostato per SimpleMail non corrisponde a quello\n"
-"predefinito per il sistema, il font (%s)! Che cosa vuoi fare?"
-
-msgid ""
-"The date of birth is given in a invalid format.\n"
-"Please use dd mon yyyy or dd mm yyyy."
-msgstr ""
-"La data di nascita ha un formato non valido.\n"
-"Utilizzare GG MMM AAAA o GG MM AAAA."
-
-msgid ""
-"The date of the birth of the person.\n"
-"The format is dd mon yyyy or dd mm yyyy."
-msgstr ""
-"La data di nascita di una persona.\n"
-"Il formato è GG MMM AAAA o GG MM AAAA."
-
-msgid "The default signature for this account"
-msgstr "La firma predefinita per questo account."
-
-msgid "The login/UserID which you got from your ISP."
-msgstr "L'identificativo che viene assegnato dall'ISP."
-
-msgid ""
-"The name of the so called POP3 server from\n"
-"which you download your e-Mails (required; ask your\n"
-"provider if unknown)."
-msgstr ""
-"Il nome del server POP3 dal quale verranno\n"
-"prelevate le e-mails (necessario; chiedere\n"
-"al proprio provider se non lo si conosce)."
-
-msgid ""
-"The name of the so called SMTP server which is responlible\n"
-"to send your e-Mails."
-msgstr ""
-"Il nome del server SMTP che è responsabile\n"
-"dell'invio dei vostri messaggi e-mail."
-
-msgid ""
-"The orginal charset of the attached file differs from yours.\n"
-"In which charset do you want the file being saved?"
-msgstr ""
-"Il tipo di font del file allegato è differente da quelli presenti nel sistema.\n"
-"Con quale font si desidera salvare il file?"
-
-msgid "The port number. Usually 110"
-msgstr "Il numero della porta. Generalmente 110"
-
-msgid "The port number. Usually 25"
-msgstr "Il numero della porta. Generalmente 25"
-
-msgid ""
-"The selected destination drawer \"%s\" doesn't exists.\n"
-"Should it be created?"
-msgstr ""
-"La cartella destinazione \"%s\" selezionata non esiste.\n"
-"Vuoi che venga creata?"
-
-msgid "The signature is used in %d account(s) and %d folder(s)."
-msgstr "La firma è utilizzata in %d account e in %d cartella(e)."
-
-msgid "The signature is used in %d account(s)."
-msgstr "La firma è utilizzata in %d account."
-
-msgid "The signature is used in %d folder(s)."
-msgstr "La firma è utilizzata in %d cartella(e)."
-
-msgid "The specified address is not available on this machine"
-msgstr "L'indirizzo specificato non è disponibile su questo sistema"
-
-msgid ""
-"There are %d addresses belonging to the group.\n"
-"Do you really want to delete this group?"
-msgstr ""
-"Ci sono %s indirizzi appartenenti a questo gruppo.\n"
-"Vuoi veramente cancellare questo gruppo?"
-
-msgid "This Signaturename is not allowed."
-msgstr "Questo tipo di firma non è autorizzato."
-
-msgid "This e-mail has multiple recipients. Should it be answered to all recipients?"
-msgstr "Questa e-mail ha diversi destinatari. Rispondere a tutti?"
-
-msgid "This mail is encrypted. Please enter your passphrase now"
-msgstr "Questo messaggio è criptato . Per favore, inserisci la tua passphrase."
-
-msgid "Time remaining:"
-msgstr "Tempo restante"
-
-msgid "Title"
-msgstr "Titolo"
-
-msgid "To"
-msgstr "A"
-
-msgid "Total:"
-msgstr "Totale:"
-
-msgid "Total:%d New:%d Unread:%d"
-msgstr "Totale: %d Nuovi: %d Non letti: %d"
-
-msgid "Total messages"
-msgstr "Messaggi totali"
-
-msgid "Try"
-msgstr "Prova"
-
-msgid "Turkish"
-msgstr "Turco"
-
-msgid "Type"
-msgstr "Tipo"
-
-msgid "Unable to connect to server %s: %s"
-msgstr "Impossibile connettersi al server %s: %s"
-
-msgid "Unable to save the active mail.\n"
-msgstr "Impossibile salvare il messaggio attivo.\n"
-
-msgid "Unconfigured"
-msgstr "Non configurato"
-
-msgid "Underline links"
-msgstr "Collegamenti sottolineati"
-
-msgid "Undo"
-msgstr "Annulla"
-
-msgid "Unexpected server answer. Connection failed."
-msgstr "Risposta inattesa dal server. Connessione fallita."
-
-msgid "Unexpected server failure"
-msgstr "Errore inaspettato dal server"
-
-msgid "Unknown error"
-msgstr "Errore sconosciuto"
-
-msgid "Unmark"
-msgstr "Deselezionato"
-
-msgid "Unnamed"
-msgstr "Senza nome"
-
-msgid "Unread"
-msgstr "Non letti"
-
-msgid "Unread:"
-msgstr "Non letti: "
-
-msgid "Unsubscribe"
-msgstr "Cancella iscrizione"
-
-msgid "Unsubscribing folders failed!"
-msgstr "Cancellazione dell'iscrizione delle cartelle fallita!"
-
-msgid "Unsupported encryption"
-msgstr "Crittazione non supportata"
-
-msgid "Unsupported type of addressbook."
-msgstr "Tipo di rubrica non supportata."
-
-msgid "Us_e signatures"
-msgstr "U_sa firme"
-
-msgid "Use IP as domain"
-msgstr "Usa IP come dominio"
-
-msgid "Use SMTP AUTH"
-msgstr "Usa SMTP AUTH"
-
-msgid "Use Unicode|No Unicode"
-msgstr "Usa Unicode|Non usare Unicode"
-
-msgid "Use graphical smilies"
-msgstr "Usa le emoticon"
-
-msgid "Use on addresses which contain"
-msgstr "Usa con gli indirizzi che contengono"
-
-msgid "Use the configuration, but don't save it."
-msgstr "Utilizza le impostazioni, ma senza salvarle."
-
-msgid "User"
-msgstr "Utente"
-
-msgid "User ID"
-msgstr "ID utente"
-
-msgid "W:Forward..."
-msgstr "t:Inoltra..."
-
-msgid "Waiting for login..."
-msgstr "Attendere l'autenticazione..."
-
-msgid "Waiting for user interaction"
-msgstr "In attesa di attività dell'utente"
-
-msgid "Waiting..."
-msgstr "Attendere..."
-
-msgid "Welcome"
-msgstr "Messaggio di benvenuto"
-
-msgid "Welcome with address"
-msgstr "Con indirizzo/intestazione"
-
-msgid "West European"
-msgstr "Europa dell'Ovest"
-
-msgid "West European (Windows)"
-msgstr "Europa dell'Ovest (Windows)"
-
-msgid "West European (with EURO)"
-msgstr "Europa dell'Ovest (con EURO)"
-
-msgid "West European II"
-msgstr "Europa dell'Ovest II"
-
-msgid "When iconified"
-msgstr "A programma iconificato"
-
-msgid ""
-"When not deleteding e-Mails on the server SimpleMail\n"
-"tries to avoid downloading a message twice the next time."
-msgstr ""
-"Quando le e-Mail non vengono cancellate sul server, SimpleMail\n"
-"cercherà di non scaricare di nuovo lo stesso messaggio ."
-
-msgid "White list"
-msgstr "Lista blanca"
-
-msgid "Word wrap"
-msgstr "Margine automatico"
-
-msgid "Wordwrap plain text"
-msgstr "Ritorno margine automatico sul testo."
-
-msgid "Work"
-msgstr "Lavoro"
-
-msgid "Wrap before quoting"
-msgstr "Margine automatico prima di quotare"
-
-msgid "Write"
-msgstr "Scrittura"
-
-msgid "Write to..."
-msgstr "Scrivi a ..."
-
-msgid "Yes|No"
-msgstr "Si|No"
-
-msgid ""
-"You are going to delete an imap folder.\n"
-"This will remove the folder locally but not on the server.\n"
-"The next time you connect to the server the folder will reapear."
-msgstr ""
-"Stai per cancellare una cartella IMAP.\n"
-"Questa avverrà solo localmente ma non sul server.\n"
-"Al successivo collegamento la cartella comparirà di nuovo."
-
-msgid ""
-"You are going to delete an imap server.\n"
-"Unless you don't remove it from the accounts setting page\n"
-"it will reapear after SimpleMail is restarted."
-msgstr ""
-"Stai per cancellare un server IMAP. A meno che non venga\n"
-"cancellato dalla pagina delle impostazioni dell'account,\n"
-"comparirà di nuovo quando SimpleMail verrà riavviato."
-
-msgid "You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."
-msgstr "Hai modificato la directory della cartella! É necessario uscire e riavviare SimpleMail perchè vengano applicati i cambiamenti."
-
-msgid "You have entered an invalid email address. Please correct it."
-msgstr "L'indirizzo email inserito non è corretto. Per favore, correggilo."
-
-msgid "Your E-Mail address for this account (required)"
-msgstr "L'indirizzo E-Mail per questo account (necessario)"
-
-msgid "Your full name (required)"
-msgstr "Il nome completo (necessario)"
-
-msgid ""
-"Your login/UserID for the SMTP server.\n"
-"Only required if the SMTP server requires authentication."
-msgstr ""
-"Il proprio identificativo per il server SMTP.\n"
-"Necessario solamente se il server richiede l'autenticazione."
-
-msgid ""
-"Your password for the SMTP server.\n"
-"Only required if the SMTP server requires authentication."
-msgstr ""
-"La password per il server SMTP.\n"
-"Necessaria solo se il server richiede l'autenticazione."
-
-msgid ""
-"Your very own password to access the mails\n"
-"located on the POP3 server."
-msgstr ""
-"La vostra personale password per accedere\n"
-"ai messaggi contenuti nel server POP3."
-
-msgid "Z:Clear Selection"
-msgstr "Z:Annulla selezione"
-
-msgid "ZIP/Postal Code"
-msgstr "Codice postale"
-
-msgid "_Abook"
-msgstr "Ru_brica"
-
-msgid "_Abort"
-msgstr "_Annulla"
-
-msgid "_Add"
-msgstr "A_ggiungi"
-
-msgid "_Add Account"
-msgstr "Ag_giungi account"
-
-msgid "_Attach"
-msgstr "All_ega"
-
-msgid "_Blind Copies To"
-msgstr "Copie _nascoste a (BCC)"
-
-msgid "_Body"
-msgstr "Co_rpo"
-
-msgid "_Cancel"
-msgstr "_Annulla"
-
-msgid "_Close window"
-msgstr "_Chiudi finestra"
-
-msgid "_Config"
-msgstr "Config_ura"
-
-msgid "_Delete"
-msgstr "_Cancella"
-
-msgid "_Delete it|_Cancel"
-msgstr "Cancella|_Annulla"
-
-msgid "_Delete mails"
-msgstr "_Cancella messaggi"
-
-msgid "_Delete messages"
-msgstr "_Cancella messaggi"
-
-msgid "_Description"
-msgstr "_Descrizione"
-
-msgid "_Duplicate"
-msgstr "_Duplica"
-
-msgid "_Edit"
-msgstr "_Modifica"
-
-msgid "_Encrypt"
-msgstr "Crittazione"
-
-msgid "_Fetch"
-msgstr "_Preleva"
-
-msgid "_Forward"
-msgstr "Inol_tra"
-
-msgid "_From"
-msgstr "_Da"
-
-msgid "_From|*_Reply-To|_Both|_Cancel"
-msgstr "_Da|*_Rispondi |_Tutti|_Annulla"
-
-msgid "_Hold"
-msgstr "I_n sospeso"
-
-msgid "Local path"
-msgstr "Percorso locale"
-
+#: simplemail.c:789
 msgid "_Look for spam mails|_Cancel"
 msgstr "_Ricerca mail spam|_Annulla"
 
-msgid "_Move"
-msgstr "Sp_osta"
+#: simplemail.c:1138
+msgid "Choose the file which you like to import"
+msgstr "Seleziona un file che desideri importare"
 
-msgid "_Name"
-msgstr "_Nome"
+#: simplemail.c:1143
+msgid "Couldn't start process for importing.\n"
+msgstr "Impossibile iniziare il processo di importazione\n"
 
-msgid "_New"
-msgstr "_Nuovo"
+#: simplemail.c:1157
+msgid "Choose export filename"
+msgstr "Scegli un nome per il file da esportare"
 
-msgid "_Next"
-msgstr "Se_guente"
+#: simplemail.c:1162
+msgid "Couldn't start process for exporting.\n"
+msgstr "Impossible iniziare il processo di esportazione.\n"
 
-msgid "_Next error"
-msgstr "E_rrore seguente"
+#: simplemail.c:1480
+msgid "Select an addressbook-file."
+msgstr "Seleziona un file dalla rubrica"
 
-msgid "_OK"
-msgstr "_OK"
+#: simplemail.c:1513
+msgid "New Group"
+msgstr "Nuovo gruppo"
 
-msgid "_Ok"
-msgstr "_Ok"
+#: smtp.c:116
+msgid "Service not ready."
+msgstr "Il servizio non è disponibile"
 
-msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
-msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla"
+#: smtp.c:423
+msgid "DATA-Cmd failed."
+msgstr "DATA-Cmd falliti"
 
-msgid "_Prev"
-msgstr "_Precedente."
+#: smtp.c:665
+msgid "Sending EHLO..."
+msgstr "Invio EHLO..."
 
-msgid "_Previous error"
-msgstr "Errore _precedente"
+#: smtp.c:670
+msgid "Sending HELO..."
+msgstr "Invio HELO..."
 
-msgid "_Primary sort"
-msgstr "Ordinamento _primario"
+#: smtp.c:673 smtp.c:707
+msgid "HELO failed"
+msgstr "HELO fallito"
 
-msgid "_Remove"
-msgstr "_Rimuovi"
+#: smtp.c:682
+msgid ""
+"Connection could not be made secure because the SMTP server doesn't seem to "
+"support it!"
+msgstr ""
+"La connessione non può essere resa sicura perchè il server"
+"SMTP non sembra essere in grado di supportarla!"
 
-msgid "_Remove Account"
-msgstr "Ri_muovi account"
+#: smtp.c:686
+msgid "Sending STARTTLS..."
+msgstr "Invio STARTTLS..."
 
-msgid "_Replies To"
-msgstr "_Risposta a"
+#: smtp.c:689
+msgid "STARTTLS failed. Connection could not be made secure."
+msgstr "STARTTLS fallito, la connessione non può essere resa sicura"
 
-msgid "_Reply"
-msgstr "_Rispondi"
+#: smtp.c:695
+msgid "Connection could not be made secure."
+msgstr "La connessione non può essere resa sicura"
 
-msgid "_Reply to"
-msgstr "_Rispondi a"
+#: smtp.c:699
+msgid "Sending secured EHLO..."
+msgstr "Invio EHLO sicuro..."
 
-msgid "_Save"
-msgstr "_Salva"
+#: smtp.c:704
+msgid "Sending secured HELO..."
+msgstr "Invio HELO sicuro..."
 
-msgid "_Secondary sort"
-msgstr "_Ordinamento secondario"
+#: smtp.c:715
+msgid "Sending AUTH..."
+msgstr "Invio AUTH..."
 
-msgid "_Send"
-msgstr "_Invia"
+#: smtp.c:718
+msgid ""
+"AUTH failed. User couldn't be authenticated. Please recheck your settings."
+msgstr "AUTH non riuscita. L'utente non può essere identificato. Verifica le tue impostazioni"
+""
 
-msgid "_Send now"
-msgstr "Invia _ora"
+#. starts from 1
+#: smtp.c:780
+msgid "Sending FROM..."
+msgstr "Invio FROM..."
 
-msgid "_Skip"
-msgstr "_Salta"
+#: smtp.c:783
+msgid "FROM failed."
+msgstr "FROM non riuscito"
 
-msgid "_Start"
-msgstr "_Inizia"
+#: smtp.c:788
+msgid "Sending RCPT..."
+msgstr "Invio RCPT..."
 
-msgid "_Subject"
-msgstr "_Oggetto"
+#: smtp.c:791
+msgid "RCPT failed."
+msgstr "RCPT non riuscito"
 
-msgid "_To"
-msgstr "_A"
+#: smtp.c:796
+msgid "Sending DATA..."
+msgstr "Invio DATA..."
 
-msgid "_Type"
-msgstr "_Tipo"
+#: smtp.c:800
+msgid "DATA failed."
+msgstr "DATA non riuscito"
 
-msgid "_Use"
-msgstr "_Usa"
+#. Connect to the pop3 server first
+#: smtp.c:850
+#, c-format
+msgid "Sending mails to %s, connecting to %s first"
+msgstr "Invio messaggi di posta a %s, connettendosi prima a %s"
 
-msgid "_Yes|_No"
-msgstr "_Si|_No"
+#: smtp.c:853
+msgid "Log into POP3 Server...."
+msgstr "Connessione al server POP3..."
 
-msgid "and"
-msgstr "e"
+#: smtp.c:857
+#, c-format
+msgid "Sending mails to %s"
+msgstr "Invio messaggi di posta a %s"
 
-msgid "as you type"
-msgstr "quando scrivi"
+#: smtp.c:871
+msgid "Aborted - Sending QUIT..."
+msgstr "Interrotto - Invio QUIT..."
 
-msgid "before storing"
-msgstr "prima di salvare"
+#: smtp.c:873 smtp.c:884
+msgid "Aborted - Disconnecting..."
+msgstr "Interrotto - Disconnessione..."
 
-msgid "contains"
-msgstr "contiene"
+#: smtp.c:878
+msgid "Sending QUIT..."
+msgstr "Invio QUIT..."
 
-msgid "equals"
-msgstr "uguali"
+#: smtp.c:889
+msgid "Disconnecting..."
+msgstr "Disconnessione..."
 
-msgid "ham"
-msgstr "ham"
+#: smtp.c:902
+msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
+msgstr "Impossibile aprire la libreria bsdsocket.library. Per favore avvia uno stack TCP/IP"
+""
 
-msgid "mailinglist"
-msgstr "indirizzi raggruppati"
+#: status.c:54 status.c:67
+#, c-format
+msgid "%d s"
+msgstr "%d s"
 
-msgid "matches"
-msgstr "corrisponde"
+#: status.c:55 status.c:68
+#, c-format
+msgid "%d min %d s"
+msgstr "%d min %d s"
 
-msgid "minutes"
-msgstr "minuti"
+#: status.c:57
+msgid "Time remaining:"
+msgstr "Tempo restante:"
 
-msgid "off"
-msgstr "disattivato"
+#: status.c:127
+#, c-format
+msgid "Connecting to server %s..."
+msgstr "Connessione al server %s..."
 
-msgid "received"
-msgstr "ricevuto"
+#: status.c:157
+#, c-format
+msgid "%d KB / %d KB (time left: %s)"
+msgstr "%d KB / %d KB (tempo rimanente: %s)"
 
-msgid "received and sent"
-msgstr "ricevuto e spedito"
+#: status.c:162
+#, c-format
+msgid "Processing mail %d (%d KB) of %d"
+msgstr "Elaborazione messaggio %d (%d KB) di %d"
 
-msgid "sent"
-msgstr "inviato"
+msgid "All messages"
+msgstr "Tutti i messaggi"
 
-msgid "spam"
-msgstr "spam"
+msgid "> %ld KB"
+msgstr "> %ld KB"
 
-msgid "spam and ham"
-msgstr "spam e ham"
+msgid "Couldn't initialize timer\n"
+msgstr "Impossibile inizializzare il timer\n"
 
-msgid "with STLS"
-msgstr "Usa STLS"
+msgid "Use signature"
+msgstr "Usa firma"
 
+msgid "You have entered an invalid email address. Please correct it."
+msgstr "L'indirizzo e-mail inserito non è corretto, per favore correggilo"
+
+msgid "Apply to new mails"
+msgstr "Applica ai nuovi messaggi"
+
+msgid "Def. To"
+msgstr "Def. A"
+
+msgid "F:Fetch mails..."
+msgstr "V:Prelievo messaggi..."
+
+msgid "No POP3 Server specified"
+msgstr "Nessun server POP3 specificato"

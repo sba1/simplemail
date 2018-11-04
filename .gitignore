@@ -66,3 +66,5 @@ sm
 smakefile.compile
 stamp-h1
 xpm
+po/simplemail.pot
+po/*.pox

@@ -410,7 +410,7 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUIP_transwnd_InsertMailInfo *msg)
 {
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;
@@ -451,7 +451,7 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 STATIC ULONG transwnd_GetMailFlags (struct IClass *cl, Object *obj, struct MUIP_transwnd_GetMailFlags *msg)
 {
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;
@@ -464,7 +464,7 @@ STATIC ULONG transwnd_GetMailFlags (struct IClass *cl, Object *obj, struct MUIP_
 STATIC ULONG transwnd_SetMailFlags (struct IClass *cl, Object *obj, struct MUIP_transwnd_SetMailFlags *msg)
 {
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;

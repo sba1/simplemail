@@ -126,7 +126,7 @@ void pgp_dispose(struct pgp_key *key)
 
 /*****************************************************************************/
 
-int pgp_operate(char *options, char *output)
+int pgp_operate(const char *options, char *output)
 {
 	char *path = sm_getenv("PGPPATH");
 	int len = mystrlen(path)+10+mystrlen(options);

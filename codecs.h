@@ -85,7 +85,7 @@ char *encode_header_field_utf8(const char *field_name, const char *field_content
  * @param address_list addresses to encoded
  * @return the encoded string
  */
-char *encode_address_field(char *field_name, struct address_list *address_list);
+char *encode_address_field(const char *field_name, struct address_list *address_list);
 
 /**
  * Creates a structured address encoded header field (includes all rules of the
@@ -96,7 +96,7 @@ char *encode_address_field(char *field_name, struct address_list *address_list);
  * @param address_list addresses to encoded
  * @return the generated string. Must be freed with free().
  */
-char *encode_address_field_utf8(char *field_name, struct address_list *address_list);
+char *encode_address_field_utf8(const char *field_name, struct address_list *address_list);
 
 /**
  * Encode the given email address puny (RFC 3490)

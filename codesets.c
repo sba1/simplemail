@@ -1330,7 +1330,7 @@ utf8 *utf8create(void *from, const char *charset)
 
 /*****************************************************************************/
 
-int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
+int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, unsigned int dest_size)
 {
 	char *src = from;
 	unsigned char c;
@@ -1418,7 +1418,7 @@ utf8 *utf8create_len(void *from, const char *charset, int from_len)
 
 /*****************************************************************************/
 
-int utf8tostr(const utf8 *str, char *dest, int dest_size, struct codeset *codeset)
+int utf8tostr(const utf8 *str, char *dest, unsigned int dest_size, struct codeset *codeset)
 {
 	int i;
 	struct single_convert *f;
@@ -1438,8 +1438,8 @@ int utf8tostr(const utf8 *str, char *dest, int dest_size, struct codeset *codese
 		{
 			if (c > 127)
 			{
-				int len_add = trailingBytesForUTF8[c];
-				int len_str = len_add + 1;
+				unsigned int len_add = trailingBytesForUTF8[c];
+				unsigned int len_str = len_add + 1;
 
 				BIN_SEARCH(codeset->table_sorted,0,255,mystrncmp((unsigned char*)str,codeset->table_sorted[m].utf8+1,len_str),f);
 

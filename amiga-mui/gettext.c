@@ -27,7 +27,7 @@ Modification history;
 #include <proto/exec.h>
 #include <proto/locale.h>
 
-char *sm_getenv(char *name);
+char *sm_getenv(const char *name);
 
 /* The magic number of the GNU message catalog format.  */
 #define _MAGIC 0x950412de
@@ -118,7 +118,7 @@ static long openmo(char *dir, char *loc)
 
 									if (conv_pl && (*conv_pl == 'y' || *conv_pl == '1'))
 									{
-										int i;
+										unsigned int i;
 									  for (i=0;i<domain.nstrings;i++)
 									  {
 									    int j;

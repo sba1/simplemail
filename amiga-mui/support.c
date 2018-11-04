@@ -206,7 +206,7 @@ void sm_play_sound(char *filename)
 
 /*****************************************************************************/
 
-char *sm_getenv(char *name)
+char *sm_getenv(const char *name)
 {
 	static char buf[2048];
 	if (GetVar(name,buf,sizeof(buf),0) < 0) return NULL;
@@ -215,14 +215,14 @@ char *sm_getenv(char *name)
 
 /*****************************************************************************/
 
-void sm_setenv(char *name, char *value)
+void sm_setenv(const char *name, const char *value)
 {
 	SetVar(name,value,strlen(value),0);
 }
 
 /*****************************************************************************/
 
-void sm_unsetenv(char *name)
+void sm_unsetenv(const char *name)
 {
 	DeleteVar(name,GVF_LOCAL_ONLY);
 }

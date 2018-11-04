@@ -299,9 +299,9 @@ imap_unittest: tests/imap_unittest.c $(TESTOBJS) $(TESTAOBJS)
 Locale/%.mo: po/%.po
 	msgfmt ./$? -o ./$@
 
-MOS := $(patsubst po/%, Locale/%, $(patsubst %.po, %.mo, $(wildcard po/*.po)))
-
-locale: dirs $(MOS)
+POS := $(wildcard po/*.po)
+POXES := $(POS:.po=.pox)
+MOS := $(patsubst po/%, Locale/%, $(patsubst %.po, %.mo, $(POS)))
 
 # -------------------------------------------------------------
 
@@ -312,6 +312,10 @@ po/simplemail.pot: $(POTFILES)
 
 po/%.pox: po/%.po po/simplemail.pot
 	msgmerge $< po/simplemail.pot -o $@ --verbose
+
+# -------------------------------------------------------------
+
+locale: dirs $(MOS) $(POXES)
 
 # -------------------------------------------------------------
 

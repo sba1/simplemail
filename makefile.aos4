@@ -305,10 +305,13 @@ locale: dirs $(MOS)
 
 # -------------------------------------------------------------
 
-de.pox:
-	xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
-	msgmerge po/de.po po/simplemail.pot -o po/de.pox --verbose
-	$(RM) po/simplemail.pot
+POTFILES=$(sort $(cat po/POTFILES.in) $(SRCS))
+
+po/simplemail.pot: $(POTFILES)
+	xgettext --default-domain=simplemail $^ --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
+
+po/%.pox: po/%.po po/simplemail.pot
+	msgmerge $< po/simplemail.pot -o $@ --verbose
 
 # -------------------------------------------------------------
 

@@ -19,7 +19,7 @@ struct address_list
 
 struct mailbox;
 
-struct address_list *address_list_create(char *str);
+struct address_list *address_list_create(const char *str);
 void address_list_append(struct address_list *list, char *str);
 void address_list_append_mailbox(struct address_list *list, struct mailbox *mb);
 void address_list_remove_by_mail(struct address_list *list, char *email);

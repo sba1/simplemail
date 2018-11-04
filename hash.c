@@ -122,7 +122,7 @@ static int hash_table_set_bits(struct hash_table *ht, int bits)
 	{
 		unsigned int num_occupied_buckets = 0;
 
-		int i;
+		unsigned int i;
 
 		/* If the table is already populated, we need to adjust existing elements again */
 		for (i=0;i<ht->size;i++)
@@ -256,7 +256,7 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 
 static void hash_table_deinit(struct hash_table *ht)
 {
-	int i;
+	unsigned int i;
 
 	for (i=0;i<ht->size;i++)
 	{

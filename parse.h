@@ -67,7 +67,7 @@ int is_token(char *token);
  * @param pbuf
  * @return NULL for an parse error or the pointer to the next unparsed character
  */
-char *parse_addr_spec(char *addr_spec, char **pbuf);
+const char *parse_addr_spec(const char *addr_spec, char **pbuf);
 
 /** Structure used in parse_address() */
 struct parse_address
@@ -96,7 +96,7 @@ struct mailbox
  * @param mb were the result is stored.
  * @return NULL for an parse error or the pointer to the next unparsed character
  */
-char *parse_mailbox(char *mailbox, struct mailbox *mb);
+const char *parse_mailbox(const char *mailbox, struct mailbox *mb);
 
 /**
  * Parse an address.
@@ -110,7 +110,7 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb);
  * @param dest
  * @return NULL for an parse error or the pointer to the next unparsed character
  */
-char *parse_address(char *address, struct parse_address *dest);
+const char *parse_address(const char *address, struct parse_address *dest);
 
 /**
  * Frees all memory for a given address that was allocated in parse_address
@@ -132,7 +132,7 @@ void free_address(struct parse_address *addr);
  * @return pointer to the first character that is not a token or NULL if the
  *  string was not token
  */
-char *parse_token(char *token, char **pbuf);
+const char *parse_token(const char *token, char **pbuf);
 
 /**
  * Parse a string as value.
@@ -145,7 +145,7 @@ char *parse_token(char *token, char **pbuf);
  * @param pbuf
  * @return
  */
-char *parse_value(char *value, char **pbuf);
+const char *parse_value(const char *value, char **pbuf);
 
 /**
  * Parse the the text as text string.
@@ -187,7 +187,7 @@ struct parse_parameter
  * @param dest
  * @return NULL for an parse error or the pointer to the next unparsed character
  */
-char *parse_parameter(char *parameter, struct parse_parameter *dest);
+const char *parse_parameter(const char *parameter, struct parse_parameter *dest);
 
 /**
  * Parse a date string.

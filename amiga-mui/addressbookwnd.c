@@ -374,7 +374,7 @@ static void person_window_ok(struct Person_Data **pdata)
 	if ((iso_addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
 	{
 		char *single_address;
-		utf8 *ptr;
+		const utf8 *ptr;
 
 		addresses = utf8create(iso_addresses,user.config.default_codeset?user.config.default_codeset->name:NULL);
 		FreeVec(iso_addresses);
@@ -444,7 +444,7 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (addresses)
 		{
 			char *single_address;
-			char *buf = addresses;
+			const char *buf = addresses;
 			while ((buf = parse_addr_spec(buf,&single_address)))
 			{
 				new_entry->email_array = array_add_string(new_entry->email_array, single_address);
@@ -538,7 +538,7 @@ static void person_download_portrait(struct Person_Data **pdata)
 	if ((addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
 	{
 		char *single_address;
-		char *buf = addresses;
+		const char *buf = addresses;
 		while ((buf = parse_addr_spec(buf,&single_address)))
 		{
 			char *filename;

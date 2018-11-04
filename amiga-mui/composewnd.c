@@ -726,11 +726,11 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		account = (struct account*)xget(data->from_accountpop,MUIA_AccountPop_Account);
 		if (account)
 		{
-			char *fmt;
 			if (account->email)
 			{
 				if (account->name && account->name[0])
 				{
+					const char *fmt;
 					if (needs_quotation(account->name)) fmt = "\"%s\" <%s>";
 					else fmt = "%s <%s>";
 					sm_snprintf(from,sizeof(from),fmt,account->name,account->email);

@@ -307,7 +307,7 @@ struct mail_complete *mail_get_next(struct mail_complete *m);
  * @param more_ptr
  * @return
  */
-int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
+int extract_name_from_address(const char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
 
 /**
  * Returns the "from" name and address (name <address>) of the mail.

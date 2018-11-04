@@ -1439,7 +1439,7 @@ char *addressbook_get_expanded(char *unexpand)
 	struct addressbook_entry_new *entry;
 	struct addressbook_group *group;
 	char *unexpand_end = unexpand + strlen(unexpand);
-	char *buf = unexpand;
+	const char *buf = unexpand;
 	char *tolook; /* used in the unexpanded branch */
 	struct mailbox mb;
 	string expanded;
@@ -1452,7 +1452,7 @@ char *addressbook_get_expanded(char *unexpand)
 
 	while (buf < unexpand_end)
 	{
-		char *ret;
+		const char *ret;
 
 		if ((ret = parse_mailbox(buf,&mb)))
 		{

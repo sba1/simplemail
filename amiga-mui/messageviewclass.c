@@ -104,7 +104,7 @@ static int is_picture(void *data, int len)
 /******************************************************************
  Save the contents of a given mail to a given dest
 *******************************************************************/
-static void save_contents_to(struct MessageView_Data *data, struct mail_complete *mail, char *drawer, char *file)
+static void save_contents_to(struct MessageView_Data *data, struct mail_complete *mail, const char *drawer, const char *file)
 {
 	BPTR dlock;
 

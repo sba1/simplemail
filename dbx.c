@@ -96,7 +96,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 
 	unsigned char *data;
 	unsigned char *body;
-	int i;
+	unsigned int i;
 	int rc = 0;
 	int length_of_idxs;
 	unsigned int num_of_idxs;

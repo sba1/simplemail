@@ -77,6 +77,6 @@ void pgp_dispose(struct pgp_key *key);
  * @param output the output file
  * @return 1 on success, 0 otherwise.
  */
-int pgp_operate(char *options, char *output);
+int pgp_operate(const char *options, char *output);
 
 #endif

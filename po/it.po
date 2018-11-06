@@ -881,7 +881,7 @@ msgid ""
 "tries to avoid downloading a message twice the next time."
 msgstr ""
 "Qualora i messaggi non vengano cancellati dal server\n"
-"SimpleMail cercherà di non scaricare nuovamente gli\n
+"SimpleMail cercherà di non scaricare nuovamente gli\n"
 "stessi messaggi più volte"
 
 #: amiga-mui/configwnd.c:1481
@@ -1885,7 +1885,7 @@ msgid ""
 "the system's default charset (%s)! How to proceed?"
 msgstr ""
 "Il set di caratteri configurato su SimpleMail (%s) non coincide\n"
-"con il set di caratteri attualmente usato nel sistema (%s)!\n
+"con il set di caratteri attualmente usato nel sistema (%s)!\n"
 "Come si desidera procedere?"
 
 #: amiga-mui/gui_main.c:546
@@ -2388,7 +2388,7 @@ msgid ""
 "Allows you to filter for messages containing the given texts within their "
 "From or Subject fields."
 msgstr ""
-"Permette di filtrare messaggi contenenti il testo\n
+"Permette di filtrare messaggi contenenti il testo\n"
 "fornito all'interno dei campi \"Da\" e \"Oggetto\""
 
 #: amiga-mui/mainwnd.c:1082
@@ -3090,9 +3090,9 @@ msgid ""
 "No subject was specified. It is not recommended to create mails\n"
 "without any subject. Do you want to add a subject line?"
 msgstr ""
-"Attenzione, l'oggetto non è stato specificato.\n
+"Attenzione, l'oggetto non è stato specificato.\n"
 "Si sconsiglia di creare messaggi di posta privi\n"
-"di oggetto.\n
+"di oggetto.\n"
 "Si desidera aggiungere del testo per l'oggetto?"
 
 #: mail.c:3092

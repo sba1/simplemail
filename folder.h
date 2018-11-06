@@ -497,6 +497,12 @@ int folder_get_index_of_mail(struct folder *f, struct mail_info *mail);
  * @return the size of all mails in f.
  */
 int folder_size_of_mails(struct folder *f);
+
+/**
+ * @return the possibly translated folder name.
+ */
+const char *folder_name(struct folder *f);
+
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);

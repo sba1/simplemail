@@ -3446,6 +3446,13 @@ int folder_size_of_mails(struct folder *f)
 
 /*****************************************************************************/
 
+const char *folder_name(struct folder *f)
+{
+	return f->name;
+}
+
+/*****************************************************************************/
+
 int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail_info **mail_info_array, int num_mails)
 {
 	char *buf, *src_buf, *src_path_end_buf, *dest_buf, *dest_path_end_buf;

@@ -153,7 +153,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 					utf8tostr(folder->name, cur_name_buf, sizeof(data->name_buf) - cur_len, user.config.default_codeset);
 				} else
 				{
-					sm_snprintf(cur_name_buf, sizeof(data->name_buf) - cur_len, "%s", folder->name);
+					sm_snprintf(cur_name_buf, sizeof(data->name_buf) - cur_len, "%s", folder_name(folder));
 				}
 			}
 

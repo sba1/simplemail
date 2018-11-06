@@ -842,7 +842,7 @@ msgid ""
 msgstr ""
 "L'impronta digitale del server (SHA1 o SHA256).\n"
 "Questa è usata per verificare l'identità del server\n"
-"per capire se il certificato può essere affidabile\n"
+"per capire se il certificato può essere affidabile"
 
 #: amiga-mui/configwnd.c:1476
 msgid "The login/UserID which you got from your ISP."

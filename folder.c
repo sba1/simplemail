@@ -3448,7 +3448,26 @@ int folder_size_of_mails(struct folder *f)
 
 const char *folder_name(struct folder *f)
 {
-	return f->name;
+	char *untranslated_name;
+	char *name;
+
+	name = f->name;
+
+	switch (f->special)
+	{
+		case	FOLDER_SPECIAL_INCOMING: untranslated_name = N_("Incoming"); break;
+		case	FOLDER_SPECIAL_OUTGOING: untranslated_name = N_("Outgoing"); break;
+		case	FOLDER_SPECIAL_SENT: untranslated_name = N_("Sent"); break;
+		case	FOLDER_SPECIAL_DELETED: untranslated_name = N_("Deleted"); break;
+		case	FOLDER_SPECIAL_SPAM: untranslated_name = N_("Spam"); break;
+		default: untranslated_name = NULL; break;
+	}
+
+	if (untranslated_name && !strcmp(name, untranslated_name))
+	{
+		name = _(untranslated_name);
+	}
+	return name;
 }
 
 /*****************************************************************************/

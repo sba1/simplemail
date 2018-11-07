@@ -1,13 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Samir Hawamdeh <s.hawamdeh@teletu.it>, 2018
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: SimpleMail 0.45\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-04 20:46+0100\n"
+"POT-Creation-Date: 2018-11-05 21:04+0100\n"
 "PO-Revision-Date: 2018-10-31 20:24+0000\n"
 "Last-Translator: Jambalah <geepney@hotmail.it>\n"
 "MIME-Version: 1.0\n"
@@ -87,7 +86,6 @@ msgid "Add contact to following groups"
 msgstr "Aggiungi contatto ai seguenti gruppi"
 
 #: amiga-mui/addressbookwnd.c:290
-#, fuzzy
 msgid "SimpleMail - Add Groups"
 msgstr "SimpleMail - Editor gruppi"
 
@@ -195,7 +193,6 @@ msgid "Belonging groups"
 msgstr "Appartenente ai gruppi"
 
 #: amiga-mui/addressbookwnd.c:753
-#, fuzzy
 msgid "Add"
 msgstr "Aggiungi"
 
@@ -251,7 +248,6 @@ msgid "Group with the given name \"%s\" already exists"
 msgstr "Il gruppo denominato \"%s\" è già esistente"
 
 #: amiga-mui/addressbookwnd.c:1133 simplemail.c:2155
-#, fuzzy
 msgid "OK"
 msgstr "_OK"
 
@@ -260,12 +256,10 @@ msgid "SimpleMail - Edit Group"
 msgstr "SimpleMail - Editor gruppo"
 
 #: amiga-mui/addressbookwnd.c:1215 amiga-mui/addressbookwnd.c:1221
-#, fuzzy
 msgid "_Name"
 msgstr "_Nome"
 
 #: amiga-mui/addressbookwnd.c:1224 amiga-mui/addressbookwnd.c:1230
-#, fuzzy
 msgid "_Description"
 msgstr "_Descrizione"
 
@@ -279,7 +273,6 @@ msgstr ""
 "Si desidera cancellare questo gruppo?"
 
 #: amiga-mui/addressbookwnd.c:1365
-#, fuzzy
 msgid "Yes|No"
 msgstr "_Si|_No"
 
@@ -289,7 +282,6 @@ msgid "Project"
 msgstr "Progetto"
 
 #: amiga-mui/addressbookwnd.c:1458
-#, fuzzy
 msgid "Import addressbook..."
 msgstr "Importa rubrica..."
 
@@ -299,7 +291,6 @@ msgstr "SimpleMail - Rubrica"
 
 #: amiga-mui/addressbookwnd.c:1502 amiga-mui/addressentrylistclass.c:152
 #: amiga-mui/addressmatchlistclass.c:152
-#, fuzzy
 msgid "Groups"
 msgstr "Gruppo"
 
@@ -308,12 +299,10 @@ msgid "Add..."
 msgstr "Aggiungi..."
 
 #: amiga-mui/addressbookwnd.c:1509 amiga-mui/addressbookwnd.c:1527
-#, fuzzy
 msgid "Edit..."
 msgstr "Modifica..."
 
 #: amiga-mui/addressbookwnd.c:1515
-#, fuzzy
 msgid "Contacts"
 msgstr "Contatti"
 
@@ -322,7 +311,6 @@ msgid "Show members of selected group"
 msgstr "_Mostra membri del gruppo selezionato"
 
 #: amiga-mui/addressbookwnd.c:1535
-#, fuzzy
 msgid "?textbutton:_Save"
 msgstr "?textbutton:_Salva"
 
@@ -361,7 +349,6 @@ msgid "Show E-Mail Address?"
 msgstr "Mostra indirizzo e-mail"
 
 #: amiga-mui/addressentrylistclass.c:240
-#, fuzzy
 msgid "Show Groups?"
 msgstr "Mostra gruppi"
 
@@ -401,7 +388,7 @@ msgstr "Dimensione"
 
 #: amiga-mui/attachmentlistclass.c:126
 msgid "Contents"
-msgstr "Contenuto"
+msgstr "Formato"
 
 #: amiga-mui/composewnd.c:87
 msgid "Copy"
@@ -428,7 +415,6 @@ msgid "_Attach"
 msgstr "_Allega"
 
 #: amiga-mui/composewnd.c:96
-#, fuzzy
 msgid "Encrypt"
 msgstr "_Critta"
 
@@ -455,7 +441,6 @@ msgstr "Alta"
 
 #: amiga-mui/composewnd.c:1300 amiga-mui/composewnd.c:1301
 #: amiga-mui/composewnd.c:1319 amiga-mui/composewnd.c:1320
-#, fuzzy
 msgid "Importance"
 msgstr "Importanza"
 
@@ -496,7 +481,6 @@ msgid "B"
 msgstr "B"
 
 #: amiga-mui/composewnd.c:1377 amiga-mui/composewnd.c:1383
-#, fuzzy
 msgid "_Blind Copies To"
 msgstr "Copie riservate a (CC)"
 
@@ -529,7 +513,6 @@ msgid "_Hold"
 msgstr "In _sospeso"
 
 #: amiga-mui/configwnd.c:624
-#, fuzzy
 msgid ""
 "SimpleMail currently doesn't support the same email address for\n"
 "multiple accounts. Please ensure that every email address is unique.\n"
@@ -545,17 +528,14 @@ msgid "No valid email address entered. Please correct it."
 msgstr "L'indirizzo di posta inserito non è valido, per favore correggilo"
 
 #: amiga-mui/configwnd.c:659
-#, fuzzy
 msgid "This signature name is not allowed."
 msgstr "Questa firma sul nome non è permessa"
 
 #: amiga-mui/configwnd.c:673
-#, fuzzy
 msgid "Signature names must be unique."
 msgstr "La firma sui nomi deve essere univoca"
 
 #: amiga-mui/configwnd.c:709
-#, fuzzy
 msgid ""
 "You have changed the folder directory! You must quit and restart SimpleMail "
 "to see an effect."
@@ -565,17 +545,14 @@ msgstr ""
 "in modo da rendere effettive le modifiche"
 
 #: amiga-mui/configwnd.c:887
-#, fuzzy
 msgid "Always"
 msgstr "Sempre"
 
 #: amiga-mui/configwnd.c:888
-#, fuzzy
 msgid "When iconified"
 msgstr "Se iconificato"
 
 #: amiga-mui/configwnd.c:889
-#, fuzzy
 msgid "Never"
 msgstr "Mai"
 
@@ -604,7 +581,6 @@ msgid "Show AppIcon"
 msgstr "Mostra AppIcon"
 
 #: amiga-mui/configwnd.c:950
-#, fuzzy
 msgid "AppIcon label"
 msgstr "Etichetta AppIcon"
 
@@ -677,7 +653,6 @@ msgid "None"
 msgstr "Nessuna"
 
 #: amiga-mui/configwnd.c:1236
-#, fuzzy
 msgid "STLS"
 msgstr "STLS"
 
@@ -749,7 +724,6 @@ msgstr "Porta"
 
 #: amiga-mui/configwnd.c:1336 amiga-mui/configwnd.c:1337
 #: amiga-mui/configwnd.c:1395 amiga-mui/configwnd.c:1396
-#, fuzzy
 msgid "Security"
 msgstr "Sicurezza"
 
@@ -768,10 +742,9 @@ msgstr "Password"
 
 #: amiga-mui/configwnd.c:1360 amiga-mui/configwnd.c:1361
 msgid "Ask"
-msgstr "Chie_di"
+msgstr "Ch_iedi"
 
 #: amiga-mui/configwnd.c:1366 amiga-mui/configwnd.c:1367
-#, fuzzy
 msgid "APOP"
 msgstr "APOP"
 
@@ -820,7 +793,6 @@ msgid "The default signature for this account"
 msgstr "La firma predefinita per questo account"
 
 #: amiga-mui/configwnd.c:1473
-#, fuzzy
 msgid ""
 "The name of the so called POP3 or IMAP4 server from\n"
 "which you download your e-Mails (required; ask your\n"
@@ -849,7 +821,6 @@ msgid "The login/UserID which you got from your ISP."
 msgstr "L'identificativo che ti è stato assegnato dall'ISP"
 
 #: amiga-mui/configwnd.c:1477
-#, fuzzy
 msgid ""
 "Your very own password to access the mails\n"
 "located on the POP3 or IMAP4 server."
@@ -866,7 +837,6 @@ msgstr ""
 "prelevi i messaggi alla pressione del pulsante \"Ricezione\""
 
 #: amiga-mui/configwnd.c:1479
-#, fuzzy
 msgid ""
 "After successful downloading the mails should be deleted\n"
 "on the POP3 server."
@@ -875,7 +845,6 @@ msgstr ""
 "sul server POP3 una volta terminata la ricezione"
 
 #: amiga-mui/configwnd.c:1480
-#, fuzzy
 msgid ""
 "When not deleting e-mails on the server SimpleMail\n"
 "tries to avoid downloading a message twice the next time."
@@ -885,7 +854,6 @@ msgstr ""
 "stessi messaggi più volte"
 
 #: amiga-mui/configwnd.c:1481
-#, fuzzy
 msgid ""
 "Choose how APOP is handled. If you encounter login problems\n"
 "you might change this setting to \"Don't try\"."
@@ -902,7 +870,6 @@ msgstr ""
 "connessione sicura con il server POP3 o IMAP"
 
 #: amiga-mui/configwnd.c:1483
-#, fuzzy
 msgid ""
 "The name of the so called SMTP server which is responsible\n"
 "to send your e-Mails."
@@ -951,7 +918,6 @@ msgstr ""
 "prima una connessione al server POP3"
 
 #: amiga-mui/configwnd.c:1491
-#, fuzzy
 msgid ""
 "Send your current IP address together with the initial greetings.\n"
 "This avoids some error headers on some providers."
@@ -968,7 +934,6 @@ msgid "Test the settings of the currently selected account."
 msgstr "Prova le impostazione del corrente account selezionato"
 
 #: amiga-mui/configwnd.c:1494
-#, fuzzy
 msgid "Remove the currently selected account."
 msgstr "Rimuovi il corrente account selezionato"
 
@@ -1009,12 +974,10 @@ msgid "Quote empty lines"
 msgstr "Cita le linee _vuote"
 
 #: amiga-mui/configwnd.c:1542
-#, fuzzy
 msgid "Forwarding"
 msgstr "Inoltro"
 
 #: amiga-mui/configwnd.c:1545 amiga-mui/configwnd.c:1546
-#, fuzzy
 msgid "Forward mails as attachments"
 msgstr "_Inoltra messaggi come allegati"
 
@@ -1067,7 +1030,6 @@ msgid "Additional headers"
 msgstr "Intestazioni addizionali"
 
 #: amiga-mui/configwnd.c:1616
-#, fuzzy
 msgid "Read window"
 msgstr "Finestra lettura"
 
@@ -1113,7 +1075,6 @@ msgid "Header Background"
 msgstr "Sfondo intestazione"
 
 #: amiga-mui/configwnd.c:1669
-#, fuzzy
 msgid "Quoted Background"
 msgstr "Sfondo citazione"
 
@@ -1422,7 +1383,7 @@ msgstr "Frasi"
 msgid "Signatures"
 msgstr "Firme"
 
-#: amiga-mui/configwnd.c:2536
+#: amiga-mui/configwnd.c:2536 folder.c:3462
 msgid "Spam"
 msgstr "Spam"
 
@@ -1456,7 +1417,6 @@ msgid "Time"
 msgstr "Ora"
 
 #: amiga-mui/errorwnd.c:227
-#, fuzzy
 msgid "Severity"
 msgstr "Importanza"
 
@@ -1465,6 +1425,10 @@ msgstr "Importanza"
 #: amiga-mui/mailtreelistclass.c:430 amiga-mui/mainwnd.c:910
 msgid "Message"
 msgstr "Messaggio"
+
+#: amiga-mui/errorwnd.c:251
+msgid "SimpleMail - Logging and Errors"
+msgstr "SimpleMail - Accessi ed errori"
 
 #: amiga-mui/errorwnd.c:270
 msgid "_Clear"
@@ -1499,7 +1463,7 @@ msgid "Pending"
 msgstr "In attesa"
 
 #: amiga-mui/filterruleclass.c:81 amiga-mui/mailtreelistclass-new.c:4126
-#: amiga-mui/mailtreelistclass.c:898
+#: amiga-mui/mailtreelistclass.c:898 folder.c:3460
 msgid "Sent"
 msgstr "Inviati"
 
@@ -1538,7 +1502,6 @@ msgid "equals"
 msgstr "uguale"
 
 #: amiga-mui/filterruleclass.c:208
-#, fuzzy
 msgid "Substring"
 msgstr "Iscriviti"
 
@@ -1583,7 +1546,6 @@ msgid "_New"
 msgstr "Nuo_vo"
 
 #: amiga-mui/filterwnd.c:505
-#, fuzzy
 msgid "Move up"
 msgstr "Sposta in al_to"
 
@@ -1592,7 +1554,6 @@ msgid "Move Down"
 msgstr "Sposta in _basso"
 
 #: amiga-mui/filterwnd.c:511
-#, fuzzy
 msgid "Activity"
 msgstr "Attività"
 
@@ -1692,7 +1653,7 @@ msgstr "Ripristina"
 
 #: amiga-mui/foldertreelistclass.c:263
 msgid "Folder Settings"
-msgstr "Impostazioni cartella"
+msgstr "Impostazioni cartelle"
 
 #: amiga-mui/foldertreelistclass.c:264
 msgid "Show Mail?"
@@ -1712,19 +1673,19 @@ msgstr "Tutte le cartelle"
 
 #: amiga-mui/folderwnd.c:309
 msgid "received"
-msgstr "ricevuto"
+msgstr "Ricevuto"
 
 #: amiga-mui/folderwnd.c:310
 msgid "sent"
-msgstr "inviato"
+msgstr "Inviato"
 
 #: amiga-mui/folderwnd.c:311
 msgid "received and sent"
-msgstr "ricevuto e inviato"
+msgstr "Ricevuto e inviato"
 
 #: amiga-mui/folderwnd.c:312
 msgid "mailinglist"
-msgstr "mailing list"
+msgstr "Mailing list"
 
 #: amiga-mui/folderwnd.c:314 amiga-mui/folderwnd.c:324
 #: amiga-mui/mailtreelistclass-new.c:1649 amiga-mui/mailtreelistclass.c:526
@@ -1750,12 +1711,10 @@ msgid "Received"
 msgstr "Ricevuto"
 
 #: amiga-mui/folderwnd.c:334
-#, fuzzy
 msgid "Only headers"
 msgstr "Solo intestazioni"
 
 #: amiga-mui/folderwnd.c:335
-#, fuzzy
 msgid "Complete mails"
 msgstr "Messaggi completi"
 
@@ -1793,7 +1752,6 @@ msgid "_Secondary sort"
 msgstr "Ordina_mento secondario"
 
 #: amiga-mui/folderwnd.c:383 amiga-mui/folderwnd.c:384
-#, fuzzy
 msgid "_Download"
 msgstr "_Scarica"
 
@@ -1806,7 +1764,6 @@ msgid "T_o"
 msgstr "_A"
 
 #: amiga-mui/folderwnd.c:399 amiga-mui/folderwnd.c:403
-#, fuzzy
 msgid "_Reply to"
 msgstr "_Rispondi A"
 
@@ -1831,7 +1788,6 @@ msgid "Submit to server"
 msgstr "Invia al server"
 
 #: amiga-mui/folderwnd.c:470
-#, fuzzy
 msgid "SimpleMail - Edit IMAP server"
 msgstr "SimpleMail - Editor server IMAP"
 
@@ -1860,7 +1816,6 @@ msgid "Could not create mui custom classes\n"
 msgstr "Impossibile creare la classe custom MUI/Zune\n"
 
 #: amiga-mui/gui_main.c:450
-#, fuzzy
 msgid "Couldn't create appicon port\n"
 msgstr "Impossibile creare la porta AppIcon\n"
 
@@ -1869,7 +1824,6 @@ msgid "Couldn't create arexx port\n"
 msgstr "Impossibile creare la porta ARexx\n"
 
 #: amiga-mui/gui_main.c:452
-#, fuzzy
 msgid "Couldn't open the input.device\n"
 msgstr "Impossibile aprire il dispositivo input.device\n"
 
@@ -1914,7 +1868,7 @@ msgstr "Estratto"
 
 #: amiga-mui/mailtreelistclass-new.c:1748 amiga-mui/mailtreelistclass.c:578
 msgid "Mail Settings"
-msgstr "Impostazioni messaggio"
+msgstr "Impostazioni messaggi"
 
 #: amiga-mui/mailtreelistclass-new.c:1749 amiga-mui/mailtreelistclass.c:579
 msgid "Show From/To?"
@@ -1949,7 +1903,6 @@ msgid "Show Received?"
 msgstr "Mostra ricevuto"
 
 #: amiga-mui/mailtreelistclass-new.c:1757
-#, fuzzy
 msgid "Show Excerpt?"
 msgstr "Mostra estatto"
 
@@ -1962,7 +1915,6 @@ msgid "Reset all columns' widths"
 msgstr "Ripristina tutte le colonne in larghezza"
 
 #: amiga-mui/mailtreelistclass-new.c:1761
-#, fuzzy
 msgid "Default Order"
 msgstr "Ordine predefinito: tutto"
 
@@ -1989,7 +1941,7 @@ msgstr "Marcato"
 
 #: amiga-mui/mailtreelistclass-new.c:4106 amiga-mui/mailtreelistclass.c:878
 msgid "Unmark"
-msgstr "Demarcato"
+msgstr "Non marcato"
 
 #: amiga-mui/mailtreelistclass-new.c:4108 amiga-mui/mailtreelistclass.c:880
 msgid "Hold"
@@ -2006,7 +1958,7 @@ msgstr "Ham"
 #: amiga-mui/mailtreelistclass-new.c:4117 amiga-mui/mailtreelistclass.c:889
 #: amiga-mui/mainwnd.c:927 amiga-mui/transwndclass.c:178
 msgid "Delete"
-msgstr "Cancella"
+msgstr "Elimina"
 
 #: amiga-mui/mailtreelistclass-new.c:4129 amiga-mui/mailtreelistclass.c:901
 msgid "Error"
@@ -2097,7 +2049,6 @@ msgid "_Abook"
 msgstr "Ru_brica"
 
 #: amiga-mui/mainwnd.c:147
-#, fuzzy
 msgid "Filters"
 msgstr "Fi_ltri"
 
@@ -2137,7 +2088,6 @@ msgid "*Ok"
 msgstr "*_Ok"
 
 #: amiga-mui/mainwnd.c:307
-#, fuzzy
 msgid "Copyright (c)"
 msgstr "Copyright ©"
 
@@ -2158,52 +2108,42 @@ msgid "About MUI..."
 msgstr "Informazioni su MUI..."
 
 #: amiga-mui/mainwnd.c:876
-#, fuzzy
 msgid "O:Open Message..."
 msgstr "P:Apri messaggio..."
 
 #: amiga-mui/mainwnd.c:878
-#, fuzzy
 msgid "Delete All Indexfiles"
 msgstr "Cancella tutti gli indici file"
 
 #: amiga-mui/mainwnd.c:879
-#, fuzzy
 msgid "Save All Indexfiles"
 msgstr "Salva tutti gli indici file"
 
 #: amiga-mui/mainwnd.c:881 amiga-mui/mainwnd.c:898
-#, fuzzy
 msgid "Import mbox File..."
 msgstr "Importa file mbox..."
 
 #: amiga-mui/mainwnd.c:882
-#, fuzzy
 msgid "Import dbx File..."
 msgstr "Importa file dbx..."
 
 #: amiga-mui/mainwnd.c:884
-#, fuzzy
 msgid "S:Send Queued Mails"
 msgstr "I:Invia posta in attesa"
 
 #: amiga-mui/mainwnd.c:885
-#, fuzzy
 msgid "F:Check All Active Accounts"
 msgstr "K:Verifica tutti gli account attivi"
 
 #: amiga-mui/mainwnd.c:886
-#, fuzzy
 msgid "Check Single Account"
 msgstr "Verifica un singolo account"
 
 #: amiga-mui/mainwnd.c:888
-#, fuzzy
 msgid "Show Window"
 msgstr "Mostra finestra"
 
 #: amiga-mui/mainwnd.c:889
-#, fuzzy
 msgid "Logging..."
 msgstr "Accessi..."
 
@@ -2228,7 +2168,6 @@ msgid "Delete..."
 msgstr "Elimina..."
 
 #: amiga-mui/mainwnd.c:899
-#, fuzzy
 msgid "Export As mbox..."
 msgstr "Esporta come mbox..."
 
@@ -2241,17 +2180,14 @@ msgid "Options..."
 msgstr "Opzioni..."
 
 #: amiga-mui/mainwnd.c:903
-#, fuzzy
 msgid "P:Run Spam Mail Check"
 msgstr "S:Avvia controllo spam..."
 
 #: amiga-mui/mainwnd.c:904
-#, fuzzy
 msgid "I:Isolate Spam Mails"
 msgstr "O:Isola messaggi spam"
 
 #: amiga-mui/mainwnd.c:905
-#, fuzzy
 msgid "H:Classify All Mails As Ham"
 msgstr "H:Classifica messaggi come ham"
 
@@ -2280,27 +2216,22 @@ msgid "W:Forward..."
 msgstr "t:Inoltra..."
 
 #: amiga-mui/mainwnd.c:918 amiga-mui/readwnd.c:1308
-#, fuzzy
 msgid "Show Raw..."
 msgstr "Mostra formato grezzo..."
 
 #: amiga-mui/mainwnd.c:920
-#, fuzzy
 msgid "Create Filter"
 msgstr "Crea filtro"
 
 #: amiga-mui/mainwnd.c:921
-#, fuzzy
 msgid "On Senders..."
 msgstr "Su mittenti..."
 
 #: amiga-mui/mainwnd.c:922
-#, fuzzy
 msgid "On Recipients..."
 msgstr "Su destinatari..."
 
 #: amiga-mui/mainwnd.c:923
-#, fuzzy
 msgid "On Subjects..."
 msgstr "Su oggetti..."
 
@@ -2313,12 +2244,10 @@ msgid "Copy..."
 msgstr "Copia..."
 
 #: amiga-mui/mainwnd.c:929
-#, fuzzy
 msgid "A:Select All Messages"
 msgstr "A:Seleziona tutti"
 
 #: amiga-mui/mainwnd.c:930
-#, fuzzy
 msgid "Z:Clear Selection"
 msgstr "Z:Annulla selezione"
 
@@ -2335,27 +2264,22 @@ msgid "Settings"
 msgstr "Impostazioni"
 
 #: amiga-mui/mainwnd.c:942
-#, fuzzy
 msgid "Show Folders?"
 msgstr "Mostra cartelle"
 
 #: amiga-mui/mainwnd.c:943
-#, fuzzy
 msgid "Show Address Book?"
 msgstr "Mostra rubrica"
 
 #: amiga-mui/mainwnd.c:944
-#, fuzzy
 msgid "Show Selected Message?"
 msgstr "Mostra messaggio"
 
 #: amiga-mui/mainwnd.c:945
-#, fuzzy
 msgid "Show Quick Filter?"
 msgstr "Mostra filtro rapido"
 
 #: amiga-mui/mainwnd.c:947
-#, fuzzy
 msgid "Address Book..."
 msgstr "Rubrica..."
 
@@ -2406,7 +2330,6 @@ msgstr ""
 "La classe è disponibile su %s"
 
 #: amiga-mui/mainwnd.c:1130
-#, fuzzy, c-format
 msgid ""
 "SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
 "It's available from %s"
@@ -2436,7 +2359,6 @@ msgid "Total:%d New:%d Unread:%d"
 msgstr "Totali: %d Nuovi: %d Non letti: %d"
 
 #: amiga-mui/mainwnd.c:1392
-#, fuzzy, c-format
 msgid "%s (T:%d N:%d U:%d)"
 msgstr "%s (T:%ld N:%ld L:%ld)"
 
@@ -2480,7 +2402,6 @@ msgid "*_Yes|_Cancel"
 msgstr "_Si|_Annulla"
 
 #: amiga-mui/messageviewclass.c:584
-#, fuzzy
 msgid "Main Message"
 msgstr "Messaggio principale"
 
@@ -2489,12 +2410,10 @@ msgid "Unnamed"
 msgstr "Senza nome"
 
 #: amiga-mui/messageviewclass.c:598
-#, fuzzy
 msgid "?attachment:View"
 msgstr "?attachment:Mostra"
 
 #: amiga-mui/messageviewclass.c:600
-#, fuzzy
 msgid "?attachment:Save"
 msgstr "?attachment:Salva"
 
@@ -2504,12 +2423,10 @@ msgid "%ld bytes"
 msgstr "%ld byte"
 
 #: amiga-mui/messageviewclass.c:817
-#, fuzzy
 msgid "Write to..."
 msgstr "Scrivi su..."
 
 #: amiga-mui/messageviewclass.c:818
-#, fuzzy
 msgid "Add to addressbook..."
 msgstr "Aggiungi alla rubrica..."
 
@@ -2522,7 +2439,6 @@ msgid "User ID"
 msgstr "ID utente"
 
 #: amiga-mui/progmonwnd.c:75
-#, fuzzy
 msgid "SimpleMail - Progress Monitors"
 msgstr "SimpleMail - Monitora progressi"
 
@@ -2551,12 +2467,10 @@ msgid "_Forward"
 msgstr "Inol_tra"
 
 #: amiga-mui/readwnd.c:624
-#, fuzzy, c-format
 msgid "_Original (%s)|_Converted (%s)| _UTF8|_Cancel"
 msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla"
 
 #: amiga-mui/readwnd.c:625
-#, fuzzy
 msgid ""
 "The original charset of the attached file differs from yours.\n"
 "In which charset do you want the file being saved?"
@@ -2579,17 +2493,14 @@ msgid "*_Yes|_No"
 msgstr "*_Si|_No"
 
 #: amiga-mui/readwnd.c:1310
-#, fuzzy
 msgid "Save All Attachments..."
 msgstr "Salva tutti gli allegati..."
 
 #: amiga-mui/readwnd.c:1312
-#, fuzzy
 msgid "Print Visible Mail Part"
 msgstr "Stampa multiparte visibile"
 
 #: amiga-mui/readwnd.c:1314
-#, fuzzy
 msgid "Show All Headers?"
 msgstr "Mostra tutte le Intestazioni"
 
@@ -2606,32 +2517,26 @@ msgid "Open"
 msgstr "Apri"
 
 #: amiga-mui/readwnd.c:1454
-#, fuzzy
 msgid "Print As Text"
 msgstr "Stampa come testo"
 
 #: amiga-mui/readwnd.c:1467
-#, fuzzy
 msgid "Save Whole Document As..."
 msgstr "Salva l'intero documento come..."
 
 #: amiga-mui/request.c:185
-#, fuzzy, c-format
 msgid "Please enter the login for %s"
 msgstr "Per favore digita il login per %s"
 
 #: amiga-mui/request.c:193
-#, fuzzy
 msgid "Login/UserID"
 msgstr "Login/ID utente"
 
 #: amiga-mui/request.c:254
-#, fuzzy
 msgid "SimpleMail - Select PGP Key"
 msgstr "SimpleMail - Seleziona chiave PGP"
 
 #: amiga-mui/request.c:313
-#, fuzzy
 msgid "SimpleMail - Select a Folder"
 msgstr "SimpleMail - Seleziona cartella"
 
@@ -2645,15 +2550,15 @@ msgstr "Cerca _in"
 
 #: amiga-mui/searchwnd.c:194
 msgid "_Subject"
-msgstr "Oggetto"
+msgstr "_Oggetto"
 
 #: amiga-mui/searchwnd.c:202
 msgid "_Body"
-msgstr "Corpo"
+msgstr "_Corpo"
 
 #: amiga-mui/searchwnd.c:213
 msgid "S_tart search"
-msgstr "_Inizia ricerca"
+msgstr "I_nizia ricerca"
 
 #: amiga-mui/searchwnd.c:214
 msgid "Sto_p search"
@@ -2661,7 +2566,7 @@ msgstr "_Ferma ricerca"
 
 #: amiga-mui/shutdownwnd.c:97
 msgid "Shutting down..."
-msgstr "Chiusura..."
+msgstr "Chiusura in corso..."
 
 #: amiga-mui/signaturecycleclass.c:167 amiga-mui/signaturecycleclass.c:345
 msgid "Without"
@@ -2672,7 +2577,6 @@ msgid "Failed while sending data to printer!"
 msgstr "Errore nell'invio dei dati alla stampante!"
 
 #: amiga-mui/sysprint.c:82
-#, fuzzy
 msgid "Can't access printer!"
 msgstr "Impossibile accedere alla stampante!"
 
@@ -2759,12 +2663,10 @@ msgid "West European II"
 msgstr "Europa dell'Ovest II"
 
 #: codesets.c:1052
-#, fuzzy
 msgid "South-Eastern European"
 msgstr "Europa del Sud/Orientale"
 
 #: dbx.c:364 mbox.c:233
-#, fuzzy, c-format
 msgid "Importing %s to %s"
 msgstr "Importazione di %s verso %s"
 
@@ -2774,17 +2676,14 @@ msgid "Importing %s"
 msgstr "Importazione di %s"
 
 #: dbx.c:373
-#, fuzzy
 msgid "SimpleMail - Importing a dbx file"
 msgstr "SimpleMail - Importazione file dbx"
 
 #: folder.c:1491
-#, fuzzy, c-format
 msgid "Scanning folder \"%s\""
 msgstr "Scansione cartella \"%s\""
 
 #: folder.c:1525
-#, fuzzy, c-format
 msgid "Reading mail %ld of %ld"
 msgstr "Lettura messaggio %ld di %ld"
 
@@ -2794,7 +2693,6 @@ msgid "Folder \"%s\" scanned"
 msgstr "Cartella \"%s\" scansionata"
 
 #: folder.c:2507
-#, fuzzy
 msgid "Can't delete folder because it is currently in use."
 msgstr "Impossibile cancellare la cartella perchè ancora in uso"
 
@@ -2814,12 +2712,10 @@ msgstr ""
 "la cartella"
 
 #: folder.c:2532 folder.c:2537 folder.c:2576 folder.c:2621
-#, fuzzy
 msgid "_Delete it|_Cancel"
 msgstr "_Cancella|_Annulla"
 
 #: folder.c:2536
-#, fuzzy
 msgid ""
 "Do you really want to delete the folder\n"
 "and all its mails?"
@@ -2847,13 +2743,24 @@ msgstr ""
 "Ricorda che solo il gruppo inserito verrà cancellato\n"
 "senza intaccare le cartelle al suo interno."
 
+#: folder.c:3458
+msgid "Incoming"
+msgstr "In arrivo"
+
+#: folder.c:3459
+msgid "Outgoing"
+msgstr "In uscita"
+
+#: folder.c:3461
+msgid "Deleted"
+msgstr "Cestino"
+
 #: imap.c:131
 #, c-format
 msgid "Couldn't get mails of locally saved IMAP folder \"%s\""
 msgstr "Impossibile ottenere i messaggi salvati localmente nella cartella IMAP \"%s\""
 
 #: imap.c:345
-#, fuzzy, c-format
 msgid "Removing %d mails from server"
 msgstr "Rimozione di %d messaggi dal server"
 
@@ -2943,7 +2850,6 @@ msgid "Connected"
 msgstr "Connesso"
 
 #: imap.c:924
-#, fuzzy
 msgid "Log in failed. Check user name and password for this account."
 msgstr ""
 "Connessione fallita, verifica nome utente e password per questo account"
@@ -2958,7 +2864,6 @@ msgid "Connecting to the server failed"
 msgstr "La connessione al server è fallita"
 
 #: imap.c:1052
-#, fuzzy
 msgid "Downloading mail headers"
 msgstr "Scaricamento intestazioni di posta"
 
@@ -2967,7 +2872,6 @@ msgid "Determining which mail headers to download"
 msgstr "Determinazione intestazioni di posta da scaricare"
 
 #: imap.c:1084
-#, fuzzy
 msgid "Downloading new mails"
 msgstr "Scaricamento dei nuovi messaggi"
 
@@ -2977,27 +2881,22 @@ msgid "Failed to change directory to \"%s\""
 msgstr "Impossibile modificare la directory in \"%s\""
 
 #: imap.c:1262
-#, fuzzy, c-format
 msgid "No new mails in folder \"%s\""
 msgstr "Nessun nuovo messaggio nella cartella \"%s\""
 
 #: imap.c:1263
-#, fuzzy, c-format
 msgid "One new mail in folder \"%s\""
 msgstr "Un nuovo messaggio nella cartella \"%s\""
 
 #: imap.c:1264
-#, fuzzy, c-format
 msgid "%d new mails in folder \"%s\""
 msgstr "%d nuovi messaggi nella cartella \"%s\""
 
 #: imap.c:1295
-#, fuzzy
 msgid "Connect with IMAP server"
 msgstr "Connessione con il server IMAP"
 
 #: imap.c:1298
-#, fuzzy
 msgid "Logging in"
 msgstr "Connessione"
 
@@ -3121,17 +3020,14 @@ msgid "Error receiving data from host!"
 msgstr "Errore durante la ricezione dei dati dall'host!"
 
 #: pop3.c:165
-#, fuzzy
 msgid "Failed to authenticate via APOP. Server hasn't delivered a timestamp."
 msgstr "Autentificazione via APOP fallita, il server non ha rilasciato alcun timestamp"
 
 #: pop3.c:176
-#, fuzzy
 msgid "Authenticate via APOP..."
 msgstr "Autenticazione via APOP..."
 
 #: pop3.c:202
-#, fuzzy
 msgid "Failed to authenticate via APOP"
 msgstr "Autenticazione via APOP non riuscita!"
 
@@ -3144,12 +3040,10 @@ msgid "Sending username..."
 msgstr "Invio del nome utente..."
 
 #: pop3.c:221 pop3.c:233
-#, fuzzy
 msgid "Error while identifying the user"
 msgstr "Errore durante l'identificazione utente"
 
 #: pop3.c:222 pop3.c:234
-#, fuzzy
 msgid "Failed to identify the user"
 msgstr "Errore durante l'identificazione utente"
 
@@ -3222,7 +3116,6 @@ msgid "Fetching mails from %s"
 msgstr "Prelevamento messaggi da %s"
 
 #: pop3.c:986
-#, fuzzy
 msgid "Can't access income folder!"
 msgstr "Impossibile accedere alla directory in entrata!"
 
@@ -3239,7 +3132,6 @@ msgid "Can't mark mail as deleted!"
 msgstr "Impossibile marcare il messaggio come eliminato!"
 
 #: pop3.c:1091 smtp.c:944
-#, fuzzy, c-format
 msgid "Unable to connect to server %s: %s"
 msgstr "Impossibile connettersi al server %s: %s"
 
@@ -3285,7 +3177,6 @@ msgid "_Yes|_No"
 msgstr "_Si|_No"
 
 #: simplemail.c:883
-#, fuzzy
 msgid "Please select the folder where to move the mail"
 msgstr "Seleziona una cartella dove spostare il messaggio"
 
@@ -3351,7 +3242,6 @@ msgid "Couldn't start process for exporting.\n"
 msgstr "Impossible iniziare il processo di esportazione\n"
 
 #: simplemail.c:2049
-#, fuzzy
 msgid "Select an address book file"
 msgstr "Seleziona un file dalla rubrica"
 
@@ -3401,7 +3291,6 @@ msgid "All mails downloaded completely"
 msgstr "Tutti i messaggi scaricati con successo"
 
 #: simplemail.c:2423
-#, fuzzy
 msgid "Downloading complete mails"
 msgstr "Scarica messaggi completi"
 
@@ -3411,12 +3300,10 @@ msgid "Downloading all complete mails for folder \"%s\": %ld mails to go"
 msgstr "Scaricamento di tutti i messaggi completi per la cartella \"%s\": %ld messaggi mancanti"
 
 #: simplemail.c:2442
-#, fuzzy, c-format
 msgid "%ld mails to go"
 msgstr "%ld messaggi mancanti"
 
 #: simplemail.c:2457
-#, fuzzy
 msgid "Could not download complete mail"
 msgstr "Impossibile scaricare il messaggio completo"
 
@@ -3517,12 +3404,10 @@ msgid "Sending mails to %s"
 msgstr "Invio messaggi di posta a %s"
 
 #: smtp.c:958
-#, fuzzy, c-format
 msgid "Unable to login into server %s"
 msgstr "Impossibile connettersi al server %s"
 
 #: smtp.c:1034
-#, fuzzy
 msgid "Aborted"
 msgstr "Interrotto"
 
@@ -3560,12 +3445,10 @@ msgid "Processing mail %d (%d KB) of %d"
 msgstr "Elaborazione messaggio %d (%d KB) di %d"
 
 #: tcp.c:93
-#, fuzzy
 msgid "Not enough memory"
 msgstr "Memoria insufficiente"
 
 #: tcp.c:94
-#, fuzzy
 msgid "Connection couldn't be made secure"
 msgstr "La connessione non può essere resa sicura"
 
@@ -3578,7 +3461,6 @@ msgid "Cannot locate host. Try again later"
 msgstr "Impossibile localizzare l'host, prova in un secondo tempo"
 
 #: tcp.c:98
-#, fuzzy
 msgid "Unexpected server failure"
 msgstr "Connessione al server fallita inaspettatamente"
 
@@ -3591,12 +3473,10 @@ msgid "The specified address is not available on this machine"
 msgstr "L'indirizzo specificato non è disponibile su questa macchina"
 
 #: tcp.c:101
-#, fuzzy
 msgid "Connecting timed out"
 msgstr "Connessione interrotta"
 
 #: tcp.c:102
-#, fuzzy
 msgid "Connection refused"
 msgstr "Connessione rifiutata"
 
@@ -3605,7 +3485,6 @@ msgid "Network unreachable"
 msgstr "Rete non raggiungibile"
 
 #: tcp.c:104
-#, fuzzy
 msgid "Failed to connect to the server"
 msgstr "Connessione al server fallita"
 
@@ -3629,7 +3508,6 @@ msgstr ""
 "Impronta digitale prevista: %s"
 
 #: tcp.c:375
-#, fuzzy
 msgid "None specified"
 msgstr "Nessuno specificato"
 
@@ -3642,7 +3520,6 @@ msgid "Testing receive settings"
 msgstr "Impostazioni di prova per la ricezione"
 
 #: trans.c:878
-#, fuzzy
 msgid "Login to the IMAP4 server successful"
 msgstr "Accesso al server IMAP4 avvenuto con successo"
 
@@ -3651,27 +3528,22 @@ msgid "Failed to login into IMAP4 server"
 msgstr "Impossibile accedere al server IMAP4"
 
 #: trans.c:888
-#, fuzzy
 msgid "Failed to open socket library"
 msgstr "Impossibile aprire la libreria bsdsocket.library!"
 
 #: trans.c:900
-#, fuzzy
 msgid "Login to the POP3 server successful"
 msgstr "Accesso al server POP3 avvenuto con successo"
 
 #: trans.c:903
-#, fuzzy
 msgid "Failed to login into POP3 server"
 msgstr "Impossibile accedere al server POP3"
 
 #: trans.c:918
-#, fuzzy
 msgid "Testing send settings"
 msgstr "Impostazioni di prova per l'invio"
 
 #: trans.c:928
-#, fuzzy
 msgid "Login to the SMTP server successful"
 msgstr "Accesso al server SMTP avvenuto con successo"
 

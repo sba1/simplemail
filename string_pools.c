@@ -157,8 +157,8 @@ struct string_pool *string_pool_create_and_load(const char *filename)
 	if (!(sp = string_pool_create()))
 		return NULL;
 
-	if (string_pool_load(sp, filename))
-		return 0;
+	if (!string_pool_load(sp, filename))
+		return NULL;
 
 	return sp;
 }

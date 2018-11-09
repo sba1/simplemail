@@ -1,9 +1,6 @@
 #! /usr/bin/python
 #
-# This simple script scans a simple c soure file that contains prototypes of
-# functions to which a function and its actual arguments are passed in order to
-# call them at some subsequent timepoint and generates simple C++-based variants
-# of them that verify the correctness of the types at compile time.
+# This simple script scans a simple c soure file generates a set of stubs.
 #
 # (c) 2018 by Sebastian Bauer
 #

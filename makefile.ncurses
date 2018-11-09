@@ -92,9 +92,15 @@ dirs:
 	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform
 
 # Rules for building
-$(TARGET): dirs $(OBJS)
-	$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+$(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c
+	$(CC) $(INC) $(LINK) $(OBJSDIR)/stubs.c -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
+
+$(OBJSDIR)/stubs.c: dirs $(OBJS) devtools/gen-stubs.py
+	-$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map 2>$(OBJSDIR)/link.error
+# Extract all names of undefined functions
+	grep -orP "undefined reference to \`\K.*(?=')" objs-ncurses/link.error | sort -u >$(OBJSDIR)/stub_functions
+	python devtools/gen-stubs.py $(OBJSDIR)/stub_functions >$@
 
 # Generate dependencies on the fly
 # Inspired by http://scottmcpeak.com/autodepend/autodepend.html

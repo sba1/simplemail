@@ -30,10 +30,8 @@ class FuncDefVisitor(c_ast.NodeVisitor):
 
       print(generator.visit(node))
       print('{')
-      print("  fprintf(stderr, \"%s called\", __PRETTY_FUNCTION__);")
+      print("  fprintf(stderr, \"%s called\\n\", __PRETTY_FUNCTION__);")
       print("  exit(1);")
-      if (not isinstance(return_type, TypeDecl)) or (not return_type_str == 'void'):
-        print('  return 0;')
       print('}\n')
 
 if __name__ == '__main__':

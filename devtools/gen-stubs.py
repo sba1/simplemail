@@ -52,5 +52,10 @@ if __name__ == '__main__':
   includes = re.sub(r'__builtin_va_list','int',includes)
 
   ast = c_parser.CParser().parse(includes)
+
+  print('#include <stdio.h>')
+  print('#include <stdlib.h>')
+  print()
+  print('#include "codesets.h"')
   v = FuncDefVisitor(functions)
   v.visit(ast)

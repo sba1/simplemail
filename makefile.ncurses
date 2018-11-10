@@ -58,6 +58,7 @@ CFLAGS = \
 LINK = \
 	$(SSL_LINK)\
 	$(GLIB_LDFLAGS)\
+	$(shell pkg-config ncurses --libs) \
 	-Wl,--gc-sections
 
 # Name of the "thing" to build

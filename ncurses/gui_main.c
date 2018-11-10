@@ -1,6 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "gui_main.h"
+
+/*****************************************************************************/
+
+int gui_parseargs(int argc, char *argv[])
+{
+	return 1;
+}
+
+/*****************************************************************************/
+
 int main(int argc, char *argv[])
 {
 	if (!simplemail_init())

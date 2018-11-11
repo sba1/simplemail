@@ -189,6 +189,7 @@ struct LocaleConv {
 {"french", "fr"},
 {"hrvatski", "hu"},
 {"italiano", "it"},
+{"italian", "it"},
 {"nihongo", "ja"},
 {"nederlands", "nl"},
 {"norsk", "no"},

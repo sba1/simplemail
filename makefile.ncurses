@@ -34,25 +34,32 @@ INC = \
 	-I./indep-include\
 	-I.
 
+GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)
+GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
+
 CFLAGS = \
 	$(DATE)\
 	$(DEBUG)\
 	$(INC)\
 	$(OPTIMIZE)\
 	$(SSL_FLAGS)\
+	$(GLIB_CFLAGS)\
 	-DNDEBUG\
 	-DSM_COMMITID=$(COMMITID)\
 	-Wall\
 	-Wno-deprecated-declarations\
 	-fno-strict-aliasing\
 	-std=gnu11\
-	-Wdeclaration-after-statement
+	-Wdeclaration-after-statement\
+	-Dstricmp=strcasecmp\
+	-Dstrnicmp=strncasecmp\
 
 # Flags passed to gcc during linking
 LINK = \
 	$(SSL_LINK)\
+	$(GLIB_LDFLAGS)\
+	$(shell pkg-config ncurses --libs) \
 	-Wl,--gc-sections
-
 
 # Name of the "thing" to build
 TARGET = SimpleMail$(TARGETSUFFIX)
@@ -65,7 +72,11 @@ VERSION = 0
 
 include common-sources.mk
 
-ARCHSRCS = $(wildcard ncurses/*.c)
+ARCHSRCS = $(wildcard ncurses/*.c) \
+	platform/subthreads_glib.c \
+	platform/timesupport_glib.c \
+	platform/tcpip_posix.c \
+	gtk/support.c
 
 SRCS = $(NONARCHSRCS) $(ARCHSRCS)
 
@@ -79,12 +90,18 @@ all: $(TARGET)
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/ncurses
+	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform
 
 # Rules for building
-$(TARGET): dirs $(OBJS)
-	$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+$(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c
+	$(CC) $(INC) $(LINK) $(OBJSDIR)/stubs.c -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
+
+$(OBJSDIR)/stubs.c: dirs $(OBJS) devtools/gen-stubs.py
+	-$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map 2>$(OBJSDIR)/link.error
+# Extract all names of undefined functions
+	grep -orP "undefined reference to \`\K.*(?=')" objs-ncurses/link.error | sort -u >$(OBJSDIR)/stub_functions
+	python devtools/gen-stubs.py $(OBJSDIR)/stub_functions >$@
 
 # Generate dependencies on the fly
 # Inspired by http://scottmcpeak.com/autodepend/autodepend.html

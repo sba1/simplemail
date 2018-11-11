@@ -16,22 +16,30 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** arch.h - architecture specific definitions
-*/
+/**
+ * @file mainwnd.c
+ */
 
-#ifndef SM__ARCH_H
-#define SM__ARCH_H
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-/* Paths */
-#define SM_DIR		"."
-#define SM_CHARSET_DIR	"Charsets"
-#define SM_FOLDER_DIR	".folders"
-#define SM_CURRENT_DIR	"."
+/*****************************************************************************/
 
-/* Operation system */
-#define SM_OPERATINGSYSTEM "UNIX/GTK+"
-#endif
+int main_window_init(void)
+{
+	return 1;
+}
 
-/* Debug - defines ARCH_DEBUG_EXTRA */
-#define ARCH_DEBUG_EXTRA ""
+/*****************************************************************************/
+
+int main_window_open(void)
+{
+	return 1;
+}
+
+/*****************************************************************************/
+
+void main_refresh_folders(void)
+{
+}

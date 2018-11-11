@@ -16,22 +16,18 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** arch.h - architecture specific definitions
-*/
+/**
+ * @file startupwnd.c
+ */
 
-#ifndef SM__ARCH_H
-#define SM__ARCH_H
+/*****************************************************************************/
 
-/* Paths */
-#define SM_DIR		"."
-#define SM_CHARSET_DIR	"Charsets"
-#define SM_FOLDER_DIR	".folders"
-#define SM_CURRENT_DIR	"."
+void startupwnd_open(void)
+{
+}
 
-/* Operation system */
-#define SM_OPERATINGSYSTEM "UNIX/GTK+"
-#endif
+/*****************************************************************************/
 
-/* Debug - defines ARCH_DEBUG_EXTRA */
-#define ARCH_DEBUG_EXTRA ""
+void startupwnd_close(void)
+{
+}

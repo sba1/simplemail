@@ -248,7 +248,7 @@ static void init_error(void)
 
 	error_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('E','R','R','O'),
-    MUIA_Window_Title, "SimpleMail - Logging and Errors",
+    MUIA_Window_Title, _("SimpleMail - Logging and Errors"),
     WindowContents, VGroup,
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,

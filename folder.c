@@ -749,7 +749,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 		if (folder->num_index_mails == -1)
 		{
 			SM_DEBUGF(10,("Mail added not to pending mails because number of mails is not known (indexfile not available)\n"));
-			return 1;
+			return -1;
 		}
 
 		if (folder->num_pending_mails == folder->pending_mail_info_array_allocated)
@@ -772,7 +772,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 		if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 		SM_DEBUGF(10,("Mail has been successfully added as a pending mail\n"));
-		return 1;
+		return -1;
 	}
 
 	/* free the sorted mail array */
@@ -952,7 +952,7 @@ static int folder_add_mails(struct folder *f, struct mail_info **mails, int num)
 	for (i = 0; i < num; i++)
 	{
 		if (!mails[i]) continue;
-		if (!folder_add_mail(f, mails[i], 0))
+		if (folder_add_mail(f, mails[i], 0) == -1)
 		{
 			return 0;
 		}
@@ -3442,6 +3442,32 @@ int folder_size_of_mails(struct folder *f)
 	while ((m = folder_next_mail_info(f, &handle)))
 		size += m->size;
 	return size;
+}
+
+/*****************************************************************************/
+
+const char *folder_name(struct folder *f)
+{
+	char *untranslated_name;
+	char *name;
+
+	name = f->name;
+
+	switch (f->special)
+	{
+		case	FOLDER_SPECIAL_INCOMING: untranslated_name = N_("Incoming"); break;
+		case	FOLDER_SPECIAL_OUTGOING: untranslated_name = N_("Outgoing"); break;
+		case	FOLDER_SPECIAL_SENT: untranslated_name = N_("Sent"); break;
+		case	FOLDER_SPECIAL_DELETED: untranslated_name = N_("Deleted"); break;
+		case	FOLDER_SPECIAL_SPAM: untranslated_name = N_("Spam"); break;
+		default: untranslated_name = NULL; break;
+	}
+
+	if (untranslated_name && !strcmp(name, untranslated_name))
+	{
+		name = _(untranslated_name);
+	}
+	return name;
 }
 
 /*****************************************************************************/

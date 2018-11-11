@@ -79,7 +79,7 @@ static void progmonwnd_init(void)
 				Child, HVSpace,
 				Child, TextObject,
 					MUIA_Text_PreParse, "\33c" ,
-					MUIA_Text_Contents, ("No pending operations"),
+					MUIA_Text_Contents, _("No pending operations"),
 					End,
 				Child, HVSpace,
 				End,

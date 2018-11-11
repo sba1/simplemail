@@ -191,7 +191,7 @@ void del_folders(void);
  * @param mail the mail to be added.
  * @param sort weather the mail should be correctly enqueued according to the
  *  current sorting order or not.
- * @return 1 if the call was successful, otherwise 0.
+ * @return the position of the mail in the array or -1 if this is not known
  */
 int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort);
 
@@ -497,6 +497,12 @@ int folder_get_index_of_mail(struct folder *f, struct mail_info *mail);
  * @return the size of all mails in f.
  */
 int folder_size_of_mails(struct folder *f);
+
+/**
+ * @return the possibly translated folder name.
+ */
+const char *folder_name(struct folder *f);
+
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);

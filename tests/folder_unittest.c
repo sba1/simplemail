@@ -63,6 +63,10 @@ void test_folder(void)
 	CU_ASSERT(load_config() != 0);
 	CU_ASSERT(init_folders() != 0);
 
+	CU_ASSERT(folder_incoming() != NULL);
+	CU_ASSERT(folder_outgoing() != NULL);
+	CU_ASSERT(folder_sent() != NULL);
+	CU_ASSERT(folder_deleted() != NULL);
 	del_folders();
 	free_config();
 }

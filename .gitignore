@@ -22,6 +22,7 @@ Makefile
 Makefile.in
 SCOPTIONS
 SimpleMail
+SimpleMail-cplusplus*
 SimpleMail-openssl
 SimpleMail-openssl.debug
 SimpleMail-openssl.map

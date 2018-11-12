@@ -2,7 +2,7 @@
 This is an ARexx-Script for SimpleMail
 You can only start this script from SimpleMail and not from shell.
 
-$VER: ImportVCF.smrx 1.3 (11.12.16) $
+$VER: ImportVCF.smrx 1.4 (06.08.17) $
 $Author: Stefan Haubenthal
 $Label: Import VCF
 $Desc: Import vCard files into SimpleMail
@@ -13,16 +13,22 @@ address "SIMPLEMAIL.1"
 REQUESTFILE title '"Please select the visiting cards you wish to import"',
  multiselect pattern '"#?.vcf"' stem filelist.
 
+opt=SRCENC
 address command "Which ConvertText >NIL:"
-if rc>0 then ConvertText=";"
+if rc>0 then do
+		opt=FROMCHARSET
+		address command "Which CharsetConvert >NIL:"
+		if rc>0 then ConvertText=";"
+			else ConvertText="CharsetConvert"
+	end
 do i=1 to filelist.path.count
-	address command ConvertText '"'value("filelist.path."i-1)'"' "T:ImportVCF SRCENC=UTF-8"
+	address command ConvertText '"'value("filelist.path."i-1)'"' opt"=UTF-8 T:ImportVCF"
 	converted=open(converttext, "T:ImportVCF")
 	if open(vcf, value("filelist.path."i-1)) then
 	do
 		do while ~eof(vcf)
 			parse value readln(vcf) with a ":" b "0d"x
-			parse value a with a ";"
+			parse upper value a with a ";"
 			if converted then
 			do
 				parse value readln(converttext) with . ":" b2 "0d"x

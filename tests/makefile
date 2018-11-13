@@ -23,7 +23,9 @@ GTK_CFLAGS := $(shell pkg-config gtk+-x11-2.0 --cflags)
 
 CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
-	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror -DUSE_OPENSSL
+	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror -DUSE_OPENSSL \
+	-DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"'
+
 VALGRIND_OPTS = --leak-check=full --track-origins=yes 
 
 DOVECOT_PREFIX = ./

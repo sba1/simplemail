@@ -70,6 +70,7 @@
 #include "support.h"
 #include "tcpip.h"
 #include "timesupport.h"
+#include "version.h"
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
@@ -2270,11 +2271,25 @@ void callback_refresh_folders(void)
 
 /*****************************************************************************/
 
+static const char *simplemail_main_window_title(void)
+{
+	static char win_main_title[128];
+
+	if (user.config.receive_autocheck)
+		sm_snprintf(win_main_title, sizeof(win_main_title), _("%s (next autocheck at %s)"), VERS, sm_get_time_str(autocheck_seconds_start + user.config.receive_autocheck * 60));
+	else
+		sm_snprintf(win_main_title, sizeof(win_main_title), "%s", VERS);
+
+	return win_main_title;
+}
+
+/*****************************************************************************/
+
 void callback_config_changed(void)
 {
 	/* Build the check single account menu */
 	main_build_accounts();
-	main_refresh_window_title(autocheck_seconds_start);
+	main_refresh_window_title(simplemail_main_window_title());
 	folder_create_imap();
 	callback_refresh_folders();
 	compose_refresh_signature_cycle();
@@ -2501,7 +2516,7 @@ static void callback_timer(void)
 void callback_autocheck_reset(void)
 {
 	autocheck_seconds_start = sm_get_current_seconds();
-	main_refresh_window_title(autocheck_seconds_start);
+	main_refresh_window_title(simplemail_main_window_title());
 }
 
 static int about_to_update_progmonwnd;

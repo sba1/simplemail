@@ -16,43 +16,14 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/**
- * @file mainwnd.c
- */
-
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 /*****************************************************************************/
 
-int main_window_init(void)
-{
-	return 1;
-}
-
-/*****************************************************************************/
-
-int main_window_open(void)
-{
-	return 1;
-}
-
-/*****************************************************************************/
-
-void main_refresh_folders(void)
+void shutdownwnd_open(void)
 {
 }
 
 /*****************************************************************************/
 
-struct folder *main_get_folder(void)
-{
-	return NULL;
-}
-
-/*****************************************************************************/
-
-void main_refresh_window_title(const char *title)
+void shutdownwnd_close(void)
 {
 }

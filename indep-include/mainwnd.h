@@ -263,8 +263,8 @@ void main_display_active_mail(void);
 /**
  * Refresh the title of the main window
  *
- * @param autocheck_seconds_start the number of seconds for the next auto checking
+ * @param title the title to use
  */
-void main_refresh_window_title(unsigned int autocheck_seconds_start);
+void main_refresh_window_title(const char *title);
 
 #endif

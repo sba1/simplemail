@@ -1693,18 +1693,11 @@ void main_display_active_mail(void)
 
 /*****************************************************************************/
 
-void main_refresh_window_title(unsigned int autocheck_seconds_start)
+void main_refresh_window_title(const char *title)
 {
-	static char win_main_title[128];
-
 	if (win_main)
 	{
-		if (user.config.receive_autocheck)
-			sprintf(win_main_title, _("%s (next autocheck at %s)"), VERS, sm_get_time_str(autocheck_seconds_start + user.config.receive_autocheck * 60));
-		else
-			sprintf(win_main_title, "%s", VERS);
-
-		set(win_main, MUIA_Window_Title, win_main_title);
+		set(win_main, MUIA_Window_Title, title);
 	}
 }
 

@@ -13,6 +13,8 @@ int gui_init(void)
 	atexit(endwin);
 	initscr();
 
+	main_window_open();
+
 	return 1;
 }
 
@@ -20,6 +22,11 @@ int gui_init(void)
 
 void gui_loop(void)
 {
+	char ch;
+
+	while ((ch = getch()) != 'q')
+	{
+	}
 }
 
 /*****************************************************************************/

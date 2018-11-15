@@ -4,7 +4,13 @@
 #include <ncurses.h>
 
 #include "debug.h"
+#include "lists.h"
 #include "gui_main.h"
+#include "gui_main_ncurses.h"
+
+/*****************************************************************************/
+
+static struct list gui_key_listeners;
 
 /*****************************************************************************/
 
@@ -13,6 +19,7 @@ int gui_init(void)
 	atexit(endwin);
 	initscr();
 
+	list_init(&gui_key_listeners);
 	main_window_open();
 
 	return 1;

@@ -6,7 +6,10 @@
 
 #include "debug.h"
 #include "lists.h"
+
 #include "gui_main.h"
+#include "mainwnd.h"
+
 #include "gui_main_ncurses.h"
 
 /*****************************************************************************/

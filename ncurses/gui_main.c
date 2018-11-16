@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <ncurses.h>
 
@@ -50,11 +51,11 @@ static char **gui_argv;
 
 int gui_parseargs(int argc, char *argv[])
 {
-	int i = 0;
+	int i;
 
-	for (i = 0; i < argc; i++)
+	for (i = 1; i < argc; i++)
 	{
-		if (!strcmp("--debug"))
+		if (!strcmp("--debug", argv[i]))
 		{
 			debug_set_level(20);
 		}

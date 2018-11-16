@@ -15,6 +15,22 @@ static struct list gui_key_listeners;
 
 /*****************************************************************************/
 
+void gui_add_key_listener(struct gui_key_listener *listener, char ch, void (*callback)(void))
+{
+	listener->ch = ch;
+	listener->callback = callback;
+	list_insert_tail(&gui_key_listeners, &listener->n);
+}
+
+/*****************************************************************************/
+
+void gui_remove_key_listener(struct gui_key_listener *listener)
+{
+	node_remove(&listener->n);
+}
+
+/*****************************************************************************/
+
 int gui_init(void)
 {
 	atexit(endwin);
@@ -35,6 +51,15 @@ void gui_loop(void)
 
 	while ((ch = getch()) != 'q')
 	{
+		struct gui_key_listener *l;
+
+		l = list_first(&gui_key_listeners);
+		while (l)
+		{
+			struct gui_key_listener *n = (struct gui_key_listener *)node_next(&l->n);
+			l->callback();
+			l = n;
+		}
 	}
 }
 

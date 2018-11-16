@@ -18,6 +18,7 @@ int gui_init(void)
 {
 	atexit(endwin);
 	initscr();
+	noecho();
 
 	list_init(&gui_key_listeners);
 	main_window_open();

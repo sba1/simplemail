@@ -56,11 +56,17 @@ void gui_loop(void)
 	{
 		struct gui_key_listener *l;
 
-		l = list_first(&gui_key_listeners);
+		l = (struct gui_key_listener *)list_first(&gui_key_listeners);
 		while (l)
 		{
-			struct gui_key_listener *n = (struct gui_key_listener *)node_next(&l->n);
-			l->callback();
+			struct gui_key_listener *n;
+
+			n = (struct gui_key_listener *)node_next(&l->n);
+			if (l->ch == ch)
+			{
+				l->callback();
+			}
+
 			l = n;
 		}
 	}

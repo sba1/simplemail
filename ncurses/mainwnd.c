@@ -62,7 +62,13 @@ static void main_folder_next(void)
 
 static void main_folder_prev(void)
 {
-	main_active_folder = folder_prev(main_active_folder);
+	if (!main_active_folder)
+	{
+		main_active_folder = folder_last();
+	} else
+	{
+		main_active_folder = folder_prev(main_active_folder);
+	}
 	main_refresh_folders();
 }
 

@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "simplemail.h"
 
 #include "gui_main.h"
 #include "mainwnd.h"
@@ -34,9 +35,16 @@ void gui_remove_key_listener(struct gui_key_listener *listener)
 
 /*****************************************************************************/
 
+static void gui_atexit(void)
+{
+	endwin();
+}
+
+/*****************************************************************************/
+
 int gui_init(void)
 {
-	atexit(endwin);
+	atexit(gui_atexit);
 	initscr();
 	noecho();
 

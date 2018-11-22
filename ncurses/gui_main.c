@@ -101,6 +101,12 @@ int gui_parseargs(int argc, char *argv[])
 		{
 			debug_set_level(20);
 		}
+
+		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i]))
+		{
+			fprintf(stderr, "Usage: %s [--debug] [--help]\n");
+			exit(0);
+		}
 	}
 	return 1;
 }

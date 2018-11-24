@@ -67,6 +67,8 @@ void test_folder(void)
 	CU_ASSERT(folder_outgoing() != NULL);
 	CU_ASSERT(folder_sent() != NULL);
 	CU_ASSERT(folder_deleted() != NULL);
+	CU_ASSERT(folder_spam() != NULL);
+
 	del_folders();
 	free_config();
 }

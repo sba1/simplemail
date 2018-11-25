@@ -19,10 +19,11 @@ static struct list gui_key_listeners;
 
 /*****************************************************************************/
 
-void gui_add_key_listener(struct gui_key_listener *listener, char ch, void (*callback)(void))
+void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char *short_description, void (*callback)(void))
 {
 	listener->ch = ch;
 	listener->callback = callback;
+	listener->short_description = short_description;
 	list_insert_tail(&gui_key_listeners, &listener->n);
 }
 

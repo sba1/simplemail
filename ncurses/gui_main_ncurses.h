@@ -12,6 +12,9 @@ struct gui_key_listener
 	struct node n;
 	char ch;
 
+	/** A short description about this action */
+	const char *short_description;
+
 	void (*callback)(void);
 };
 
@@ -20,9 +23,10 @@ struct gui_key_listener
  *
  * @param listener the storage of the listener
  * @param ch the character
+ * @param short_description the description
  * @param callback the function that is called on the event that ch is pressed.
  */
-void gui_add_key_listener(struct gui_key_listener *listener, char ch, void (*callback)(void));
+void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char *short_description, void (*callback)(void));
 
 /**
  * Remove the previously added listener.

@@ -28,6 +28,7 @@
 #include <panel.h>
 
 #include "folder.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "gui_main_ncurses.h"
@@ -89,8 +90,8 @@ int main_window_open(void)
 
 	main_refresh_folders();
 
-	gui_add_key_listener(&next_folder_listener, 'n', main_folder_next);
-	gui_add_key_listener(&prev_folder_listener, 'p', main_folder_prev);
+	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
+	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
 
 	return 1;
 }

@@ -25,14 +25,52 @@
 #include <stdlib.h>
 
 #include <ncurses.h>
+#include <panel.h>
 
 #include "folder.h"
+#include "support_indep.h"
+
+#include "gui_main_ncurses.h"
+#include "mainwnd.h"
 
 /*****************************************************************************/
 
 static WINDOW *messagelist_wnd;
 static WINDOW *folders_wnd;
 static int folders_width = 20;
+
+static struct folder *main_active_folder;
+
+static struct gui_key_listener prev_folder_listener;
+static struct gui_key_listener next_folder_listener;
+
+/*****************************************************************************/
+
+static void main_folder_next(void)
+{
+	if (!main_active_folder)
+	{
+		main_active_folder = folder_first();
+	} else
+	{
+		main_active_folder = folder_next(main_active_folder);
+	}
+	main_refresh_folders();
+}
+
+/*****************************************************************************/
+
+static void main_folder_prev(void)
+{
+	if (!main_active_folder)
+	{
+		main_active_folder = folder_last();
+	} else
+	{
+		main_active_folder = folder_prev(main_active_folder);
+	}
+	main_refresh_folders();
+}
 
 /*****************************************************************************/
 
@@ -46,15 +84,13 @@ int main_window_open(void)
 	folders_wnd = newwin(h, folders_width, 0, 0);
 	refresh();
 
-//	for (j=0; j < h; j++)
-//	{
-//		mvwprintw(messagelist_wnd, j, main_folders_width, "|");
-//	}
-//	box(messagelist_wnd, 0 ,0);
 	wrefresh(messagelist_wnd);
 	wrefresh(folders_wnd);
 
 	main_refresh_folders();
+
+	gui_add_key_listener(&next_folder_listener, 'n', main_folder_next);
+	gui_add_key_listener(&prev_folder_listener, 'p', main_folder_prev);
 
 	return 1;
 }
@@ -69,7 +105,14 @@ void main_refresh_folders(void)
 
 	for (f = folder_first(); f; f = folder_next(f))
 	{
-		mystrlcpy(text, folder_name(f), sizeof(text) - 1);
+		if (f == main_active_folder)
+		{
+			text[0] = '*';
+		} else
+		{
+			text[0] = ' ';
+		}
+		mystrlcpy(&text[1], folder_name(f), sizeof(text) - 2);
 		mvwprintw(folders_wnd, row++, 0 , text);
 	}
 	wrefresh(folders_wnd);
@@ -79,7 +122,7 @@ void main_refresh_folders(void)
 
 struct folder *main_get_folder(void)
 {
-	return NULL;
+	return main_active_folder;
 }
 
 /*****************************************************************************/

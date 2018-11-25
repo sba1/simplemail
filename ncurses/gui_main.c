@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "simplemail.h"
 
 #include "gui_main.h"
 #include "mainwnd.h"
@@ -34,9 +35,16 @@ void gui_remove_key_listener(struct gui_key_listener *listener)
 
 /*****************************************************************************/
 
+static void gui_atexit(void)
+{
+	endwin();
+}
+
+/*****************************************************************************/
+
 int gui_init(void)
 {
-	atexit(endwin);
+	atexit(gui_atexit);
 	initscr();
 	noecho();
 
@@ -87,11 +95,17 @@ int gui_parseargs(int argc, char *argv[])
 {
 	int i;
 
-	for (i = 1; i < argc; i++)
+	for (i = 1; i < gui_argc; i++)
 	{
-		if (!strcmp("--debug", argv[i]))
+		if (!strcmp("--debug", gui_argv[i]))
 		{
 			debug_set_level(20);
+		}
+
+		if (!strcmp("-h", gui_argv[i]) || !strcmp("--help", gui_argv[i]))
+		{
+			fprintf(stderr, "Usage: %s [--debug] [--help]\n", gui_argv[0]);
+			exit(0);
 		}
 	}
 	return 1;

@@ -350,6 +350,11 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
 struct folder *folder_first(void);
 
 /**
+ * @return the last folder.
+ */
+struct folder *folder_last(void);
+
+/**
  * Get status information for all folders.
  *
  * @param total_msg_ptr

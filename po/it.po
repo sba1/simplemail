@@ -186,11 +186,11 @@ msgstr "Foto"
 
 #: amiga-mui/addressbookwnd.c:735
 msgid "E-Mail addresses"
-msgstr "Indirizzi di posta"
+msgstr "Indirizzo di posta"
 
 #: amiga-mui/addressbookwnd.c:744
 msgid "Belonging groups"
-msgstr "Appartenente ai gruppi"
+msgstr "Appartenente al gruppo"
 
 #: amiga-mui/addressbookwnd.c:753
 msgid "Add"
@@ -350,7 +350,7 @@ msgstr "Mostra indirizzo e-mail"
 
 #: amiga-mui/addressentrylistclass.c:240
 msgid "Show Groups?"
-msgstr "Mostra gruppi"
+msgstr "Mostra gruppo"
 
 #: amiga-mui/addressentrylistclass.c:242 amiga-mui/foldertreelistclass.c:268
 #: amiga-mui/mailtreelistclass.c:588
@@ -465,7 +465,7 @@ msgstr "R"
 
 #: amiga-mui/composewnd.c:1344 amiga-mui/composewnd.c:1348
 msgid "_Replies To"
-msgstr "Risposta A"
+msgstr "Risposta-A"
 
 #: amiga-mui/composewnd.c:1352 amiga-mui/composewnd.c:1358
 #: amiga-mui/searchwnd.c:186
@@ -578,7 +578,7 @@ msgstr "Cartella da mostare all'avvio"
 
 #: amiga-mui/configwnd.c:948 amiga-mui/configwnd.c:949
 msgid "Show AppIcon"
-msgstr "Mostra AppIcon"
+msgstr "_Mostra AppIcon"
 
 #: amiga-mui/configwnd.c:950
 msgid "AppIcon label"
@@ -887,19 +887,19 @@ msgid ""
 "Only required if the SMTP server requires authentication."
 msgstr ""
 "Il proprio identificativo per il server SMTP.\n"
-"Necessario solamente se il server richiede l'autenticazione"
+"Necessario solamente qualora il server richieda l'autenticazione"
 
 #: amiga-mui/configwnd.c:1487
 msgid ""
 "Your password for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
 msgstr ""
-"La password per il server SMTP.\n"
-"Necessaria solo se il server richiede l'autenticazione"
+"La propria password per il server SMTP.\n"
+"Necessaria solamente qualora il server richieda l'autenticazione"
 
 #: amiga-mui/configwnd.c:1488
 msgid "Activate this if the SMTP server requires authentication."
-msgstr "Attiva questa opzione se il server SMTP richiede l'autenticazione"
+msgstr "Attiva questa opzione qualora il server SMTP richieda l'autenticazione"
 
 #: amiga-mui/configwnd.c:1489
 msgid ""
@@ -1049,6 +1049,10 @@ msgid ""
 "into the other direction and closes the window only if no other mail exists "
 "within the folder."
 msgstr ""
+"Se attivato SimpleMail chiuderà la finestra di lettura dopo che tutti i messaggi nella\n"
+"cartella saranno stati processati completamente (ad esempio cancellati) dall'utente\n"
+"nella corrente direzione, altrimenti SimpleMail proverà a navigare nell'altra direzione\n"
+"chiudendo la finestra solo nel caso non esistano altri messaggi nella cartella." 
 
 #: amiga-mui/configwnd.c:1663
 msgid "Background"
@@ -1190,7 +1194,7 @@ msgstr "?phrases:Chiusura"
 #: amiga-mui/folderwnd.c:327 amiga-mui/mailtreelistclass-new.c:1653
 #: amiga-mui/mailtreelistclass.c:530
 msgid "Reply"
-msgstr "Indirizzo di risposta"
+msgstr "Rispondi-A"
 
 #: amiga-mui/configwnd.c:2198
 msgid "Intro"
@@ -1246,7 +1250,7 @@ msgstr "_Resetta statistiche|Re_setta e ricostruisci|_Annulla"
 
 #: amiga-mui/configwnd.c:2333
 msgid "General spam settings"
-msgstr "Impostazioni generali sullo spam"
+msgstr "Impostazioni generali spam"
 
 #: amiga-mui/configwnd.c:2336 amiga-mui/configwnd.c:2337
 msgid "Mark mails as spam before moved to the spam folder"
@@ -1300,7 +1304,7 @@ msgstr ""
 
 #: amiga-mui/configwnd.c:2365 amiga-mui/configwnd.c:2366
 msgid "Also all addresses within the addressbook"
-msgstr "Anche per tutti gli indirizzi della rubrica"
+msgstr "Anche per tutti gli indirizzi della _rubrica"
 
 #: amiga-mui/configwnd.c:2371
 msgid ""
@@ -1503,7 +1507,7 @@ msgstr "uguale"
 
 #: amiga-mui/filterruleclass.c:208
 msgid "Substring"
-msgstr "Iscriviti"
+msgstr "Sotto stringa"
 
 #: amiga-mui/filterruleclass.c:211
 msgid "Case sensitive"
@@ -1591,11 +1595,11 @@ msgstr "Azioni"
 
 #: amiga-mui/filterwnd.c:543 amiga-mui/filterwnd.c:544
 msgid "Move to Folder"
-msgstr "Sposta nella carte_lla"
+msgstr "S_posta nella cartella"
 
 #: amiga-mui/filterwnd.c:557 amiga-mui/filterwnd.c:558
 msgid "Execute ARexx Script"
-msgstr "Esegui script ARe_xx"
+msgstr "_Esegui script ARexx"
 
 #: amiga-mui/filterwnd.c:569 amiga-mui/filterwnd.c:570
 msgid "Play Sound"
@@ -1732,7 +1736,7 @@ msgstr "Percorso IMAP"
 
 #: amiga-mui/folderwnd.c:360
 msgid "Local path"
-msgstr "_Percorso locale"
+msgstr "Percorso locale"
 
 #: amiga-mui/folderwnd.c:366 amiga-mui/folderwnd.c:367
 msgid "_Type"
@@ -1740,7 +1744,7 @@ msgstr "_Tipo"
 
 #: amiga-mui/folderwnd.c:369 amiga-mui/folderwnd.c:371
 msgid "_Primary sort"
-msgstr "Or_dinamento primario"
+msgstr "Ordinamento _primario"
 
 #: amiga-mui/folderwnd.c:372 amiga-mui/folderwnd.c:373
 #: amiga-mui/folderwnd.c:379 amiga-mui/folderwnd.c:380
@@ -1749,7 +1753,7 @@ msgstr "Inverso"
 
 #: amiga-mui/folderwnd.c:376 amiga-mui/folderwnd.c:378
 msgid "_Secondary sort"
-msgstr "Ordina_mento secondario"
+msgstr "Ordinamento _secondario"
 
 #: amiga-mui/folderwnd.c:383 amiga-mui/folderwnd.c:384
 msgid "_Download"
@@ -1761,11 +1765,11 @@ msgstr "Proprietà composizione messaggio"
 
 #: amiga-mui/folderwnd.c:392 amiga-mui/folderwnd.c:396
 msgid "T_o"
-msgstr "_A"
+msgstr "A"
 
 #: amiga-mui/folderwnd.c:399 amiga-mui/folderwnd.c:403
 msgid "_Reply to"
-msgstr "_Rispondi A"
+msgstr "Rispondi-A"
 
 #: amiga-mui/folderwnd.c:413
 msgid "IMAP Properties"
@@ -1908,15 +1912,15 @@ msgstr "Mostra estatto"
 
 #: amiga-mui/mailtreelistclass-new.c:1759
 msgid "Reset this column's width"
-msgstr "Ripristina colonna in larghezza"
+msgstr "Ripristina colonna selezionata"
 
 #: amiga-mui/mailtreelistclass-new.c:1760
 msgid "Reset all columns' widths"
-msgstr "Ripristina tutte le colonne in larghezza"
+msgstr "Ripristina tutte le colonne"
 
 #: amiga-mui/mailtreelistclass-new.c:1761
 msgid "Default Order"
-msgstr "Ordine predefinito: tutto"
+msgstr "Ordina in modo predefinito"
 
 #: amiga-mui/mailtreelistclass-new.c:3959
 msgid "Dragging a single message"
@@ -1966,7 +1970,7 @@ msgstr "Errore"
 
 #: amiga-mui/mailtreelistclass-new.c:4138 amiga-mui/mailtreelistclass.c:910
 msgid "Repl. & Forw."
-msgstr "Risposta e Inoltro"
+msgstr "Risposta & Inoltro"
 
 #: amiga-mui/mainwnd.c:128
 msgid "Rea_d"
@@ -2312,7 +2316,7 @@ msgid ""
 "Allows you to filter for messages containing the given texts within their "
 "From or Subject fields."
 msgstr ""
-"Permette di filtrare messaggi contenenti il testo\n"
+"Permette di filtrare messaggi contenenti testo\n"
 "fornito all'interno dei campi \"Da\" e \"Oggetto\""
 
 #: amiga-mui/mainwnd.c:1082
@@ -2390,8 +2394,9 @@ msgid ""
 "The orginal charset of the attached file differs from yours.\n"
 "In which charset do you want the file being saved?"
 msgstr ""
-"Il tipo di font nel file allegato sembra differente rispetto a quelli presenti nel sistema.\n"
-"Con quale set di caratteri si desidera salvare il file?"
+"Il set di caratteri originale del file allegato sembra differente\n"
+"rispetto a quello attualmente presenti nel tuo sistema.\n"
+"Con quale set di caratteri si desidera venga salvato il file?"
 
 #: amiga-mui/messageviewclass.c:286 amiga-mui/readwnd.c:248
 msgid "Are you sure that you want to start this executable?"
@@ -2442,6 +2447,10 @@ msgstr "ID utente"
 msgid "SimpleMail - Progress Monitors"
 msgstr "SimpleMail - Monitora progressi"
 
+#: amiga-mui/progmonwnd.c:82
+msgid "No pending operations"
+msgstr "Nessuna operazione in sospeso"
+
 #: amiga-mui/readwnd.c:88
 msgid "_Prev"
 msgstr "_Precedente"
@@ -2476,8 +2485,8 @@ msgid ""
 "In which charset do you want the file being saved?"
 msgstr ""
 "Il set di caratteri originale del file allegato sembra differente\n"
-"rispetto a quelli presenti nel sistema.\n"
-"Con quale set di caratteri si desidera salvare il file?"
+"rispetto a quello attualmente presenti nel tuo sistema.\n"
+"Con quale set di caratteri si desidera venga salvato il file?"
 
 #: amiga-mui/readwnd.c:775
 #, c-format
@@ -2546,19 +2555,19 @@ msgstr "SimpleMail - Ricerca"
 
 #: amiga-mui/searchwnd.c:164
 msgid "Search _into"
-msgstr "Cerca _in"
+msgstr "Cerca in"
 
 #: amiga-mui/searchwnd.c:194
 msgid "_Subject"
-msgstr "_Oggetto"
+msgstr "Oggetto"
 
 #: amiga-mui/searchwnd.c:202
 msgid "_Body"
-msgstr "_Corpo"
+msgstr "Corpo"
 
 #: amiga-mui/searchwnd.c:213
 msgid "S_tart search"
-msgstr "I_nizia ricerca"
+msgstr "_Inizia ricerca"
 
 #: amiga-mui/searchwnd.c:214
 msgid "Sto_p search"
@@ -2741,7 +2750,7 @@ msgid ""
 msgstr ""
 "Si desidera realmente cancellare questo gruppo?\n"
 "Ricorda che solo il gruppo inserito verrà cancellato\n"
-"senza intaccare le cartelle al suo interno."
+"senza intaccare alcuna cartella al suo interno."
 
 #: folder.c:3458
 msgid "Incoming"
@@ -2806,11 +2815,11 @@ msgstr "Identificazione..."
 
 #: imap.c:701
 msgid "Login failed!"
-msgstr "Accesso fallito!"
+msgstr "Accesso non riuscito!"
 
 #: imap.c:702 imap.c:928
 msgid "Authentication failed!"
-msgstr "Autenticazione fallita!"
+msgstr "Autenticazione non riuscita!"
 
 #: imap.c:706 imap.c:772
 msgid "Reading folders..."
@@ -3313,7 +3322,7 @@ msgstr "Il servizio non è disponibile"
 
 #: smtp.c:506
 msgid "DATA-Cmd failed."
-msgstr "DATA-Cmd falliti"
+msgstr "DATA-Cmd non riuscito"
 
 #: smtp.c:719
 msgid "Sending EHLO..."
@@ -3325,7 +3334,7 @@ msgstr "Invio HELO..."
 
 #: smtp.c:727 smtp.c:761
 msgid "HELO failed"
-msgstr "HELO fallito"
+msgstr "HELO non riuscito"
 
 #: smtp.c:736
 msgid ""

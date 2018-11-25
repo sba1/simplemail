@@ -3096,6 +3096,15 @@ struct folder *folder_first(void)
 
 /*****************************************************************************/
 
+struct folder *folder_last(void)
+{
+	struct folder_node *node = (struct folder_node*)list_last(&folder_list);
+	if (node) return &node->folder;
+	return NULL;
+}
+
+/*****************************************************************************/
+
 struct folder *folder_prev(struct folder *f)
 {
 	if (f)

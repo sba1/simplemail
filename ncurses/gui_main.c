@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "folder.h"
 #include "simplemail.h"
 
 #include "gui_main.h"
@@ -51,6 +52,8 @@ int gui_init(void)
 
 	list_init(&gui_key_listeners);
 	main_window_open();
+	main_refresh_folders();
+	main_set_folder_active(folder_incoming());
 
 	return 1;
 }

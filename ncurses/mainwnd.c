@@ -88,8 +88,6 @@ int main_window_open(void)
 	wrefresh(messagelist_wnd);
 	wrefresh(folders_wnd);
 
-	main_refresh_folders();
-
 	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
 	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
 
@@ -124,6 +122,12 @@ void main_refresh_folders(void)
 struct folder *main_get_folder(void)
 {
 	return main_active_folder;
+}
+
+/*****************************************************************************/
+
+void main_set_folder_active(struct folder *folder)
+{
 }
 
 /*****************************************************************************/

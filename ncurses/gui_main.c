@@ -49,6 +49,7 @@ int gui_init(void)
 	atexit(gui_atexit);
 	initscr();
 	noecho();
+	curs_set(0);
 
 	list_init(&gui_key_listeners);
 	main_window_open();

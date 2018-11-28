@@ -128,6 +128,16 @@ struct folder *main_get_folder(void)
 
 void main_set_folder_active(struct folder *folder)
 {
+	void *handle = NULL;
+	struct mail_info *mi;
+	int row = 0;
+
+	main_active_folder = folder;
+
+	while ((mi = folder_next_mail(main_active_folder, &handle)))
+	{
+		mvwprintw(messagelist_wnd, row++, 0, mail_info_get_from(mi));
+	}
 }
 
 /*****************************************************************************/

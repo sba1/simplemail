@@ -119,6 +119,12 @@ void main_refresh_folders(void)
 
 /*****************************************************************************/
 
+void main_refresh_folder(struct folder *folder)
+{
+}
+
+/*****************************************************************************/
+
 struct folder *main_get_folder(void)
 {
 	return main_active_folder;
@@ -138,6 +144,18 @@ void main_set_folder_active(struct folder *folder)
 	{
 		mvwprintw(messagelist_wnd, row++, 0, mail_info_get_from(mi));
 	}
+}
+
+/*****************************************************************************/
+
+void main_set_folder_mails(struct folder *folder)
+{
+}
+
+/*****************************************************************************/
+
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
 }
 
 /*****************************************************************************/

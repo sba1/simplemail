@@ -33,7 +33,9 @@
 #include "mail.h"
 #include "support_indep.h"
 
+#include "arch.h"
 #include "subthreads.h"
+#include "support.h"
 
 static struct hash_table spam_table;
 static struct hash_table ham_table;
@@ -48,11 +50,19 @@ int spam_init(void)
 {
 	if ((sem = thread_create_semaphore()))
 	{
-		if (hash_table_init(&spam_table, 13, "PROGDIR:.spam.stat"))
-		{
-			if (hash_table_init(&ham_table, 13, "PROGDIR:.ham.stat"))
-			{
+		static char spam_filename[100];
+		static char ham_filename[100];
 
+		strcpy(spam_filename, SM_DIR);
+		sm_add_part(spam_filename, ".spam.stat", sizeof(ham_filename));
+
+		strcpy(ham_filename, SM_DIR);
+		sm_add_part(spam_filename, ".ham.stat", sizeof(spam_filename));
+
+		if (hash_table_init(&spam_table, 13, spam_filename))
+		{
+			if (hash_table_init(&ham_table, 13, ham_filename))
+			{
 /*				if (hash_table_init(&spam_prob_table, 13, NULL))*/
 				{
 					rebuild_spam_prob_hash_table = 1;

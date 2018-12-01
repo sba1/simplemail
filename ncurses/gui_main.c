@@ -65,6 +65,8 @@ void gui_loop(void)
 {
 	char ch;
 
+	save_config();
+
 	while ((ch = getch()) != 'q')
 	{
 		struct gui_key_listener *l;

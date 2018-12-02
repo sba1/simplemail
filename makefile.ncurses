@@ -59,6 +59,7 @@ LINK = \
 	$(SSL_LINK)\
 	$(GLIB_LDFLAGS)\
 	$(shell pkg-config ncurses --libs) \
+	$(shell pkg-config panel --libs) \
 	-Wl,--gc-sections
 
 # Name of the "thing" to build

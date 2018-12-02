@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "folder.h"
 #include "simplemail.h"
 
 #include "gui_main.h"
@@ -19,10 +20,11 @@ static struct list gui_key_listeners;
 
 /*****************************************************************************/
 
-void gui_add_key_listener(struct gui_key_listener *listener, char ch, void (*callback)(void))
+void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char *short_description, void (*callback)(void))
 {
 	listener->ch = ch;
 	listener->callback = callback;
+	listener->short_description = short_description;
 	list_insert_tail(&gui_key_listeners, &listener->n);
 }
 
@@ -47,9 +49,12 @@ int gui_init(void)
 	atexit(gui_atexit);
 	initscr();
 	noecho();
+	curs_set(0);
 
 	list_init(&gui_key_listeners);
 	main_window_open();
+	main_refresh_folders();
+	main_set_folder_active(folder_incoming());
 
 	return 1;
 }

@@ -28,6 +28,7 @@
 #include <panel.h>
 
 #include "folder.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "gui_main_ncurses.h"
@@ -87,10 +88,8 @@ int main_window_open(void)
 	wrefresh(messagelist_wnd);
 	wrefresh(folders_wnd);
 
-	main_refresh_folders();
-
-	gui_add_key_listener(&next_folder_listener, 'n', main_folder_next);
-	gui_add_key_listener(&prev_folder_listener, 'p', main_folder_prev);
+	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
+	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
 
 	return 1;
 }
@@ -120,9 +119,43 @@ void main_refresh_folders(void)
 
 /*****************************************************************************/
 
+void main_refresh_folder(struct folder *folder)
+{
+}
+
+/*****************************************************************************/
+
 struct folder *main_get_folder(void)
 {
 	return main_active_folder;
+}
+
+/*****************************************************************************/
+
+void main_set_folder_active(struct folder *folder)
+{
+	void *handle = NULL;
+	struct mail_info *mi;
+	int row = 0;
+
+	main_active_folder = folder;
+
+	while ((mi = folder_next_mail(main_active_folder, &handle)))
+	{
+		mvwprintw(messagelist_wnd, row++, 0, mail_info_get_from(mi));
+	}
+}
+
+/*****************************************************************************/
+
+void main_set_folder_mails(struct folder *folder)
+{
+}
+
+/*****************************************************************************/
+
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
 }
 
 /*****************************************************************************/

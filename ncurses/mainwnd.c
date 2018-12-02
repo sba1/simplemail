@@ -80,6 +80,7 @@ int main_window_open(void)
 	int w, h;
 
 	getmaxyx(stdscr, h, w);
+	h -= 2;
 
 	messagelist_wnd = newwin(h, w - folders_width, 0, folders_width);
 	folders_wnd = newwin(h, folders_width, 0, 0);

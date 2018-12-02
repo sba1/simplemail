@@ -17,6 +17,28 @@
 /*****************************************************************************/
 
 static struct list gui_key_listeners;
+static WINDOW *keyinfo_wnd;
+
+/*****************************************************************************/
+
+static void gui_update_keyinfo(void)
+{
+	struct gui_key_listener *l;
+	int col = 0;
+
+	l = (struct gui_key_listener *)list_first(&gui_key_listeners);
+	while (l)
+	{
+		char buf[20];
+		sm_snprintf(buf, sizeof(buf), "%c: %s", l->ch, l->short_description);
+		mvwprintw(keyinfo_wnd, 0, col, buf);
+
+		col += strlen(buf) + 2;
+		l = (struct gui_key_listener *)node_next(&l->n);
+	}
+
+	wrefresh(keyinfo_wnd);
+}
 
 /*****************************************************************************/
 
@@ -26,6 +48,8 @@ void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char
 	listener->callback = callback;
 	listener->short_description = short_description;
 	list_insert_tail(&gui_key_listeners, &listener->n);
+
+	gui_update_keyinfo();
 }
 
 /*****************************************************************************/
@@ -46,12 +70,18 @@ static void gui_atexit(void)
 
 int gui_init(void)
 {
+	int w, h;
+
 	atexit(gui_atexit);
 	initscr();
 	noecho();
 	curs_set(0);
 
 	list_init(&gui_key_listeners);
+
+	getmaxyx(stdscr, h, w);
+	keyinfo_wnd = newwin(1, w, h - 1, 0);
+
 	main_window_open();
 	main_refresh_folders();
 	main_set_folder_active(folder_incoming());

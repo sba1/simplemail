@@ -28,6 +28,7 @@
 #include <panel.h>
 
 #include "folder.h"
+#include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
 
@@ -44,6 +45,7 @@ static struct folder *main_active_folder;
 
 static struct gui_key_listener prev_folder_listener;
 static struct gui_key_listener next_folder_listener;
+static struct gui_key_listener fetch_mail_listener;
 
 /*****************************************************************************/
 
@@ -91,6 +93,7 @@ int main_window_open(void)
 
 	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
 	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
+	gui_add_key_listener(&fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
 
 	return 1;
 }

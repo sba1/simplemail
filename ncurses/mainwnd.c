@@ -164,6 +164,13 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 
 /*****************************************************************************/
 
+int main_is_iconified(void)
+{
+	return 0;
+}
+
+/*****************************************************************************/
+
 void main_refresh_window_title(const char *title)
 {
 }

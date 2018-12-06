@@ -199,7 +199,7 @@ void free_config(void)
 	profile_directory = NULL;
 }
 
-#define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
+#define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y') || (*x == '1'))?1:0)
 
 /*****************************************************************************/
 

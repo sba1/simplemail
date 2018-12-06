@@ -463,7 +463,7 @@ int load_config(void)
 									if ((result = get_key_value(account_buf,"IMAP.Password")))
 										account->imap->passwd = mystrdup(result);
 									if ((result = get_key_value(account_buf,"IMAP.Active")))
-										account->imap->active = atoi(result);
+										account->imap->active = CONFIG_BOOL_VAL(result);
 									if ((result = get_key_value(account_buf,"IMAP.SSL")))
 										account->imap->ssl = CONFIG_BOOL_VAL(result);
 									if ((result = get_key_value(account_buf,"IMAP.STARTTLS")))

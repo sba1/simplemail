@@ -22,6 +22,9 @@
 #ifndef SM__READWND_H
 #define SM__READWND_H
 
+struct folder;
+struct mail_info;
+
 /**
  * Opens a read window. Returns the number of the read window or -1
  * for an error. You can specify the number of the window which to

@@ -8,6 +8,7 @@ AS     = $(CROSS_COMPILE)as
 LD     = $(CROSS_COMPILE)ld
 RANLIB = $(CROSS_COMPILE)ranlib
 STRIP  = $(CROSS_COMPILE)strip
+OBJCOPY= $(CROSS_COMPILE)objcopy
 
 RM     = rm -Rf
 MKDIR  = mkdir -p
@@ -95,8 +96,10 @@ dirs:
 
 # Rules for building
 $(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c
-	$(CC) $(INC) $(LINK) $(OBJSDIR)/stubs.c -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
-	$(STRIP) --strip-all -o $@ $@.debug
+	$(CC) $(INC) $(LINK) $(OBJSDIR)/stubs.c -o $@ $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+	$(OBJCOPY) --only-keep-debug $@ $@.debug
+	$(STRIP) --strip-all $@
+	$(OBJCOPY) --add-gnu-debuglink=$@.debug $@
 
 $(OBJSDIR)/stubs.c: dirs $(OBJS) devtools/gen-stubs.py
 	-$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map 2>$(OBJSDIR)/link.error

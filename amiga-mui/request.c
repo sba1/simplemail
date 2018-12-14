@@ -173,7 +173,7 @@ char *sm_request_string(const char *title, const char *text, const char *content
 
 /*****************************************************************************/
 
-int sm_request_login(char *text, char *login, char *password, int len)
+int sm_request_login(const char *text, char *login, char *password, int len)
 {
 	int ret = 0;
 	Object *login_string;

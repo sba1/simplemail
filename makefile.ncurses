@@ -2,6 +2,8 @@
 # Makefile for SimpleMail for ncurses UI
 #
 
+TARGET_DIR=target
+
 CC     = $(CROSS_COMPILE)gcc
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as
@@ -65,7 +67,7 @@ LINK = \
 	-Wl,--gc-sections
 
 # Name of the "thing" to build
-TARGET = SimpleMail$(TARGETSUFFIX)
+TARGET = $(TARGET_DIR)/SimpleMail$(TARGETSUFFIX)
 
 # Additional linker libraries
 LIBS = -lexpat $(SSL_LIB)
@@ -85,7 +87,7 @@ SRCS = $(NONARCHSRCS) $(ARCHSRCS)
 
 # -------------------------------------------------------------
 
-OBJSDIR=$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
+OBJSDIR=$(TARGET_DIR)/$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
 
 OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
 
@@ -93,7 +95,7 @@ all: $(TARGET)
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform
+	-$(MKDIR) $(TARGET_DIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform
 
 # Rules for building
 $(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c

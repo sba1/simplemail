@@ -61,7 +61,7 @@ struct pop3_dl_callbacks
 	void (*set_gauge)(int value);
 	void (*init_mail)(int maximal);
 	void (*set_mail)(int current, int current_size);
-	int (*request_login)(char *text, char *login, char *password, int len);
+	int (*request_login)(const char *text, char *login, char *password, int len);
 	void (*mail_list_clear)(void);
 	void (*mail_list_freeze)(void);
 	void (*mail_list_thaw)(void);

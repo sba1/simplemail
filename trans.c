@@ -105,7 +105,7 @@ static void trans_set_mail(int current, int current_size)
 	thread_call_function_async(thread_get_main(), status_set_mail, 2, current, current_size);
 }
 
-static int trans_request_login(char *text, char *login, char *password, int len)
+static int trans_request_login(const char *text, char *login, char *password, int len)
 {
 	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }

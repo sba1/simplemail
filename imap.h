@@ -75,7 +75,7 @@ int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv
 struct imap_connect_and_login_to_server_callbacks
 {
 	void (*set_status)(const char *str);
-	int (*request_login)(char *text, char *login, char *password, int len);
+	int (*request_login)(const char *text, char *login, char *password, int len);
 };
 
 /**
@@ -144,7 +144,7 @@ struct imap_delete_mail_by_filename_options
 struct imap_connect_to_server_callbacks
 {
 	void (*set_status)(const char *str);
-	int (*request_login)(char *text, char *login, char *password, int len);
+	int (*request_login)(const char *text, char *login, char *password, int len);
 	void (*add_imap_folder)(char *user, char *server, char *path, char delim);
 	void (*refresh_folders)(void);
 };

@@ -886,6 +886,7 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 			{
 				free(password);
 				free(login);
+				SM_RETURN(0,"%ld");
 				return 0;
 			}
 		}

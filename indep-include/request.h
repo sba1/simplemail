@@ -66,7 +66,7 @@ char *sm_request_string(const char *title, const char *text, const char *content
  * @param len
  * @return
  */
-int sm_request_login(char *text, char *login, char *password, int len);
+int sm_request_login(const char *text, char *login, char *password, int len);
 
 /**
  * Returns a malloc()ed string of an pgp id as selected bythe user.

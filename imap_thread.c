@@ -74,7 +74,7 @@ static void imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char
 	thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, uid_validity, uid_next, user, server, path);
 }
 
-static int imap_request_login(char *text, char *login, char *password, int len)
+static int imap_request_login(const char *text, char *login, char *password, int len)
 {
 	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }

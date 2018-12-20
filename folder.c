@@ -3457,8 +3457,8 @@ int folder_size_of_mails(struct folder *f)
 
 const char *folder_name(struct folder *f)
 {
-	char *untranslated_name;
-	char *name;
+	const char *untranslated_name;
+	const char *name;
 
 	name = f->name;
 

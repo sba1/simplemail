@@ -1420,7 +1420,7 @@ utf8 *utf8create_len(void *from, const char *charset, int from_len)
 
 int utf8tostr(const utf8 *str, char *dest, unsigned int dest_size, struct codeset *codeset)
 {
-	int i;
+	unsigned int i;
 	struct single_convert *f;
 	char *dest_iter = dest;
 

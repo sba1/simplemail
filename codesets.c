@@ -1424,10 +1424,15 @@ int utf8tostr(const utf8 *str, char *dest, unsigned int dest_size, struct codese
 	struct single_convert *f;
 	char *dest_iter = dest;
 
+	if (!dest_size)
+	{
+		return 0;
+	}
+
 	if (!codeset) codeset = (struct codeset*)list_first(&codesets_list);
 	if (!codeset || !str)
 	{
-		if (dest_size) *dest = 0;
+		*dest = 0;
 		return 0;
 	}
 

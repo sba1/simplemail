@@ -72,7 +72,7 @@ struct connection
 #endif
 	/* for tcp_write() */
 	unsigned char write_buf[CONN_BUF_WRITE_SIZE];
-	int write_size;
+	unsigned int write_size;
 
 	/* for tcp_readln() */
 	unsigned char read_buf[CONN_BUF_READ_SIZE];
@@ -96,12 +96,12 @@ const char *tcp_strerror(int code);
  */
 struct connection *tcp_create_connection(void);
 
-struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr);
+struct connection *tcp_connect(const char *server, unsigned int port, struct connect_options *options, int *error_code_ptr);
 void tcp_disconnect(struct connection *conn);
-int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint);
+int tcp_make_secure(struct connection *conn, const char *server_name, const char *fingerprint);
 int tcp_secure(struct connection *conn);
 long tcp_read(struct connection *conn, void *, long);
-int tcp_write(struct connection *conn, const void *, long);
+int tcp_write(struct connection *conn, const void *, unsigned int);
 int tcp_write_unbuffered(struct connection *conn, void *,long);
 int tcp_flush(struct connection *conn);
 char *tcp_readln(struct connection *conn);

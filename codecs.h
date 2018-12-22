@@ -46,7 +46,9 @@ char *decode_base64(unsigned char *buf, unsigned int len, unsigned int *ret_len)
  *
  * @param buf the buffer to be decoded
  * @param len number of source bytes to be decoded
- * @param ret_len where to store the length of the decoded buffer.
+ * @param ret_len where to store the length of the decoded buffer. Also acts
+ *  as an input parameter to specify the maximal number of bytes that should be
+ *  decoded.
  * @param header whether this is a header that shall be decoded
  * @return the malloc'ed buffer or NULL on a failure. The actual buffer is
  *  one byte larger than suggested by ret_len. The last byte is always a 0-byte.

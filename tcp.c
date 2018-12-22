@@ -133,7 +133,7 @@ struct connection *tcp_create_connection(void)
  *
  * @note TODO: Rework the error code handling.
  */
-struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr)
+struct connection *tcp_connect(const char *server, unsigned int port, struct connect_options *options, int *error_code_ptr)
 {
 	int i,sd;
 	struct sockaddr_in sockaddr;
@@ -150,7 +150,7 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 
 	conn->ssl_verify_failed = options->ssl_verify_failed;
 
-	if ((hostent = gethostbyname(server)))
+	if ((hostent = gethostbyname((char*)server)))
 	{
 		sd = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -282,7 +282,7 @@ static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x50
  *  established according to the certificate chain.
  * @return 1 on success
  */
-int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint)
+int tcp_make_secure(struct connection *conn, const char *server_name, const char *fingerprint)
 {
 #ifndef NO_SSL
 	int rc;
@@ -585,7 +585,7 @@ static int tcp_read_char(struct connection *conn)
  * @return the number of bytes that actually have been written or -1 for an failure.
  * @note this function is buffered.
  */
-int tcp_write(struct connection *conn, const void *buf, long nbytes)
+int tcp_write(struct connection *conn, const void *buf, unsigned int nbytes)
 {
 	int rc = nbytes;
 

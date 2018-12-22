@@ -118,7 +118,7 @@ int string_pool_load(struct string_pool *sp, const char *filename)
 	for (i=0; i < num_of_strings; i++)
 	{
 		unsigned int c;
-		int l;
+		unsigned int l;
 		char *s;
 		int pos;
 
@@ -168,7 +168,7 @@ struct string_pool *string_pool_create_and_load(const char *filename)
 int string_pool_save(struct string_pool *sp, char *filename)
 {
 	FILE *fh;
-	int i;
+	unsigned int i;
 
 	if (!(fh = fopen(filename, "wb")))
 		return 0;
@@ -272,7 +272,7 @@ void string_pool_deref_by_id(struct string_pool *p, int id)
 
 char *string_pool_get(struct string_pool *p, int id)
 {
-	if (id < 0 || id >= p->ref_strings_num)
+	if (id < 0 || (unsigned int)id >= p->ref_strings_num)
 	{
 		return NULL;
 	}

@@ -102,7 +102,7 @@ ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 	return DoSuperMethod(cl, obj, OM_NEW, (((ULONG*)&obj)+1), NULL);
 }
 
-APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
+Object *VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 {
 	return NewObjectA(cl,id, (struct TagItem*)((&id)+1));
 }

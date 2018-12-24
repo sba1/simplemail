@@ -1,3 +1,9 @@
+Version 0.45 (31th beta, "Stefan") - released on 2018/12/24
+   - Reduced folder index memory usage
+   - Asynchonous index file loading
+   - Updated Italian catalog by Samir Hawamdeh
+   - Many bug fixes
+
 Version 0.44 (30th beta) - released on 2017/12/24
    - Added AmiSSL 4 support
    - Decreased folder index storage

@@ -102,6 +102,10 @@
 #endif
 /*****************************************************/
 
+#ifdef __MORPHOS__
+extern Object *aboutboxWin;
+#endif
+
 enum
 {
 	SM_MAINWND_BUTTON_READ = 0,
@@ -300,6 +304,11 @@ void display_about(void)
 	}
 #endif
 
+#ifdef __MORPHOS__
+	if (aboutboxWin)
+		set(aboutboxWin, MUIA_Window_Open, TRUE);
+	else
+#endif
 	MUI_Request(App, NULL, 0,
 		_("SimpleMail - About"),
 		_("*Ok"),

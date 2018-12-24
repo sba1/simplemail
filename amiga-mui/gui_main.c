@@ -129,6 +129,10 @@ void *ICyberGfx;
 
 struct Locale *DefaultLocale;
 Object *App;
+#ifdef __MORPHOS__
+#include <mui/Aboutbox_mcc.h>
+Object *aboutboxWin;
+#endif
 
 /* New since MUI V20 */
 static STRPTR UsedClasses[] =
@@ -271,7 +275,7 @@ static int app_init(void)
 	App = ApplicationObject,
 		MUIA_Application_Title,			"SimpleMail",
 		MUIA_Application_Version,		VERSTAG,
-		MUIA_Application_Copyright,		"Copyright (c) 2000-2015 by Sebastian Bauer & Hynek Schlawack",
+		MUIA_Application_Copyright,		"2000-2018 by Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Author,		"Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Description,	"A mailer.",
 		MUIA_Application_Base,			"SIMPLEMAIL",
@@ -282,6 +286,26 @@ static int app_init(void)
 		MUIA_Application_UsedClasses, UsedClasses,
 #endif
 		HideIcon ? MUIA_Application_DiskObject : TAG_IGNORE, HideIcon,
+#ifdef __MORPHOS__
+		SubWindow, aboutboxWin = AboutboxObject,
+			MUIA_Aboutbox_Credits, "\n"
+				"\n"
+				"\033b%p\033n\n"
+				"\tHynek Schlawack\n"
+				"\tSebastian Bauer\n"
+				"\n"
+				"\033b%l\033n\n"
+				"\tMárton Dósa\n"
+				"\tJacek Piszczek, Mariusz Danilewicz\n"
+				"\tJoni Halme\n"
+				"\tSamir Hawamdeh\n"
+				"\n"
+				"\033b%W\033n\n"
+				"\tsimplemail.sourceforge.net\n"
+				"\n"
+				"Released under the terms of the GNU Public License",
+			End,
+#endif
 	End;
 
 	if (App)

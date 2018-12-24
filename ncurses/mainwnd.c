@@ -171,6 +171,12 @@ int main_is_iconified(void)
 
 /*****************************************************************************/
 
+void main_hide_progress(void)
+{
+}
+
+/*****************************************************************************/
+
 void main_refresh_window_title(const char *title)
 {
 }

@@ -348,7 +348,7 @@ struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *i
 
 /*****************************************************************************/
 
-struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype)
+struct mail_complete *mail_find_content_type(struct mail_complete *m, const char *type, const char *subtype)
 {
 	int i;
 	if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))

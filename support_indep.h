@@ -371,7 +371,7 @@ char **array_add_array(char **dest, char **src);
  * @param strings
  * @return
  */
-int array_length(char **strings);
+unsigned int array_length(char **strings);
 
 /**
  * Duplicates an array of strings. Safe to call it with a NULL pointer.

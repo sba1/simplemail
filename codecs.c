@@ -334,7 +334,7 @@ static int get_encode_str(unsigned char *buf)
  * @param structured
  * @return
  */
-static char *encode_header_str(char *toencode, int *line_len_ptr, int structured)
+static char *encode_header_str(const char *toencode, int *line_len_ptr, int structured)
 {
 	int line_len = *line_len_ptr;
 	int encoded_len = 0;
@@ -623,7 +623,7 @@ static char *encode_header_str_utf8(const char *toencode, int *line_len_ptr, int
 
 /*****************************************************************************/
 
-char *encode_header_field(char *field_name, char *field_contents)
+char *encode_header_field(const char *field_name, const char *field_contents)
 {
 	char *header = NULL;
 	int line_len;

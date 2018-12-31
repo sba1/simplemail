@@ -1,3 +1,11 @@
+#ifndef QSORT_REG
+#if __cplusplus >= 201703L
+#define QSORT_REG
+#else
+#define QSORT_REG register
+#endif
+#endif
+
 /* $Id$
  * Adopted from GNU glibc by Mjt.
  * See stdlib/qsort.c in glibc */
@@ -211,7 +219,7 @@ typedef struct {
   {									\
     QSORT_TYPE *const _end_ptr = _base + _elems - 1;			\
     QSORT_TYPE *_tmp_ptr = _base;					\
-    register QSORT_TYPE *_run_ptr;					\
+    QSORT_REG QSORT_TYPE *_run_ptr;					\
     QSORT_TYPE *_thresh;						\
 									\
     _thresh = _base + _QSORT_MAX_THRESH;				\

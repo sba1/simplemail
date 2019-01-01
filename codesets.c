@@ -1993,7 +1993,12 @@ static void tabinit(void)
 	needtables = 0;
 }
 
+#if __cplusplus >= 201703L
+#define DECLARE_BIT_BUFFER unsigned long BITbuffer = 0, buffertemp = 0; int bufferbits = 0
+#else
 #define DECLARE_BIT_BUFFER register unsigned long BITbuffer = 0, buffertemp = 0; int bufferbits = 0
+#endif
+
 #define BITS_IN_BUFFER bufferbits
 #define WRITE_N_BITS(x, n) ((BITbuffer |= ( ((x) & ~(-1L<<(n))) << (32-(n)-bufferbits) ) ), bufferbits += (n) )
 #define READ_N_BITS(n) ((buffertemp = (BITbuffer >> (32-(n)))), (BITbuffer <<= (n)), (bufferbits -= (n)), buffertemp)

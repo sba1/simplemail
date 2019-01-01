@@ -42,7 +42,7 @@ struct remote_mail
 struct remote_mailbox
 {
 	struct remote_mail *remote_mail_array; /* may be NULL if remote_mail_num == 0 */
-	int num_of_remote_mail;
+	unsigned int num_of_remote_mail;
 	unsigned int uid_validity;
 	unsigned int uid_next;
 };
@@ -164,7 +164,7 @@ void imap_free_remote_mailbox(struct remote_mailbox *rm);
  * @param num_of_remote_mails
  * @return
  */
-int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, int num_of_remote_mails);
+int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, unsigned int num_of_remote_mails);
 
 struct imap_get_remote_mails_args
 {

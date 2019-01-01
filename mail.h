@@ -266,7 +266,7 @@ struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *i
  * @param subtype
  * @return
  */
-struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype);
+struct mail_complete *mail_find_content_type(struct mail_complete *m, const char *type, const char *subtype);
 
 /**
  * Finds the initial mail which should be displayed. This is always the

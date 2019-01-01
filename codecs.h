@@ -64,7 +64,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
  * @param field_contents the contents of the field to encoded
  * @return the encoded header.
  */
-char *encode_header_field(char *field_name, char *field_contents);
+char *encode_header_field(const char *field_name, const char *field_contents);
 
 /**
  * Creates a unstructured encoded header field (includes all rules of the

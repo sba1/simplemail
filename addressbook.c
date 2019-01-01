@@ -296,7 +296,7 @@ void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry, char *part, int *type_ptr)
 {
 	int pl;
-	int i;
+	unsigned int i;
 
 	pl = mystrlen(part);
 
@@ -1169,7 +1169,7 @@ static void addressbook_save_snail_phone(const char *container, struct address_s
  */
 static void addressbook_save_entry(FILE *fh, struct addressbook_entry_new *entry)
 {
-	int i;
+	unsigned int i;
 
 	fputs("<newcontact>\n",fh);
 	put_xml_element_string(fh,"alias",entry->alias);
@@ -1349,7 +1349,7 @@ struct addressbook_entry_new *addressbook_find_entry_by_address(const char *emai
 	entry = addressbook_first_entry();
 	while (entry)
 	{
-		int i;
+		unsigned int i;
 
 		for (i=0;i<array_length(entry->email_array);i++)
 		{
@@ -1398,7 +1398,7 @@ struct addressbook_entry_new *addressbook_find_entry_by_realname(const char *rea
  * @param index
  * @return
  */
-static char *addressbook_get_expanded_email_from_entry_indexed(struct addressbook_entry_new *entry, int index)
+static char *addressbook_get_expanded_email_from_entry_indexed(struct addressbook_entry_new *entry, unsigned int index)
 {
 	string str;
 	char *email;
@@ -1652,7 +1652,7 @@ char *addressbook_complete_address(char *address)
 	entry = addressbook_first_entry();
 	while (entry)
 	{
-		int i;
+		unsigned int i;
 
 		for (i=0; i < array_length(entry->email_array); i++)
 		{
@@ -1836,7 +1836,7 @@ struct addressbook_completion_list *addressbook_complete_address_full(char *addr
 		entry = addressbook_first_entry();
 		while (entry && total_entries < max)
 		{
-			int i;
+			unsigned int i;
 
 			for (i=0; i < array_length(entry->email_array) && total_entries < max; i++)
 			{

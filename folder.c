@@ -4430,7 +4430,7 @@ int folder_filter(struct folder *folder)
  * @param mode fopen() compatible open mode
  * @return the pointer to the file or NULL on failure.
  */
-static FILE *folder_open_order_file(char *mode)
+static FILE *folder_open_order_file(const char *mode)
 {
 	FILE *fh;
 	char *order_path;

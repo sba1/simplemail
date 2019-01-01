@@ -99,11 +99,12 @@ static int set_local_mail_array_entry(struct local_mail *local_mail_array, int i
  * @param num_of_todel_mails_ptr
  * @return 0 on failure, otherwise something different.
  */
-static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, int *num_of_mails_ptr, int *num_of_todel_mails_ptr)
+static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, unsigned int *num_of_mails_ptr, unsigned int *num_of_todel_mails_ptr)
 {
 	struct local_mail *local_mail_array;
-	int num_of_mails = 0, num_of_todel_mails = 0;
-	int i,success = 0;
+	unsigned int num_of_mails = 0, num_of_todel_mails = 0;
+	unsigned int i;
+	int success = 0;
 
 	/* Will house the names of mails in case there was no index of the folder loaded */
 	struct string_list filename_list;
@@ -285,8 +286,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	folders_lock();
 	if ((folder = folder_find_by_imap(server->login,server->name, imap_path)))
 	{
-		int num_of_local_mails;
-		int num_of_todel_local_mails;
+		unsigned int num_of_local_mails;
+		unsigned int num_of_todel_local_mails;
 		struct local_mail *local_mail_array;
 		char path[380];
 
@@ -336,8 +337,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				if ((rm = imap_get_remote_mails(&args)))
 				{
 					struct remote_mail *remote_mail_array;
-					int num_of_remote_mails;
-					int i,j;
+					unsigned int num_of_remote_mails;
+					unsigned int i,j;
 
 					remote_mail_array = rm->remote_mail_array;
 					num_of_remote_mails = rm->num_of_remote_mail;
@@ -405,14 +406,14 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			/* Get information of all mails within the folder */
 			if ((rm = imap_get_remote_mails(&args)))
 			{
-				int i,j;
+				unsigned int i,j;
 				unsigned int max_todl_bytes = 0;
 				unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
 				unsigned int todl_bytes = 0;
 				unsigned int num_msgs_to_dl = 0; /* number of mails that we really want to download */
 
 				struct remote_mail *remote_mail_array;
-				int num_of_remote_mails;
+				unsigned int num_of_remote_mails;
 
 				remote_mail_array = rm->remote_mail_array;
 				num_of_remote_mails = rm->num_of_remote_mail;
@@ -497,7 +498,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 						{
 							char msgno_buf[200];
 							char *temp_ptr;
-							int todownload;
+							unsigned int todownload;
 
 							/* We only handle untagged lines here */
 							if (buf[0] != '*')
@@ -513,7 +514,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
 							{
 								temp_ptr++;
-								todownload = atoi(temp_ptr);
+								todownload = (unsigned int)atoi(temp_ptr);
 							} else todownload = 0;
 
 							if (todownload)
@@ -1035,8 +1036,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 		folders_lock();
 		if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
 		{
-			int num_of_local_mails;
-			int num_of_todel_local_mails;
+			unsigned int num_of_local_mails;
+			unsigned int num_of_todel_local_mails;
 			struct local_mail *local_mail_array;
 
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
@@ -1068,10 +1069,10 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 				if ((rm = imap_get_remote_mails(&args)))
 				{
-					int i,j;
+					unsigned int i,j;
 
 					struct remote_mail *remote_mail_array;
-					int num_remote_mails;
+					unsigned int num_remote_mails;
 
 					char *filename_ptrs[MAX_MAILS_PER_REFRESH];
 					int filename_current = 0;
@@ -1612,7 +1613,7 @@ int imap_really_download_mail(struct connection *imap_connection, char *local_pa
 			{
 				char msgno_buf[200];
 				char *temp_ptr;
-				int todownload;
+				unsigned int todownload;
 				line++;
 
 				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
@@ -1623,7 +1624,7 @@ int imap_really_download_mail(struct connection *imap_connection, char *local_pa
 				if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
 				{
 					temp_ptr++;
-					todownload = atoi(temp_ptr);
+					todownload = (unsigned int)atoi(temp_ptr);
 				} else todownload = 0;
 
 				if (todownload)

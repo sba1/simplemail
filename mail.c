@@ -348,7 +348,7 @@ struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *i
 
 /*****************************************************************************/
 
-struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype)
+struct mail_complete *mail_find_content_type(struct mail_complete *m, const char *type, const char *subtype)
 {
 	int i;
 	if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))
@@ -1605,7 +1605,7 @@ int mail_process_headers(struct mail_complete *mail)
 		char *buf = header->contents;
 		const struct header_entry *header_entry;
 		char lowercase_header[MAX_WORD_LENGTH+1];
-		int i;
+		unsigned int i;
 
 		header_next = (struct header*)node_next(&header->node);
 
@@ -2011,7 +2011,7 @@ int mail_process_headers(struct mail_complete *mail)
  * @param attribute
  * @return
  */
-static char *mail_find_content_parameter_value(struct mail_complete *mail, char *attribute)
+static char *mail_find_content_parameter_value(struct mail_complete *mail, const char *attribute)
 {
 	struct content_parameter *param = (struct content_parameter*)list_first(&mail->content_parameter_list);
 

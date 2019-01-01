@@ -819,9 +819,9 @@ char **array_add_array(char **dest, char **src)
 
 /*****************************************************************************/
 
-int array_length(char **strings)
+unsigned int array_length(char **strings)
 {
-	int i;
+	unsigned int i;
 	if (!strings) return 0;
 	i = 0;
 	for (;strings[i];i++);

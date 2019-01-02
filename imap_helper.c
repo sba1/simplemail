@@ -369,7 +369,7 @@ int imap_remote_folder_exists(struct remote_folder *rf, int num_rf, const char *
 
 /******************************************************************************/
 
-int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, int num_of_remote_mails)
+int imap_get_remote_mails_handle_answer(struct connection *conn, char *tag, char *buf, int buf_size, struct remote_mail *remote_mail_array, unsigned int num_of_remote_mails)
 {
 	char *line;
 	int success = 0;
@@ -591,12 +591,12 @@ struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args
 
 void imap_free_remote_mailbox(struct remote_mailbox *rm)
 {
-	int i;
-
 	if (!rm) return;
 
 	if (rm->remote_mail_array)
 	{
+		unsigned int i;
+
 		for (i=0; i < rm->num_of_remote_mail; i++)
 			free(rm->remote_mail_array[i].headers);
 	}

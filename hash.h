@@ -71,7 +71,7 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename);
  *  file.
  * @return 1 on success, 0 otherwise.
  */
-int hash_table_init_with_size(struct hash_table *ht, int bits, int entry_size, const char *filename);
+int hash_table_init_with_size(struct hash_table *ht, int bits, unsigned int entry_size, const char *filename);
 
 /**
  * Gives back all resources occupied by the given hash table (excluding the

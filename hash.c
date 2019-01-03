@@ -192,7 +192,7 @@ static int hash_table_set_bits(struct hash_table *ht, int bits)
 
 /*****************************************************************************/
 
-int hash_table_init_with_size(struct hash_table *ht, int bits, int entry_size, const char *filename)
+int hash_table_init_with_size(struct hash_table *ht, int bits, unsigned int entry_size, const char *filename)
 {
 	FILE *fh;
 

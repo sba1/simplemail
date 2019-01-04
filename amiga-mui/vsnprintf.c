@@ -47,7 +47,15 @@ Dirk Stöcker <stoecker@epost.de>
 #include <string.h>
 #include <stdarg.h>
 
-static char * __ultoa(register unsigned long, char *, int, int, char *);
+#ifndef QSORT_REG
+#if __cplusplus >= 201703L
+#define REGISTER
+#else
+#define REGISTER register
+#endif
+#endif
+
+
 static void __find_arguments(const char *, va_list, void ***);
 static int __grow_type_table(int, unsigned char **, int *);
 
@@ -64,10 +72,10 @@ static int __grow_type_table(int, unsigned char **, int *);
  * Octal numbers can be forced to have a leading zero; hex numbers
  * use the given digits.
  */
-static char * __ultoa(register unsigned long val, char *endp, int base, int octzero, char *xdigs)
+static char * __ultoa(REGISTER unsigned long val, char *endp, int base, int octzero, const char *xdigs)
 {
-  register char *cp = endp;
-  register long sval;
+  REGISTER char *cp = endp;
+  REGISTER long sval;
 
   /*
    * Handle the three cases separately, in the hope of getting
@@ -132,11 +140,11 @@ static char * __ultoa(register unsigned long val, char *endp, int base, int octz
 
 int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap)
 {
-  register char *fmt;   /* format string */
-  register int ch;      /* character from fmt */
-  register int n, n2;   /* handy integer (short term usage) */
-  register char *cp;    /* handy char pointer (short term usage) */
-  register int flags;   /* flags as above */
+  REGISTER const char *fmt;   /* format string */
+  REGISTER int ch;      /* character from fmt */
+  REGISTER int n, n2;   /* handy integer (short term usage) */
+  REGISTER const char *cp;    /* handy char pointer (short term usage) */
+  REGISTER int flags;   /* flags as above */
   int ret;              /* return value accumulator */
   int width;            /* width from format (%8d), or 0 */
   int prec;             /* precision from format (%.3d), or -1 */
@@ -147,7 +155,7 @@ int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap)
   int realsz;           /* field size expanded by dprec, sign, etc */
   int size;             /* size of converted field or string */
   int prsize;           /* max size of printed field */
-  char *xdigs = 0;      /* digits for [xX] conversion */
+  const char *xdigs = 0;/* digits for [xX] conversion */
   char buf[BUF];        /* space for %c, %[diouxX], %[eEfgG] */
   char ox[2];           /* space for 0x hex-prefix */
   void **argtable;      /* args, built due to positional arg */
@@ -333,7 +341,8 @@ reswitch: switch (ch) {
       flags |= LONGINT;
       goto rflag;
     case 'c':
-      *(cp = buf) = GETARG(int);
+      *buf = GETARG(int);
+      cp = buf;
       size = 1;
       sign = '\0';
       break;
@@ -434,7 +443,7 @@ number:     if ((dprec = prec) >= 0)
        */
       cp = buf + BUF;
       if (ulval != 0 || prec != 0)
-        cp = __ultoa(ulval, cp, base,
+        cp = __ultoa(ulval, buf + BUF, base,
             flags & ALT, xdigs);
       size = buf + BUF - cp;
       break;
@@ -442,8 +451,8 @@ number:     if ((dprec = prec) >= 0)
       if (ch == '\0')
         goto done;
       /* pretend it was %c with argument ch */
+      *buf = ch;
       cp = buf;
-      *cp = ch;
       size = 1;
       sign = '\0';
       break;
@@ -539,11 +548,11 @@ error:
  */ 
 static void __find_arguments(const char *fmt0, va_list ap, void ***argtable)
 {
-  register char *fmt; /* format string */
-  register int ch;  /* character from fmt */
-  register int n, n2; /* handy integer (short term usage) */
-  register char *cp;  /* handy char pointer (short term usage) */
-  register int flags; /* flags as above */
+  REGISTER char *fmt; /* format string */
+  REGISTER int ch;  /* character from fmt */
+  REGISTER int n, n2; /* handy integer (short term usage) */
+  REGISTER char *cp;  /* handy char pointer (short term usage) */
+  REGISTER int flags; /* flags as above */
   unsigned char *typetable; /* table of types */
   unsigned char stattypetable [STATIC_ARG_TBL_SIZE];
   int tablesize;    /* current size of type table */

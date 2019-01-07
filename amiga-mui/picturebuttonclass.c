@@ -207,9 +207,9 @@ STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 
 	if ((ti = FindTagItem(MUIA_PictureButton_ShowLabel,msg->ops_AttrList)))
 	{
-		if (data->show_label != ti->ti_Data)
+		if (data->show_label != (int)ti->ti_Data)
 		{
-			data->show_label = ti->ti_Data;
+			data->show_label = (int)ti->ti_Data;
 			relayout = 1;
 		}
 	}

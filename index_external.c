@@ -53,8 +53,8 @@
 
 struct bnode_element
 {
-	int str_offset;
-	int str_len;
+	unsigned int str_offset;
+	unsigned int str_len;
 	union
 	{
 		struct
@@ -85,7 +85,7 @@ struct index_external
 	struct index index;
 	struct list document_list;
 
-	int block_size;
+	unsigned int block_size;
 	int max_elements_per_node;
 	int number_of_blocks;
 
@@ -100,7 +100,7 @@ struct index_external
 	 * Defines the maximum length for which a substring search is accurate.
 	 * Searches with longer substring will shorten the substring to this length.
 	 */
-	int max_substring_len;
+	unsigned int max_substring_len;
 
 	bnode *tmp;
 	bnode *tmp2;
@@ -212,7 +212,7 @@ static int bnode_read_block(struct index_external *idx, bnode *node, int address
 static char *bnode_read_string(struct index_external *idx, struct bnode_element *element)
 {
 	char *str;
-	int str_len = element->str_len;
+	unsigned int str_len = element->str_len;
 	if (str_len > idx->max_substring_len)
 		str_len = idx->max_substring_len;
 

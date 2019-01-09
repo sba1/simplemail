@@ -136,6 +136,11 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	}
 
 	length_of_idxs = GetLong(buf, 4);
+	if (length_of_idxs < 0)
+	{
+		SM_DEBUGF(5,("Got negative length!"));
+		goto out;
+	}
 	num_of_idxs = buf[10];
 
 	if (num_of_idxs > sizeof(entries)/sizeof(entries[0]))
@@ -145,7 +150,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	}
 
 	/* Check if we have read enough data, if not we must read more */
-	if (size - 12 < length_of_idxs)
+	if (size - 12 < (unsigned int)length_of_idxs)
 	{
 		unsigned char *newbuf;
 

@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.4 */
+/* ANSI-C code produced by gperf version 3.1 */
 /* Command-line: gperf mail_headers.gperf  */
 /* Computed positions: -k'1,3,10' */
 
@@ -26,7 +26,7 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gperf@gnu.org>."
 #endif
 
 #line 6 "mail_headers.gperf"
@@ -74,7 +74,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (register const char *str, register unsigned int len)
+hash (register const char *str, register size_t len)
 {
   static const unsigned char asso_values[] =
     {
@@ -105,7 +105,7 @@ hash (register const char *str, register unsigned int len)
       36, 36, 36, 36, 36, 36, 36, 36, 36, 36,
       36, 36, 36, 36, 36, 36
     };
-  register int hval = len;
+  register unsigned int hval = len;
 
   switch (hval)
     {
@@ -174,73 +174,67 @@ static const struct stringpool_t stringpool_contents =
     "x-simplemail-partial"
   };
 #define stringpool ((const char *) &stringpool_contents)
-#ifdef __GNUC__
-__inline
-#if defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__
-__attribute__ ((__gnu_inline__))
-#endif
-#endif
 const struct header_entry *
-mail_lookup_header (register const char *str, register unsigned int len)
+mail_lookup_header (register const char *str, register size_t len)
 {
   static const struct header_entry wordlist[] =
     {
       {-1}, {-1},
 #line 36 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str2,							HEADER_TO},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str2,							HEADER_TO},
       {-1},
 #line 35 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str4,						HEADER_FROM},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str4,						HEADER_FROM},
       {-1}, {-1},
 #line 37 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str7,							HEADER_CC},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str7,							HEADER_CC},
 #line 40 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str8,					HEADER_REPLY_TO},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str8,					HEADER_REPLY_TO},
 #line 39 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str9,						HEADER_DATE},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str9,						HEADER_DATE},
 #line 51 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str10,				HEADER_X_PRIORITY},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str10,				HEADER_X_PRIORITY},
 #line 47 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str11,				HEADER_IN_REPLY_TO},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str11,				HEADER_IN_REPLY_TO},
 #line 42 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str12,				HEADER_MIME_VERSION},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str12,				HEADER_MIME_VERSION},
 #line 41 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str13,					HEADER_RECEIVED},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str13,					HEADER_RECEIVED},
       {-1},
 #line 50 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str15,					HEADER_IMPORTANCE},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str15,					HEADER_IMPORTANCE},
       {-1},
 #line 44 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str17,				HEADER_CONTENT_TYPE},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str17,				HEADER_CONTENT_TYPE},
       {-1}, {-1},
 #line 45 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str20,					HEADER_CONTENT_ID},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str20,					HEADER_CONTENT_ID},
       {-1},
 #line 38 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str22,					HEADER_SUBJECT},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str22,					HEADER_SUBJECT},
       {-1},
 #line 43 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str24,		HEADER_CONTENT_DISPOSITION},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str24,		HEADER_CONTENT_DISPOSITION},
 #line 46 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str25,					HEADER_MESSAGE_ID},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str25,					HEADER_MESSAGE_ID},
       {-1}, {-1}, {-1},
 #line 49 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str29,		HEADER_CONTENT_DESCRIPTION},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str29,		HEADER_CONTENT_DESCRIPTION},
 #line 48 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str30,	HEADER_CONTENT_TRANSFER_ENCODING},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str30,	HEADER_CONTENT_TRANSFER_ENCODING},
       {-1},
 #line 52 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str32,			HEADER_X_SIMPLEMAIL_POP3},
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str32,			HEADER_X_SIMPLEMAIL_POP3},
       {-1}, {-1},
 #line 53 "mail_headers.gperf"
-      {(int)(long)&((struct stringpool_t *)0)->stringpool_str35,		HEADER_X_SIMPLEMAIL_PARTIAL}
+      {(int)(size_t)&((struct stringpool_t *)0)->stringpool_str35,		HEADER_X_SIMPLEMAIL_PARTIAL}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      register int key = hash (str, len);
+      register unsigned int key = hash (str, len);
 
-      if (key <= MAX_HASH_VALUE && key >= 0)
+      if (key <= MAX_HASH_VALUE)
         {
           register int o = wordlist[key].name;
           if (o >= 0)

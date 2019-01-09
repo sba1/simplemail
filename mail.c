@@ -568,7 +568,7 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 void mail_identify_status(struct mail_info *m)
 {
 	char *suffix;
-	int i;
+	unsigned int i;
 	if (!m->filename) return;
 	suffix = strrchr(m->filename,'.');
 	if (!suffix || suffix[2])

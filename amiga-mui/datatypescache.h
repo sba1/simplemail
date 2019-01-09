@@ -33,7 +33,7 @@
  * @param scr the screen on which the object shall be displayed
  * @return the datatypes object
  */
-Object *LoadAndMapPicture(char *filename, struct Screen *scr);
+Object *LoadAndMapPicture(const char *filename, struct Screen *scr);
 
 /**
  * Initialize the cache.

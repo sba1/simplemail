@@ -132,7 +132,7 @@ static void quoting_chars(char *buf, int len, char *text)
 char *quote_text(char *src, int len)
 {
 	static char temp_buf[128];
-	int temp_len = 0;
+	unsigned int temp_len = 0;
 	string cited;
 
 	if (string_initialize(&cited,len))
@@ -254,7 +254,7 @@ char *quote_text(char *src, int len)
 
 /*****************************************************************************/
 
-char *mail_get_compare_subject(char *subj)
+const char *mail_get_compare_subject(const char *subj)
 {
 	char *p;
 	int brackets = 0;

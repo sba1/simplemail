@@ -35,7 +35,6 @@
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h" /* for mail_compose_new() */
-#include "mail_headers.h"
 #include "mail_support.h"
 #include "parse.h"
 #include "pgp.h"
@@ -50,6 +49,12 @@
 #include "timesupport.h"
 
 #include "SimpleMail_rev.h"
+
+#if __cplusplus >= 201703L
+#define register
+#endif
+
+#include "mail_headers.h"
 
 /* prototypes */
 static int mail_read_structure(struct mail_complete *mail);

@@ -141,7 +141,7 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 	struct address_match_entry *entry = (struct address_match_entry*)msg->entry;
 	struct AddressMatchList_Data *data = (struct AddressMatchList_Data*)h->h_Data;
 
-	int i, count;
+	unsigned int i, count;
 
 	if (!entry)
 	{
@@ -225,7 +225,7 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 		*array++ = data->group_buf;
 	} else if (entry->type == AMET_COMPLETION)
 	{
-		int l, i, j, last_hit = 0;
+		unsigned int l, i, j, last_hit = 0;
 
 		utf8tostr(entry->o.completion->complete, data->realname_buf, sizeof(data->realname_buf), user.config.default_codeset);
 
@@ -235,7 +235,7 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 
 		for (i = 0; i < l && j < sizeof(data->description_buf) - 3; i++)
 		{
-			int hit = match_hit(entry->o.completion->match_mask, i);
+			unsigned int hit = match_hit(entry->o.completion->match_mask, i);
 			if (last_hit != hit && j + 2 < sizeof(data->description_buf))
 			{
 				unsigned char s;

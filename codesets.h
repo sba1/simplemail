@@ -280,7 +280,7 @@ static inline unsigned int match_bitmask_size(int len)
 /**
  * @return whether there is a hit at the given pos.
  */
-static inline int match_hit(match_mask_t *mask, int pos)
+static inline unsigned int match_hit(match_mask_t *mask, int pos)
 {
 	unsigned int mp = match_bitmask_pos(pos);
 	return !!(mask[mp] & match_bitmask(pos));

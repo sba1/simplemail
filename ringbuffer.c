@@ -194,7 +194,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 			ringbuffer_free_least_recently_allocated(rb);
 
 		/* Wrap next free */
-		if (as_full_item(rb->next_free)->size == ~0)
+		if (as_full_item(rb->next_free)->size == ~0U)
 			rb->next_free = rb->mem;
 	} else
 	{
@@ -214,7 +214,7 @@ void *ringbuffer_alloc(ringbuffer_t rb, size_t size)
 		ringbuffer_free_least_recently_allocated(rb);
 
 		/* Wrap next free */
-		if (as_full_item(rb->next_free)->size == ~0)
+		if (as_full_item(rb->next_free)->size == ~0U)
 			rb->next_free = rb->mem;
 	}
 	return addr;
@@ -260,7 +260,7 @@ void *ringbuffer_next(ringbuffer_t rb, void *item)
 	if ((unsigned char*)next == rb->next_alloc) return NULL;
 
 	/* Handle wrapping */
-	if (next->size == ~0)
+	if (next->size == ~0U)
 	{
 		/* Item was final one */
 		full_item = (struct full_item*)rb->mem;

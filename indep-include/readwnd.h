@@ -35,7 +35,7 @@ struct mail_info;
  * @param window the actual window
  * @return 1 on success, 0 on failure
  */
-int read_window_open(char *folder, struct mail_info *mail, int window);
+int read_window_open(const char *folder, struct mail_info *mail, int window);
 
 /**
  * Activate a read window

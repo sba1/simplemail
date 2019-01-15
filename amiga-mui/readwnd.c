@@ -1269,7 +1269,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 
 /*****************************************************************************/
 
-int read_window_open(char *folder, struct mail_info *mail, int window)
+int read_window_open(const char *folder, struct mail_info *mail, int window)
 {
 	Object *wnd,  *contents_page;
 	#ifdef __AROS__

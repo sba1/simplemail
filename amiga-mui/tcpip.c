@@ -154,7 +154,7 @@ out:
 
 /* Returns true if given interface is online, if the information is not querryable
    we will return 1 */
-int is_online(char *iface)
+int is_online(const char *iface)
 {
 #if defined(AMITCP_SDK) || defined(ROADSHOW_SDK) || defined(__AROS__)
 	return 1;

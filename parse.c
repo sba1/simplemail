@@ -976,7 +976,7 @@ static char *parse_encoded_word(const char *encoded_word, char **pbuf, char **pc
 	/* filter out the Escape sequence as this is not allowed anywhy */
 	if (*pbuf)
 	{
-		int i;
+		unsigned int i;
 		for (i=0;i<len;i++)
 			if ((*pbuf)[i]==27) (*pbuf)[i]=' ';
 

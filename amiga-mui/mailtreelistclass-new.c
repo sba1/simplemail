@@ -506,10 +506,10 @@ static int MUI_ScrollRaster(Object *obj, int dx, int dy, int left, int top, int 
 
 /**************************************************************************/
 
-STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
+STATIC VOID GetFromText(struct mail_info *m, const char **txt_ptr, int *ascii7_ptr)
 {
 	int is_ascii7 = 1;
-	char *txt;
+	const char *txt;
 
 	if ((txt = (char*)mail_info_get_from_phrase(m)))
 		is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ASCII7);
@@ -530,10 +530,10 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	*txt_ptr = txt;
 }
 
-STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
+STATIC VOID GetToText(struct mail_info *m, const char **txt_ptr, int *ascii7_ptr)
 {
 	int is_ascii7 = 1;
-	char *txt;
+	const char *txt;
 
 	if (m->flags & MAIL_FLAGS_NORCPT)
 	{
@@ -751,7 +751,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEnt
 		if ((ci->flags & COLUMN_FLAG_AUTOWIDTH) && !(ci->flags & COLUMN_FLAG_LAZY))
 		{
 			int is_ascii7 = 1;
-			char *txt = NULL;
+			const char *txt = NULL;
 			int used_images = 0;
 			int images[10];
 
@@ -1108,7 +1108,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	{
 		int col_width;
 		int is_ascii7;
-		char *txt;
+		const char *txt;
 		int used_images;
 		int images[10];
 
@@ -1406,7 +1406,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							   subject, see folder.c/mail_get_compare_subject() what will be skipped */
 							if (ci->type == COLUMN_TYPE_SUBJECT)
 							{
-								char *new_txt = mail_get_compare_subject(txt);
+								const char *new_txt = mail_get_compare_subject(txt);
 								int new_len = strlen(new_txt);
 
 								if (new_len != txt_len)

@@ -14,6 +14,6 @@ char *quote_text(char *src, int len);
  * @param subj the string that should be transformed
  * @return the transformed string
  */
-char *mail_get_compare_subject(char *subj);
+const char *mail_get_compare_subject(const char *subj);
 
 #endif

@@ -175,7 +175,7 @@ void MD5Final(unsigned char digest[16], struct SM_MD5Context *ctx)
  */
 void MD5Transform(md5_uint32 buf[4], md5_uint32 const in[16])
 {
-    register md5_uint32 a, b, c, d;
+    md5_uint32 a, b, c, d;
 
     a = buf[0];
     b = buf[1];

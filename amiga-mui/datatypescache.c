@@ -134,7 +134,7 @@ APTR MySetProcWindow(void *newvalue)
 
 /*****************************************************************************/
 
-Object *LoadAndMapPicture(char *filename, struct Screen *scr)
+Object *LoadAndMapPicture(const char *filename, struct Screen *scr)
 {
 	Object *o;
 	APTR oldwindowptr;

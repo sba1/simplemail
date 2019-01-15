@@ -568,7 +568,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				if (!(m = mail_complete_create(NULL))) break;
 
 				sprintf(buf, "TOP %d 1\r\n",i+1);
-				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
+				if (tcp_write(conn,buf,strlen(buf)) != (int)strlen(buf)) break;
 				if (!(answer = pop3_receive_answer(conn,0)))
 				{
 					mail_complete_free(m);

@@ -142,7 +142,7 @@ Object *LoadAndMapPicture(const char *filename, struct Screen *scr)
 	/* tell DOS not to bother us with requesters */
 	oldwindowptr = MySetProcWindow((APTR)-1);
 
-	o = NewDTObject(filename,
+	o = NewDTObject((char *)filename,
 			DTA_GroupID          , GID_PICTURE,
 			OBP_Precision        , PRECISION_EXACT,
 			PDTA_Screen          , scr,

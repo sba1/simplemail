@@ -573,7 +573,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 			unsigned char *p = (unsigned char*)buf;
 			PKCS7 *pkcs7;
 
-			if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))
+			if ((pkcs7 = d2i_PKCS7(NULL, (const unsigned char**) &p, len)))
 			{
 				PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7,AmiSSLBase,IAmiSSL);
 				if (pkcs7_data)

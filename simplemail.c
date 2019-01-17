@@ -455,13 +455,13 @@ int callback_open_message(char *mail_filename, int window)
 	{
 		struct mail_info *mail;
 		char *filename;
-		char *dir;
+		char *pathpart;
+		const char *dir;
 
 		filename = mystrdup(sm_file_part(path));
-		dir = sm_path_part(path);
-		if (dir)
+		if ((pathpart = sm_path_part(path)))
 		{
-			*dir = 0;
+			*pathpart = 0;
 			dir = path;
 		}
 		else dir = "";

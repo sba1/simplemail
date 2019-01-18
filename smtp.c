@@ -86,7 +86,7 @@ static void buf_free(char *buf)
 static int smtp_send_cmd(struct smtp_connection *conn, const char *cmd, const char *args)
 {
 	int rc;
-	long count;
+	int count;
 	int ready = 0;
 	char *buf;
 	char send_buf[300];
@@ -102,7 +102,7 @@ static int smtp_send_cmd(struct smtp_connection *conn, const char *cmd, const ch
 
 		count = tcp_write(conn->conn, send_buf, strlen(send_buf));
 		
-		if (count != strlen(send_buf))
+		if (count != (int)strlen(send_buf))
 			return -1;
 	}
 
@@ -323,7 +323,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 				for(;;) /* header */
 				{
-					long count;
+					int count;
 
 					if(!fgets(buf,999,fp)) /* read error or EOF in header */
 					{
@@ -350,7 +350,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 					}
 
 					count = tcp_write(conn->conn, buf, strlen(buf)-1);
-					if(count != strlen(buf)-1)
+					if(count != (int)strlen(buf)-1)
 					{
 						rc = 0;
 						break;
@@ -682,7 +682,7 @@ static int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 		SM_DEBUGF(10,("Trying AUTH PLAIN\n"));
 
-		if (ll + pl < sizeof(prep)-3)
+		if (ll + pl < (int)sizeof(prep)-3)
 		{
 			prep[0] = 0;
 			strcpy(&prep[1], account->smtp->auth_login);

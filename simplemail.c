@@ -2485,7 +2485,7 @@ static void callback_timer(void)
 {
 	if (user.config.receive_autocheck || (user.config.receive_autoonstartup && autocheck_seconds_start == 0))
 	{
-		if (sm_get_current_seconds() - autocheck_seconds_start >= user.config.receive_autocheck * 60)
+		if (sm_get_current_seconds() - autocheck_seconds_start >= ((unsigned int)user.config.receive_autocheck) * 60)
 		{
 			/* nothing should happen when mails_dl() is called twice,
 			   this could happen if a mail downloading takes very long */

@@ -702,7 +702,7 @@ msgstr "Antwortadresse"
 
 #: amiga-mui/configwnd.c:1311
 msgid "Type"
-msgstr "_Typ"
+msgstr "Typ"
 
 #: amiga-mui/configwnd.c:1318 amiga-mui/configwnd.c:1319
 msgid "Active"

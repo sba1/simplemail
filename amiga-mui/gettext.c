@@ -216,7 +216,7 @@ static char *find_gmostr(char *lang)
 	return NULL;
 }
 
-void bindtextdomain(char * pack, char * dir)
+void bindtextdomain(const char * pack, const char * dir)
 {
 	struct Locale *l;
   int i;
@@ -334,7 +334,7 @@ char *gettext(const char *msgid)
   return res;
 }
 
-char *setlocale(int a, char *b)
+char *setlocale(int a, const char *b)
 {
   return "C";
 }

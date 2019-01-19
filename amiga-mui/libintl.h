@@ -6,9 +6,9 @@ struct lconv {char grouping[1];char *thousands_sep;};
 #define LC_NUMERIC	0
 #define textdomain(a)
 #define localeconv()	0
-void bindtextdomain(char * pack, char * dir);
+void bindtextdomain(const char * pack, const char * dir);
 char *gettext(const char *msgid);
-char *setlocale(int a, char *b);
+char *setlocale(int a, const char *b);
 
 /* This is actually really dangerous, but if we keep track of changes,
 it will work. As the Amiga does not have the gettext system and it

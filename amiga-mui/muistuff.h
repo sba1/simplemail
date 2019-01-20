@@ -70,7 +70,7 @@ Object *VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
  * @param str the string of the label
  * @return the label object
  */
-Object *MakeLabel(STRPTR str);
+Object *MakeLabel(CONST_STRPTR str);
 
 /**
  * Make a simple button object displaying the given str.
@@ -78,7 +78,7 @@ Object *MakeLabel(STRPTR str);
  * @param str the string of the button
  * @return the button object
  */
-Object *MakeButton(STRPTR str);
+Object *MakeButton(CONST_STRPTR str);
 
 /**
  * Make a simple checkbox object.
@@ -87,7 +87,7 @@ Object *MakeButton(STRPTR str);
  * @param check the state of the checkbox
  * @return the checkbox object
  */
-Object *MakeCheck(STRPTR label, ULONG check);
+Object *MakeCheck(CONST_STRPTR label, ULONG check);
 
 /**
  * Make a simple cycle object
@@ -96,7 +96,7 @@ Object *MakeCheck(STRPTR label, ULONG check);
  * @param array the array defining the entries to be displayed
  * @return the cycle object
  */
-Object *MakeCycle(STRPTR label, STRPTR * array);
+Object *MakeCycle(CONST_STRPTR label, const CONST_STRPTR * array);
 
 /**
  * Dispose all the children associated with the given group object.

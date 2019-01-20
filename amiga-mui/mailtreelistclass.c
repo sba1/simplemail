@@ -128,16 +128,16 @@ struct MailTreelist_Data
 	Object *show_recv_item;
 
 	/* translated strings (faster to hold the translation) */
-	char *status_text;
-	char *from_text;
-	char *to_text;
-	char *subject_text;
-	char *reply_text;
-	char *date_text;
-	char *size_text;
-	char *filename_text;
-	char *pop3_text;
-	char *received_text;
+	const char *status_text;
+	const char *from_text;
+	const char *to_text;
+	const char *subject_text;
+	const char *reply_text;
+	const char *date_text;
+	const char *size_text;
+	const char *filename_text;
+	const char *pop3_text;
+	const char *received_text;
 
 	/* the converted strings */
 	char fromto_buf[256];
@@ -147,9 +147,9 @@ struct MailTreelist_Data
 	char bubblehelp_buf[4096];
 };
 
-static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_info *mail)
+static const char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_info *mail)
 {
-	char *field;
+	const char *field;
 	char *dest;
 	int ascii7;
 
@@ -333,7 +333,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				}
 
 				*array++ = status_buf; /* status */
-				*array++ = mailtree_get_fromto(data,mail);
+				*array++ = (char*)mailtree_get_fromto(data,mail);
 				*array++ = data->subject_buf;
 				*array++ = reply;
 				*array++ = date_buf;
@@ -344,19 +344,19 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 			}
 		} else
 		{
-			*array++ = data->status_text;
+			*array++ = (char*)data->status_text;
 
 			if (data->folder_type != FOLDER_TYPE_SEND)
-				*array++ = data->from_text;
-			else *array++ = data->to_text;
+				*array++ = (char*)data->from_text;
+			else *array++ = (char*)data->to_text;
 
-			*array++ = data->subject_text;
-			*array++ = data->reply_text;
-			*array++ = data->date_text;
-			*array++ = data->size_text;
-			*array++ = data->filename_text;
-			*array++ = data->pop3_text;
-			*array = data->received_text;
+			*array++ = (char*)data->subject_text;
+			*array++ = (char*)data->reply_text;
+			*array++ = (char*)data->date_text;
+			*array++ = (char*)data->size_text;
+			*array++ = (char*)data->filename_text;
+			*array++ = (char*)data->pop3_text;
+			*array = (char*)data->received_text;
 		}
 	}
 }

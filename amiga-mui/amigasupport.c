@@ -281,7 +281,7 @@ VOID OpenURL(STRPTR uri)
 }
 
 /* duplicates the string, allocated with AllocVec() */
-STRPTR StrCopy(const STRPTR str)
+STRPTR StrCopy(CONST_STRPTR str)
 {
 	STRPTR dest;
 	LONG len;

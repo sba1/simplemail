@@ -48,7 +48,7 @@ struct SignatureCycle_Data
 	Object *obj;
 	Object *sign_cycle;
 	int has_default_entry;    /* a default entry will be showen */
-	char **sign_array;        /* The array which contains the signature names (converted)*/
+	const char **sign_array;        /* The array which contains the signature names (converted)*/
 	char **utf8_sign_array;   /* The array which contains the signature names (UTF8) */
 	int sign_array_default;   /* points to the defaultentry */
 	int sign_array_utf8count; /* The count of the array to free the memory,
@@ -134,7 +134,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	int has_default_entry=0;
 	int sign_array_default=0;
 	struct list *signature_list = &user.config.signature_list;
-	char **sign_array = NULL;
+	const char **sign_array = NULL;
 	char **utf8_sign_array = NULL;
 	int sign_array_utf8count = 0;
 	int i;
@@ -150,7 +150,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	i = list_length(signature_list);
-	sign_array = (char**)malloc((i+2+has_default_entry)*sizeof(char*));
+	sign_array = (const char**)malloc((i+2+has_default_entry)*sizeof(char*));
 	utf8_sign_array = (char**)malloc(i*sizeof(char*));
 	if (sign_array && utf8_sign_array)
 	{
@@ -192,8 +192,8 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			int i;
 			for (i=0;i<sign_array_utf8count;i++)
 			{
-				free(sign_array[i]);
-				free(utf8_sign_array[i]);
+				free((void*)sign_array[i]);
+				free((void*)utf8_sign_array[i]);
 			}
 			free(sign_array);
 			free(utf8_sign_array);
@@ -227,7 +227,7 @@ STATIC ULONG SignatureCycle_Dispose(struct IClass *cl, Object *obj, Msg msg)
 		int i;
 		for (i=0;i<data->sign_array_utf8count;i++)
 		{
-			free(data->sign_array[i]);
+			free((void*)data->sign_array[i]);
 			free(data->utf8_sign_array[i]);
 		}
 		free(data->sign_array);
@@ -314,7 +314,7 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 				{
 					sign_current = mystrdup(data->utf8_sign_array[i]);
 				}
-				free(data->sign_array[i]);
+				free((void*)data->sign_array[i]);
 				free(data->utf8_sign_array[i]);
 			}
 			free(data->sign_array);
@@ -323,7 +323,7 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 
 		/* make the new cycle stuff */
 		i = list_length(msg->signature_list);
-		data->sign_array = (char**)malloc((i+2+data->has_default_entry)*sizeof(char*));
+		data->sign_array = (const char**)malloc((i+2+data->has_default_entry)*sizeof(char*));
 		data->utf8_sign_array = (char**)malloc(i*sizeof(char*));
 		if (data->sign_array && data->utf8_sign_array)
 		{

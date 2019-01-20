@@ -141,7 +141,7 @@ STATIC ASM SAVEDS VOID group_name_display(REG(a0,struct Hook *h),REG(a2,Object *
 		*array++ = group_name_buf;
 	} else
 	{
-	 *array++ = _("Name");
+	 *array++ = (char*)_("Name");
 	}
 }
 
@@ -595,7 +595,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	static struct Hook pgp_strobj_hook;
 	static struct Hook pgp_objstr_hook;
 
-	static char *register_titles[5];
+	static const char *register_titles[5];
 	static int register_titles_are_translated;
 
 	if (!register_titles_are_translated)

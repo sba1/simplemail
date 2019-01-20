@@ -94,8 +94,8 @@ STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object
 		*array++ = data->description_buf;
 	} else
 	{
-	 *array++ = _("Name");
-	 *array++ = _("Description");
+	 *array++ = (char*)_("Name");
+	 *array++ = (char*)_("Description");
 	}
 }
 

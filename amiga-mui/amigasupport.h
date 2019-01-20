@@ -33,7 +33,7 @@ void SecondsToStringLong( char *buf, unsigned int seconds);
 void SecondsToDateString( char *buf, unsigned int seconds);
 void SecondsToTimeString( char *buf, unsigned int seconds);
 VOID OpenURL(STRPTR uri);
-STRPTR StrCopy(const STRPTR str);
+STRPTR StrCopy(CONST_STRPTR str);
 ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );
 VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask );

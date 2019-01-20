@@ -407,17 +407,17 @@ struct MailTreelist_Data
 	ULONG *exp_data;
 
 	/* translated strings (faster to hold the translation) */
-	char *status_text;
-	char *from_text;
-	char *to_text;
-	char *subject_text;
-	char *reply_text;
-	char *date_text;
-	char *size_text;
-	char *filename_text;
-	char *pop3_text;
-	char *received_text;
-	char *excerpt_text;
+	const char *status_text;
+	const char *from_text;
+	const char *to_text;
+	const char *subject_text;
+	const char *reply_text;
+	const char *date_text;
+	const char *size_text;
+	const char *filename_text;
+	const char *pop3_text;
+	const char *received_text;
+	const char *excerpt_text;
 
 	/* other stuff */
 	Object *context_menu;

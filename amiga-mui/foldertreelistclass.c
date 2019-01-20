@@ -164,10 +164,10 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 		}
 	} else
 	{
-		*msg->Array++ = _("Name");
-		*msg->Array++ = _("Mails");
-		*msg->Array++ = _("New");
-		*msg->Array = _("Unread");
+		*msg->Array++ = (char*)_("Name");
+		*msg->Array++ = (char*)_("Mails");
+		*msg->Array++ = (char*)_("New");
+		*msg->Array = (char*)_("Unread");
 	}
 }
 

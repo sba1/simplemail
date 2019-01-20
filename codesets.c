@@ -1322,7 +1322,7 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
 
 /*****************************************************************************/
 
-utf8 *utf8create(void *from, const char *charset)
+utf8 *utf8create(const void *from, const char *charset)
 {
   /* utf8create_len() will stop on a null byte */
 	return utf8create_len(from,charset,0x7fffffff);
@@ -1330,9 +1330,9 @@ utf8 *utf8create(void *from, const char *charset)
 
 /*****************************************************************************/
 
-int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, unsigned int dest_size)
+int utf8fromstr(const char *from, struct codeset *codeset, utf8 *dest, unsigned int dest_size)
 {
-	char *src = from;
+	const char *src = from;
 	unsigned char c;
 	int conv = 0;
 
@@ -1369,7 +1369,7 @@ int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, unsigned int de
 
 /*****************************************************************************/
 
-utf8 *utf8create_len(void *from, const char *charset, int from_len)
+utf8 *utf8create_len(const void *from, const char *charset, int from_len)
 {
 	int dest_size = 0;
 	char *dest;

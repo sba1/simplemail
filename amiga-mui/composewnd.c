@@ -1241,9 +1241,9 @@ int compose_window_open(struct compose_args *args)
 
 	int num;
 
-	static char *register_titles[3];
+	static const char *register_titles[3];
 	static int register_titles_are_translated = 0;
-	static char *importance_labels[4];
+	static const char *importance_labels[4];
 	static int importance_labels_are_translated = 0;
 
 	if (!register_titles_are_translated)

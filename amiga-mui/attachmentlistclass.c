@@ -109,7 +109,7 @@ STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *
 			else
 			{
 				if (!mystricmp(attach->content_type,"text/plain") && attach->editable)
-					*msg->Array = _("Editable Mailtext");
+					*msg->Array = (char*)_("Editable Mailtext");
 				else *msg->Array = attach->content_type;
 			}
 		} else
@@ -121,10 +121,10 @@ STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *
 		}
 	} else
 	{
-		*msg->Array++ = _("File Name");
-		*msg->Array++ = _("Size");
-		*msg->Array++ = _("Contents");
-		*msg->Array = _("Description");
+		*msg->Array++ = (char*)_("File Name");
+		*msg->Array++ = (char*)_("Size");
+		*msg->Array++ = (char*)_("Contents");
+		*msg->Array = (char*)_("Description");
 	}
 }
 

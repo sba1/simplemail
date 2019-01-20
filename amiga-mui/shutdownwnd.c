@@ -94,7 +94,7 @@ void shutdownwnd_open(void)
 						if (!user.config.dont_show_shutdown_text)
 						{
 							struct TextExtent te;
-							char *txt = _("Shutting down...");
+							const char *txt = _("Shutting down...");
 
 							SetDrMd(shutdown_wnd->RPort,JAM1);
 							SetAPen(shutdown_wnd->RPort,pen);

@@ -268,7 +268,7 @@ static void field_free(struct field *f)
  * @param text the text
  * @return the newly created field
  */
-static struct field *field_add_text(struct list *list, char *name, char *text)
+static struct field *field_add_text(struct list *list, const char *name, const char *text)
 {
 	struct field *f;
 	struct text_node *t;
@@ -307,7 +307,7 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
  * @param addr_list the address list with addresses to add
  * @return the newly created field
  */
-static struct field *field_add_addresses(struct list *list, char *name, struct address_list *addr_list)
+static struct field *field_add_addresses(struct list *list, const char *name, struct address_list *addr_list)
 {
 	struct field *f;
 	struct address *addr;

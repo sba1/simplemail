@@ -86,9 +86,9 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h),REG(a2,Object *obj
 	{
 		if ((LONG)msg->entry == -1)
 		{
-			msg->strings[0] = _("<Default>");
-			msg->strings[1] = "";
-			msg->strings[2] = "";
+			msg->strings[0] = (char*)_("<Default>");
+			msg->strings[1] = (char*)"";
+			msg->strings[2] = (char*)"";
 		} else
 		{
 			struct account *account = (struct account *)msg->entry;

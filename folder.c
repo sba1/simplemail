@@ -2363,7 +2363,7 @@ struct folder *folder_add_with_name(char *path, char *name)
  * @param name the name of the group.
  * @return
  */
-static struct folder_node *folder_create_group(char *name)
+static struct folder_node *folder_create_group(const char *name)
 {
 	struct folder_node *node;
 	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
@@ -2387,7 +2387,7 @@ static struct folder_node *folder_create_group(char *name)
 
 /*****************************************************************************/
 
-struct folder *folder_add_group(char *name)
+struct folder *folder_add_group(const char *name)
 {
 	struct folder_node *node = folder_create_group(name);
 	if (node)

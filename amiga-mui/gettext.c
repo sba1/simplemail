@@ -69,7 +69,7 @@ struct loaded_domain
 
 static struct loaded_domain domain = {0, 0, 0, 0, 0, 0, 0};
 
-static long openmo(char *dir, char *loc)
+static long openmo(const char *dir, const char *loc)
 {
   char filename[512];
   FILE *fd;
@@ -176,8 +176,8 @@ static long openmo(char *dir, char *loc)
 
 /* languages supported by freeciv */
 struct LocaleConv {
-  char *langstr;
-  char *gmostr;
+  const char *langstr;
+  const char *gmostr;
 } LocaleConvTab[] = {
 {"deutsch", "de"},
 {"german", "de"},
@@ -205,7 +205,7 @@ struct LocaleConv {
 };
 
 /* Returns NULL if is not in the list */
-static char *find_gmostr(char *lang)
+static const char *find_gmostr(char *lang)
 {
 	int i;
 	if (!lang) return NULL;
@@ -319,7 +319,7 @@ static char *find_msg(const char * msgid)
 }
 
 
-char *gettext(const char *msgid)
+const char *gettext(const char *msgid)
 {
   char *res;
 
@@ -334,7 +334,7 @@ char *gettext(const char *msgid)
   return res;
 }
 
-char *setlocale(int a, const char *b)
+const char *setlocale(int a, const char *b)
 {
   return "C";
 }

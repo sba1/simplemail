@@ -869,7 +869,7 @@ static void config_selected(void)
 static int init_user_group(void)
 {
 	static struct Hook startup_folder_objstr_hook, startup_folder_strobj_hook;
-	static char *appicon_show_labels[4];
+	static const char *appicon_show_labels[4];
 
 #ifndef __AROS__
 	static const char *appicon_popph_array[] =
@@ -981,7 +981,7 @@ static int init_user_group(void)
  */
 static int init_tcpip_receive_group(void)
 {
-	static char *preselection[4];
+	static const char *preselection[4];
 	static int preselection_translated;
 
 	if (!preselection_translated)
@@ -1205,10 +1205,10 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
 		*array++ = ent->smtp->name;
 	} else
 	{
-		*array++ = _("Name");
-		*array++ = _("EMail");
-		*array++ = _("Receive");
-		*array++ = _("Send");
+		*array++ = (char*)_("Name");
+		*array++ = (char*)_("EMail");
+		*array++ = (char*)_("Receive");
+		*array++ = (char*)_("Send");
 	}
 }
 
@@ -1220,9 +1220,9 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
 static int init_account_group(void)
 {
 	static const char *recv_entries[3];
-	static char *recv_secure_labels[4];
-	static char *apop_labels[4];
-	static char *send_secure_labels[4];
+	static const char *recv_secure_labels[4];
+	static const char *apop_labels[4];
+	static const char *send_secure_labels[4];
 	static struct Hook account_display_hook;
 
 	SM_ENTER;
@@ -1503,7 +1503,7 @@ static int init_account_group(void)
  */
 static int init_write_group(void)
 {
-	static char *wordwrap_entries[4];
+	static const char *wordwrap_entries[4];
 	static int wordwrap_entries_translated;
 
 	SM_ENTER;
@@ -1653,7 +1653,7 @@ static int init_mails_readmisc_group(void)
  */
 static int init_mails_read_group(void)
 {
-	static char *read_palette_names[7];
+	static const char *read_palette_names[7];
 	static int read_palette_names_translated;
 
 	SM_ENTER;
@@ -1904,7 +1904,7 @@ STATIC ASM SAVEDS VOID signature_display(REG(a0,struct Hook *h), REG(a2,char **a
 		*array = buf;
 	} else
 	{
-		*array = _("Name");
+		*array = (char*)_("Name");
 	}
 }
 
@@ -2075,7 +2075,7 @@ STATIC ASM SAVEDS VOID phrase_display(REG(a0,struct Hook *h), REG(a2,char **arra
 		*array++ = buf;
 	} else
 	{
-		*array++ = _("On addresses");
+		*array++ = (char*)_("On addresses");
 	}
 }
 

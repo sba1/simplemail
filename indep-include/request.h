@@ -74,7 +74,7 @@ int sm_request_login(const char *text, char *login, char *password, int len);
  * @param text
  * @return the id or NULL for an error (or in case cancelation).
  */
-char *sm_request_pgp_id(char *text);
+char *sm_request_pgp_id(const char *text);
 
 /**
  * Opens a requester for the user to select a folder.
@@ -83,6 +83,6 @@ char *sm_request_pgp_id(char *text);
  * @param exculde
  * @return the folder or NULL for an error (or in case of cancelation)
  */
-struct folder *sm_request_folder(char *text, struct folder *exculde);
+struct folder *sm_request_folder(const char *text, struct folder *exculde);
 
 #endif

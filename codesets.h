@@ -171,7 +171,7 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n);
  * @param charset
  * @return
  */
-utf8 *utf8create(void *from, const char *charset);
+utf8 *utf8create(const void *from, const char *charset);
 
 /**
  * Creates a uf8 string from a different one. from is the iso string and
@@ -182,7 +182,7 @@ utf8 *utf8create(void *from, const char *charset);
  * @param from_len
  * @return
  */
-utf8 *utf8create_len(void *from, const char *charset, int from_len);
+utf8 *utf8create_len(const void *from, const char *charset, int from_len);
 
 /**
  * Converts a string with a given codeset to a utf8 representation.
@@ -193,7 +193,7 @@ utf8 *utf8create_len(void *from, const char *charset, int from_len);
  * @param dest_size
  * @return number of bytes within the destination buffer
  */
-int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, unsigned int dest_size);
+int utf8fromstr(const char *str, struct codeset *codeset, utf8 *dest, unsigned int dest_size);
 
 /**
  * Converts a utf8 string to a given charset. Return the number of bytes

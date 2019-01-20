@@ -81,7 +81,7 @@ const static char *status_labels_untranslated[] =
 	N_("New"),N_("Read"),N_("Unread"),N_("Replied"),N_("Forwarded"),N_("Pending"),N_("Sent"),NULL
 };
 
-char *status_labels[sizeof(status_labels_untranslated)/sizeof(char*)];
+static const char *status_labels[sizeof(status_labels_untranslated)/sizeof(char*)];
 
 const static char *status_filenames[] =
 {
@@ -104,7 +104,7 @@ const static struct rule rules[] = {
 	{N_("Status is"), RULE_STATUS_MATCH},
 	{NULL,0},
 };
-static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
+static const char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
 
 
 /**
@@ -216,7 +216,7 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 		    		End;
 		    	if (group2)
 		    	{
-		    		char *substr_help_txt, *case_help_txt, *patt_help_txt;
+					const char *substr_help_txt, *case_help_txt, *patt_help_txt;
 
 		    		substr_help_txt = _("If activated the string must only be a part\n"
 		    		                    "of the searched field.");

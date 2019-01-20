@@ -152,14 +152,14 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 
 /*****************************************************************************/
 
-Object *MakeLabel(STRPTR str)
+Object *MakeLabel(CONST_STRPTR str)
 {
 	return (MUI_MakeObject(MUIO_Label, str, 0));
 }
 
 /*****************************************************************************/
 
-Object *MakeButton(STRPTR str)
+Object *MakeButton(CONST_STRPTR str)
 {
 	Object *obj = MUI_MakeObject(MUIO_Button, str);
 	if (obj)
@@ -171,7 +171,7 @@ Object *MakeButton(STRPTR str)
 
 /*****************************************************************************/
 
-Object *MakeCheck(STRPTR label, ULONG check)
+Object *MakeCheck(CONST_STRPTR label, ULONG check)
 {
 	Object *obj = MUI_MakeObject(MUIO_Checkmark, label);
 	if (obj)
@@ -183,7 +183,7 @@ Object *MakeCheck(STRPTR label, ULONG check)
 
 /*****************************************************************************/
 
-Object *MakeCycle(STRPTR label, STRPTR * array)
+Object *MakeCycle(CONST_STRPTR label, const CONST_STRPTR * array)
 {
 	Object *obj = MUI_MakeObject(MUIO_Cycle, label, array);
 	if (obj)

@@ -301,10 +301,10 @@ void folder_refresh_signature_cycle(void)
 static void init_folder(void)
 {
 	Object *ok_button, *cancel_button;
-	static char *type_array[5];
-	static char *prim_sort_array[12];
-	static char *second_sort_array[12];
-	static char *download_array[3];
+	static const char *type_array[5];
+	static const char *prim_sort_array[12];
+	static const char *second_sort_array[12];
+	static const char *download_array[3];
 
 	type_array[0] = _("received");
 	type_array[1] = _("sent");

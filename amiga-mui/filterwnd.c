@@ -586,7 +586,7 @@ static void init_filter(void)
 
 	if (filter_wnd)
 	{
-		char *short_help_txt = _("If activated the filter will be used remotly on POP3 servers\n"
+		const char *short_help_txt = _("If activated the filter will be used remotly on POP3 servers\n"
                              "which support the TOP command. Mails which matches the filter\n"
 														 "are presented to the user and automatically marked as to be ignored.");
 

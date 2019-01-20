@@ -55,6 +55,6 @@
 
 #endif
 
-char *skip_intl_qualifier_prefix(const char *str);
+const char *skip_intl_qualifier_prefix(const char *str);
 
 #endif  /* FC__FCINTL_H */

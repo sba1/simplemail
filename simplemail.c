@@ -1059,7 +1059,7 @@ void callback_check_selected_folder_for_spam(void)
 
 	if (spams < user.config.min_classified_mails || hams < user.config.min_classified_mails)
 	{
-		char *which_txt;
+		const char *which_txt;
 
 		if (spams < user.config.min_classified_mails)
 		{

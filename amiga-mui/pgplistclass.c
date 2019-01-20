@@ -85,8 +85,8 @@ STATIC ASM SAVEDS VOID pgp_display(REG(a0,struct Hook *h),REG(a2,Object *obj),RE
 		msg->strings[1] = key->userids?key->userids[0]:NULL;
 	} else
 	{
-		msg->strings[0] = _("PGP Key ID");
-		msg->strings[1] = _("User ID");
+		msg->strings[0] = (char*)_("PGP Key ID");
+		msg->strings[1] = (char*)_("User ID");
 	}
 }
 

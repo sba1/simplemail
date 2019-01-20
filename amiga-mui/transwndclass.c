@@ -131,10 +131,10 @@ STATIC ASM VOID mail_display(REG(a0, struct Hook *h), REG(a2, char **array), REG
 		*array++ = ent->subject;
 	} else
 	{
-		*array++ = _("Mail No");
-		*array++ = _("Size");
-		*array++ = _("From");
-		*array++ = _("Subject");
+		*array++ = (char*)_("Mail No");
+		*array++ = (char*)_("Size");
+		*array++ = (char*)_("From");
+		*array++ = (char*)_("Subject");
 	}
 }
 

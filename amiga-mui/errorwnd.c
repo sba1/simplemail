@@ -223,9 +223,9 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	struct error_node *error = (struct error_node*)msg->entry;
 	if (!error)
 	{
-		msg->strings[0] = _("Time");
-		msg->strings[1] = _("Severity");
-		msg->strings[2] = _("Message");
+		msg->strings[0] = (char*)_("Time");
+		msg->strings[1] = (char*)_("Severity");
+		msg->strings[2] = (char*)_("Message");
 		return;
 	}
 	msg->strings[0] = sm_get_time_str(error->date);

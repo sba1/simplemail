@@ -601,7 +601,7 @@ struct folder *folder_add_with_name(char *path, char *name);
  * @param name
  * @return
  */
-struct folder *folder_add_group(char *name);
+struct folder *folder_add_group(const char *name);
 
 /**
  * Add a new imap folder based on the given data.

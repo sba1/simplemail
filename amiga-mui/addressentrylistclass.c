@@ -145,11 +145,11 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 
 	} else
 	{
-		*array++ = Q_("?people:Name");
-		*array++ = _("Alias");
-		*array++ = _("Description");
-		*array++ = _("Address");
-		*array = _("Groups");
+		*array++ = (char*)Q_("?people:Name");
+		*array++ = (char*)_("Alias");
+		*array++ = (char*)_("Description");
+		*array++ = (char*)_("Address");
+		*array = (char*)_("Groups");
 	}
 }
 

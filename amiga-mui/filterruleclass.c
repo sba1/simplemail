@@ -568,7 +568,7 @@ int create_filterrule_class(void)
 	SM_ENTER;
 	if ((CL_FilterRule = CreateMCC(MUIC_Group,NULL,sizeof(struct FilterRule_Data),FilterRule_Dispatcher)))
 	{
-		int i;
+		unsigned int i;
 
 		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
 		{

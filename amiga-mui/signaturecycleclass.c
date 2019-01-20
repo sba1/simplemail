@@ -184,7 +184,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
-		Child, sign_cycle = MakeCycle(NULL, (STRPTR *)sign_array),
+		Child, sign_cycle = MakeCycle(NULL, sign_array),
 		TAG_MORE, msg->ops_AttrList)))
 	{
 		if (sign_array)

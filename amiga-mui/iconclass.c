@@ -233,7 +233,7 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 	{
 		if (IconBase->lib_Version >= 44)
 		{
-			char *def;
+			const char *def;
 
 			/* No icon yet, build a icon default name */
 			if (!mystricmp(data->type, "image")) def = "picture";

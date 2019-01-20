@@ -63,7 +63,7 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 struct MailTreelist_Data
 {
 	struct Hook display_hook;
-	int folder_type;
+	unsigned int folder_type;
 
 	Object *status_unread_obj;
 	Object *status_read_obj;
@@ -265,15 +265,15 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 					else if (mail->flags & MAIL_FLAGS_PARTIAL)	sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new_partial);
 					else sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new);
 
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse++ = "\33b";
-					*preparse = "\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse++ = (char*)"\33b";
+					*preparse = (char*)"\33b";
 				} else
 				{
 					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_unread_spam);
@@ -670,7 +670,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(obj, m);
 							set(obj,MUIA_NListtree_Active,tn);
 #else
-							int i;
+							unsigned int i;
 							for (i=0;i<xget(obj, MUIA_NList_Entries);i++)
 							{
 								struct mail *m2;
@@ -1396,7 +1396,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 	}
 #else
 
-	int i;
+	unsigned int i;
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
 		struct mail_info *m2;

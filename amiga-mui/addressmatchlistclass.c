@@ -188,8 +188,8 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 		{
 			int pl = strlen(data->pattern);
 
-			if (!utf8stricmp_len(addr_entry->alias, data->pattern, pl)) preparse[1] = "\033b";
-			if (!utf8stricmp_len(addr_entry->realname, data->pattern, pl)) preparse[0] = "\033b";
+			if (!utf8stricmp_len(addr_entry->alias, data->pattern, pl)) preparse[1] = (char*)"\033b";
+			if (!utf8stricmp_len(addr_entry->realname, data->pattern, pl)) preparse[0] = (char*)"\033b";
 
 			for (i=0;i<array_length(addr_entry->email_array);i++)
 			{
@@ -200,7 +200,7 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
 					{
 						sm_snprintf(data->email_buf, sizeof(data->email_buf), "%s,\033b%s", addr_entry->email_array[0], addr_entry->email_array[i]);
 						*array = data->email_buf;
-					} else preparse[3] = "\033b";
+					} else preparse[3] = (char*)"\033b";
 					break;
 				}
 			}
@@ -265,7 +265,7 @@ STATIC ASM SAVEDS VOID matchentry_display(REG(a0,struct Hook *h),REG(a2,Object *
  */
 STATIC ASM SAVEDS LONG matchentry_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct NList_CompareMessage *msg))
 {
-	char *str1, *str2;
+	const char *str1, *str2;
 	struct address_match_entry *entry1 = (struct address_match_entry *)msg->entry1;
 	struct address_match_entry *entry2 = (struct address_match_entry *)msg->entry2;
 

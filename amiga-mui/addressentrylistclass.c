@@ -355,7 +355,7 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
  */
 STATIC ULONG AddressEntryList_Store(struct IClass *cl, Object *obj, Msg msg)
 {
-	int i;
+	unsigned int i;
 	struct entry_node *node;
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
 

@@ -106,7 +106,7 @@ int arexx_init(void)
 		{
 			if ((arexx_port = CreateMsgPort()))
 			{
-				arexx_port->mp_Node.ln_Name = "SIMPLEMAIL.1";
+				arexx_port->mp_Node.ln_Name = (char*)"SIMPLEMAIL.1";
 				AddPort(arexx_port);
 				rc = 1;
 			}
@@ -200,7 +200,7 @@ int arexx_execute_script(char *command)
  * @param rxmsg the message defining the ARexx context.
  * @param string the contents of the result
  */
-static void arexx_set_result(struct RexxMsg *rxmsg, STRPTR string)
+static void arexx_set_result(struct RexxMsg *rxmsg, CONST_STRPTR string)
 {
 	if (!string) string = "";
 	if (rxmsg->rm_Action & (1L << RXFB_RESULT))

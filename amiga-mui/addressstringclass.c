@@ -558,7 +558,7 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 
 		if (append)
 		{
-			char *text = (char*)xget(obj,MUIA_String_Contents);
+			const char *text = (const char*)xget(obj,MUIA_String_Contents);
 			char *newtext;
 			int len;
 

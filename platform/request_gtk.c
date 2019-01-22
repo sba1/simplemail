@@ -133,14 +133,14 @@ int sm_request_login(const char *text, char *login, char *password, int len)
 
 /*****************************************************************************/
 
-char *sm_request_pgp_id(char *text)
+char *sm_request_pgp_id(const char *text)
 {
 	return NULL;
 }
 
 /*****************************************************************************/
 
-struct folder *sm_request_folder(char *text, struct folder *exclude)
+struct folder *sm_request_folder(const char *text, struct folder *exclude)
 {
 	return NULL;
 }

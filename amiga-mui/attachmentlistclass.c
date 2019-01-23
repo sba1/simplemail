@@ -203,7 +203,7 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	{
 		if (!(treenode->tn_Flags & TNF_LIST) && *msg->type == MUIV_NListtree_DropType_Onto)
 		{
-			if (*msg->pos > active)
+			if (*msg->pos > (LONG)active)
 			{
 				*msg->type = MUIV_NListtree_DropType_Above;
 			} else

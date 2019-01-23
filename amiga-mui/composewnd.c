@@ -348,7 +348,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 			struct attachment multipart;
 
 			memset(&multipart, 0, sizeof(multipart));
-			multipart.content_type = "multipart/mixed";
+			multipart.content_type = (char*)"multipart/mixed";
 			multipart.unique_id = data->attachment_unique_id++;
 
 			quiet = 1;
@@ -400,7 +400,7 @@ static void compose_add_text(struct Compose_Data **pdata)
 	struct attachment attach;
 
 	memset(&attach, 0, sizeof(attach));
-	attach.content_type = "text/plain";
+	attach.content_type = (char*)"text/plain";
 	attach.editable = 1;
 	attach.unique_id = data->attachment_unique_id++;
 
@@ -418,7 +418,7 @@ static void compose_add_multipart(struct Compose_Data **pdata)
 	struct attachment attach;
 
 	memset(&attach, 0, sizeof(attach));
-	attach.content_type = "multipart/mixed";
+	attach.content_type = (char*)"multipart/mixed";
 	attach.editable = 0;
 	attach.unique_id = data->attachment_unique_id++;
 

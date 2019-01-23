@@ -98,7 +98,7 @@ msgstr "_Ok"
 #: amiga-mui/folderwnd.c:433 amiga-mui/folderwnd.c:702 amiga-mui/request.c:212
 #: amiga-mui/request.c:266 amiga-mui/request.c:326
 msgid "_Cancel"
-msgstr "_Abbruch"
+msgstr "Abbru_ch"
 
 #: amiga-mui/addressbookwnd.c:411
 msgid ""
@@ -1527,7 +1527,7 @@ msgid ""
 "of the searched field."
 msgstr ""
 "Wenn diese Option aktiviert ist, repräsentiert die Zeichenkette\n"
-"lediglich ein Teil der gesuchten Zeichenkette."
+"lediglich einen Teil der gesuchten Zeichenkette."
 
 #: amiga-mui/filterruleclass.c:223
 msgid "If activated the search is case sensitive."
@@ -1743,7 +1743,7 @@ msgstr "_Typ"
 
 #: amiga-mui/folderwnd.c:369 amiga-mui/folderwnd.c:371
 msgid "_Primary sort"
-msgstr "_Primäre Sortieung"
+msgstr "_Primäre Sortierung"
 
 #: amiga-mui/folderwnd.c:372 amiga-mui/folderwnd.c:373
 #: amiga-mui/folderwnd.c:379 amiga-mui/folderwnd.c:380
@@ -1752,7 +1752,7 @@ msgstr "Umgekehrt"
 
 #: amiga-mui/folderwnd.c:376 amiga-mui/folderwnd.c:378
 msgid "_Secondary sort"
-msgstr "_Sekundäre Sortinung"
+msgstr "_Sekundäre Sortierung"
 
 #: amiga-mui/folderwnd.c:383 amiga-mui/folderwnd.c:384
 msgid "_Download"

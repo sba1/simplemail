@@ -98,7 +98,7 @@ msgstr "_Ok"
 #: amiga-mui/folderwnd.c:433 amiga-mui/folderwnd.c:702 amiga-mui/request.c:212
 #: amiga-mui/request.c:266 amiga-mui/request.c:326
 msgid "_Cancel"
-msgstr "_Abbruch"
+msgstr "Abbru_ch"
 
 #: amiga-mui/addressbookwnd.c:411
 msgid ""

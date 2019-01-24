@@ -237,7 +237,7 @@ STATIC ULONG DataTypes_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 
 		if (data->dt_obj)
 		{
-			for (m = GetDTMethods(data->dt_obj);(*m) != ~0;m++)
+			for (m = GetDTMethods(data->dt_obj);(*m) != ~0U;m++)
 			{
 				if ((*m) == DTM_PRINT)
 				{

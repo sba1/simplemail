@@ -57,7 +57,7 @@ struct  MUIP_SMToolbar_DoMethod  { ULONG MethodID; ULONG id; ULONG FollowParams;
 /* Button structure */
 struct MUIS_SMToolbar_Button
 {
-	ULONG pos;
+	LONG pos;
 	ULONG id;
 	ULONG flags;
 	char *name;

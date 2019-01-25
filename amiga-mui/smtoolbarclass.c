@@ -429,7 +429,7 @@ STATIC ULONG SMToolbar_DoMethod(struct IClass *cl, Object *obj, struct MUIP_SMTo
 	{
 		LONG *table1 = (LONG *)&msg->FollowParams;
 		LONG table2[40];
-		int num;
+		ULONG num;
 
 		for (num=0;num<msg->FollowParams;num++)
 		{

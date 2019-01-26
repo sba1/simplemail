@@ -60,9 +60,9 @@ struct MUIS_SMToolbar_Button
 	LONG pos;
 	ULONG id;
 	ULONG flags;
-	char *name;
-	char *help;
-	char *imagename;
+	const char *name;
+	const char *help;
+	const char *imagename;
 };
 
 /* buttonflags */

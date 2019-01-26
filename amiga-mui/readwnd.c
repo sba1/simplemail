@@ -87,15 +87,15 @@ static const struct MUIS_SMToolbar_Button sm_readwnd_buttons[] =
 {
 	{PIC(2,1), SM_READWND_BUTTON_PREV,    0, N_("_Prev"), NULL, "MailPrev"},
 	{PIC(2,0), SM_READWND_BUTTON_NEXT,    0, N_("_Next"), NULL, "MailNext"},
-	{(ULONG)MUIV_SMToolbar_Space},
+	{MUIV_SMToolbar_Space},
 	{PIC(2,4), SM_READWND_BUTTON_SAVE,    0, N_("_Save"), NULL, "MailSave"},
 	{PIC(2,9), SM_READWND_BUTTON_PRINT,   0, N_("Pr_int"), NULL, "Print"},
-	{(ULONG)MUIV_SMToolbar_Space},
+	{MUIV_SMToolbar_Space},
 	{PIC(1,8), SM_READWND_BUTTON_MOVE,    0, N_("_Move"), NULL, "MailMove"},
 	{PIC(1,4), SM_READWND_BUTTON_DELETE,  0, N_("_Delete"), NULL, "MailDelete"},
 	{PIC(1,5), SM_READWND_BUTTON_REPLY,   0, N_("_Reply"), NULL, "MailReply"},
 	{PIC(2,3), SM_READWND_BUTTON_FORWARD, 0, N_("_Forward"), NULL, "MailForward"},
-	{(ULONG)MUIV_SMToolbar_End},
+	{MUIV_SMToolbar_End},
 };
 
 /*****************************************************/
@@ -104,7 +104,7 @@ struct Read_Data;
 
 void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail_complete *mail);
-static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file);
+static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, const char *drawer, const  char *file);
 static int read_window_display_mail(struct Read_Data *data, struct mail_info *mail);
 
 #define MAX_READ_OPEN 10
@@ -561,7 +561,7 @@ static void save_contents(struct Read_Data *data, struct mail_complete *mail)
  * @param file the actual name of the output file.
  * @return 1 for success, 0 on failure
  */
-static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file)
+static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, const char *drawer, const char *file)
 {
 	int rc = 0;
 	BPTR dlock;

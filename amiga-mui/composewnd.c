@@ -87,16 +87,16 @@ static const struct MUIS_SMToolbar_Button sm_composewnd_buttons[] =
 	{PIC(0,4), SM_COMPOSEWND_BUTTON_COPY,  0, N_("Copy"),  NULL, "Copy"},
 	{PIC(0,5), SM_COMPOSEWND_BUTTON_CUT,   0, N_("Cut"),   NULL, "Cut"},
 	{PIC(2,8), SM_COMPOSEWND_BUTTON_PASTE, 0, N_("Paste"), NULL, "Paste"},
-	{(ULONG)MUIV_SMToolbar_Space},
+	{MUIV_SMToolbar_Space},
 	{PIC(3,3), SM_COMPOSEWND_BUTTON_UNDO, 0, N_("Undo"), NULL, "Undo"},
 	{PIC(3,0), SM_COMPOSEWND_BUTTON_REDO, 0, N_("Redo"), NULL, "Redo"},
-	{(ULONG)MUIV_SMToolbar_Space},
+	{MUIV_SMToolbar_Space},
 	{PIC(0,0), SM_COMPOSEWND_BUTTON_ATTACH, 0, N_("_Attach"), NULL, "AddAttachment"},
-	{(ULONG)MUIV_SMToolbar_Space},
+	{MUIV_SMToolbar_Space},
 	{PIC(0,8), SM_COMPOSEWND_BUTTON_ENCRYPT, MUIV_SMToolbar_ButtonFlag_Toggle, N_("Encrypt"), NULL, "Encrypt"},
 	/* signbutton temporary not created because not implemented */
 	/* {PIC(3,2), SM_COMPOSEWND_BUTTON_SIGN,    MUIV_SMToolbar_ButtonFlag_Toggle, N_("Si_gn"),   NULL, "Sign"}, */
-	{(ULONG)MUIV_SMToolbar_End},
+	{MUIV_SMToolbar_End},
 };
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */

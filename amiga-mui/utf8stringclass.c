@@ -201,7 +201,7 @@ STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_Bette
 	ULONG rc;
 	LONG pos;
 
-	if (msg->pos != MUIV_BetterString_Insert_StartOfString && msg->pos != MUIV_BetterString_Insert_EndOfString && msg->pos != MUIV_BetterString_Insert_BufferPos)
+	if (msg->pos != (LONG)MUIV_BetterString_Insert_StartOfString && msg->pos != (LONG)MUIV_BetterString_Insert_EndOfString && msg->pos != (LONG)MUIV_BetterString_Insert_BufferPos)
 	{
 		char *utf8text = (char*)xget(obj,MUIA_UTF8String_Contents);
 		if (utf8text)

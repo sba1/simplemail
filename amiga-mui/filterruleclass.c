@@ -72,7 +72,7 @@ struct FilterRule_Data
 
 struct rule
 {
-	char *name;
+	const char *name;
 	int type;
 };
 

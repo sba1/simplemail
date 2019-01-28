@@ -106,7 +106,7 @@ static void error_window_update_logg(void)
 		enode = (struct error_node*)node_next(&enode->node);
 
 		/* Keep no logg-ones (i.e., added via error_add_message()) */
-		if (cur->id == ~0) continue;
+		if (cur->id == ~0U) continue;
 
 		/* Keep id-matching one (they represent the same entry) */
 		if (cur->id == logg_id(l))

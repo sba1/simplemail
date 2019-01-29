@@ -764,12 +764,12 @@ static void settings_quick_filter_changed(void)
 *******************************************************************/
 void main_load_environment(void)
 {
-	char *ls;
+	const char *ls;
 	int i=0;
 	LONG count, weight;
 
 	DoMethod(App, MUIM_Application_Load, (ULONG)MUIV_Application_Load_ENV);
-	if (!*(ls = (STRPTR)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100 100 100";
+	if (!*(ls = (char*)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100 100 100";
 	/* I'm not allowed to use sscanf() */
 	count = StrToLong(ls, &weight);
 	while (count != -1)
@@ -964,7 +964,7 @@ int main_window_init(void)
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
-	int i;
+	unsigned int i;
 
 	SM_ENTER;
 

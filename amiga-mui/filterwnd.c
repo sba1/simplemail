@@ -374,7 +374,7 @@ static void filter_remove(void)
 static void filter_ok(void)
 {
 	struct filter *f;
-	int i;
+	unsigned int i;
 
 	filter_accept_rule();
 	set(filter_wnd,MUIA_Window_Open,FALSE);

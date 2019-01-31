@@ -102,9 +102,9 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 		if ((ULONG)msg->TreeNode->tn_User == MUIV_FolderTreelist_UserData_Root)
 		{
 			*msg->Array++ = NULL;
-			*msg->Array++ = "";
-			*msg->Array++ = "";
-			*msg->Array = "";
+			*msg->Array++ = (char*)"";
+			*msg->Array++ = (char*)"";
+			*msg->Array =(char*)"";
 		} else
 		{
 			struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
@@ -479,7 +479,7 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_
 
   if (data->mails_drag)
   {
-		if (*msg->Pos == xget(obj,MUIA_NList_Active) || (f->special == FOLDER_SPECIAL_GROUP))
+		if (*msg->Pos == (LONG)xget(obj,MUIA_NList_Active) || (f->special == FOLDER_SPECIAL_GROUP))
 			*msg->Type = MUIV_NListtree_DropType_None;
 		else *msg->Type = MUIV_NListtree_DropType_Onto;
 	} else

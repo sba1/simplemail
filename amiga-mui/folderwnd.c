@@ -157,7 +157,7 @@ static void imap_folders_submit_pressed(void)
 	if (changed_folder)
 	{
 		struct string_list list;
-		int i;
+		unsigned int i;
 
 		string_list_init(&list);
 		for (i=0;i<xget(imap_folders_list,MUIA_NList_Entries);i++)

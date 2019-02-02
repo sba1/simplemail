@@ -395,7 +395,7 @@ struct MailTreelist_Data
 	/* double click */
 	ULONG last_secs;
 	ULONG last_mics;
-	ULONG last_active;
+	LONG last_active;
 
 	/* buffering */
 	struct Layer *buffer_layer;
@@ -1911,7 +1911,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 						break;
 
 			case	MUIA_MailTreelist_FolderType:
-			    	if (data->folder_type != tag->ti_Data)
+			    	if (data->folder_type != (int)tag->ti_Data)
 			    	{
 			    		data->folder_type = tag->ti_Data;
 			    	}

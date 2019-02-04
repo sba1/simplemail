@@ -28,7 +28,7 @@
  *
  * @return
  */
-char *gui_get_images_directory(void);
+const char *gui_get_images_directory(void);
 
 /**
  * Execute the main event loop.

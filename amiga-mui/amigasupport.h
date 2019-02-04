@@ -40,7 +40,7 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 LONG GetControlChar(const char *buf);
 VOID FreeTemplate(APTR m);
 APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results);
-LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize);
+LONG SendRexxCommand(CONST_STRPTR port, CONST_STRPTR Cmd, STRPTR Result, LONG ResultSize);
 
 
 /* Compatibility wrapper as DeleteFile() was renamed to Delete()

@@ -135,7 +135,7 @@ Object *aboutboxWin;
 #endif
 
 /* New since MUI V20 */
-static STRPTR UsedClasses[] =
+static CONST_STRPTR UsedClasses[] =
 {
 	"NList.mcc",
 	"NListview.mcc",
@@ -523,7 +523,7 @@ static char *gui_images_directory;
 
 /*****************************************************************************/
 
-char *gui_get_images_directory(void)
+const char *gui_get_images_directory(void)
 {
 	if (!gui_images_directory) return "PROGDIR:Images";
 	return gui_images_directory;

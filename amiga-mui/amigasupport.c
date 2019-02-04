@@ -476,7 +476,7 @@ APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results)
 	return NULL;
 }
 
-LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
+LONG SendRexxCommand(CONST_STRPTR port, CONST_STRPTR Cmd, STRPTR Result, LONG ResultSize)
 {
 	struct MsgPort *RexxPort;
 	struct MsgPort *ReplyPort = &((struct Process *)FindTask(NULL))->pr_MsgPort;

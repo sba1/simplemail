@@ -50,11 +50,17 @@ int sysprint_print(PrintHandle *ph, char *txt, unsigned long len)
 	if (print_txt)
 	{
 		unsigned long print_len = strlen(print_txt);
-		rc = (Write(ph->printer, print_txt, print_len) == print_len);
+		if (print_len < 0x80000000)
+		{
+			rc = ((unsigned long)Write(ph->printer, print_txt, print_len) == print_len);
+		}
 		free(print_txt);
 	} else
 	{
-		rc = (Write(ph->printer, txt, len) == len);
+		if (len < 0x80000000)
+		{
+			rc = ((unsigned long)Write(ph->printer, txt, len) == len);
+		}
 	}
 
 	if(rc == 0)

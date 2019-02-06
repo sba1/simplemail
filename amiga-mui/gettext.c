@@ -121,12 +121,12 @@ static long openmo(const char *dir, const char *loc)
 										unsigned int i;
 									  for (i=0;i<domain.nstrings;i++)
 									  {
-									    int j;
-									    int off = GET(domain.trans_tab[i].offset);
+									    unsigned int j;
+									    unsigned int off = GET(domain.trans_tab[i].offset);
 									    char *trans_string = domain.data + off;
 	
 									    /* Now convert every char in size the string */
-									    for (j=0;j<GET(domain.trans_tab[i].length) && j+off<size;j++)
+									    for (j=0;j<GET(domain.trans_tab[i].length) && j+off<(unsigned int)size;j++)
 									    {
 									    	unsigned char c = trans_string[j];
 									    	if (c > 127)

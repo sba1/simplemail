@@ -57,7 +57,7 @@ void test_simple_coroutines_loop(void)
 	coroutine_add(scheduler, count, &count_context1.basic_context);
 	coroutine_add(scheduler, count, &count_context2.basic_context);
 
-	coroutine_schedule(scheduler);
+	while (coroutine_schedule(scheduler));
 
 	CU_ASSERT_EQUAL(count_context1.count, MAX_COUNT);
 	CU_ASSERT_EQUAL(count_context2.count, MAX_COUNT);

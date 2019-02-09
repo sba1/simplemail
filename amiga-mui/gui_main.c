@@ -743,14 +743,14 @@ int gui_parseargs(int argc, char *argv[])
 
 			if (initial_attachments)
 			{
-				int i;
+				size_t i;
 				for (i=0;initial_attachments[i];i++)
 					buflen += strlen(initial_attachments[i]) + 20;
 			}
 
 			if ((buf = (char *)malloc(buflen)))
 			{
-				int i;
+				size_t i;
 
 				sprintf(buf,"MAILWRITE MAILTO=\"%s\" SUBJECT=\"%s\" BODY=\"%s\"",initial_mailto?initial_mailto:"",initial_subject?initial_subject:"",initial_body?initial_body:"");
 				for (i=0;initial_attachments[i];i++)

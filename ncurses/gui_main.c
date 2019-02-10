@@ -77,6 +77,7 @@ int gui_init(void)
 	initscr();
 	noecho();
 	curs_set(0);
+	nodelay(stdscr, TRUE);
 
 	list_init(&gui_key_listeners);
 
@@ -92,15 +93,22 @@ int gui_init(void)
 
 /*****************************************************************************/
 
-void gui_loop(void)
+/**
+ * Handle timer events. For now, assume nodelay and thus,
+ * poll stdin.
+ *
+ * @param userdata
+ */
+static void *gui_timer(void *userdata)
 {
 	char ch;
-
-	save_config();
-
 	while ((ch = getch()) != 'q')
 	{
 		struct gui_key_listener *l;
+		if (ch == -1)
+		{
+			return;
+		}
 
 		l = (struct gui_key_listener *)list_first(&gui_key_listeners);
 		while (l)
@@ -116,6 +124,20 @@ void gui_loop(void)
 			l = n;
 		}
 	}
+
+	if (ch == 'q')
+	{
+		thread_abort(thread_get_main());
+	}
+}
+
+/******************************************************************************/
+
+void gui_loop(void)
+{
+	save_config();
+
+	thread_wait(NULL, gui_timer, NULL, 10);
 }
 
 /*****************************************************************************/

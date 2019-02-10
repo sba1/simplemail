@@ -4,6 +4,7 @@
 
 #include <ncurses.h>
 
+#include "configuration.h"
 #include "debug.h"
 #include "lists.h"
 #include "folder.h"

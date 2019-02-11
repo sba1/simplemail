@@ -162,9 +162,19 @@ int gui_parseargs(int argc, char *argv[])
 			debug_set_level(20);
 		}
 
+		if (!strcmp("--debug-file", gui_argv[i]) && i + 1 < argc)
+		{
+			debug_set_out(gui_argv[i+1]);
+		}
+
+		if (!strncmp("--debug-file=", gui_argv[i], 13))
+		{
+			debug_set_out(&gui_argv[i][13]);
+		}
+
 		if (!strcmp("-h", gui_argv[i]) || !strcmp("--help", gui_argv[i]))
 		{
-			fprintf(stderr, "Usage: %s [--debug] [--help]\n", gui_argv[0]);
+			fprintf(stderr, "Usage: %s [--debug] [--debug-file=<filename>] [--help]\n", gui_argv[0]);
 			exit(0);
 		}
 	}

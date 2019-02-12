@@ -139,13 +139,15 @@ void cleanup_threads(void)
 
 	while (1)
 	{
+		GSource *s;
+
 		g_mutex_lock(thread_list_mutex);
 		t = (struct thread_s*)list_first(&thread_list);
 		g_mutex_unlock(thread_list_mutex);
 
 		if (!t) break;
 
-		GSource *s = g_timeout_source_new(100);
+		s = g_timeout_source_new(100);
 		g_source_set_callback(s, cleanup_threads_timer_callback, NULL, NULL);
 		g_source_attach(s, main_thread.context);
 		g_source_unref(s);
@@ -412,7 +414,6 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 
 int thread_call_function_sync_(thread_t thread, void *function, int argcount, ...)
 {
-	int rc;
 	uintptr_t function_rc;
 
 	va_list argptr;

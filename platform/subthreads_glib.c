@@ -419,7 +419,7 @@ int thread_call_function_sync_(thread_t thread, void *function, int argcount, ..
 	va_list argptr;
 
 	va_start(argptr,argcount);
-	rc = thread_call_function_sync_v(thread, &function_rc, function, argcount, argptr);
+	thread_call_function_sync_v(thread, &function_rc, function, argcount, argptr);
 	va_end(argptr);
 	return function_rc;
 }

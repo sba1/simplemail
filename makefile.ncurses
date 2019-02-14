@@ -107,7 +107,7 @@ $(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c
 $(OBJSDIR)/stubs.c: dirs $(OBJS) devtools/gen-stubs.py
 	-$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map 2>$(OBJSDIR)/link.error
 # Extract all names of undefined functions
-	grep -orP "undefined reference to \`\K.*(?=')" objs-ncurses/link.error | sort -u >$(OBJSDIR)/stub_functions
+	grep -orP "undefined reference to \`\K.*(?=')" $(OBJSDIR)/link.error | sort -u >$(OBJSDIR)/stub_functions
 	python devtools/gen-stubs.py $(OBJSDIR)/stub_functions >$@
 
 # Generate dependencies on the fly

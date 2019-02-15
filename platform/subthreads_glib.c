@@ -42,8 +42,6 @@ static GCond *thread_cond;
 static GMutex *thread_mutex;
 static int thread_parent_can_continue;
 
-static int input_added;
-
 /* Sockets for IPC */
 static int sockets[2];
 
@@ -360,6 +358,7 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 		case	4: rc = ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
 		case	5: rc = ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
 		case	6: rc = ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
+		default: rc = 0;
 	}
 	data->rc = rc;
 
@@ -634,6 +633,7 @@ static gboolean thread_push_function_entry(gpointer user_data)
 int thread_push_function_(void *function, int argcount, ...)
 {
 	struct thread_call_function_sync_data *data;
+	GSource *s;
 	int i;
 
 	va_list argptr;
@@ -654,8 +654,7 @@ int thread_push_function_(void *function, int argcount, ...)
 
 	va_end (argptr);
 
-
-	GSource *s = g_timeout_source_new(1);
+	s = g_timeout_source_new(1);
 	g_source_set_callback(s, thread_push_function_entry, data, NULL);
 	g_source_attach(s, thread_get()->context);
 	g_source_unref(s);

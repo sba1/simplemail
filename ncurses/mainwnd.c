@@ -164,6 +164,12 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 
 /*****************************************************************************/
 
+void main_set_status_text(char *txt)
+{
+}
+
+/*****************************************************************************/
+
 int main_is_iconified(void)
 {
 	return 0;

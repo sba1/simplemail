@@ -239,7 +239,7 @@ struct remote_folder *imap_get_folders(struct connection *conn, int all, int *nu
 	/* Capture all lines expect ok */
 	while ((line = tcp_readln(conn)))
 	{
-		SM_DEBUGF(20,("%s\n",line));
+		SM_DEBUGF(20,("%s%s", line, line[strlen(line)-1]=='\n'?"":"\n"));
 
 		line = imap_get_result(line,buf,sizeof(buf));
 		if (!mystricmp(buf,tag))

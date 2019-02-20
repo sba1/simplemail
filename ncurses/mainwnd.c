@@ -39,6 +39,7 @@
 
 static WINDOW *messagelist_wnd;
 static WINDOW *folders_wnd;
+static WINDOW *status_wnd;
 static int folders_width = 20;
 
 static struct folder *main_active_folder;
@@ -86,10 +87,12 @@ int main_window_open(void)
 
 	messagelist_wnd = newwin(h, w - folders_width, 0, folders_width);
 	folders_wnd = newwin(h, folders_width, 0, 0);
+	status_wnd = newwin(1, w, h, 0);
 	refresh();
 
 	wrefresh(messagelist_wnd);
 	wrefresh(folders_wnd);
+	wrefresh(status_wnd);
 
 	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
 	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
@@ -166,6 +169,8 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 
 void main_set_status_text(char *txt)
 {
+	mvwprintw(status_wnd, 0, 0, txt);
+	wrefresh(status_wnd);
 }
 
 /*****************************************************************************/

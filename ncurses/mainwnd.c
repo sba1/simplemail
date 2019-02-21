@@ -170,6 +170,7 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 void main_set_status_text(char *txt)
 {
 	mvwprintw(status_wnd, 0, 0, txt);
+	wclrtoeol(status_wnd);
 	wrefresh(status_wnd);
 }
 

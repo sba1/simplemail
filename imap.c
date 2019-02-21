@@ -126,7 +126,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		DIR *dfd;
 		struct dirent *dptr;
 
-		SM_DEBUGF(10, ("Scanning folder \"%s\" for mails", folder->path));
+		SM_DEBUGF(10, ("Scanning folder \"%s\" for mails\n", folder->path));
 		if (!(dfd = opendir(folder->path)))
 		{
 			sm_snprintf(logg_buf, sizeof(logg_buf), _("Couldn't get mails of locally saved IMAP folder \"%s\""), folder->name);

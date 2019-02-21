@@ -460,7 +460,7 @@ APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results)
 				buf[len-1]=0;
 
 				rdargs->RDA_Buffer = NULL;
-				rdargs->RDA_Source.CS_Buffer = buf;
+				rdargs->RDA_Source.CS_Buffer = (UBYTE *)buf;
 				rdargs->RDA_Source.CS_Length = strlen(buf);
 				rdargs->RDA_Source.CS_CurChr = 0;
 
@@ -500,7 +500,7 @@ LONG SendRexxCommand(CONST_STRPTR port, CONST_STRPTR Cmd, STRPTR Result, LONG Re
 
 			if ((rexxMsg = CreateRexxMsg(ReplyPort, NULL, NULL)))
 			{
-				if ((rexxMsg->rm_Args[0] = CreateArgstring(Cmd, strlen(Cmd))))
+				if ((rexxMsg->rm_Args[0] = (STRPTR)CreateArgstring(Cmd, strlen(Cmd))))
 				{
 					rexxMsg->rm_Action = RXCOMM | RXFF_RESULT;
 

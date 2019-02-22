@@ -665,6 +665,13 @@ void folder_unlink_all(void);
  */
 void folder_add_to_tree(struct folder *f, struct folder *parent);
 
+/**
+ * Return the level of a folder or 0 if this has no parent.
+ *
+ * @param f the folder for which to determine the level.
+ * @return the level
+ */
+unsigned int folder_level(struct folder *f);
 
 /**
  * The mail iterating function. To get the first mail let handle

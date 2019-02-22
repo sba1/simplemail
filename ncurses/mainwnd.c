@@ -111,6 +111,15 @@ void main_refresh_folders(void)
 
 	for (f = folder_first(); f; f = folder_next(f))
 	{
+		unsigned int level;
+		unsigned int i;
+
+		level = folder_level(f);
+		if (level > 10)
+		{
+			level = 10;
+		}
+
 		if (f == main_active_folder)
 		{
 			text[0] = '*';
@@ -118,7 +127,13 @@ void main_refresh_folders(void)
 		{
 			text[0] = ' ';
 		}
-		mystrlcpy(&text[1], folder_name(f), sizeof(text) - 2);
+
+		for (i = 0; i < level; i++)
+		{
+			text[1+i] = ' ';
+		}
+
+		mystrlcpy(&text[level + 1], folder_name(f), sizeof(text) - 2);
 		mvwprintw(folders_wnd, row++, 0 , text);
 	}
 	wrefresh(folders_wnd);

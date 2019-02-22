@@ -2692,6 +2692,20 @@ void folder_add_to_tree(struct folder *f,struct folder *parent)
 	list_insert_tail(&folder_list,&fnode->node);
 }
 
+/*****************************************************************************/
+
+unsigned int folder_level(struct folder *f)
+{
+	unsigned int level = 0;
+	while ((f = f->parent_folder))
+	{
+		level++;
+	}
+
+	return level;
+}
+
+
 /**
  * Return the imap path of the folder specified by the path
  * by opening the config.

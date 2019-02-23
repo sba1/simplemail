@@ -20,6 +20,10 @@
 ** subthreads.c
 */
 
+/* Linux-only */
+#define _GNU_SOURCE
+#include <sched.h>
+
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -209,6 +213,9 @@ static gpointer thread_add_entry(gpointer udata)
 	struct thread_s *t = tad->thread;
 
 	SM_DEBUGF(20,("New thread %p\n", t));
+
+	/* Linux only */
+	unshare(CLONE_FS);
 
 	/* TODO: Catch errors and inform parent task */
 	t->thread = g_thread_self();

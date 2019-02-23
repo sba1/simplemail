@@ -548,6 +548,7 @@ int load_config(void)
 
 		if ((user.signature_filename = mystrdup(buf)))
 		{
+			SM_DEBUGF(20,("signature_filename=%s\n", user.signature_filename));
 			if ((fh = fopen(user.signature_filename,"r")))
 			{
 				int utf8 = 0;

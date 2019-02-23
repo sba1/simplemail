@@ -60,6 +60,7 @@ static void main_folder_next(void)
 		main_active_folder = folder_next(main_active_folder);
 	}
 	main_refresh_folders();
+	callback_folder_active();
 }
 
 /*****************************************************************************/
@@ -74,6 +75,7 @@ static void main_folder_prev(void)
 		main_active_folder = folder_prev(main_active_folder);
 	}
 	main_refresh_folders();
+	callback_folder_active();
 }
 
 /*****************************************************************************/
@@ -156,22 +158,25 @@ struct folder *main_get_folder(void)
 
 void main_set_folder_active(struct folder *folder)
 {
-	void *handle = NULL;
-	struct mail_info *mi;
-	int row = 0;
-
 	main_active_folder = folder;
-
-	while ((mi = folder_next_mail(main_active_folder, &handle)))
-	{
-		mvwprintw(messagelist_wnd, row++, 0, mail_info_get_from(mi));
-	}
+	main_refresh_folders();
+	callback_folder_active();
 }
 
 /*****************************************************************************/
 
 void main_set_folder_mails(struct folder *folder)
 {
+	void *handle = NULL;
+	struct mail_info *mi;
+	int row = 0;
+
+	while ((mi = folder_next_mail(folder, &handle)))
+	{
+		const char *from = mail_info_get_from(mi);
+		mvwprintw(messagelist_wnd, row++, 0, from?from:"Unknown");
+	}
+	wrefresh(messagelist_wnd);
 }
 
 /*****************************************************************************/

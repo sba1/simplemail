@@ -3003,9 +3003,9 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 
 	SM_DEBUGF(10,("msg->after = %d\n",after));
 
-	/* Ensure vaild after. Note that if after == -2 we mean the last element */
-	if (after == -2 || after >= data->entries_num) after = data->entries_num - 1;
-	else if (after < -2) after = -1;
+	/* Ensure valid after value incl. resolving of special values */
+	if (after == MUIV_MailTreelist_InsertMail_Tail || after >= data->entries_num) after = data->entries_num - 1;
+	else if (after < MUIV_MailTreelist_InsertMail_Tail) after = -1;
 
 	/* Ensure that we can hold an additional entry */
 	if (!(SetListSize(data,data->entries_num + 1)))

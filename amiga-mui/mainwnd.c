@@ -1427,7 +1427,7 @@ void main_refresh_folder(struct folder *folder)
 
 void main_insert_mail(struct mail_info *mail)
 {
-	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, -2);
+	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, MUIV_MailTreelist_InsertMail_Tail);
 }
 
 /*****************************************************************************/

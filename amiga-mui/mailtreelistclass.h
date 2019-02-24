@@ -84,6 +84,9 @@ struct  MUIP_MailTreelist_RemoveMail       { ULONG MethodID; struct mail_info *m
 struct  MUIP_MailTreelist_ReplaceMail      { ULONG MethodID; struct mail_info *oldmail; struct mail_info *newmail;};
 struct  MUIP_MailTreelist_SetFolderMails   { ULONG MethodID; struct folder *f;};
 
+#define MUIV_MailTreelist_InsertMail_Head (-1)
+#define MUIV_MailTreelist_InsertMail_Tail (-2)
+
 Object *MakeMailTreelist(ULONG userid, Object **list);
 
 int create_mailtreelist_class(void);

@@ -181,6 +181,18 @@ void main_set_folder_mails(struct folder *folder)
 
 /*****************************************************************************/
 
+void main_insert_mail(struct mail_info *mail)
+{
+}
+
+/*****************************************************************************/
+
+void main_insert_mail_pos(struct mail_info *mail, int after)
+{
+}
+
+/*****************************************************************************/
+
 void main_set_progress(unsigned int max_work, unsigned int work)
 {
 }
@@ -192,6 +204,19 @@ void main_set_status_text(char *txt)
 	mvwprintw(status_wnd, 0, 0, txt);
 	wclrtoeol(status_wnd);
 	wrefresh(status_wnd);
+}
+
+
+/*****************************************************************************/
+
+void main_freeze_mail_list(void)
+{
+}
+
+/*****************************************************************************/
+
+void main_thaw_mail_list(void)
+{
 }
 
 /*****************************************************************************/

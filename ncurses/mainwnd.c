@@ -171,11 +171,13 @@ void main_set_folder_mails(struct folder *folder)
 	struct mail_info *mi;
 	int row = 0;
 
+	wmove(messagelist_wnd, 0, 0);
 	while ((mi = folder_next_mail(folder, &handle)))
 	{
 		const char *from = mail_info_get_from(mi);
 		mvwprintw(messagelist_wnd, row++, 0, from?from:"Unknown");
 	}
+	wclrtobot(messagelist_wnd);
 	wrefresh(messagelist_wnd);
 }
 

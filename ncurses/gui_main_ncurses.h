@@ -10,13 +10,18 @@
 struct gui_key_listener
 {
 	struct node n;
-	char ch;
+	int ch;
 
 	/** A short description about this action */
 	const char *short_description;
 
 	void (*callback)(void);
 };
+
+/* Special values for ch */
+#define NCURSES_NONE -1
+#define NCURSES_UP -2
+#define NCURSES_DOWN -3
 
 /**
  * Registers the given listener to call the given function on the given key event.
@@ -26,7 +31,7 @@ struct gui_key_listener
  * @param short_description the description
  * @param callback the function that is called on the event that ch is pressed.
  */
-void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char *short_description, void (*callback)(void));
+void gui_add_key_listener(struct gui_key_listener *listener, int ch, const char *short_description, void (*callback)(void));
 
 /**
  * Remove the previously added listener.

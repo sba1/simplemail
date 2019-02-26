@@ -31,10 +31,18 @@ static void gui_update_keyinfo(void)
 	while (l)
 	{
 		char buf[20];
+
+		if (l->ch == NCURSES_UP || l->ch == NCURSES_DOWN)
+		{
+			goto next;
+		}
+
 		sm_snprintf(buf, sizeof(buf), "%c: %s", l->ch, l->short_description);
 		mvwprintw(keyinfo_wnd, 0, col, buf);
 
 		col += strlen(buf) + 2;
+
+next:
 		l = (struct gui_key_listener *)node_next(&l->n);
 	}
 
@@ -43,7 +51,7 @@ static void gui_update_keyinfo(void)
 
 /*****************************************************************************/
 
-void gui_add_key_listener(struct gui_key_listener *listener, char ch, const char *short_description, void (*callback)(void))
+void gui_add_key_listener(struct gui_key_listener *listener, int ch, const char *short_description, void (*callback)(void))
 {
 	listener->ch = ch;
 	listener->callback = callback;
@@ -101,10 +109,33 @@ int gui_init(void)
  */
 static void *gui_timer(void *userdata)
 {
-	char ch;
+	int ch;
 	while ((ch = getch()) != 'q')
 	{
 		struct gui_key_listener *l;
+
+		if (ch == '\033')
+		{
+			if (getch() == '[')
+			{
+				switch (getch())
+				{
+				case	'A': /* up */
+					ch = NCURSES_UP;
+					break;
+				case	'B': /* down */
+					ch = NCURSES_DOWN;
+					break;
+				default:
+					ch = -1;
+					break;
+				}
+			} else
+			{
+				ch = -1;
+			}
+		}
+
 		if (ch == -1)
 		{
 			return;

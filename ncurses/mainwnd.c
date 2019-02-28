@@ -38,6 +38,7 @@
 /*****************************************************************************/
 
 static WINDOW *messagelist_wnd;
+static int messagelist_active = -1;
 static WINDOW *folders_wnd;
 static WINDOW *status_wnd;
 static int folders_width = 20;
@@ -47,6 +48,8 @@ static struct folder *main_active_folder;
 static struct gui_key_listener prev_folder_listener;
 static struct gui_key_listener next_folder_listener;
 static struct gui_key_listener fetch_mail_listener;
+static struct gui_key_listener next_mail_listener;
+static struct gui_key_listener prev_mail_listener;
 
 /*****************************************************************************/
 
@@ -80,6 +83,38 @@ static void main_folder_prev(void)
 
 /*****************************************************************************/
 
+static void main_next_mail(void)
+{
+	if (!main_active_folder)
+	{
+		return;
+	}
+
+	if (messagelist_active != folder_number_of_mails(main_active_folder))
+	{
+		messagelist_active++;
+		main_set_folder_mails(main_active_folder);
+	}
+}
+
+/*****************************************************************************/
+
+static void main_prev_mail(void)
+{
+	if (!main_active_folder)
+	{
+		return;
+	}
+
+	if (messagelist_active)
+	{
+		messagelist_active--;
+		main_set_folder_mails(main_active_folder);
+	}
+}
+
+/*****************************************************************************/
+
 int main_window_open(void)
 {
 	int w, h;
@@ -99,6 +134,8 @@ int main_window_open(void)
 	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
 	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
 	gui_add_key_listener(&fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
+	gui_add_key_listener(&next_mail_listener, NCURSES_DOWN, NULL, main_next_mail);
+	gui_add_key_listener(&prev_mail_listener, NCURSES_UP, NULL, main_prev_mail);
 
 	return 1;
 }

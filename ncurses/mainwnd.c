@@ -215,8 +215,14 @@ void main_set_folder_mails(struct folder *folder)
 	{
 		const char *from = mail_info_get_from(mi);
 		mystrlcpy(from_buf, from?from:"Unknown", sizeof(from_buf));
-		mvwprintw(messagelist_wnd, row, 0, from);
-		mvwprintw(messagelist_wnd, row, 31, mi->subject);
+		char *first = " ";
+		if (row == messagelist_active)
+		{
+			first = "*";
+		}
+		mvwprintw(messagelist_wnd, row, 0, first);
+		mvwprintw(messagelist_wnd, row, 1, from);
+		mvwprintw(messagelist_wnd, row, 32, mi->subject);
 		row++;
 	}
 	wclrtobot(messagelist_wnd);

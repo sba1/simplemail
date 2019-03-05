@@ -953,7 +953,6 @@ bailout:
 
 int imap_really_download_mails(struct connection *imap_connection, struct imap_download_mails_options *options)
 {
-	char path[380];
 	struct folder *local_folder;
 	struct remote_mailbox *rm;
 
@@ -1079,6 +1078,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 					unsigned int total_download_ticks;
 					unsigned int ticks;
 					unsigned int current_work = 1;
+
+					char path[380];
 
 					if (pm)
 					{
@@ -1240,9 +1241,9 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 							imap_free_remote_mailbox(rm);
 						}
 					}
+					chdir(path);
 				}
 dl_done:
-				chdir(path);
 				if (pm)
 				{
 					pm->done(pm);
@@ -1253,20 +1254,21 @@ dl_done:
 		} else folders_unlock();
 	}
 
-	/* Display status message. We mis-use path here */
+	/* Display status message */
 	{
 		int l;
 		const char *f = imap_folder?imap_folder:"Root";
+		char buf[128];
 
-		l = sm_snprintf(path,sizeof(path),"%s: ",imap_server->name);
+		l = sm_snprintf(buf,sizeof(buf),"%s: ",imap_server->name);
 		switch (downloaded_mails)
 		{
-			case 0: sm_snprintf(&path[l], sizeof(path) - l,_("No new mails in folder \"%s\""),f); break;
-			case 1: sm_snprintf(&path[l], sizeof(path) - l,_("One new mail in folder \"%s\""),f); break;
-			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),downloaded_mails,f); break;
+			case 0: sm_snprintf(&buf[l], sizeof(buf) - l,_("No new mails in folder \"%s\""),f); break;
+			case 1: sm_snprintf(&buf[l], sizeof(buf) - l,_("One new mail in folder \"%s\""),f); break;
+			default: sm_snprintf(&buf[l], sizeof(buf) - l,_("%d new mails in folder \"%s\""),downloaded_mails,f); break;
 		}
 
-		callbacks->set_status(path);
+		callbacks->set_status(buf);
 	}
 
 	SM_RETURN(downloaded_mails,"%d");

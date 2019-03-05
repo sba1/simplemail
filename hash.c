@@ -205,12 +205,17 @@ int hash_table_init_with_size(struct hash_table *ht, int bits, unsigned int entr
 
 	ht->filename = filename;
 
-	if (filename)
+	if (!filename)
 	{
-		if ((fh = fopen(filename,"r")))
+		/* Successful, even if no filename was given */
+		return 1;
+	}
+
+	if ((fh = fopen(filename,"r")))
+	{
+		char buf[512];
+		if (fgets(buf,sizeof(buf),fh))
 		{
-			char buf[512];
-			fgets(buf,sizeof(buf),fh);
 			if (!strncmp(buf,"SMHASH1",7))
 			{
 				fgets(buf,sizeof(buf),fh);
@@ -238,8 +243,8 @@ int hash_table_init_with_size(struct hash_table *ht, int bits, unsigned int entr
 					}
 				}
 			}
-			fclose(fh);
 		}
+		fclose(fh);
 	}
 
 	return 1;

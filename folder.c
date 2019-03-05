@@ -1841,12 +1841,14 @@ static coroutine_return_t folder_thread_rescan_or_reread_index_coroutine(struct 
 		{
 			COROUTINE_AWAIT_OTHER(c, cor);
 		}
-
-		free(rescan_ctx);
 	}
 
 	if (c->folder_index) folder_index_close(c->folder_index);
 	thread_call_function_sync(thread_get_main(), folder_rescan_async_completed, 1, c);
+
+	free(rescan_ctx);
+	c->rescan_ctx = NULL;
+
 	free(c->udata.mails);
 bailout:
 	c->pm->done(c->pm);

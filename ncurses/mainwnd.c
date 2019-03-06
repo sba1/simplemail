@@ -211,6 +211,7 @@ void main_set_folder_mails(struct folder *folder)
 
 	int from_width = 0;
 	int subject_width = 0;
+	int date_width = 0;
 
 	char from_buf[128];
 
@@ -225,6 +226,7 @@ void main_set_folder_mails(struct folder *folder)
 
 		const char *from = mail_info_get_from(mi);
 		const char *subject = mi->subject;
+		const char *date = sm_get_date_str(mi->seconds);
 
 		if (!from) from = "Unknown";
 
@@ -239,6 +241,12 @@ void main_set_folder_mails(struct folder *folder)
 		{
 			subject_width = l;
 		}
+
+		l = strlen(date);
+		if (l > date_width)
+		{
+			date_width = l;
+		}
 	}
 
 	if (from_width >= sizeof(from_buf))
@@ -252,8 +260,10 @@ void main_set_folder_mails(struct folder *folder)
 	while ((mi = folder_next_mail(folder, &handle)))
 	{
 		const char *from = mail_info_get_from(mi);
+		const char *date = sm_get_date_str(mi->seconds);
+		const char *first = " ";
+
 		mystrlcpy(from_buf, from?from:"Unknown", sizeof(from_buf));
-		char *first = " ";
 		if (row == messagelist_active)
 		{
 			first = "*";
@@ -261,6 +271,7 @@ void main_set_folder_mails(struct folder *folder)
 		mvwprintw(messagelist_wnd, row, 0, first);
 		mvwprintw(messagelist_wnd, row, 1, from);
 		mvwprintw(messagelist_wnd, row, 1 + from_width + 1, mi->subject);
+		mvwprintw(messagelist_wnd, row, 1 + from_width + 1 + subject_width + 1, date);
 		row++;
 	}
 	wclrtobot(messagelist_wnd);

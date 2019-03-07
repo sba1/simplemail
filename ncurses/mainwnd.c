@@ -218,8 +218,6 @@ void main_set_folder_mails(struct folder *folder)
 
 	getmaxyx(messagelist_wnd, h, w);
 
-	SM_DEBUGF(20, ("%d %d", w, h));
-
 	/* Determine dimensions */
 	while ((mi = folder_next_mail(folder, &handle)))
 	{

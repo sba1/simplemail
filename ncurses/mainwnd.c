@@ -34,6 +34,7 @@
 
 #include "gui_main_ncurses.h"
 #include "mainwnd.h"
+#include "timesupport.h"
 
 /*****************************************************************************/
 

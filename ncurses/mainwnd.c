@@ -51,6 +51,7 @@ static struct gui_key_listener next_folder_listener;
 static struct gui_key_listener fetch_mail_listener;
 static struct gui_key_listener next_mail_listener;
 static struct gui_key_listener prev_mail_listener;
+static struct gui_key_listener read_mail_listener;
 
 /*****************************************************************************/
 
@@ -116,6 +117,13 @@ static void main_prev_mail(void)
 
 /*****************************************************************************/
 
+static void main_read_mail(void)
+{
+	callback_read_active_mail();
+}
+
+/*****************************************************************************/
+
 int main_window_open(void)
 {
 	int w, h;
@@ -137,6 +145,7 @@ int main_window_open(void)
 	gui_add_key_listener(&fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
 	gui_add_key_listener(&next_mail_listener, NCURSES_DOWN, NULL, main_next_mail);
 	gui_add_key_listener(&prev_mail_listener, NCURSES_UP, NULL, main_prev_mail);
+	gui_add_key_listener(&read_mail_listener, '\n', NULL, main_read_mail);
 
 	return 1;
 }

@@ -304,6 +304,28 @@ void main_set_status_text(char *txt)
 	wrefresh(status_wnd);
 }
 
+/*****************************************************************************/
+
+struct mail_info *main_get_active_mail(void)
+{
+	void *handle = NULL;
+	struct mail_info *mi;
+	int row = 0;
+
+	if (!main_active_folder || messagelist_active < 0)
+	{
+		return NULL;
+	}
+
+	while ((mi = folder_next_mail(main_active_folder, &handle)))
+	{
+		if (row == messagelist_active)
+		{
+			break;
+		}
+	}
+	return mi;
+}
 
 /*****************************************************************************/
 

@@ -9,6 +9,7 @@
 #include "lists.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "support.h"
 
 #include "gui_main.h"
 #include "mainwnd.h"
@@ -138,7 +139,7 @@ static void *gui_timer(void *userdata)
 
 		if (ch == -1)
 		{
-			return;
+			return NULL;
 		}
 
 		l = (struct gui_key_listener *)list_first(&gui_key_listeners);
@@ -160,6 +161,7 @@ static void *gui_timer(void *userdata)
 	{
 		thread_abort(thread_get_main());
 	}
+	return NULL;
 }
 
 /******************************************************************************/

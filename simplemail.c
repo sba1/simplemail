@@ -86,7 +86,7 @@ int callback_read_active_mail(void)
 	struct folder *f;
 
 	if (!(f = main_get_folder())) return -1;
-	if (!(filename = main_get_mail_filename())) return -1;
+	if (!(filename = simplemail_get_active_mail_filename())) return -1;
 	if (!(m = main_get_active_mail())) return -1;
 
 	return callback_read_mail(f,m,-1);
@@ -102,7 +102,7 @@ void callback_save_active_mail(void)
 
 	if (!(f = main_get_folder())) return;
 	if (!(f->path)) return;
-	if (!(mail_filename = main_get_mail_filename())) return;
+	if (!(mail_filename = simplemail_get_active_mail_filename())) return;
 
 	if ((dest = sm_request_file("SimpleMail", "", 1, NULL)))
 	{
@@ -1182,7 +1182,7 @@ void callback_change_mail(void)
 {
 	char *filename;
 
-	if ((filename = main_get_mail_filename()))
+	if ((filename = simplemail_get_active_mail_filename()))
 	{
 		struct mail_complete *mail;
 		char buf[256];
@@ -1211,7 +1211,7 @@ void callback_show_raw(void)
 {
 	char *filename;
 
-	if ((filename = main_get_mail_filename()))
+	if ((filename = simplemail_get_active_mail_filename()))
 	{
 		sm_show_ascii_file(main_get_folder_drawer(), filename);
 	}
@@ -2528,6 +2528,15 @@ static void simplemail_update_progmonwnd(void)
 {
 	about_to_update_progmonwnd = 0;
 	progmonwnd_update(0);
+}
+
+/*****************************************************************************/
+
+char *simplemail_get_active_mail_filename(void)
+{
+	struct mail_info *m = main_get_active_mail();
+	if (m) return m->filename;
+	return NULL;
 }
 
 /*****************************************************************************/

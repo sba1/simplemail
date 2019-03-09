@@ -1532,15 +1532,6 @@ struct mail_info *main_get_active_mail(void)
 
 /*****************************************************************************/
 
-char *main_get_mail_filename(void)
-{
-	struct mail_info *m = main_get_active_mail();
-	if (m) return m->filename;
-	return NULL;
-}
-
-/*****************************************************************************/
-
 utf8 *main_get_quick_filter_contents(void)
 {
 	if (xget(main_settings_filter_menuitem,MUIA_Menuitem_Checked))

@@ -646,6 +646,15 @@ void callback_rescan_folder(void);
  */
 int callback_import_addressbook(void);
 
+
+/**
+ * Returns the filename of the active mail, NULL if no thing is
+ * selected
+ *
+ * @return the file name of the selected mail or NULL.
+ */
+char *simplemail_get_active_mail_filename(void);
+
 /**
  * Updates the progress monitor views.
  */

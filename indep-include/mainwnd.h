@@ -149,14 +149,6 @@ void main_set_active_mail(struct mail_info *m);
 struct mail_info *main_get_active_mail(void);
 
 /**
- * Returns the filename of the active mail, NULL if no thing is
- * selected
- *
- * @return the file name of the selected mail or NULL.
- */
-char *main_get_mail_filename(void);
-
-/**
  * Returns the contents of the quick filter (or NULL).
  *
  * @return the quick filter contents.

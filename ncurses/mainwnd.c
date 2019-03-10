@@ -203,6 +203,17 @@ struct folder *main_get_folder(void)
 
 /*****************************************************************************/
 
+void main_refresh_mail(struct mail_info *m)
+{
+	if (!main_active_folder)
+	{
+		return;
+	}
+	main_set_folder_mails(main_active_folder);
+}
+
+/*****************************************************************************/
+
 void main_set_folder_active(struct folder *folder)
 {
 	main_active_folder = folder;

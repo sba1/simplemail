@@ -118,3 +118,8 @@ $(OBJSDIR)/%.o: %.c
 .PHONY: clean
 clean:
 	$(RM) $(TARGET) $(OBJS) $(OBJSDIR)
+
+.PHONY: debug
+debug: $(TARGET)
+	@echo run \'gdb -ex \"target remote localhost:11111\"\' for debugging
+	gdbserver :11111 $(TARGET)

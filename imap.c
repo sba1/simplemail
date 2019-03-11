@@ -152,7 +152,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	}
 	num_of_todel_mails = 0;
 
-	SM_DEBUGF(10, ("%d mails in folder", num_of_mails));
+	SM_DEBUGF(10, ("%d mails in folder\n", num_of_mails));
 
 	if ((local_mail_array = (struct local_mail *)malloc(sizeof(*local_mail_array) * num_of_mails)))
 	{

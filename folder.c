@@ -1476,10 +1476,16 @@ static coroutine_return_t folder_rescan_really(struct coroutine_basic_context *c
 
 	getcwd(c->path, sizeof(c->path));
 	if (chdir(c->folder_path) == -1)
+	{
+		SM_DEBUGF(10, ("Failed to change directory to \"%s\" (current path is \"%s\")\n", c->folder_path, c->path));
 		goto out;
+	}
 
 	if (!(c->dfd = opendir(SM_CURRENT_DIR)))
+	{
+		SM_DEBUGF(10, ("Failed to open current directory)\n"));
 		goto out;
+	}
 
 	c->last_ticks = time_reference_ticks();
 

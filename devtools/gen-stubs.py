@@ -30,6 +30,7 @@ class FuncDefVisitor(c_ast.NodeVisitor):
 
       print(generator.visit(node))
       print('{')
+      print("  SM_DEBUGF(20, (\"%s called\\n\", __PRETTY_FUNCTION__));")
       print("  fprintf(stderr, \"%s called\\n\", __PRETTY_FUNCTION__);")
       print("  exit(1);")
       print('}\n')
@@ -57,5 +58,7 @@ if __name__ == '__main__':
   print('#include <stdlib.h>')
   print()
   print('#include "codesets.h"')
+  print('#include "debug.h"')
+  print()
   v = FuncDefVisitor(functions)
   v.visit(ast)

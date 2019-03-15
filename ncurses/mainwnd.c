@@ -39,8 +39,10 @@
 /*****************************************************************************/
 
 static WINDOW *messagelist_wnd;
+static PANEL *messagelist_panel;
 static int messagelist_active = -1;
 static WINDOW *folders_wnd;
+static PANEL *folders_panel;
 static WINDOW *status_wnd;
 static int folders_width = 20;
 
@@ -132,7 +134,9 @@ int main_window_open(void)
 	h -= 2;
 
 	messagelist_wnd = newwin(h, w - folders_width, 0, folders_width);
+	messagelist_panel = new_panel(messagelist_wnd);
 	folders_wnd = newwin(h, folders_width, 0, 0);
+	folders_panel = new_panel(folders_wnd);
 	status_wnd = newwin(1, w, h, 0);
 	refresh();
 

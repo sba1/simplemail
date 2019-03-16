@@ -14,7 +14,7 @@ ifndef Kickstart
 CROSS_COMPILE = ppc-amigaos-
 RM     = rm -Rf
 MKDIR  = mkdir -p
-DATE   := -DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"'
+DATE   := -DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"' -DSIMPLEMAIL_YEAR='"$(shell date +%Y)"'
 
 else
 

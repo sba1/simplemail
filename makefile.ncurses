@@ -15,7 +15,7 @@ OBJCOPY= $(CROSS_COMPILE)objcopy
 RM     = rm -Rf
 MKDIR  = mkdir -p
 
-DATE   := -DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"'
+DATE   := -DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"' -DSIMPLEMAIL_YEAR='"$(shell date +%Y)"'
 
 
 SSL_FLAGS = -DUSE_OPENSSL

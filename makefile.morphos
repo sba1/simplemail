@@ -5,7 +5,7 @@
 CROSS_COMPILE = ppc-morphos-
 RM     = rm -rf
 MKDIR  = mkdir -p
-DATE   = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+DATE   = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -DSIMPLEMAIL_YEAR=\"`date +%Y`\"
 
 # Uncomment the next line if you are cross compiling
 

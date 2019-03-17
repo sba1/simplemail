@@ -71,6 +71,7 @@ start: date.h $(GSTFILE) smakefile.compile
     endif
 
     rx >t:smdate.h "say '\#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
+    rx >>t:smdate.h "say '\#define' SIMPLEMAIL_YEAR '22'x || left(date(S),4) || '22'x"
     if not warn
       if exists date.h
        rx "open('file1','T:smdate.h');open('file2','date.h');line1=readln('file1');line2=readln('file2');close('file2');close('file1');if line1 ~== line2 then address command 'copy T:smdate.h date.h'"

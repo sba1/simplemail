@@ -67,6 +67,8 @@ void gui_add_key_listener(struct gui_key_listener *listener, int ch, const char 
 void gui_remove_key_listener(struct gui_key_listener *listener)
 {
 	node_remove(&listener->n);
+
+	gui_update_keyinfo();
 }
 
 /*****************************************************************************/

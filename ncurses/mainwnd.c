@@ -347,6 +347,7 @@ struct mail_info *main_get_active_mail(void)
 		{
 			break;
 		}
+		row++;
 	}
 	return mi;
 }

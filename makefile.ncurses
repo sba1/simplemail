@@ -64,7 +64,8 @@ LINK = \
 	$(shell pkg-config ncurses --libs) \
 	$(shell pkg-config panel --libs) \
 	$(shell pkg-config form --libs) \
-	-Wl,--gc-sections
+	-Wl,--gc-sections \
+	$(DEBUG)
 
 # Name of the "thing" to build
 TARGET = $(TARGET_DIR)/SimpleMail$(TARGETSUFFIX)

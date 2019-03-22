@@ -47,6 +47,7 @@ next:
 		l = (struct gui_key_listener *)node_next(&l->n);
 	}
 
+	wclrtoeol(keyinfo_wnd);
 	wrefresh(keyinfo_wnd);
 }
 

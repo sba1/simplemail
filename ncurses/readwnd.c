@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "gui_main_ncurses.h"
 #include "mail.h"
+#include "smintl.h"
 
 #include <ncurses.h>
 #include <panel.h>
@@ -71,7 +72,22 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 	if ((read_current_mail = mail_complete_create_from_file(NULL, mail->filename)))
 	{
+		struct mail_complete *initial;
 		mail_read_contents(NULL,read_current_mail);
+		if ((initial = mail_find_initial(read_current_mail)))
+		{
+			char buf[380];
+			utf8 *from_phrase = mail_info_get_from_phrase(read_current_mail->info);
+			utf8 *from_addr = mail_info_get_from_addr(read_current_mail->info);
+			if (from_phrase)
+			{
+				sm_snprintf(buf, sizeof(buf), "%s: %s <%s>", _("From"), from_phrase, from_addr);
+			} else
+			{
+				sm_snprintf(buf, sizeof(buf), "%s: %s", _("From"), from_addr);
+			}
+			mvwprintw(read_wnd, 0, 0, buf);
+		}
 	} else
 	{
 		SM_DEBUGF(20, ("Unable to create mail \"%s\"\n", mail->filename));

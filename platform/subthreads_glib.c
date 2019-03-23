@@ -351,10 +351,12 @@ static gboolean thread_call_function_sync_done_entry(gpointer user_data)
  */
 static gboolean thread_call_function_sync_entry(gpointer user_data)
 {
+	struct thread_call_function_sync_data *data;
+	uintptr_t rc;
+
 	SM_ENTER;
 
-	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
-	uintptr_t rc;
+	data = (struct thread_call_function_sync_data*)user_data;
 
 	switch (data->argcount)
 	{
@@ -674,6 +676,7 @@ int thread_push_function_(void *function, int argcount, ...)
 int thread_push_function_delayed_(int millis, void *function, int argcount, ...)
 {
 	struct thread_call_function_sync_data *data;
+	GSource *s;
 	int i;
 
 	va_list argptr;
@@ -695,7 +698,7 @@ int thread_push_function_delayed_(int millis, void *function, int argcount, ...)
 	va_end (argptr);
 
 
-	GSource *s = g_timeout_source_new(millis);
+	s = g_timeout_source_new(millis);
 	g_source_set_callback(s, thread_push_function_entry, data, NULL);
 	g_source_attach(s, thread_get()->context);
 	g_source_unref(s);
@@ -781,6 +784,8 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	va_end (argptr);
 
 	g_main_context_invoke(thread->context, thread_call_function_async_string_entry, data);
+
+	return 1;
 }
 
 /*****************************************************************************/

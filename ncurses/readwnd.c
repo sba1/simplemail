@@ -5,6 +5,7 @@
 #include "readwnd.h"
 
 #include "debug.h"
+#include "gadgets.h"
 #include "gui_main_ncurses.h"
 #include "mail.h"
 #include "smintl.h"
@@ -21,6 +22,8 @@ static PANEL *read_panel;
 static struct gui_key_listener close_listener;
 
 static struct mail_complete *read_current_mail;
+
+static struct simple_text_label from_label;
 
 /******************************************************************************/
 
@@ -86,7 +89,8 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			{
 				sm_snprintf(buf, sizeof(buf), "%s: %s", _("From"), from_addr);
 			}
-			mvwprintw(read_wnd, 0, 0, buf);
+			gadgets_init_simple_text_label(&from_label, 0, 0, buf);
+			gadgets_display(read_wnd, &from_label.tl);
 		}
 	} else
 	{

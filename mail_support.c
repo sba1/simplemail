@@ -256,7 +256,7 @@ char *quote_text(char *src, int len)
 
 const char *mail_get_compare_subject(const char *subj)
 {
-	char *p;
+	const char *p;
 	int brackets = 0;
 
 	/* Move the pointer beyond all []'s and Re's */

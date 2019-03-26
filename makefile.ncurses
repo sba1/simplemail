@@ -4,7 +4,13 @@
 
 TARGET_DIR=target
 
+ifndef USE_CPLUSPLUS
 CC     = $(CROSS_COMPILE)gcc
+CFLAGS_LANG = -std=c11 -Wdeclaration-after-statement
+else
+CC     = $(CROSS_COMPILE)g++
+CFLAGS_LANG = -std=c++2a
+endif
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as
 LD     = $(CROSS_COMPILE)ld
@@ -52,8 +58,7 @@ CFLAGS = \
 	-Wall\
 	-Wno-deprecated-declarations\
 	-fno-strict-aliasing\
-	-std=gnu11\
-	-Wdeclaration-after-statement\
+	$(CFLAGS_LANG) \
 	-Dstricmp=strcasecmp\
 	-Dstrnicmp=strncasecmp\
 

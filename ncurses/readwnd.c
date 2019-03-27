@@ -9,6 +9,7 @@
 #include "gui_main_ncurses.h"
 #include "mail.h"
 #include "smintl.h"
+#include "support.h"
 
 #include <ncurses.h>
 #include <panel.h>

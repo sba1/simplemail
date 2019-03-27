@@ -243,7 +243,7 @@ thread_t thread_add(const char *thread_name, int (*entry)(void *), void *eudata)
 	struct thread_s *t;
 	struct thread_add_data tad;
 
-	if (!(t = malloc(sizeof(*t)))) return NULL;
+	if (!(t = (struct thread_s*)malloc(sizeof(*t)))) return NULL;
 	memset(t,0,sizeof(*t));
 
 	tad.entry = entry;
@@ -647,7 +647,7 @@ int thread_push_function_(void *function, int argcount, ...)
 
 	va_list argptr;
 
-	if (!(data = malloc(sizeof(*data))))
+	if (!(data = (struct thread_call_function_sync_data *)malloc(sizeof(*data))))
 		return 0;
 	memset(data, 0, sizeof(*data));
 
@@ -681,7 +681,7 @@ int thread_push_function_delayed_(int millis, void *function, int argcount, ...)
 
 	va_list argptr;
 
-	if (!(data = malloc(sizeof(*data))))
+	if (!(data = (struct thread_call_function_sync_data *)malloc(sizeof(*data))))
 		return 0;
 	memset(data, 0, sizeof(*data));
 
@@ -766,7 +766,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
-	if (!(data = malloc(sizeof(*data))))
+	if (!(data = (struct thread_call_function_sync_data *)malloc(sizeof(*data))))
 		return 0;
 	memset(data, 0, sizeof(*data));
 
@@ -811,7 +811,7 @@ struct semaphore_s
 
 semaphore_t thread_create_semaphore(void)
 {
-	semaphore_t sem = malloc(sizeof(struct semaphore_s));
+	semaphore_t sem = (semaphore_t)malloc(sizeof(struct semaphore_s));
 	if (sem)
 	{
 		g_rec_mutex_init(&sem->mutex);

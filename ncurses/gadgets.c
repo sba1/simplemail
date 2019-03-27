@@ -23,7 +23,7 @@ static void simple_text_free(void *l)
 
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, const char *text)
 {
-	char *buf = malloc(strlen(text) + 1);
+	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
 	l->tl.x = x;
 	l->tl.y = y;

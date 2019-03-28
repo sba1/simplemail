@@ -486,7 +486,7 @@ int mydeletedir(const char *path)
 
 			if (!stat(buf,st))
 			{
-				if (st->st_mode & S_IFDIR)
+				if (S_ISDIR(st->st_mode))
 				{
 					mydeletedir(buf);
 				} else

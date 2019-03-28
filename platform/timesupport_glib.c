@@ -39,21 +39,17 @@ unsigned int sm_get_seconds(int day, int month, int year)
 
 int sm_get_gmt_offset(void)
 {
-	struct timezone tz;
-	struct timeval tv;
-
-	gettimeofday(&tv,&tz);
-	return tz.tz_minuteswest;
+	GTimeZone *tz = g_time_zone_new_local();
+	return g_time_zone_get_offset(tz, 0) / 60;
 }
 
 /*****************************************************************************/
 
 unsigned int sm_get_current_seconds(void)
 {
-	struct timezone tz;
 	struct timeval tv;
 
-	gettimeofday(&tv,&tz);
+	gettimeofday(&tv,NULL);
 	return tv.tv_sec;
 }
 
@@ -61,10 +57,9 @@ unsigned int sm_get_current_seconds(void)
 
 unsigned int sm_get_current_micros(void)
 {
-	struct timezone tz;
 	struct timeval tv;
 
-	gettimeofday(&tv,&tz);
+	gettimeofday(&tv,NULL);
 	return tv.tv_usec;
 }
 

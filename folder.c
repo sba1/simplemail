@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 
@@ -4699,7 +4700,7 @@ void folder_create_imap(void)
 
 							if (!stat(buf,st))
 							{
-								if (st->st_mode & S_IFDIR)
+								if (S_ISDIR(st->st_mode))
 								{
 									char *imap_path;
 									char delim;
@@ -4795,7 +4796,7 @@ static void folder_fix(void)
 		{
 			if (stat(f->path,st)==0)
 			{
-				if (!(st->st_mode & S_IFDIR))
+				if (!(S_ISDIR(st->st_mode)))
 					remove = 1;
 			} else remove = 1;
 		}
@@ -4855,7 +4856,7 @@ int init_folders(void)
 			sm_add_part(buf,dptr->d_name,sizeof(buf));
 			if (!stat(buf,st))
 			{
-				if (st->st_mode & S_IFDIR)
+				if (S_ISDIR(st->st_mode))
 				{
 					folder_add(buf);
 				}

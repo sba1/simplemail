@@ -25,6 +25,7 @@ static struct gui_key_listener close_listener;
 static struct mail_complete *read_current_mail;
 
 static struct simple_text_label from_label;
+static struct simple_text_label date_label;
 static struct simple_text_label subject_label;
 
 /******************************************************************************/
@@ -93,10 +94,14 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			}
 			gadgets_init_simple_text_label(&from_label, 0, 0, buf);
 
+			sm_snprintf(buf, sizeof(buf), "%s: %s", _("Date"), sm_get_date_str(read_current_mail->info->seconds));
+			gadgets_init_simple_text_label(&date_label, 0, 1, buf);
+
 			sm_snprintf(buf, sizeof(buf), "%s: %s", _("Subject"), read_current_mail->info->subject);
-			gadgets_init_simple_text_label(&subject_label, 0, 0, buf);
+			gadgets_init_simple_text_label(&subject_label, 0, 2, buf);
 
 			gadgets_display(read_wnd, &from_label.tl);
+			gadgets_display(read_wnd, &date_label.tl);
 			gadgets_display(read_wnd, &subject_label.tl);
 		}
 	} else

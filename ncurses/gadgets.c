@@ -36,5 +36,5 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, c
 
 void gadgets_display(WINDOW *win, struct text_label *l)
 {
-	mvwprintw(win, 0, 0, l->render(l));
+	mvwprintw(win, l->y, l->x, l->render(l));
 }

@@ -14,6 +14,8 @@ struct text_label
 	int x;
 	int y;
 
+	int w;
+
 	const char * (*render)(void *l);
 	void (*free)(void *l);
 };
@@ -28,7 +30,7 @@ struct simple_text_label
 };
 
 
-void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, const char *text);
+void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text);
 void gadgets_display(WINDOW *win, struct text_label *l);
 
 #endif

@@ -21,12 +21,13 @@ static void simple_text_free(void *l)
 
 /******************************************************************************/
 
-void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, const char *text)
+void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
 	l->tl.x = x;
 	l->tl.y = y;
+	l->tl.w = w;
 	l->text = buf;
 	l->tl.render = simple_text_render;
 	l->tl.free = simple_text_free;
@@ -36,5 +37,14 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, c
 
 void gadgets_display(WINDOW *win, struct text_label *l)
 {
-	mwvaddstr(win, l->y, l->x, l->render(l));
+	const char *txt = l->render(l);
+	size_t txt_len = strlen(txt);
+	size_t i;
+
+	mvwaddstr(win, l->y, l->x, l->render(l));
+
+	for (i = txt_len; i < l->w; i++)
+	{
+		mvwaddstr(win, l->y, i, " ");
+	}
 }

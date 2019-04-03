@@ -10,6 +10,7 @@
 #include "mail.h"
 #include "smintl.h"
 #include "support.h"
+#include "timesupport.h"
 
 #include <ncurses.h>
 #include <panel.h>

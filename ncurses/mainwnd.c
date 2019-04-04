@@ -110,7 +110,7 @@ static void main_prev_mail(void)
 		return;
 	}
 
-	if (messagelist_active)
+	if (messagelist_active >= 0)
 	{
 		messagelist_active--;
 		main_set_folder_mails(main_active_folder);

@@ -28,6 +28,7 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, i
 	l->tl.x = x;
 	l->tl.y = y;
 	l->tl.w = w;
+	l->tl.h = 1;
 	l->text = buf;
 	l->tl.render = simple_text_render;
 	l->tl.free = simple_text_free;

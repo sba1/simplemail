@@ -15,6 +15,7 @@ struct text_label
 	int y;
 
 	int w;
+	int h;
 
 	const char * (*render)(void *l);
 	void (*free)(void *l);

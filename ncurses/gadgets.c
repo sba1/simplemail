@@ -36,6 +36,21 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, i
 
 /*******************************************************************************/
 
+void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, const char *text)
+{
+	char *buf = (char*)malloc(strlen(text) + 1);
+	strcpy(buf, text);
+	v->tl.tl.x = x;
+	v->tl.tl.y = y;
+	v->tl.tl.w = w;
+	v->tl.tl.h = 1;
+	v->tl.text = buf;
+	v->tl.tl.render = simple_text_render;
+	v->tl.tl.free = simple_text_free;
+}
+
+/*******************************************************************************/
+
 void gadgets_display(WINDOW *win, struct text_label *l)
 {
 	const char *txt = l->render(l);

@@ -30,8 +30,13 @@ struct simple_text_label
 	char *text;
 };
 
+struct text_view
+{
+	struct simple_text_label tl;
+};
 
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text);
+void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, const char *text);
 void gadgets_display(WINDOW *win, struct text_label *l);
 
 #endif

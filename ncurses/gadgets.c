@@ -51,16 +51,34 @@ void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, con
 
 /*******************************************************************************/
 
+static char *mystrchrnul(const char *s, int c)
+{
+	char *r = strchr(s, c);
+	if (!r)
+	{
+		return (char*)&s[strlen(s)];
+	}
+	return r;
+}
+
+/*******************************************************************************/
+
 void gadgets_display(WINDOW *win, struct text_label *l)
 {
 	const char *txt = l->render(l);
-	size_t txt_len = strlen(txt);
-	size_t i;
+	const char *endl;
 
-	mvwaddstr(win, l->y, l->x, txt);
-
-	for (i = txt_len; i < l->w; i++)
+	while ((endl = mystrchrnul(txt, '\n')) != txt)
 	{
-		mvwaddstr(win, l->y, i, " ");
+		size_t txt_len = endl - txt;
+		int i;
+
+		mvwaddnstr(win, l->y, l->x, txt, txt - endl);
+
+		for (i = txt_len; i < l->w; i++)
+		{
+			mvwaddnstr(win, l->y, i, " ", 1);
+		}
+		txt = endl;
 	}
 }

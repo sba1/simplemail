@@ -67,18 +67,20 @@ void gadgets_display(WINDOW *win, struct text_label *l)
 {
 	const char *txt = l->render(l);
 	const char *endl;
+	int oy = 0;
 
-	while ((endl = mystrchrnul(txt, '\n')) != txt)
+	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < l->h)
 	{
 		size_t txt_len = endl - txt;
 		int i;
 
-		mvwaddnstr(win, l->y, l->x, txt, txt - endl);
+		mvwaddnstr(win, l->y + oy, l->x, txt, txt - endl);
 
 		for (i = txt_len; i < l->w; i++)
 		{
-			mvwaddnstr(win, l->y, i, " ", 1);
+			mvwaddnstr(win, l->y + oy, i, " ", 1);
 		}
 		txt = endl;
+		oy++;
 	}
 }

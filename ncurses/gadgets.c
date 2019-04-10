@@ -74,7 +74,7 @@ void gadgets_display(WINDOW *win, struct text_label *l)
 		size_t txt_len = endl - txt;
 		int i;
 
-		mvwaddnstr(win, l->y + oy, l->x, txt, txt - endl);
+		mvwaddnstr(win, l->y + oy, l->x, txt, endl - txt);
 
 		for (i = txt_len; i < l->w; i++)
 		{

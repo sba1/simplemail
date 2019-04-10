@@ -109,7 +109,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			gadgets_display(read_wnd, &from_label.tl);
 			gadgets_display(read_wnd, &date_label.tl);
 			gadgets_display(read_wnd, &subject_label.tl);
-			gadgets_display(read_wnd, &text_view.tl);
+			gadgets_display(read_wnd, &text_view.tl.tl);
 		}
 	} else
 	{

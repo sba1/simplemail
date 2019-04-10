@@ -51,12 +51,12 @@ void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, con
 
 /*******************************************************************************/
 
-static char *mystrchrnul(const char *s, int c)
+static const char *mystrchrnul(const char *s, int c)
 {
-	char *r = strchr(s, c);
+	const char *r = strchr(s, c);
 	if (!r)
 	{
-		return (char*)&s[strlen(s)];
+		return &s[strlen(s)];
 	}
 	return r;
 }

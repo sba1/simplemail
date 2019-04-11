@@ -104,7 +104,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 			mail_decode(initial);
 
-			gadgets_init_text_view(&text_view, 0, 3, 40, 20, initial->decoded_data);
+			gadgets_init_text_view(&text_view, 0, 3, 40, h - 3, initial->decoded_data);
 
 			gadgets_display(read_wnd, &from_label.tl);
 			gadgets_display(read_wnd, &date_label.tl);

@@ -94,17 +94,17 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			{
 				sm_snprintf(buf, sizeof(buf), "%s: %s", _("From"), from_addr);
 			}
-			gadgets_init_simple_text_label(&from_label, 0, 0, 40, buf);
+			gadgets_init_simple_text_label(&from_label, 0, 0, w, buf);
 
 			sm_snprintf(buf, sizeof(buf), "%s: %s", _("Date"), sm_get_date_str(read_current_mail->info->seconds));
-			gadgets_init_simple_text_label(&date_label, 0, 1, 40, buf);
+			gadgets_init_simple_text_label(&date_label, 0, 1, w, buf);
 
 			sm_snprintf(buf, sizeof(buf), "%s: %s", _("Subject"), read_current_mail->info->subject);
-			gadgets_init_simple_text_label(&subject_label, 0, 2, 40, buf);
+			gadgets_init_simple_text_label(&subject_label, 0, 2, w, buf);
 
 			mail_decode(initial);
 
-			gadgets_init_text_view(&text_view, 0, 3, 40, h - 3, initial->decoded_data);
+			gadgets_init_text_view(&text_view, 0, 3, w, h - 3, initial->decoded_data);
 
 			gadgets_display(read_wnd, &from_label.tl);
 			gadgets_display(read_wnd, &date_label.tl);

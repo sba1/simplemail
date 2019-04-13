@@ -138,6 +138,10 @@ static void *gui_timer(void *userdata)
 			{
 				ch = -1;
 			}
+		} else if (ch == KEY_RESIZE)
+		{
+			/* TODO: Do stuff */
+			continue;
 		}
 
 		if (ch == -1)

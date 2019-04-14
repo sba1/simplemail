@@ -21,6 +21,15 @@ static void simple_text_free(void *l)
 
 /******************************************************************************/
 
+void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h)
+{
+	l->x = x;
+	l->y = y;
+	l->w = w;
+	l->h = h;
+}
+
+/******************************************************************************/
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);

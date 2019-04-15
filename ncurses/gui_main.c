@@ -19,6 +19,7 @@
 /*****************************************************************************/
 
 static struct list gui_key_listeners;
+static struct list gui_resize_listeners;
 static WINDOW *keyinfo_wnd;
 
 /*****************************************************************************/
@@ -70,6 +71,23 @@ void gui_remove_key_listener(struct gui_key_listener *listener)
 	node_remove(&listener->n);
 
 	gui_update_keyinfo();
+}
+
+/******************************************************************************/
+
+void gui_add_resize_listener(struct gui_resize_listener *listener, void (*callback)(void *arg), void *udata)
+{
+	listener->callback = callback;
+	listener->udata = udata;
+
+	list_insert_tail(&gui_resize_listeners, &listener->n);
+}
+
+/*****************************************************************************/
+
+void gui_remove_resize_listener(struct gui_resize_listener *listener)
+{
+	node_remove(&listener->n);
 }
 
 /*****************************************************************************/
@@ -140,7 +158,13 @@ static void *gui_timer(void *userdata)
 			}
 		} else if (ch == KEY_RESIZE)
 		{
-			/* TODO: Do stuff */
+			struct gui_resize_listener *l;
+			l = (struct gui_resize_listener *)list_first(&gui_resize_listeners);
+			while (l)
+			{
+				l->callback(l->udata);
+				l = (struct gui_resize_listener*)node_next(&l->n);
+			}
 			continue;
 		}
 

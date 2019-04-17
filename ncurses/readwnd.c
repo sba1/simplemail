@@ -37,6 +37,11 @@ static struct text_view text_view;
 static void read_window_close_current(void)
 {
 	gui_remove_key_listener(&close_listener);
+	if (resize_listener_added)
+	{
+		gui_remove_resize_listener(&resize_listener);
+		resize_listener_added = 0;
+	}
 
 	hide_panel(read_panel);
 	update_panels();
@@ -70,8 +75,6 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 		read_wnd = newwin(h, w, 0, 0);
 		read_panel = new_panel(read_wnd);
 		show_panel(read_panel);
-		gui_add_resize_listener(&resize_listener, read_window_resize, NULL);
-		resize_listener_added = 1;
 	} else
 	{
 		show_panel(read_panel);
@@ -79,6 +82,8 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 		doupdate();
 	}
 
+	gui_add_resize_listener(&resize_listener, read_window_resize, NULL);
+	resize_listener_added = 1;
 
 	if (read_current_mail)
 	{

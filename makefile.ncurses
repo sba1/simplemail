@@ -6,7 +6,7 @@ TARGET_DIR=target
 
 ifndef USE_CPLUSPLUS
 CC     = $(CROSS_COMPILE)gcc
-CFLAGS_LANG = -std=c11 -Wdeclaration-after-statement
+CFLAGS_LANG = -std=gnu11 -Wdeclaration-after-statement
 else
 CC     = $(CROSS_COMPILE)g++
 CFLAGS_LANG = -std=c++2a

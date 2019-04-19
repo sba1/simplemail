@@ -235,7 +235,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
 	int rc = 0;
 
-	const unsigned char *p = buf;
+	const unsigned char *p = (const unsigned char *)buf;
 	PKCS7 *pkcs7;
 
 	if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))

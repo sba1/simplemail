@@ -23,21 +23,19 @@ static void simple_text_free(void *l)
 
 void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h)
 {
-	l->x = x;
-	l->y = y;
-	l->w = w;
-	l->h = h;
+	l->g.r.x = x;
+	l->g.r.y = y;
+	l->g.r.w = w;
+	l->g.r.h = h;
 }
 
 /******************************************************************************/
+
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
-	l->tl.x = x;
-	l->tl.y = y;
-	l->tl.w = w;
-	l->tl.h = 1;
+	gadgets_set_extend(&l->tl, x, y, w, 1);
 	l->text = buf;
 	l->tl.render = simple_text_render;
 	l->tl.free = simple_text_free;
@@ -49,10 +47,8 @@ void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, con
 {
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
-	v->tl.tl.x = x;
-	v->tl.tl.y = y;
-	v->tl.tl.w = w;
-	v->tl.tl.h = 1;
+	gadgets_set_extend(&v->tl.tl, x, y, w, h);
+
 	v->tl.text = buf;
 	v->tl.tl.render = simple_text_render;
 	v->tl.tl.free = simple_text_free;
@@ -77,17 +73,18 @@ void gadgets_display(WINDOW *win, struct text_label *l)
 	const char *txt = l->render(l);
 	const char *endl;
 	int oy = 0;
+	int h = l->g.r.h;
 
-	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < l->h)
+	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < h)
 	{
 		size_t txt_len = endl - txt;
 		int i;
 
-		mvwaddnstr(win, l->y + oy, l->x, txt, endl - txt);
+		mvwaddnstr(win, l->g.r.y + oy, l->g.r.x, txt, endl - txt);
 
-		for (i = txt_len; i < l->w; i++)
+		for (i = txt_len; i < l->g.r.w; i++)
 		{
-			mvwaddnstr(win, l->y + oy, i, " ", 1);
+			mvwaddnstr(win, l->g.r.y + oy, i, " ", 1);
 		}
 		txt = endl;
 		oy++;

@@ -5,17 +5,23 @@
 
 #include <ncurses.h>
 
+struct rect
+{
+	int x, y, w, h;
+};
+
+struct gadget
+{
+	struct node n;
+	struct rect r;
+};
+
 /**
  * Base for all text labels.
  */
 struct text_label
 {
-	struct node node;
-	int x;
-	int y;
-
-	int w;
-	int h;
+	struct gadget g;
 
 	const char * (*render)(void *l);
 	void (*free)(void *l);

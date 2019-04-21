@@ -33,6 +33,8 @@ struct text_label
 struct simple_text_label
 {
 	struct text_label tl;
+
+	/** Some text to be rendered. Owned by this */
 	char *text;
 };
 

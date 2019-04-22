@@ -121,10 +121,10 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 			gadgets_init_text_view(&text_view, 0, 3, w, h - 3, initial->decoded_data);
 
-			gadgets_display(read_wnd, &from_label.tl);
-			gadgets_display(read_wnd, &date_label.tl);
-			gadgets_display(read_wnd, &subject_label.tl);
-			gadgets_display(read_wnd, &text_view.tl.tl);
+			gadgets_display(read_wnd, &from_label.tl.g);
+			gadgets_display(read_wnd, &date_label.tl.g);
+			gadgets_display(read_wnd, &subject_label.tl.g);
+			gadgets_display(read_wnd, &text_view.tl.tl.g);
 		}
 	} else
 	{

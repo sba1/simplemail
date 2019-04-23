@@ -56,6 +56,17 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	}
 }
 
+static void group_display(struct gadget *gad, WINDOW *win)
+{
+	struct group *gr = (struct group *)gad;
+	struct gadget *child = (struct gadget *)list_first(&gr->l);
+	while (child)
+	{
+		child->display(child, win);
+		child = (struct gadget *)node_next(&child->n);
+	}
+}
+
 /******************************************************************************/
 
 void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h)
@@ -64,6 +75,14 @@ void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h)
 	l->g.r.y = y;
 	l->g.r.w = w;
 	l->g.r.h = h;
+}
+
+/******************************************************************************/
+
+void gadgets_init_group(struct group *g)
+{
+	list_init(&g->l);
+	g->g.display = group_display;
 }
 
 /******************************************************************************/

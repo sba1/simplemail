@@ -87,6 +87,13 @@ void gadgets_init_group(struct group *g)
 
 /******************************************************************************/
 
+void gadgets_add(struct group *gr, struct gadget *gad)
+{
+	list_insert_tail(&gr->l, &gad->n);
+}
+
+/******************************************************************************/
+
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);

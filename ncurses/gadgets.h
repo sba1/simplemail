@@ -58,6 +58,7 @@ struct text_view
 void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h);
 void gadgets_init_group(struct group *g);
 void gadgets_add(struct group *gr, struct gadget *gad);
+void gadgets_remove(struct gadget *gad);
 void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text);
 void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, const char *text);
 void gadgets_display(WINDOW *win, struct gadget *g);

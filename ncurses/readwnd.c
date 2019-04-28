@@ -27,6 +27,7 @@ static int resize_listener_added;
 
 static struct mail_complete *read_current_mail;
 
+static struct group read_group;
 static struct simple_text_label from_label;
 static struct simple_text_label date_label;
 static struct simple_text_label subject_label;
@@ -119,12 +120,15 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 			mail_decode(initial);
 
+			gadgets_init_group(&read_group);
 			gadgets_init_text_view(&text_view, 0, 3, w, h - 3, initial->decoded_data);
 
-			gadgets_display(read_wnd, &from_label.tl.g);
-			gadgets_display(read_wnd, &date_label.tl.g);
-			gadgets_display(read_wnd, &subject_label.tl.g);
-			gadgets_display(read_wnd, &text_view.tl.tl.g);
+			gadgets_add(&read_group, &from_label.tl.g);
+			gadgets_add(&read_group, &date_label.tl.g);
+			gadgets_add(&read_group, &subject_label.tl.g);
+			gadgets_add(&read_group, &text_view.tl.tl.g);
+
+			gadgets_display(read_wnd, &read_group);
 		}
 	} else
 	{

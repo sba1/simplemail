@@ -38,18 +38,21 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	const char *txt = l->tl.render(l);
 	const char *endl;
 	int oy = 0;
+	int w = l->tl.g.r.w;
 	int h = l->tl.g.r.h;
+	int x = l->tl.g.r.x;
+	int y = l->tl.g.r.y;
 
 	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < h)
 	{
 		size_t txt_len = endl - txt;
 		int i;
 
-		mvwaddnstr(win, l->tl.g.r.y + oy, l->tl.g.r.x, txt, endl - txt);
+		mvwaddnstr(win, y + oy, x, txt, endl - txt);
 
-		for (i = txt_len; i < l->tl.g.r.w; i++)
+		for (i = txt_len; i < w; i++)
 		{
-			mvwaddnstr(win, l->tl.g.r.y + oy, i, " ", 1);
+			mvwaddnstr(win, y + oy, i, " ", 1);
 		}
 		txt = endl;
 		oy++;

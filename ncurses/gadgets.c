@@ -54,7 +54,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 		{
 			mvwaddnstr(win, y + oy, i, " ", 1);
 		}
-		txt = endl;
+		txt = endl + 1;
 		oy++;
 	}
 }

@@ -72,12 +72,12 @@ static void group_display(struct gadget *gad, WINDOW *win)
 
 /******************************************************************************/
 
-void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h)
+void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h)
 {
-	l->g.r.x = x;
-	l->g.r.y = y;
-	l->g.r.w = w;
-	l->g.r.h = h;
+	g->r.x = x;
+	g->r.y = y;
+	g->r.w = w;
+	g->r.h = h;
 }
 
 /******************************************************************************/

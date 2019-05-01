@@ -55,7 +55,7 @@ struct text_view
 	struct simple_text_label tl;
 };
 
-void gadgets_set_extend(struct text_label *l, int x, int y, int w, int h);
+void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h);
 void gadgets_init_group(struct group *g);
 void gadgets_add(struct group *gr, struct gadget *gad);
 void gadgets_remove(struct gadget *gad);

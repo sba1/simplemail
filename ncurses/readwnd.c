@@ -51,8 +51,25 @@ static void read_window_close_current(void)
 
 /******************************************************************************/
 
+static void read_window_layout()
+{
+	int w, h;
+	getmaxyx(stdscr, h, w);
+	h -= 2;
+
+	gadgets_set_extend(&from_label.tl.g, 0, 0, w, 1);
+	gadgets_set_extend(&date_label.tl.g, 0, 1, w, 1);
+	gadgets_set_extend(&subject_label.tl.g, 0, 2, w, 1);
+	gadgets_set_extend(&text_view.tl.tl.g, 0, 3, w, h - 3);
+
+	gadgets_display(read_wnd, &read_group.g);
+}
+
+/******************************************************************************/
+
 static void read_window_resize(void *udata)
 {
+	read_window_layout();
 }
 
 /******************************************************************************/
@@ -128,7 +145,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			gadgets_add(&read_group, &subject_label.tl.g);
 			gadgets_add(&read_group, &text_view.tl.tl.g);
 
-			gadgets_display(read_wnd, &read_group);
+			gadgets_display(read_wnd, &read_group.g);
 		}
 	} else
 	{

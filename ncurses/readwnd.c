@@ -145,6 +145,8 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			gadgets_add(&read_group, &subject_label.tl.g);
 			gadgets_add(&read_group, &text_view.tl.tl.g);
 
+			read_window_layout();
+
 			gadgets_display(read_wnd, &read_group.g);
 		}
 	} else

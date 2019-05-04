@@ -104,11 +104,10 @@ void gadgets_remove(struct gadget *gad)
 
 /******************************************************************************/
 
-void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, int w, const char *text)
+void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
-	gadgets_set_extend(&l->tl, x, y, w, 1);
 	l->text = buf;
 	l->tl.g.display = simple_text_display;
 	l->tl.render = simple_text_render;
@@ -117,11 +116,10 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, int x, int y, i
 
 /*******************************************************************************/
 
-void gadgets_init_text_view(struct text_view *v, int x, int y, int w, int h, const char *text)
+void gadgets_init_text_view(struct text_view *v, const char *text)
 {
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
-	gadgets_set_extend(&v->tl.tl, x, y, w, h);
 
 	v->tl.text = buf;
 	v->tl.tl.g.display = simple_text_display;

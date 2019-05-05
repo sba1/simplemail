@@ -17,6 +17,9 @@ struct gadget
 
 	/** Display the given gadget */
 	void (*display)(struct gadget *g, WINDOW *win);
+
+	/** Handle the given input, return 1, if the input was handled */
+	int (*input)(struct gadget *g, int value);
 };
 
 /**

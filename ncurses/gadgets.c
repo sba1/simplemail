@@ -109,6 +109,7 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, const char *tex
 	char *buf = (char*)malloc(strlen(text) + 1);
 	strcpy(buf, text);
 	l->text = buf;
+	l->tl.xoffset = l->tl.yoffset = 0;
 	l->tl.g.display = simple_text_display;
 	l->tl.render = simple_text_render;
 	l->tl.free = simple_text_free;
@@ -122,6 +123,7 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 	strcpy(buf, text);
 
 	v->tl.text = buf;
+	v->tl.tl.xoffset = v->tl.tl.yoffset = 0;
 	v->tl.tl.g.display = simple_text_display;
 	v->tl.tl.render = simple_text_render;
 	v->tl.tl.free = simple_text_free;

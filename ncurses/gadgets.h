@@ -37,6 +37,8 @@ struct group
 struct text_label
 {
 	struct gadget g;
+	int xoffset;
+	int yoffset;
 
 	const char * (*render)(void *l);
 	void (*free)(void *l);

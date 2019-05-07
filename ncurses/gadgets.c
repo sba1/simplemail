@@ -42,6 +42,13 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	int h = l->tl.g.r.h;
 	int x = l->tl.g.r.x;
 	int y = l->tl.g.r.y;
+	int yoffset = l->tl.yoffset;
+
+	while (yoffset && (endl = mystrchrnul(txt, '\n')) != txt)
+	{
+		txt = endl + 1;
+		yoffset--;
+	}
 
 	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < h)
 	{

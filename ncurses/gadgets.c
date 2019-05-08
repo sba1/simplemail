@@ -42,6 +42,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	int h = l->tl.g.r.h;
 	int x = l->tl.g.r.x;
 	int y = l->tl.g.r.y;
+	int xoffset = l->tl.xoffset;
 	int yoffset = l->tl.yoffset;
 
 	/* Search for first text line to be displayed */
@@ -53,10 +54,20 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 
 	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < h)
 	{
-		size_t txt_len = endl - txt;
+		size_t txt_len;
 		int i;
 
-		mvwaddnstr(win, y + oy, x, txt, endl - txt);
+		txt_len = endl - txt;
+
+		if (txt_len < xoffset)
+		{
+			txt += xoffset;
+			txt_len -= xoffset;
+			mvwaddnstr(win, y + oy, x, txt, endl - txt);
+		} else
+		{
+			txt_len = 0;
+		}
 
 		for (i = txt_len; i < w; i++)
 		{

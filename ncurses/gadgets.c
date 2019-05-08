@@ -44,6 +44,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	int y = l->tl.g.r.y;
 	int yoffset = l->tl.yoffset;
 
+	/* Search for first text line to be displayed */
 	while (yoffset && (endl = mystrchrnul(txt, '\n')) != txt)
 	{
 		txt = endl + 1;

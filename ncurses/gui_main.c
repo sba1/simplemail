@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #include <ncurses.h>
 
@@ -21,6 +22,8 @@
 static struct list gui_key_listeners;
 static struct list gui_resize_listeners;
 static WINDOW *keyinfo_wnd;
+
+static struct sigaction segf_action;
 
 /*****************************************************************************/
 
@@ -99,11 +102,31 @@ static void gui_atexit(void)
 
 /*****************************************************************************/
 
+static void gui_segf_action(int signal, siginfo_t *si, void *arg)
+{
+	gui_atexit();
+}
+
+/*****************************************************************************/
+
+static void gui_segf_handler (int signo)
+{
+	gui_atexit();
+
+	/* Let the default handler handle the rest */
+	signal(signo, SIG_DFL);
+}
+
+/*****************************************************************************/
+
 int gui_init(void)
 {
 	int w, h;
 
 	atexit(gui_atexit);
+
+	signal(SIGSEGV, gui_segf_handler);
+
 	initscr();
 	noecho();
 	curs_set(0);

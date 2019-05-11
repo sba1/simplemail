@@ -32,6 +32,15 @@ struct group
 };
 
 /**
+ * The root of all windows.
+ */
+struct window
+{
+	struct group g;
+	struct gadget *active;
+};
+
+/**
  * Base for all text labels.
  */
 struct text_label
@@ -116,5 +125,12 @@ void gadgets_init_text_view(struct text_view *v, const char *text);
  * @param g the gadget to display.
  */
 void gadgets_display(WINDOW *win, struct gadget *g);
+
+/**
+ * Initializes the window.
+ *
+ * @param win the window to initialize.
+ */
+void windows_init(struct window *win);
 
 #endif

@@ -25,6 +25,8 @@ static WINDOW *keyinfo_wnd;
 
 static struct sigaction segf_action;
 
+static struct window gui_window;
+
 /*****************************************************************************/
 
 static void gui_update_keyinfo(void)
@@ -131,6 +133,8 @@ int gui_init(void)
 	noecho();
 	curs_set(0);
 	nodelay(stdscr, TRUE);
+
+	windows_init(&gui_window);
 
 	list_init(&gui_key_listeners);
 

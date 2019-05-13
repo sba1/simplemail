@@ -133,4 +133,12 @@ void gadgets_display(WINDOW *win, struct gadget *g);
  */
 void windows_init(struct window *win);
 
+/**
+ * Display the content of the window.
+ *
+ * @param wnd where to render
+ * @param wnd the windows whose contents shall be displayed.
+ */
+void windows_display(WINDOW *win, struct window *wnd);
+
 #endif

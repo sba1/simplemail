@@ -164,3 +164,9 @@ void windows_init(struct window *win)
 	gadgets_init_group(&win->g);
 }
 
+/*******************************************************************************/
+
+void windows_display(WINDOW *win, struct window *wnd)
+{
+	gadgets_display(wnd, &wnd->g.g);
+}

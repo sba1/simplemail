@@ -12,6 +12,7 @@
 #include "simplemail.h"
 #include "support.h"
 
+#include "gadgets.h"
 #include "gui_main.h"
 #include "mainwnd.h"
 

@@ -160,6 +160,7 @@ void gadgets_display(WINDOW *win, struct gadget *g)
 
 void windows_init(struct window *win)
 {
-	memset(win, 0, sizeof(win));
+	memset(win, 0, sizeof(*win));
 	gadgets_init_group(&win->g);
 }
+

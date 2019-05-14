@@ -32,12 +32,21 @@ struct group
 };
 
 /**
- * The root of all windows.
+ * The a single window.
  */
 struct window
 {
 	struct group g;
 	struct gadget *active;
+};
+
+/**
+ * The root of all windows.
+ */
+struct screen
+{
+	struct list windows;
+	struct window *active;
 };
 
 /**

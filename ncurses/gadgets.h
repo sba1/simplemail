@@ -150,4 +150,11 @@ void windows_init(struct window *win);
  */
 void windows_display(WINDOW *win, struct window *wnd);
 
+/**
+ * Initialize the screen.
+ *
+ * @param scr the screen to be initialized.
+ */
+void screen_init(struct screen *scr);
+
 #endif

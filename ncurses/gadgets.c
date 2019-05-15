@@ -170,3 +170,11 @@ void windows_display(WINDOW *win, struct window *wnd)
 {
 	gadgets_display(win, &wnd->g.g);
 }
+
+/*******************************************************************************/
+
+void screen_init(struct screen *scr)
+{
+	memset(scr, 0, sizeof(*scr));
+	list_init(&scr->windows);
+}

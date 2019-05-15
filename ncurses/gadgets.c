@@ -168,5 +168,5 @@ void windows_init(struct window *win)
 
 void windows_display(WINDOW *win, struct window *wnd)
 {
-	gadgets_display(wnd, &wnd->g.g);
+	gadgets_display(win, &wnd->g.g);
 }

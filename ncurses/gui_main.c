@@ -24,8 +24,6 @@ static struct list gui_key_listeners;
 static struct list gui_resize_listeners;
 static WINDOW *keyinfo_wnd;
 
-static struct sigaction segf_action;
-
 static struct window gui_window;
 
 static struct screen gui_screen;
@@ -103,13 +101,6 @@ void gui_remove_resize_listener(struct gui_resize_listener *listener)
 static void gui_atexit(void)
 {
 	endwin();
-}
-
-/*****************************************************************************/
-
-static void gui_segf_action(int signal, siginfo_t *si, void *arg)
-{
-	gui_atexit();
 }
 
 /*****************************************************************************/

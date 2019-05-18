@@ -178,3 +178,10 @@ void screen_init(struct screen *scr)
 	memset(scr, 0, sizeof(*scr));
 	list_init(&scr->windows);
 }
+
+/*******************************************************************************/
+
+void screen_add_window(struct screen *scr, struct window *wnd)
+{
+	list_insert_tail(&scr->windows, &wnd->g.g.n);
+}

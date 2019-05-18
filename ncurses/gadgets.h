@@ -157,4 +157,12 @@ void windows_display(WINDOW *win, struct window *wnd);
  */
 void screen_init(struct screen *scr);
 
+/**
+ * Add the given window to the screen.
+
+ * @param scr the screen to which to add
+ * @param wnd the window to add
+ */
+void screen_add_window(struct screen *scr, struct window *wnd);
+
 #endif

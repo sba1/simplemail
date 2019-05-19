@@ -177,6 +177,7 @@ void screen_init(struct screen *scr)
 {
 	memset(scr, 0, sizeof(*scr));
 	list_init(&scr->windows);
+	list_init(&scr->resize_listeners);
 }
 
 /*******************************************************************************/

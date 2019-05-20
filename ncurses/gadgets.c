@@ -186,3 +186,10 @@ void screen_add_window(struct screen *scr, struct window *wnd)
 {
 	list_insert_tail(&scr->windows, &wnd->g.g.n);
 }
+
+/*******************************************************************************/
+
+void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener, void (*callback)(void *arg), void *udata)
+{
+	list_insert_tail(&scr->resize_listeners, &listener->n);
+}

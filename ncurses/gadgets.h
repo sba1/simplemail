@@ -80,6 +80,17 @@ struct text_view
 };
 
 /**
+ * Resize listener
+ */
+struct screen_resize_listener
+{
+	struct node n;
+
+	void *udata;
+	void (*callback)(void *udata);
+};
+
+/**
  * Set the extend of the gagdet.
  *
  * @param g the gadget
@@ -165,5 +176,14 @@ void screen_init(struct screen *scr);
  * @param wnd the window to add
  */
 void screen_add_window(struct screen *scr, struct window *wnd);
+
+/**
+ * Add a listener that is invoked when the screen size is changed.
+ *
+ * @param listener the listener to add
+ * @param callback the callback that is called
+ * @param udata the udata is passed to the callback
+ */
+void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener, void (*callback)(void *arg), void *udata);
 
 #endif

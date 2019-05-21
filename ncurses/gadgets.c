@@ -193,3 +193,17 @@ void screen_add_resize_listener(struct screen *scr, struct screen_resize_listene
 {
 	list_insert_tail(&scr->resize_listeners, &listener->n);
 }
+
+/*******************************************************************************/
+
+void screen_invoke_resize_listener(struct screen *scr)
+{
+	struct screen_resize_listener *l;
+
+	l = (struct screen_resize_listener *)list_first(&scr->resize_listeners);
+	while (l)
+	{
+		l->callback(l->udata);
+		l = (struct screen_resize_listener*)node_next(&l->n);
+	}
+}

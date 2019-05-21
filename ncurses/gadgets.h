@@ -186,4 +186,11 @@ void screen_add_window(struct screen *scr, struct window *wnd);
  */
 void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener, void (*callback)(void *arg), void *udata);
 
+/**
+ * Invoke all added screen listeners.
+ *
+ * @param scr the screen for which to invoke the resize listeners.
+ */
+void screen_invoke_resize_listener(struct screen *scr);
+
 #endif

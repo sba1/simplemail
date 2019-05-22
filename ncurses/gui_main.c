@@ -187,6 +187,7 @@ static void *gui_timer(void *userdata)
 				l->callback(l->udata);
 				l = (struct gui_resize_listener*)node_next(&l->n);
 			}
+			screen_invoke_resize_listener(&gui_screen);
 			continue;
 		}
 

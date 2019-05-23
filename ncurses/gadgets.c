@@ -189,8 +189,10 @@ void screen_add_window(struct screen *scr, struct window *wnd)
 
 /*******************************************************************************/
 
-void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener, void (*callback)(void *arg), void *udata)
+void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener,
+		void (*callback)(void *arg, int x, int y, int width, int height), void *udata)
 {
+	listener->callback = callback;
 	list_insert_tail(&scr->resize_listeners, &listener->n);
 }
 
@@ -199,11 +201,13 @@ void screen_add_resize_listener(struct screen *scr, struct screen_resize_listene
 void screen_invoke_resize_listener(struct screen *scr)
 {
 	struct screen_resize_listener *l;
+	int w, h;
+	getmaxyx(stdscr, h, w);
 
 	l = (struct screen_resize_listener *)list_first(&scr->resize_listeners);
 	while (l)
 	{
-		l->callback(l->udata);
+		l->callback(l->udata, 0, 0, w, h);
 		l = (struct screen_resize_listener*)node_next(&l->n);
 	}
 }

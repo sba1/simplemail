@@ -87,7 +87,7 @@ struct screen_resize_listener
 	struct node n;
 
 	void *udata;
-	void (*callback)(void *udata);
+	void (*callback)(void *udata, int x, int y, int width, int height);
 };
 
 /**
@@ -184,7 +184,9 @@ void screen_add_window(struct screen *scr, struct window *wnd);
  * @param callback the callback that is called
  * @param udata the udata is passed to the callback
  */
-void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener, void (*callback)(void *arg), void *udata);
+void screen_add_resize_listener(struct screen *scr,
+	struct screen_resize_listener *listener,
+	void (*callback)(void *arg, int x, int y, int width, int height), void *udata);
 
 /**
  * Invoke all added screen listeners.

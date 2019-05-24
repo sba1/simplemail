@@ -26,7 +26,7 @@ static WINDOW *keyinfo_wnd;
 
 static struct window gui_window;
 
-static struct screen gui_screen;
+struct screen gui_screen;
 
 /*****************************************************************************/
 

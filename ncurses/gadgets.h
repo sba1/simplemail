@@ -189,6 +189,13 @@ void screen_add_resize_listener(struct screen *scr,
 	void (*callback)(void *arg, int x, int y, int width, int height), void *udata);
 
 /**
+ * Remove a screen's resize listener.
+ *
+ * @param listener the listener to be removed.
+ */
+void screen_remove_resize_listener(struct screen_resize_listener *listener);
+
+/**
  * Invoke all added screen listeners.
  *
  * @param scr the screen for which to invoke the resize listeners.

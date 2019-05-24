@@ -64,4 +64,7 @@ void gui_add_resize_listener(struct gui_resize_listener *listener, void (*callba
  */
 void gui_remove_resize_listener(struct gui_resize_listener *listener);
 
+/** The global screen */
+extern struct screen gui_screen;
+
 #endif

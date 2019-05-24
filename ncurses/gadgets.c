@@ -198,6 +198,13 @@ void screen_add_resize_listener(struct screen *scr, struct screen_resize_listene
 
 /*******************************************************************************/
 
+void screen_remove_resize_listener(struct screen_resize_listener *listener)
+{
+	node_remove(&listener->n);
+}
+
+/*******************************************************************************/
+
 void screen_invoke_resize_listener(struct screen *scr)
 {
 	struct screen_resize_listener *l;

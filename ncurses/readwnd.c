@@ -22,7 +22,7 @@ static WINDOW *read_wnd;
 static PANEL *read_panel;
 
 static struct gui_key_listener close_listener;
-static struct gui_resize_listener resize_listener;
+static struct screen_resize_listener resize_listener;
 static int resize_listener_added;
 
 static struct mail_complete *read_current_mail;
@@ -40,7 +40,7 @@ static void read_window_close_current(void)
 	gui_remove_key_listener(&close_listener);
 	if (resize_listener_added)
 	{
-		gui_remove_resize_listener(&resize_listener);
+		screen_remove_resize_listener(&resize_listener);
 		resize_listener_added = 0;
 	}
 
@@ -67,7 +67,7 @@ static void read_window_layout()
 
 /******************************************************************************/
 
-static void read_window_resize(void *udata)
+static void read_window_resize(void *udata, int x, int y, int w, int h)
 {
 	read_window_layout();
 }
@@ -100,8 +100,11 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 		doupdate();
 	}
 
-	gui_add_resize_listener(&resize_listener, read_window_resize, NULL);
-	resize_listener_added = 1;
+	if (!resize_listener_added)
+	{
+		screen_add_resize_listener(&gui_screen, &resize_listener, read_window_resize, NULL);
+		resize_listener_added = 1;
+	}
 
 	if (read_current_mail)
 	{

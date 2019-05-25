@@ -48,6 +48,7 @@ struct screen
 	struct list windows;
 	struct window *active;
 	struct list resize_listeners;
+	struct list key_listeners;
 };
 
 /**

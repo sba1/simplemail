@@ -162,6 +162,7 @@ void windows_init(struct window *win)
 {
 	memset(win, 0, sizeof(*win));
 	gadgets_init_group(&win->g);
+	list_init(&win->key_listeners);
 }
 
 /*******************************************************************************/

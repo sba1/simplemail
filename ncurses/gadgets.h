@@ -38,6 +38,7 @@ struct window
 {
 	struct group g;
 	struct gadget *active;
+	struct list key_listeners;
 };
 
 /**

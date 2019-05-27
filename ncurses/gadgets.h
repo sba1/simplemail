@@ -31,6 +31,8 @@ struct group
 	struct list l;
 };
 
+typedef struct list key_listeners_t;
+
 /**
  * The a single window.
  */
@@ -38,7 +40,7 @@ struct window
 {
 	struct group g;
 	struct gadget *active;
-	struct list key_listeners;
+	key_listeners_t key_listeners;
 };
 
 /**
@@ -49,7 +51,7 @@ struct screen
 	struct list windows;
 	struct window *active;
 	struct list resize_listeners;
-	struct list key_listeners;
+	key_listeners_t key_listeners;
 };
 
 /**

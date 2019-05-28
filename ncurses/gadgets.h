@@ -31,6 +31,17 @@ struct group
 	struct list l;
 };
 
+struct key_listener
+{
+	struct node n;
+	int ch;
+
+	/** A short description about this action */
+	const char *short_description;
+
+	void (*callback)(void);
+};
+
 typedef struct list key_listeners_t;
 
 /**
@@ -205,5 +216,16 @@ void screen_remove_resize_listener(struct screen_resize_listener *listener);
  * @param scr the screen for which to invoke the resize listeners.
  */
 void screen_invoke_resize_listener(struct screen *scr);
+
+/**
+ * Add screen-scoped key listener to the screen.
+ *
+ * @param scr
+ * @param l
+ * @param ch
+ * @param short_description
+ * @param callback
+ */
+void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch, const char *short_description, void (*callback)(void));
 
 #endif

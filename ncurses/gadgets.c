@@ -220,3 +220,13 @@ void screen_invoke_resize_listener(struct screen *scr)
 		l = (struct screen_resize_listener*)node_next(&l->n);
 	}
 }
+
+/*******************************************************************************/
+
+void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch, const char *short_description, void (*callback)(void))
+{
+	l->ch = ch;
+	l->short_description = short_description;
+	l->callback = callback;
+	list_insert_tail(&scr->key_listeners, &l->n);
+}

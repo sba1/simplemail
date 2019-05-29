@@ -230,3 +230,10 @@ void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch,
 	l->callback = callback;
 	list_insert_tail(&scr->key_listeners, &l->n);
 }
+
+/*******************************************************************************/
+
+void screen_remove_key_listener(struct key_listener *l)
+{
+	node_remove(&l->n);
+}

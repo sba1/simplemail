@@ -228,4 +228,11 @@ void screen_invoke_resize_listener(struct screen *scr);
  */
 void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch, const char *short_description, void (*callback)(void));
 
+/**
+ * Remove the given key listeners.
+ *
+ * @param l the key listeners to be removed.
+ */
+void screen_remove_key_listener(struct key_listener *l);
+
 #endif

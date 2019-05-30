@@ -237,3 +237,22 @@ void screen_remove_key_listener(struct key_listener *l)
 {
 	node_remove(&l->n);
 }
+
+/*******************************************************************************/
+
+void screen_invoke_key_listener(struct screen *scr, int ch)
+{
+	struct key_listener *l = (struct key_listener *)list_first(&scr->key_listeners);
+	while (l)
+	{
+		struct key_listener *n;
+
+		n = (struct key_listener *)node_next(&l->n);
+		if (l->ch == ch)
+		{
+			l->callback();
+		}
+
+		l = n;
+	}
+}

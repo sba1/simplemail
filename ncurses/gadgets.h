@@ -235,4 +235,12 @@ void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch,
  */
 void screen_remove_key_listener(struct key_listener *l);
 
+/**
+ * Invoke the key listener listening to the given ch.
+ *
+ * @param scr the scr that contains all listeners.
+ * @param ch the character value
+ */
+void screen_invoke_key_listener(struct screen *scr, int ch);
+
 #endif

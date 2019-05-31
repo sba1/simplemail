@@ -31,6 +31,11 @@ struct group
 	struct list l;
 };
 
+/* Special valus for key listeners ch */
+#define KEY_NONE -1
+#define KEY_UP -2
+#define KEY_DOWN -3
+
 struct key_listener
 {
 	struct node n;
@@ -242,5 +247,16 @@ void screen_remove_key_listener(struct key_listener *l);
  * @param ch the character value
  */
 void screen_invoke_key_listener(struct screen *scr, int ch);
+
+/**
+ * Fill in the given buf with a description line of the current active key
+ * listeners.
+ *
+ * @param scr
+ * @param buf
+ * @param bufsize
+ */
+void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize);
+
 
 #endif

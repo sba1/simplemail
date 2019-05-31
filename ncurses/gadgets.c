@@ -256,3 +256,48 @@ void screen_invoke_key_listener(struct screen *scr, int ch)
 		l = n;
 	}
 }
+
+/*******************************************************************************/
+
+void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
+{
+	struct key_listener *l;
+	const char *space = "";
+	char *d;
+
+	if (!bufsize)
+	{
+		return;
+	}
+
+	bufsize--;
+	d = buf;
+	l = (struct key_listener *)list_first(&scr->key_listeners);
+	while (l && bufsize > 1)
+	{
+		char tbuf[20];
+		size_t tlen;
+
+		if (l->ch == KEY_UP || l->ch == KEY_DOWN)
+		{
+			goto next;
+		}
+
+		snprintf(tbuf, sizeof(tbuf), "%s%c: %s", space, l->ch, l->short_description);
+
+		/* Append tbuf but do not exceed bounds */
+		tlen = strlen(tbuf);
+		if (tlen > bufsize)
+		{
+			tlen = bufsize;
+		}
+		strncpy(d, tbuf, tlen);
+
+		bufsize -= tlen;
+		d += tlen;
+		space = "  ";
+next:
+		l = (struct key_listener *)node_next(&l->n);
+	}
+	*d = 0;
+}

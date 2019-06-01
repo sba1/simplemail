@@ -21,7 +21,7 @@
 static WINDOW *read_wnd;
 static PANEL *read_panel;
 
-static struct gui_key_listener close_listener;
+static struct key_listener close_listener;
 static struct screen_resize_listener resize_listener;
 static int resize_listener_added;
 
@@ -37,7 +37,7 @@ static struct text_view text_view;
 
 static void read_window_close_current(void)
 {
-	gui_remove_key_listener(&close_listener);
+	screen_remove_key_listener(&gui_screen, &close_listener);
 	if (resize_listener_added)
 	{
 		screen_remove_resize_listener(&resize_listener);
@@ -159,7 +159,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 	chdir(buf);
 
-	gui_add_key_listener(&close_listener, 'c', "Close", read_window_close_current);
+	screen_add_key_listener(&gui_screen, &close_listener, 'c', "Close", read_window_close_current);
 	refresh();
 
 	wrefresh(read_wnd);

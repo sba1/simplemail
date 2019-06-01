@@ -32,6 +32,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "gadgets.h"
 #include "gui_main_ncurses.h"
 #include "mainwnd.h"
 #include "timesupport.h"
@@ -48,12 +49,12 @@ static int folders_width = 20;
 
 static struct folder *main_active_folder;
 
-static struct gui_key_listener prev_folder_listener;
-static struct gui_key_listener next_folder_listener;
-static struct gui_key_listener fetch_mail_listener;
-static struct gui_key_listener next_mail_listener;
-static struct gui_key_listener prev_mail_listener;
-static struct gui_key_listener read_mail_listener;
+static struct key_listener prev_folder_listener;
+static struct key_listener next_folder_listener;
+static struct key_listener fetch_mail_listener;
+static struct key_listener next_mail_listener;
+static struct key_listener prev_mail_listener;
+static struct key_listener read_mail_listener;
 
 /*****************************************************************************/
 
@@ -144,12 +145,12 @@ int main_window_open(void)
 	wrefresh(folders_wnd);
 	wrefresh(status_wnd);
 
-	gui_add_key_listener(&next_folder_listener, 'n', _("Next folder"), main_folder_next);
-	gui_add_key_listener(&prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
-	gui_add_key_listener(&fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
-	gui_add_key_listener(&next_mail_listener, NCURSES_DOWN, NULL, main_next_mail);
-	gui_add_key_listener(&prev_mail_listener, NCURSES_UP, NULL, main_prev_mail);
-	gui_add_key_listener(&read_mail_listener, '\n', NULL, main_read_mail);
+	screen_add_key_listener(&gui_screen, &next_folder_listener, 'n', _("Next folder"), main_folder_next);
+	screen_add_key_listener(&gui_screen, &prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
+	screen_add_key_listener(&gui_screen, &fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
+	screen_add_key_listener(&gui_screen, &next_mail_listener, GADS_KEY_DOWN, NULL, main_next_mail);
+	screen_add_key_listener(&gui_screen, &prev_mail_listener, GADS_KEY_UP, NULL, main_prev_mail);
+	screen_add_key_listener(&gui_screen, &read_mail_listener, '\n', NULL, main_read_mail);
 
 	return 1;
 }

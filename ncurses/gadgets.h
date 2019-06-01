@@ -32,9 +32,9 @@ struct group
 };
 
 /* Special valus for key listeners ch */
-#define KEY_NONE -1
-#define KEY_UP -2
-#define KEY_DOWN -3
+#define GADS_KEY_NONE -1
+#define GADS_KEY_UP -2
+#define GADS_KEY_DOWN -3
 
 struct key_listener
 {
@@ -68,6 +68,7 @@ struct screen
 	struct window *active;
 	struct list resize_listeners;
 	key_listeners_t key_listeners;
+	void (*keys_changed)(struct screen *scr);
 };
 
 /**
@@ -236,9 +237,10 @@ void screen_add_key_listener(struct screen *scr, struct key_listener *l, int ch,
 /**
  * Remove the given key listeners.
  *
+ * @param scr the screen to which the listener is attached.
  * @param l the key listeners to be removed.
  */
-void screen_remove_key_listener(struct key_listener *l);
+void screen_remove_key_listener(struct screen *src, struct key_listener *l);
 
 /**
  * Invoke the key listener listening to the given ch.

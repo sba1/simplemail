@@ -20,64 +20,12 @@
 
 /*****************************************************************************/
 
-static struct list gui_key_listeners;
 static struct list gui_resize_listeners;
 static WINDOW *keyinfo_wnd;
 
 static struct window gui_window;
 
 struct screen gui_screen;
-
-/*****************************************************************************/
-
-static void gui_update_keyinfo(void)
-{
-	struct gui_key_listener *l;
-	int col = 0;
-
-	l = (struct gui_key_listener *)list_first(&gui_key_listeners);
-	while (l)
-	{
-		char buf[20];
-
-		if (l->ch == NCURSES_UP || l->ch == NCURSES_DOWN)
-		{
-			goto next;
-		}
-
-		sm_snprintf(buf, sizeof(buf), "%c: %s", l->ch, l->short_description);
-		mvwprintw(keyinfo_wnd, 0, col, buf);
-
-		col += strlen(buf) + 2;
-
-next:
-		l = (struct gui_key_listener *)node_next(&l->n);
-	}
-
-	wclrtoeol(keyinfo_wnd);
-	wrefresh(keyinfo_wnd);
-}
-
-/*****************************************************************************/
-
-void gui_add_key_listener(struct gui_key_listener *listener, int ch, const char *short_description, void (*callback)(void))
-{
-	listener->ch = ch;
-	listener->callback = callback;
-	listener->short_description = short_description;
-	list_insert_tail(&gui_key_listeners, &listener->n);
-
-	gui_update_keyinfo();
-}
-
-/*****************************************************************************/
-
-void gui_remove_key_listener(struct gui_key_listener *listener)
-{
-	node_remove(&listener->n);
-
-	gui_update_keyinfo();
-}
 
 /******************************************************************************/
 
@@ -115,6 +63,17 @@ static void gui_segf_handler (int signo)
 
 /*****************************************************************************/
 
+void gui_screen_keys_changed(struct screen *scr)
+{
+	char buf[256];
+	screen_key_description_line(scr, buf, sizeof(buf));
+	mvwprintw(keyinfo_wnd, 0, 0, buf);
+	wclrtoeol(keyinfo_wnd);
+	wrefresh(keyinfo_wnd);
+}
+
+/*****************************************************************************/
+
 int gui_init(void)
 {
 	int w, h;
@@ -129,9 +88,8 @@ int gui_init(void)
 	nodelay(stdscr, TRUE);
 
 	screen_init(&gui_screen);
+	gui_screen.keys_changed = gui_screen_keys_changed;
 	windows_init(&gui_window);
-
-	list_init(&gui_key_listeners);
 
 	getmaxyx(stdscr, h, w);
 	keyinfo_wnd = newwin(1, w, h - 1, 0);
@@ -156,8 +114,6 @@ static void *gui_timer(void *userdata)
 	int ch;
 	while ((ch = getch()) != 'q')
 	{
-		struct gui_key_listener *l;
-
 		if (ch == '\033')
 		{
 			if (getch() == '[')
@@ -165,10 +121,10 @@ static void *gui_timer(void *userdata)
 				switch (getch())
 				{
 				case	'A': /* up */
-					ch = NCURSES_UP;
+					ch = GADS_KEY_UP;
 					break;
 				case	'B': /* down */
-					ch = NCURSES_DOWN;
+					ch = GADS_KEY_DOWN;
 					break;
 				default:
 					ch = -1;
@@ -176,7 +132,7 @@ static void *gui_timer(void *userdata)
 				}
 			} else
 			{
-				ch = -1;
+				ch = GADS_KEY_NONE;
 			}
 		} else if (ch == KEY_RESIZE)
 		{
@@ -196,19 +152,7 @@ static void *gui_timer(void *userdata)
 			return NULL;
 		}
 
-		l = (struct gui_key_listener *)list_first(&gui_key_listeners);
-		while (l)
-		{
-			struct gui_key_listener *n;
-
-			n = (struct gui_key_listener *)node_next(&l->n);
-			if (l->ch == ch)
-			{
-				l->callback();
-			}
-
-			l = n;
-		}
+		screen_invoke_key_listener(&gui_screen, ch);
 	}
 
 	if (ch == 'q')

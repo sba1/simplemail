@@ -286,7 +286,7 @@ void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 		char tbuf[20];
 		size_t tlen;
 
-		if (l->ch == KEY_UP || l->ch == KEY_DOWN)
+		if (l->ch == GADS_KEY_UP || l->ch == GADS_KEY_DOWN || !l->short_description)
 		{
 			goto next;
 		}

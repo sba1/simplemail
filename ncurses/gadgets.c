@@ -281,14 +281,15 @@ void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 	bufsize--;
 	d = buf;
 	l = (struct key_listener *)list_first(&scr->key_listeners);
-	while (l && bufsize > 1)
+
+	for (l; l && bufsize > 1; l = (struct key_listener *)node_next(&l->n))
 	{
 		char tbuf[20];
 		size_t tlen;
 
 		if (l->ch == GADS_KEY_UP || l->ch == GADS_KEY_DOWN || !l->short_description)
 		{
-			goto next;
+			continue;
 		}
 
 		snprintf(tbuf, sizeof(tbuf), "%s%c: %s", space, l->ch, l->short_description);
@@ -304,8 +305,6 @@ void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 		bufsize -= tlen;
 		d += tlen;
 		space = "  ";
-next:
-		l = (struct key_listener *)node_next(&l->n);
 	}
 	*d = 0;
 }

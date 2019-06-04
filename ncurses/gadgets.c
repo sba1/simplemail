@@ -282,7 +282,7 @@ void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 	d = buf;
 	l = (struct key_listener *)list_first(&scr->key_listeners);
 
-	for (l; l && bufsize > 1; l = (struct key_listener *)node_next(&l->n))
+	for (; l && bufsize > 1; l = (struct key_listener *)node_next(&l->n))
 	{
 		char tbuf[20];
 		size_t tlen;

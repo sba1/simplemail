@@ -127,6 +127,21 @@ static void *gui_timer(void *userdata)
 			return NULL;
 		}
 
+		if (gui_screen.active)
+		{
+			struct gadget *g;
+
+			if ((g = gui_screen.active->active))
+			{
+				if (g->input)
+				{
+					if (g->input(g, ch))
+					{
+						continue;
+					}
+				}
+			}
+		}
 		screen_invoke_key_listener(&gui_screen, ch);
 	}
 

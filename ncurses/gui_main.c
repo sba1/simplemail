@@ -22,8 +22,6 @@
 
 static WINDOW *keyinfo_wnd;
 
-static struct window gui_window;
-
 struct screen gui_screen;
 
 /*****************************************************************************/
@@ -71,7 +69,6 @@ int gui_init(void)
 
 	screen_init(&gui_screen);
 	gui_screen.keys_changed = gui_screen_keys_changed;
-	windows_init(&gui_window);
 
 	getmaxyx(stdscr, h, w);
 	keyinfo_wnd = newwin(1, w, h - 1, 0);

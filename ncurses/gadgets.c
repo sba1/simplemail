@@ -191,6 +191,17 @@ void screen_add_window(struct screen *scr, struct window *wnd)
 
 /*******************************************************************************/
 
+void screen_remove_window(struct screen *scr, struct window *wnd)
+{
+	node_remove(&wnd->g.g.n);
+	if (scr->active == wnd)
+	{
+		scr->active = NULL;
+	}
+}
+
+/*******************************************************************************/
+
 void screen_add_resize_listener(struct screen *scr, struct screen_resize_listener *listener,
 		void (*callback)(void *arg, int x, int y, int width, int height), void *udata)
 {

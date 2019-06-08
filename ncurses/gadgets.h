@@ -199,6 +199,15 @@ void screen_init(struct screen *scr);
 void screen_add_window(struct screen *scr, struct window *wnd);
 
 /**
+ * Remove the given window from the given screen. If the window was
+ * active before, no window will be active after this call returned.
+ *
+ * @param scr the screen from which to remove
+ * @param wnd the window to be removed
+ */
+void screen_remove_window(struct screen *scr, struct window *wnd);
+
+/**
  * Add a listener that is invoked when the screen size is changed.
  *
  * @param listener the listener to add

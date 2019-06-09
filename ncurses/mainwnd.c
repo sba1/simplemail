@@ -233,7 +233,6 @@ void main_set_folder_mails(struct folder *folder)
 	void *handle = NULL;
 	struct mail_info *mi;
 	int row = 0;
-	int w, h;
 
 	int from_width = 0;
 	int subject_width = 0;

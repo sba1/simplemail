@@ -59,7 +59,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 
 		txt_len = endl - txt;
 
-		if (txt_len < xoffset)
+		if (txt_len > xoffset)
 		{
 			txt += xoffset;
 			txt_len -= xoffset;

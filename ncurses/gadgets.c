@@ -10,6 +10,14 @@
 
 /*******************************************************************************/
 
+/**
+ * Like strchr() but returns the end of the string if the c could not be found.
+ *
+ * @param s the string to search through.
+ * @param c the character to find (8-bit).
+ *
+ * @return a pointer that points to c within s or points to the null byte.
+ */
 static const char *mystrchrnul(const char *s, int c)
 {
 	const char *r = strchr(s, c);

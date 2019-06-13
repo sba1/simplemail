@@ -21,6 +21,8 @@
 static WINDOW *read_wnd;
 static PANEL *read_panel;
 
+static struct window read_win;
+
 static struct key_listener close_listener;
 static struct screen_resize_listener resize_listener;
 static int resize_listener_added;
@@ -130,6 +132,10 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			{
 				sm_snprintf(buf, sizeof(buf), "%s: %s", _("From"), from_addr);
 			}
+
+			/* FIXME: Doesn't work with multiple windows yet */
+			windows_init(&read_win);
+
 			gadgets_init_simple_text_label(&from_label, buf);
 
 			sm_snprintf(buf, sizeof(buf), "%s: %s", _("Date"), sm_get_date_str(read_current_mail->info->seconds));
@@ -148,9 +154,10 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			gadgets_add(&read_group, &subject_label.tl.g);
 			gadgets_add(&read_group, &text_view.tl.tl.g);
 
+			gadgets_add(&read_win.g, &read_group.g);
 			read_window_layout();
 
-			gadgets_display(read_wnd, &read_group.g);
+			windows_display(read_wnd, &read_win.g);
 		}
 	} else
 	{

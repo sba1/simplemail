@@ -53,10 +53,8 @@ static void read_window_close_current(void)
 
 /******************************************************************************/
 
-static void read_window_layout()
+static void read_window_layout_size(int w, int h)
 {
-	int w, h;
-	getmaxyx(stdscr, h, w);
 	h -= 2;
 
 	gadgets_set_extend(&from_label.tl.g, 0, 0, w, 1);
@@ -69,9 +67,18 @@ static void read_window_layout()
 
 /******************************************************************************/
 
+static void read_window_layout()
+{
+	int w, h;
+	getmaxyx(stdscr, h, w);
+	read_window_layout_size(w, h);
+}
+
+/******************************************************************************/
+
 static void read_window_resize(void *udata, int x, int y, int w, int h)
 {
-	read_window_layout();
+	read_window_layout_size(w, h);
 }
 
 /******************************************************************************/

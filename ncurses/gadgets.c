@@ -86,6 +86,9 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 	}
 }
 
+/**
+ * Invoke display method of each group member.
+ */
 static void group_display(struct gadget *gad, WINDOW *win)
 {
 	struct group *gr = (struct group *)gad;

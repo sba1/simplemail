@@ -30,6 +30,16 @@ static const char *mystrchrnul(const char *s, int c)
 
 /******************************************************************************/
 
+/**
+ * Initializes the base structure of the gadget.
+ */
+static void gagdets_init(struct gadget *g)
+{
+	memset(g, 0, sizeof(g));
+}
+
+/******************************************************************************/
+
 static const char *simple_text_render(void *l)
 {
 	return ((struct simple_text_label*)l)->text;
@@ -114,6 +124,8 @@ void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h)
 
 void gadgets_init_group(struct group *g)
 {
+	gagdets_init(&g->g);
+
 	list_init(&g->l);
 	g->g.display = group_display;
 }
@@ -136,7 +148,12 @@ void gadgets_remove(struct gadget *gad)
 
 void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text)
 {
-	char *buf = (char*)malloc(strlen(text) + 1);
+	char *buf;
+
+	gagdets_init(&l->tl.g);
+
+	if (!(buf = (char*)malloc(strlen(text) + 1)))
+		return;
 	strcpy(buf, text);
 	l->text = buf;
 	l->tl.xoffset = l->tl.yoffset = 0;
@@ -149,7 +166,12 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, const char *tex
 
 void gadgets_init_text_view(struct text_view *v, const char *text)
 {
-	char *buf = (char*)malloc(strlen(text) + 1);
+	char *buf;
+
+	gagdets_init(&v->tl.tl.g);
+
+	if (!(buf = (char*)malloc(strlen(text) + 1)))
+		return;
 	strcpy(buf, text);
 
 	v->tl.text = buf;

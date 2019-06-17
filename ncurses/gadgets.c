@@ -105,7 +105,7 @@ static void group_display(struct gadget *gad, WINDOW *win)
 	struct gadget *child = (struct gadget *)list_first(&gr->l);
 	while (child)
 	{
-		child->display(child, win);
+		gadgets_display(win, child);
 		child = (struct gadget *)node_next(&child->n);
 	}
 }

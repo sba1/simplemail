@@ -10,10 +10,15 @@ struct rect
 	int x, y, w, h;
 };
 
+/** Indicates that an redraw update is needed */
+#define GADF_REDRAW_UPDATE (1<<0)
+
 struct gadget
 {
 	struct node n;
 	struct rect r;
+
+	unsigned int flags;
 
 	/** Display the given gadget */
 	void (*display)(struct gadget *g, WINDOW *win);

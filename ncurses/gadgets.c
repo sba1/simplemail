@@ -118,6 +118,8 @@ void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h)
 	g->r.y = y;
 	g->r.w = w;
 	g->r.h = h;
+
+	g->flags |= GADF_REDRAW_UPDATE;
 }
 
 /******************************************************************************/
@@ -187,6 +189,7 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 void gadgets_display(WINDOW *win, struct gadget *g)
 {
 	g->display(g, win);
+	g->flags &= ~GADF_REDRAW_UPDATE;
 }
 
 /*******************************************************************************/

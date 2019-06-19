@@ -33,7 +33,7 @@ static const char *mystrchrnul(const char *s, int c)
 /**
  * Initializes the base structure of the gadget.
  */
-static void gagdets_init(struct gadget *g)
+static void gadgets_init(struct gadget *g)
 {
 	memset(g, 0, sizeof(g));
 }
@@ -126,7 +126,7 @@ void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h)
 
 void gadgets_init_group(struct group *g)
 {
-	gagdets_init(&g->g);
+	gadgets_init(&g->g);
 
 	list_init(&g->l);
 	g->g.display = group_display;
@@ -152,7 +152,7 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, const char *tex
 {
 	char *buf;
 
-	gagdets_init(&l->tl.g);
+	gadgets_init(&l->tl.g);
 
 	if (!(buf = (char*)malloc(strlen(text) + 1)))
 		return;
@@ -170,7 +170,7 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 {
 	char *buf;
 
-	gagdets_init(&v->tl.tl.g);
+	gadgets_init(&v->tl.tl.g);
 
 	if (!(buf = (char*)malloc(strlen(text) + 1)))
 		return;

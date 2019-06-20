@@ -116,6 +116,12 @@ struct screen_resize_listener
 	void (*callback)(void *udata, int x, int y, int width, int height);
 };
 
+/******************************************************************************/
+
+extern struct screen gui_screen;
+
+/******************************************************************************/
+
 /**
  * Set the extend of the gagdet.
  *
@@ -211,6 +217,11 @@ void screen_add_window(struct screen *scr, struct window *wnd);
  * @param wnd the window to be removed
  */
 void screen_remove_window(struct screen *scr, struct window *wnd);
+
+/**
+ * @return whether the window is associated to the screen.
+ */
+int screen_has_window(struct screen *scr, struct window *wnd);
 
 /**
  * Add a listener that is invoked when the screen size is changed.

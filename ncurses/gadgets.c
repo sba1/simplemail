@@ -229,11 +229,33 @@ void screen_add_window(struct screen *scr, struct window *wnd)
 
 void screen_remove_window(struct screen *scr, struct window *wnd)
 {
+	if (!screen_has_window(scr, wnd))
+	{
+		return;
+	}
+
 	node_remove(&wnd->g.g.n);
 	if (scr->active == wnd)
 	{
 		scr->active = NULL;
 	}
+}
+/*******************************************************************************/
+
+int screen_has_window(struct screen *scr, struct window *wnd)
+{
+	struct window *iter;
+
+	iter = (struct window *)list_first(&scr->windows);
+	while (iter)
+	{
+		if (iter == wnd)
+		{
+			return 1;
+		}
+		iter = (struct window*)node_next(&iter->g.g.n);
+	}
+	return 0;
 }
 
 /*******************************************************************************/

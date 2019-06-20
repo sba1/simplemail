@@ -46,6 +46,8 @@ static void read_window_close_current(void)
 		resize_listener_added = 0;
 	}
 
+	screen_remove_window(&gui_screen, &read_win);
+
 	hide_panel(read_panel);
 	update_panels();
 	doupdate();
@@ -142,6 +144,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 			/* FIXME: Doesn't work with multiple windows yet */
 			windows_init(&read_win);
+			screen_add_window(&gui_screen, &read_win);
 
 			gadgets_init_simple_text_label(&from_label, buf);
 

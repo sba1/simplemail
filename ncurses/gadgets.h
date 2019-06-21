@@ -73,7 +73,14 @@ struct screen
 	struct window *active;
 	struct list resize_listeners;
 	key_listeners_t key_listeners;
+
 	void (*keys_changed)(struct screen *scr);
+
+	int w;
+	int h;
+
+	/* Specific to the renderer, for now ncurses */
+	WINDOW *handle;
 };
 
 /**

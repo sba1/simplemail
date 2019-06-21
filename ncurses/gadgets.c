@@ -216,6 +216,14 @@ void screen_init(struct screen *scr)
 	list_init(&scr->windows);
 	list_init(&scr->resize_listeners);
 	list_init(&scr->key_listeners);
+
+	{
+		int w, h;
+		getmaxyx(stdscr, h, w);
+		scr->w = w;
+		scr->h = h;
+		scr->handle = newwin(h, w, 0, 0);
+	}
 }
 
 /*******************************************************************************/

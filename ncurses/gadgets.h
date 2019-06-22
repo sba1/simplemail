@@ -194,12 +194,12 @@ void gadgets_display(WINDOW *win, struct gadget *g);
 void windows_init(struct window *win);
 
 /**
- * Display the content of the window.
+ * Display the content of the entire window.
  *
- * @param wnd where to render
- * @param wnd the windows whose contents shall be displayed.
+ * @param wnd the window to display
+ * @param scr the screen on which to render
  */
-void windows_display(WINDOW *win, struct window *wnd);
+void windows_display(struct window *wnd, struct screen *scr);
 
 /**
  * Initialize the screen.

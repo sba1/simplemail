@@ -203,9 +203,9 @@ void windows_init(struct window *win)
 
 /*******************************************************************************/
 
-void windows_display(WINDOW *win, struct window *wnd)
+void windows_display(struct window *wnd, struct screen *scr)
 {
-	gadgets_display(win, &wnd->g.g);
+	gadgets_display(scr->handle, &wnd->g.g);
 }
 
 /*******************************************************************************/

@@ -64,7 +64,7 @@ static void read_window_layout_size(int w, int h)
 	gadgets_set_extend(&subject_label.tl.g, 0, 2, w, 1);
 	gadgets_set_extend(&text_view.tl.tl.g, 0, 3, w, h - 3);
 
-	gadgets_display(read_wnd, &read_group.g);
+	windows_display(&read_win, &gui_screen);
 }
 
 /******************************************************************************/

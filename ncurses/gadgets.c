@@ -38,6 +38,18 @@ static void gadgets_init(struct gadget *g)
 	memset(g, 0, sizeof(g));
 }
 
+/**
+ * Display the given gadget onto the given window.
+ *
+ * @param win the window where to display the gadget.
+ * @param g the gadget to display.
+ */
+static void gadgets_display(WINDOW *win, struct gadget *g)
+{
+	g->display(g, win);
+	g->flags &= ~GADF_REDRAW_UPDATE;
+}
+
 /******************************************************************************/
 
 static const char *simple_text_render(void *l)
@@ -183,14 +195,6 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 	v->tl.tl.free = simple_text_free;
 }
 
-
-/*******************************************************************************/
-
-void gadgets_display(WINDOW *win, struct gadget *g)
-{
-	g->display(g, win);
-	g->flags &= ~GADF_REDRAW_UPDATE;
-}
 
 /*******************************************************************************/
 

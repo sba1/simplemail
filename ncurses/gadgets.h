@@ -179,14 +179,6 @@ void gadgets_init_simple_text_label(struct simple_text_label *l, const char *tex
 void gadgets_init_text_view(struct text_view *v, const char *text);
 
 /**
- * Display the given gadget onto the given window.
- *
- * @param win the window where to display the gadget.
- * @param g the gadget to display.
- */
-void gadgets_display(WINDOW *win, struct gadget *g);
-
-/**
  * Initializes the window.
  *
  * @param win the window to initialize.

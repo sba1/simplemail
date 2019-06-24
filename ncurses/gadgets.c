@@ -35,7 +35,7 @@ static const char *mystrchrnul(const char *s, int c)
  */
 static void gadgets_init(struct gadget *g)
 {
-	memset(g, 0, sizeof(g));
+	memset(g, 0, sizeof(*g));
 }
 
 /**

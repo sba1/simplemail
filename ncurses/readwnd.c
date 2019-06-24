@@ -167,7 +167,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			gadgets_add(&read_win.g, &read_group.g);
 			read_window_layout();
 
-			windows_display(read_wnd, &read_win);
+			windows_display(&read_win, &gui_screen);
 		}
 	} else
 	{

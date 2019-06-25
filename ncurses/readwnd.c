@@ -18,9 +18,6 @@
 
 /******************************************************************************/
 
-static WINDOW *read_wnd;
-static PANEL *read_panel;
-
 static struct window read_win;
 
 static struct key_listener close_listener;
@@ -47,10 +44,6 @@ static void read_window_close_current(void)
 	}
 
 	screen_remove_window(&gui_screen, &read_win);
-
-	hide_panel(read_panel);
-	update_panels();
-	doupdate();
 }
 
 /******************************************************************************/
@@ -93,23 +86,7 @@ void read_refresh_prevnext_button(struct folder *f)
 
 int read_window_open(const char *folder, struct mail_info *mail, int window)
 {
-	int w, h;
 	char buf[256];
-
-	getmaxyx(stdscr, h, w);
-	h -= 2;
-
-	if (!read_wnd)
-	{
-		read_wnd = newwin(h, w, 0, 0);
-		read_panel = new_panel(read_wnd);
-		show_panel(read_panel);
-	} else
-	{
-		show_panel(read_panel);
-		update_panels();
-		doupdate();
-	}
 
 	if (!resize_listener_added)
 	{
@@ -145,6 +122,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 			/* FIXME: Doesn't work with multiple windows yet */
 			windows_init(&read_win);
 			screen_add_window(&gui_screen, &read_win);
+			gadgets_set_extend(&read_win.g.g, 0, 0, gui_screen.w, gui_screen.h - 2);
 
 			gadgets_init_simple_text_label(&from_label, buf);
 
@@ -178,8 +156,6 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 
 	screen_add_key_listener(&gui_screen, &close_listener, 'c', "Close", read_window_close_current);
 	refresh();
-
-	wrefresh(read_wnd);
 
 	return 1;
 }

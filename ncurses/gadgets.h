@@ -13,6 +13,8 @@ struct rect
 /** Indicates that an redraw update is needed */
 #define GADF_REDRAW_UPDATE (1<<0)
 
+struct window;
+
 struct gadget
 {
 	struct node n;
@@ -21,7 +23,7 @@ struct gadget
 	unsigned int flags;
 
 	/** Display the given gadget */
-	void (*display)(struct gadget *g, WINDOW *win);
+	void (*display)(struct gadget *g, struct window *win);
 
 	/** Handle the given input, return 1, if the input was handled */
 	int (*input)(struct gadget *g, int value);
@@ -61,6 +63,10 @@ struct window
 {
 	struct group g;
 	struct gadget *active;
+
+	/** The screen to which the window is currently associated */
+	struct screen *scr;
+
 	key_listeners_t key_listeners;
 };
 

@@ -44,7 +44,7 @@ static void gadgets_init(struct gadget *g)
  * @param win the window where to display the gadget.
  * @param g the gadget to display.
  */
-static void gadgets_display(WINDOW *win, struct gadget *g)
+static void gadgets_display(struct window *win, struct gadget *g)
 {
 	g->display(g, win);
 	g->flags &= ~GADF_REDRAW_UPDATE;
@@ -62,7 +62,7 @@ static void simple_text_free(void *l)
 	free(((struct simple_text_label*)l)->text);
 }
 
-static void simple_text_display(struct gadget *g, WINDOW *win)
+static void simple_text_display(struct gadget *g, struct window *win)
 {
 	struct simple_text_label *l = (struct simple_text_label *)g;
 	const char *txt = l->tl.render(l);
@@ -93,7 +93,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 		{
 			txt += xoffset;
 			txt_len -= xoffset;
-			mvwaddnstr(win, y + oy, x, txt, endl - txt);
+			mvwaddnstr(win->scr->handle, y + oy, x, txt, endl - txt);
 		} else
 		{
 			txt_len = 0;
@@ -101,7 +101,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 
 		for (i = txt_len; i < w; i++)
 		{
-			mvwaddnstr(win, y + oy, i, " ", 1);
+			mvwaddnstr(win->scr->handle, y + oy, i, " ", 1);
 		}
 		txt = endl + 1;
 		oy++;
@@ -111,7 +111,7 @@ static void simple_text_display(struct gadget *g, WINDOW *win)
 /**
  * Invoke display method of each group member.
  */
-static void group_display(struct gadget *gad, WINDOW *win)
+static void group_display(struct gadget *gad, struct window *win)
 {
 	struct group *gr = (struct group *)gad;
 	struct gadget *child = (struct gadget *)list_first(&gr->l);
@@ -209,7 +209,8 @@ void windows_init(struct window *win)
 
 void windows_display(struct window *wnd, struct screen *scr)
 {
-	gadgets_display(scr->handle, &wnd->g.g);
+	gadgets_display(wnd, &wnd->g.g);
+	wrefresh(wnd->scr->handle);
 }
 
 /*******************************************************************************/
@@ -235,6 +236,7 @@ void screen_init(struct screen *scr)
 void screen_add_window(struct screen *scr, struct window *wnd)
 {
 	list_insert_tail(&scr->windows, &wnd->g.g.n);
+	wnd->scr = scr;
 }
 
 /*******************************************************************************/
@@ -251,6 +253,7 @@ void screen_remove_window(struct screen *scr, struct window *wnd)
 	{
 		scr->active = NULL;
 	}
+	wnd->scr = NULL;
 }
 /*******************************************************************************/
 

@@ -176,6 +176,15 @@ void gadgets_remove(struct gadget *gad);
  */
 void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text);
 
+
+/**
+ * Set the label of the given label gadget.
+
+ * @param l the label to be updated
+ * @param text the text to use. The text will be copied internally.
+ */
+void gadgets_set_label_text(struct simple_text_label *l, const char *text);
+
 /**
  * Initialize the given text view with the given text.
  *

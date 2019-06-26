@@ -162,18 +162,27 @@ void gadgets_remove(struct gadget *gad)
 
 void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text)
 {
-	char *buf;
-
 	gadgets_init(&l->tl.g);
 
-	if (!(buf = (char*)malloc(strlen(text) + 1)))
-		return;
-	strcpy(buf, text);
-	l->text = buf;
 	l->tl.xoffset = l->tl.yoffset = 0;
 	l->tl.g.display = simple_text_display;
 	l->tl.render = simple_text_render;
 	l->tl.free = simple_text_free;
+
+	gadgets_set_label_text(l, text);
+}
+
+/*******************************************************************************/
+
+void gadgets_set_label_text(struct simple_text_label *l, const char *text)
+{
+	char *buf;
+	if (!(buf = (char*)malloc(strlen(text) + 1)))
+		return;
+	strcpy(buf, text);
+	free(l->text);
+	l->text = buf;
+	l->tl.g.flags |= GADF_REDRAW_UPDATE;
 }
 
 /*******************************************************************************/

@@ -67,6 +67,8 @@ static void simple_text_display(struct gadget *g, struct window *win)
 	struct simple_text_label *l = (struct simple_text_label *)g;
 	const char *txt = l->tl.render(l);
 	const char *endl;
+	int dx = win->g.g.r.x;
+	int dy = win->g.g.r.y;
 	int oy = 0;
 	int w = l->tl.g.r.w;
 	int h = l->tl.g.r.h;
@@ -93,7 +95,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		{
 			txt += xoffset;
 			txt_len -= xoffset;
-			mvwaddnstr(win->scr->handle, y + oy, x, txt, endl - txt);
+			mvwaddnstr(win->scr->handle, dy + y + oy, dx + x, txt, endl - txt);
 		} else
 		{
 			txt_len = 0;
@@ -101,7 +103,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 		for (i = txt_len; i < w; i++)
 		{
-			mvwaddnstr(win->scr->handle, y + oy, i, " ", 1);
+			mvwaddnstr(win->scr->handle, dy + y + oy, dx + i, " ", 1);
 		}
 		txt = endl + 1;
 		oy++;

@@ -91,7 +91,7 @@ int gui_init(void)
 static void *gui_timer(void *userdata)
 {
 	int ch;
-	while ((ch = getch()) != 'q')
+	while ((ch = wgetch(gui_screen.handle)) != 'q')
 	{
 		if (ch == '\033')
 		{

@@ -24,6 +24,9 @@ static WINDOW *keyinfo_wnd;
 
 struct screen gui_screen;
 
+static struct window keyinfo_win;
+static struct simple_text_label keyinfo_label;
+
 /*****************************************************************************/
 
 static void gui_atexit(void)
@@ -47,17 +50,14 @@ void gui_screen_keys_changed(struct screen *scr)
 {
 	char buf[256];
 	screen_key_description_line(scr, buf, sizeof(buf));
-	mvwprintw(keyinfo_wnd, 0, 0, buf);
-	wclrtoeol(keyinfo_wnd);
-	wrefresh(keyinfo_wnd);
+	gadgets_set_label_text(&keyinfo_label, buf);
+	windows_display(&keyinfo_win, &gui_screen);
 }
 
 /*****************************************************************************/
 
 int gui_init(void)
 {
-	int w, h;
-
 	atexit(gui_atexit);
 
 	signal(SIGSEGV, gui_segf_handler);
@@ -70,8 +70,14 @@ int gui_init(void)
 	screen_init(&gui_screen);
 	gui_screen.keys_changed = gui_screen_keys_changed;
 
-	getmaxyx(stdscr, h, w);
-	keyinfo_wnd = newwin(1, w, h - 1, 0);
+	/* Setup and display the key info status bar */
+	windows_init(&keyinfo_win);
+	screen_add_window(&gui_screen, &keyinfo_win);
+	gadgets_set_extend(&keyinfo_win.g.g, 0, gui_screen.h - 1, gui_screen.w, 1);
+	gadgets_init_simple_text_label(&keyinfo_label, "");
+	gadgets_set_extend(&keyinfo_label.tl.g, 0, 0, gui_screen.w, 1);
+	gadgets_add(&keyinfo_win.g, &keyinfo_label.tl.g);
+	windows_display(&keyinfo_win, &gui_screen);
 
 	main_window_open();
 	main_refresh_folders();

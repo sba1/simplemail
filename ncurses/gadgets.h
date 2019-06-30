@@ -118,6 +118,17 @@ struct text_view
 	struct simple_text_label tl;
 };
 
+/** A simple list of elements */
+struct listview
+{
+	struct gadget g;
+
+	int active;
+
+	/** Render element with index pos into buf */
+	void (*render)(int pos, char *buf, int bufsize);
+};
+
 /**
  * Resize listener
  */
@@ -176,7 +187,6 @@ void gadgets_remove(struct gadget *gad);
  */
 void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text);
 
-
 /**
  * Set the label of the given label gadget.
 
@@ -192,6 +202,14 @@ void gadgets_set_label_text(struct simple_text_label *l, const char *text);
  * @param text the text to use. A copy will be made.
  */
 void gadgets_init_text_view(struct text_view *v, const char *text);
+
+/**
+ * Initialize the list view.
+ *
+ * @param v the value to be initialized
+ * @param render callback to render item pos
+ */
+void gadgets_init_listview(struct listview *v, void (*render)(int pos, char *buf, int bufsize));
 
 /**
  * Initializes the window.

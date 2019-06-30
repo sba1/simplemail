@@ -206,6 +206,49 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 	v->tl.tl.free = simple_text_free;
 }
 
+/******************************************************************************/
+
+/**
+ * Callback called when displaying a list view.
+ */
+static void listview_display(struct gadget *g, struct window *win)
+{
+	struct listview *v = (struct listview *)g;
+	int dx = win->g.g.r.x;
+	int dy = win->g.g.r.y;
+	int y;
+
+	char buf[256];
+
+	for (y = 0; y < v->g.r.h; y++)
+	{
+		int i;
+		int buf_len;
+
+		v->render(y, buf, sizeof(buf));
+		buf_len = strlen(buf);
+
+		if (buf_len > g->r.w)
+		{
+			buf_len = g->r.w;
+		}
+		mvwaddnstr(win->scr->handle, dy + y, dx, buf, buf_len);
+		for (i = buf_len; i < g->r.w; i++)
+		{
+			mvwaddnstr(win->scr->handle, dy + y, dx + i, " ", 1);
+		}
+	}
+}
+
+/******************************************************************************/
+
+void gadgets_init_listview(struct listview *v, void (*render)(int pos, char *buf, int bufsize))
+{
+	gadgets_init(&v->g);
+	v->active = -1;
+	v->render = render;
+	v->g.display = listview_display;
+}
 
 /*******************************************************************************/
 

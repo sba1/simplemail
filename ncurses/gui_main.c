@@ -3,8 +3,6 @@
 #include <string.h>
 #include <signal.h>
 
-#include <ncurses.h>
-
 #include "configuration.h"
 #include "debug.h"
 #include "lists.h"
@@ -19,8 +17,6 @@
 #include "gui_main_ncurses.h"
 
 /*****************************************************************************/
-
-static WINDOW *keyinfo_wnd;
 
 struct screen gui_screen;
 

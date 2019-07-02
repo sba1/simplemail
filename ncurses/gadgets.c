@@ -225,7 +225,15 @@ static void listview_display(struct gadget *g, struct window *win)
 		int i;
 		int buf_len;
 
-		v->render(y, buf, sizeof(buf));
+		if (y == v->active)
+		{
+			buf[0] = '*';
+		} else
+		{
+			buf[0] = ' ';
+		}
+
+		v->render(y, buf + 1, sizeof(buf) - 1);
 		buf_len = strlen(buf);
 
 		if (buf_len > g->r.w)

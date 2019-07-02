@@ -214,8 +214,8 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 static void listview_display(struct gadget *g, struct window *win)
 {
 	struct listview *v = (struct listview *)g;
-	int dx = win->g.g.r.x;
-	int dy = win->g.g.r.y;
+	int dx = win->g.g.r.x + g->r.x;
+	int dy = win->g.g.r.y + g->r.y;
 	int y;
 
 	char buf[256];

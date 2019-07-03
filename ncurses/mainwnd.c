@@ -24,9 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <ncurses.h>
-#include <panel.h>
-
 #include "folder.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -39,12 +36,17 @@
 
 /*****************************************************************************/
 
-static WINDOW *messagelist_wnd;
-static PANEL *messagelist_panel;
 static int messagelist_active = -1;
-static WINDOW *folders_wnd;
-static PANEL *folders_panel;
-static WINDOW *status_wnd;
+
+static struct window main_win;
+static struct simple_text_label main_status_label;
+static struct listview main_folder_listview;
+
+static int main_messagelist_from_width = 0;
+static int main_messagelist_subject_width = 0;
+static int main_messagelist_date_width = 0;
+static struct listview main_message_listview;
+
 static int folders_width = 20;
 
 static struct folder *main_active_folder;
@@ -60,30 +62,30 @@ static struct key_listener read_mail_listener;
 
 static void main_folder_next(void)
 {
+	struct folder *new_main_active_folder;
 	if (!main_active_folder)
 	{
-		main_active_folder = folder_first();
+		new_main_active_folder = folder_first();
 	} else
 	{
-		main_active_folder = folder_next(main_active_folder);
+		new_main_active_folder = folder_next(main_active_folder);
 	}
-	main_refresh_folders();
-	callback_folder_active();
+	main_set_folder_active(new_main_active_folder);
 }
 
 /*****************************************************************************/
 
 static void main_folder_prev(void)
 {
+	struct folder *new_main_active_folder;
 	if (!main_active_folder)
 	{
-		main_active_folder = folder_last();
+		new_main_active_folder = folder_last();
 	} else
 	{
-		main_active_folder = folder_prev(main_active_folder);
+		new_main_active_folder = folder_prev(main_active_folder);
 	}
-	main_refresh_folders();
-	callback_folder_active();
+	main_set_folder_active(new_main_active_folder);
 }
 
 /*****************************************************************************/
@@ -127,23 +129,114 @@ static void main_read_mail(void)
 
 /*****************************************************************************/
 
+/**
+ * Find folder mail by its position.
+ */
+static struct mail_info *folder_find_mail_by_pos(struct folder *f, int pos)
+{
+	void *handle = NULL;
+	struct mail_info *mi;
+
+	while ((mi = folder_next_mail(f, &handle)))
+	{
+		if (!pos--)
+		{
+			return mi;
+		}
+	}
+	return NULL;
+}
+
+/*****************************************************************************/
+
+static void main_folder_render(int pos, char *buf, int bufsize)
+{
+	struct folder *f;
+	int level;
+	int i;
+
+	buf[0] = 0;
+
+	if (!(f = folder_find(pos)))
+	{
+		return;
+	}
+
+	level = folder_level(f);
+	if (level > 10)
+	{
+		level = 10;
+	}
+
+	if (level > bufsize)
+	{
+		level = bufsize;
+	}
+
+	for (i = 0; i < level; i++)
+	{
+		buf[i] = ' ';
+	}
+
+	if (level < bufsize)
+	{
+		mystrlcpy(&buf[level], folder_name(f), bufsize - level);
+	}
+}
+
+/*****************************************************************************/
+
+static void main_message_render(int pos, char *buf, int bufsize)
+{
+	struct mail_info *mi;
+	const char *from;
+	const char *date;
+	char from_buf[100];
+
+	buf[0] = 0;
+
+	if (!main_active_folder)
+	{
+		return;
+	}
+
+	if (!(mi = folder_find_mail_by_pos(main_active_folder, pos)))
+	{
+		return;
+	}
+
+	from = mail_info_get_from(mi);
+	date = sm_get_date_str(mi->seconds);
+
+	mystrlcpy(from_buf, from?from:"Unknown", sizeof(from_buf));
+
+	snprintf(buf, bufsize, "%-*s %-*s %s",
+		main_messagelist_from_width, from,
+		main_messagelist_subject_width, mi->subject,
+		date);
+}
+
+/*****************************************************************************/
+
 int main_window_open(void)
 {
-	int w, h;
+	windows_init(&main_win);
+	screen_add_window(&gui_screen, &main_win);
+	gadgets_set_extend(&main_win.g.g, 0, 0, gui_screen.w, gui_screen.h - 1);
 
-	getmaxyx(stdscr, h, w);
-	h -= 2;
+	gadgets_init_listview(&main_folder_listview, main_folder_render);
+	gadgets_set_extend(&main_folder_listview.g, 0, 0, folders_width, gui_screen.h - 2);
+	gadgets_add(&main_win.g, &main_folder_listview.g);
 
-	messagelist_wnd = newwin(h, w - folders_width, 0, folders_width);
-	messagelist_panel = new_panel(messagelist_wnd);
-	folders_wnd = newwin(h, folders_width, 0, 0);
-	folders_panel = new_panel(folders_wnd);
-	status_wnd = newwin(1, w, h, 0);
-	refresh();
+	gadgets_init_listview(&main_message_listview, main_message_render);
+	gadgets_set_extend(&main_message_listview.g, folders_width, 0, gui_screen.w - folders_width, gui_screen.h - 2);
+	gadgets_add(&main_win.g, &main_message_listview.g);
 
-	wrefresh(messagelist_wnd);
-	wrefresh(folders_wnd);
-	wrefresh(status_wnd);
+	gadgets_init_simple_text_label(&main_status_label, "Status");
+	gadgets_set_extend(&main_status_label.tl.g, 0, gui_screen.h - 2, gui_screen.w, 1);
+	gadgets_add(&main_win.g, &main_status_label.tl.g);
+
+	windows_display(&main_win, &gui_screen);
 
 	screen_add_key_listener(&gui_screen, &next_folder_listener, 'n', _("Next folder"), main_folder_next);
 	screen_add_key_listener(&gui_screen, &prev_folder_listener, 'p', _("Prev folder"), main_folder_prev);
@@ -159,38 +252,7 @@ int main_window_open(void)
 
 void main_refresh_folders(void)
 {
-	int row = 0;
-	struct folder *f;
-	char text[folders_width + 1];
-
-	for (f = folder_first(); f; f = folder_next(f))
-	{
-		unsigned int level;
-		unsigned int i;
-
-		level = folder_level(f);
-		if (level > 10)
-		{
-			level = 10;
-		}
-
-		if (f == main_active_folder)
-		{
-			text[0] = '*';
-		} else
-		{
-			text[0] = ' ';
-		}
-
-		for (i = 0; i < level; i++)
-		{
-			text[1+i] = ' ';
-		}
-
-		mystrlcpy(&text[level + 1], folder_name(f), sizeof(text) - 2);
-		mvwprintw(folders_wnd, row++, 0 , text);
-	}
-	wrefresh(folders_wnd);
+	windows_display(&main_win, &gui_screen);
 }
 
 /*****************************************************************************/
@@ -222,6 +284,8 @@ void main_refresh_mail(struct mail_info *m)
 void main_set_folder_active(struct folder *folder)
 {
 	main_active_folder = folder;
+	main_folder_listview.active = folder_position(folder);
+
 	main_refresh_folders();
 	callback_folder_active();
 }
@@ -232,13 +296,13 @@ void main_set_folder_mails(struct folder *folder)
 {
 	void *handle = NULL;
 	struct mail_info *mi;
-	int row = 0;
-
-	int from_width = 0;
-	int subject_width = 0;
-	int date_width = 0;
 
 	char from_buf[128];
+
+	/* Update column widths */
+	main_messagelist_from_width = 0;
+	main_messagelist_subject_width = 0;
+	main_messagelist_date_width = 0;
 
 	/* Determine dimensions */
 	while ((mi = folder_next_mail(folder, &handle)))
@@ -252,51 +316,31 @@ void main_set_folder_mails(struct folder *folder)
 		if (!from) from = "Unknown";
 
 		l = strlen(from);
-		if (l > from_width)
+		if (l > main_messagelist_from_width)
 		{
-			from_width = l;
+			main_messagelist_from_width = l;
 		}
 
 		l = mystrlen(subject);
-		if (l > subject_width)
+		if (l > main_messagelist_subject_width)
 		{
-			subject_width = l;
+			main_messagelist_subject_width = l;
 		}
 
 		l = strlen(date);
-		if (l > date_width)
+		if (l > main_messagelist_date_width)
 		{
-			date_width = l;
+			main_messagelist_date_width = l;
 		}
 	}
 
-	if (from_width >= sizeof(from_buf))
+	if (main_messagelist_from_width >= sizeof(from_buf))
 	{
-		from_width = sizeof(from_buf) - 1;
+		main_messagelist_from_width = sizeof(from_buf) - 1;
 	}
 
-	/* Draw */
-	handle = NULL;
-	wmove(messagelist_wnd, 0, 0);
-	while ((mi = folder_next_mail(folder, &handle)))
-	{
-		const char *from = mail_info_get_from(mi);
-		const char *date = sm_get_date_str(mi->seconds);
-		const char *first = " ";
-
-		mystrlcpy(from_buf, from?from:"Unknown", sizeof(from_buf));
-		if (row == messagelist_active)
-		{
-			first = "*";
-		}
-		mvwprintw(messagelist_wnd, row, 0, first);
-		mvwprintw(messagelist_wnd, row, 1, from);
-		mvwprintw(messagelist_wnd, row, 1 + from_width + 1, mi->subject);
-		mvwprintw(messagelist_wnd, row, 1 + from_width + 1 + subject_width + 1, date);
-		row++;
-	}
-	wclrtobot(messagelist_wnd);
-	wrefresh(messagelist_wnd);
+	main_message_listview.active = messagelist_active;
+	windows_display(&main_win, &gui_screen);
 }
 
 /*****************************************************************************/
@@ -321,9 +365,7 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 
 void main_set_status_text(char *txt)
 {
-	mvwprintw(status_wnd, 0, 0, txt);
-	wclrtoeol(status_wnd);
-	wrefresh(status_wnd);
+	gadgets_set_label_text(&main_status_label, txt);
 }
 
 /*****************************************************************************/

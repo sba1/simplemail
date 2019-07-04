@@ -108,6 +108,18 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		txt = endl + 1;
 		oy++;
 	}
+
+	/* Clear remaining */
+	while (oy < h)
+	{
+		int i;
+
+		for (i = 0; i < g->r.w; i++)
+		{
+			mvwaddnstr(win->scr->handle, dy + y + oy, dx + x + i, " ", 1);
+		}
+		oy++;
+	}
 }
 
 /**

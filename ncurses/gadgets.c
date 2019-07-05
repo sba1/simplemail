@@ -302,6 +302,7 @@ void screen_init(struct screen *scr)
 		scr->w = w;
 		scr->h = h;
 		scr->handle = newwin(h, w, 0, 0);
+		nodelay(scr->handle, TRUE);
 	}
 }
 

@@ -232,7 +232,7 @@ int main_window_open(void)
 	gadgets_set_extend(&main_message_listview.g, folders_width, 0, gui_screen.w - folders_width, gui_screen.h - 2);
 	gadgets_add(&main_win.g, &main_message_listview.g);
 
-	gadgets_init_simple_text_label(&main_status_label, "Status");
+	gadgets_init_simple_text_label(&main_status_label, "");
 	gadgets_set_extend(&main_status_label.tl.g, 0, gui_screen.h - 2, gui_screen.w, 1);
 	gadgets_add(&main_win.g, &main_status_label.tl.g);
 
@@ -366,6 +366,7 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 void main_set_status_text(char *txt)
 {
 	gadgets_set_label_text(&main_status_label, txt);
+	windows_display(&main_win, &gui_screen);
 }
 
 /*****************************************************************************/

@@ -95,7 +95,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		{
 			txt += xoffset;
 			txt_len -= xoffset;
-			mvwaddnstr(win->scr->handle, dy + y + oy, dx + x, txt, endl - txt);
+			win->scr->puts(win->scr, dx + x, dy + y + oy, txt, endl - txt);
 		} else
 		{
 			txt_len = 0;
@@ -103,7 +103,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 		for (i = txt_len; i < w; i++)
 		{
-			mvwaddnstr(win->scr->handle, dy + y + oy, dx + i, " ", 1);
+			win->scr->puts(win->scr, dx + i, dy + y + oy, " ", 1);
 		}
 		txt = endl + 1;
 		oy++;
@@ -116,7 +116,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 		for (i = 0; i < g->r.w; i++)
 		{
-			mvwaddnstr(win->scr->handle, dy + y + oy, dx + x + i, " ", 1);
+			win->scr->puts(win->scr, dx + x + i, dy + y + oy, " ", 1);
 		}
 		oy++;
 	}
@@ -252,10 +252,10 @@ static void listview_display(struct gadget *g, struct window *win)
 		{
 			buf_len = g->r.w;
 		}
-		mvwaddnstr(win->scr->handle, dy + y, dx, buf, buf_len);
+		win->scr->puts(win->scr, dx, dy + y, buf, buf_len);
 		for (i = buf_len; i < g->r.w; i++)
 		{
-			mvwaddnstr(win->scr->handle, dy + y, dx + i, " ", 1);
+			win->scr->puts(win->scr, dx + i, dy + y, " ", 1);
 		}
 	}
 }
@@ -289,6 +289,13 @@ void windows_display(struct window *wnd, struct screen *scr)
 
 /*******************************************************************************/
 
+static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
+{
+	mvwaddnstr(scr->handle, y, x, txt, len);
+}
+
+/*******************************************************************************/
+
 void screen_init(struct screen *scr)
 {
 	memset(scr, 0, sizeof(*scr));
@@ -303,6 +310,7 @@ void screen_init(struct screen *scr)
 		scr->h = h;
 		scr->handle = newwin(h, w, 0, 0);
 		nodelay(scr->handle, TRUE);
+		scr->puts = screen_ncurses_puts;
 	}
 }
 

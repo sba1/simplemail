@@ -85,6 +85,9 @@ struct screen
 	int w;
 	int h;
 
+	/* Function to put a string on the screen */
+	void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
+
 	/* Specific to the renderer, for now ncurses */
 	WINDOW *handle;
 };

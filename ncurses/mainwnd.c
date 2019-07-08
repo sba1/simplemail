@@ -218,6 +218,20 @@ static void main_message_render(int pos, char *buf, int bufsize)
 
 /*****************************************************************************/
 
+static int folder_count()
+{
+	struct folder *f = folder_first();
+	int count = 0;
+	while (f)
+	{
+		count++;
+		f = folder_next(f);
+	}
+	return count;
+}
+
+/*****************************************************************************/
+
 int main_window_open(void)
 {
 	windows_init(&main_win);
@@ -227,6 +241,7 @@ int main_window_open(void)
 	gadgets_init_listview(&main_folder_listview, main_folder_render);
 	gadgets_set_extend(&main_folder_listview.g, 0, 0, folders_width, gui_screen.h - 2);
 	gadgets_add(&main_win.g, &main_folder_listview.g);
+	main_folder_listview.rows = folder_count();
 
 	gadgets_init_listview(&main_message_listview, main_message_render);
 	gadgets_set_extend(&main_message_listview.g, folders_width, 0, gui_screen.w - folders_width, gui_screen.h - 2);
@@ -252,6 +267,7 @@ int main_window_open(void)
 
 void main_refresh_folders(void)
 {
+	main_folder_listview.rows = folder_count();
 	windows_display(&main_win, &gui_screen);
 }
 
@@ -340,6 +356,7 @@ void main_set_folder_mails(struct folder *folder)
 	}
 
 	main_message_listview.active = messagelist_active;
+	main_message_listview.rows = folder_number_of_mails(folder);
 	windows_display(&main_win, &gui_screen);
 }
 

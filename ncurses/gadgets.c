@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*******************************************************************************/
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 /*******************************************************************************/
 
@@ -226,13 +229,14 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 static void listview_display(struct gadget *g, struct window *win)
 {
 	struct listview *v = (struct listview *)g;
+	int nelements = MIN(v->g.r.h, v->rows);
 	int dx = win->g.g.r.x + g->r.x;
 	int dy = win->g.g.r.y + g->r.y;
 	int y;
 
 	char buf[256];
 
-	for (y = 0; y < v->g.r.h; y++)
+	for (y = 0; y < nelements; y++)
 	{
 		int i;
 		int buf_len;
@@ -266,6 +270,7 @@ void gadgets_init_listview(struct listview *v, void (*render)(int pos, char *buf
 {
 	gadgets_init(&v->g);
 	v->active = -1;
+	v->rows = 0;
 	v->render = render;
 	v->g.display = listview_display;
 }

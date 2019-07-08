@@ -121,12 +121,16 @@ struct text_view
 	struct simple_text_label tl;
 };
 
-/** A simple list of elements */
+/** A simple list of elements. Only a subset of them is usually shown. */
 struct listview
 {
 	struct gadget g;
 
+	/** The current active one or -1 if there is none */
 	int active;
+
+	/** Total number of rows */
+	int rows;
 
 	/** Render element with index pos into buf */
 	void (*render)(int pos, char *buf, int bufsize);

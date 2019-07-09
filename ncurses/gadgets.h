@@ -67,6 +67,7 @@ struct window
 	/** The screen to which the window is currently associated */
 	struct screen *scr;
 
+	/** All window specific listeners */
 	key_listeners_t key_listeners;
 };
 
@@ -75,17 +76,28 @@ struct window
  */
 struct screen
 {
+	/** List of all windows attached to the screen */
 	struct list windows;
+
+	/** The window that gets key events first */
 	struct window *active;
+
+	/** Global list of listeners that are invoked on a screen resize */
 	struct list resize_listeners;
+
+	/** Global list of key listeners */
 	key_listeners_t key_listeners;
 
+	/** Called if key listener list has changed */
 	void (*keys_changed)(struct screen *scr);
 
+	/** Width of the screen */
 	int w;
+
+	/** Height of the screen */
 	int h;
 
-	/* Function to put a string on the screen */
+	/** Function to put a string on the screen */
 	void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
 
 	/* Specific to the renderer, for now ncurses */

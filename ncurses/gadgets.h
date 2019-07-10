@@ -246,6 +246,25 @@ void windows_init(struct window *win);
 void windows_display(struct window *wnd, struct screen *scr);
 
 /**
+ * Add window-scoped key listener to the window.
+ *
+ * @param win
+ * @param l
+ * @param ch
+ * @param short_description
+ * @param callback
+ */
+void windows_add_key_listener(struct window *win, struct key_listener *l, int ch, const char *short_description, void (*callback)(void));
+
+/**
+ * Remove the given key listeners.
+ *
+ * @param win the window to which the listener is attached.
+ * @param l the key listener to be removed.
+ */
+void windows_remove_key_listener(struct window *win, struct key_listener *l);
+
+/**
  * Initialize the screen.
  *
  * @param scr the screen to be initialized.

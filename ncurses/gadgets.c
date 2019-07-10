@@ -294,6 +294,32 @@ void windows_display(struct window *wnd, struct screen *scr)
 
 /*******************************************************************************/
 
+void windows_add_key_listener(struct window *win, struct key_listener *l, int ch, const char *short_description, void (*callback)(void))
+{
+	l->ch = ch;
+	l->short_description = short_description;
+	l->callback = callback;
+	list_insert_tail(&win->key_listeners, &l->n);
+	if (win->scr->keys_changed)
+	{
+		win->scr->keys_changed(win->scr);
+	}
+
+}
+
+/*******************************************************************************/
+
+void windows_remove_key_listener(struct window *win, struct key_listener *l)
+{
+	node_remove(&l->n);
+	if (win->scr->keys_changed)
+	{
+		win->scr->keys_changed(win->scr);
+	}
+}
+
+/*******************************************************************************/
+
 static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
 {
 	mvwaddnstr(scr->handle, y, x, txt, len);

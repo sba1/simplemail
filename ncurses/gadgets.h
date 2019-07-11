@@ -265,6 +265,16 @@ void windows_add_key_listener(struct window *win, struct key_listener *l, int ch
 void windows_remove_key_listener(struct window *win, struct key_listener *l);
 
 /**
+ * Invoke the key listener listening to the given ch.
+ *
+ * @param win the win that contains all listeners.
+ * @param ch the character value
+ *
+ * @return 1, if any key listener was successfully invoked
+ */
+int window_invoke_key_listener(struct window *win, int ch);
+
+/**
  * Initialize the screen.
  *
  * @param scr the screen to be initialized.

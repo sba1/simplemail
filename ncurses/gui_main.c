@@ -129,6 +129,7 @@ static void *gui_timer(void *userdata)
 		{
 			struct gadget *g;
 
+			/* Try active gagdet first */
 			if ((g = gui_screen.active->active))
 			{
 				if (g->input)
@@ -138,6 +139,12 @@ static void *gui_timer(void *userdata)
 						continue;
 					}
 				}
+			}
+
+			/* Now invoke possible window-related listeners */
+			if (window_invoke_key_listener(gui_screen.active, ch))
+			{
+				continue;
 			}
 		}
 		screen_invoke_key_listener(&gui_screen, ch);

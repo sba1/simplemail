@@ -320,6 +320,27 @@ void windows_remove_key_listener(struct window *win, struct key_listener *l)
 
 /*******************************************************************************/
 
+int window_invoke_key_listener(struct window *win, int ch)
+{
+	struct key_listener *l = (struct key_listener *)list_first(&win->key_listeners);
+	while (l)
+	{
+		struct key_listener *n;
+
+		n = (struct key_listener *)node_next(&l->n);
+		if (l->ch == ch)
+		{
+			l->callback();
+			return 1;
+		}
+
+		l = n;
+	}
+	return 0;
+}
+
+/*******************************************************************************/
+
 static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
 {
 	mvwaddnstr(scr->handle, y, x, txt, len);

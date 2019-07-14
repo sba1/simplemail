@@ -64,6 +64,9 @@ struct window
 	struct group g;
 	struct gadget *active;
 
+	/** set to 1, if no input shall be forwared to the window */
+	int no_input;
+
 	/** The screen to which the window is currently associated */
 	struct screen *scr;
 

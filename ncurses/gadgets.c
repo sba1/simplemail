@@ -289,7 +289,10 @@ void windows_init(struct window *win)
 void windows_display(struct window *wnd, struct screen *scr)
 {
 	gadgets_display(wnd, &wnd->g.g);
-	scr->active = wnd;
+	if (!wnd->no_input)
+	{
+		scr->active = wnd;
+	}
 	wrefresh(wnd->scr->handle);
 }
 

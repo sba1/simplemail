@@ -67,6 +67,7 @@ int gui_init(void)
 
 	/* Setup and display the key info status bar */
 	windows_init(&keyinfo_win);
+	keyinfo_win.no_input = 1;
 	screen_add_window(&gui_screen, &keyinfo_win);
 	gadgets_set_extend(&keyinfo_win.g.g, 0, gui_screen.h - 1, gui_screen.w, 1);
 	gadgets_init_simple_text_label(&keyinfo_label, "");

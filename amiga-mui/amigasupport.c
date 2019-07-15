@@ -460,7 +460,7 @@ APTR ParseTemplate(CONST_STRPTR temp, STRPTR line, APTR results)
 				buf[len-1]=0;
 
 				rdargs->RDA_Buffer = NULL;
-				rdargs->RDA_Source.CS_Buffer = (UBYTE *)buf;
+				rdargs->RDA_Source.CS_Buffer = buf;
 				rdargs->RDA_Source.CS_Length = strlen(buf);
 				rdargs->RDA_Source.CS_CurChr = 0;
 

@@ -345,6 +345,22 @@ int window_invoke_key_listener(struct window *win, int ch)
 
 /*******************************************************************************/
 
+static struct window *screen_find_next_active_candidate(struct screen *scr)
+{
+	struct window *w;
+
+	for (w = (struct window *)list_first(&scr->windows); w; w = (struct window *)node_next(&w->g.g.n))
+	{
+		if (!w->no_input)
+		{
+			break;
+		}
+	}
+	return w;
+}
+
+/*******************************************************************************/
+
 static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
 {
 	mvwaddnstr(scr->handle, y, x, txt, len);
@@ -390,7 +406,10 @@ void screen_remove_window(struct screen *scr, struct window *wnd)
 	node_remove(&wnd->g.g.n);
 	if (scr->active == wnd)
 	{
-		scr->active = NULL;
+		if ((scr->active = screen_find_next_active_candidate(scr)))
+		{
+			windows_display(scr->active, &gui_screen);
+		}
 	}
 	wnd->scr = NULL;
 }

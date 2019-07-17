@@ -349,7 +349,7 @@ static struct window *screen_find_next_active_candidate(struct screen *scr)
 {
 	struct window *w;
 
-	for (w = (struct window *)list_first(&scr->windows); w; w = (struct window *)node_next(&w->g.g.n))
+	for (w = (struct window *)list_last(&scr->windows); w; w = (struct window *)node_prev(&w->g.g.n))
 	{
 		if (!w->no_input)
 		{

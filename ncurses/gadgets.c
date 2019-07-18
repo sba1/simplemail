@@ -509,20 +509,24 @@ void screen_invoke_key_listener(struct screen *scr, int ch)
 
 /*******************************************************************************/
 
-void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
+/**
+ * @return the number of written bytes excluding the possible 0 byte.
+ */
+static int keylisteners_description_line(key_listeners_t *listeners, char *buf, size_t bufsize)
 {
-	struct key_listener *l;
 	const char *space = "";
+	struct key_listener *l;
 	char *d;
 
 	if (!bufsize)
 	{
-		return;
+		return 0;
 	}
 
 	bufsize--;
 	d = buf;
-	l = (struct key_listener *)list_first(&scr->key_listeners);
+
+	l = (struct key_listener *)list_first(listeners);
 
 	for (; l && bufsize > 1; l = (struct key_listener *)node_next(&l->n))
 	{
@@ -549,4 +553,29 @@ void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 		space = "  ";
 	}
 	*d = 0;
+
+	return d - buf;
+
+}
+
+/*******************************************************************************/
+
+void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
+{
+	struct window *w;
+
+
+	if (!bufsize)
+	{
+		return;
+	}
+
+	w = (struct window *)list_first(&scr->windows);
+	for (; w; w = (struct window *)node_next(&w->g.g.n))
+	{
+		int nbytes = keylisteners_description_line(&w->key_listeners, buf, bufsize);
+		buf += nbytes;
+		bufsize -= nbytes;
+	}
+	keylisteners_description_line(&scr->key_listeners, buf, bufsize);
 }

@@ -562,18 +562,14 @@ static int keylisteners_description_line(key_listeners_t *listeners, char *buf, 
 
 void screen_key_description_line(struct screen *scr, char *buf, size_t bufsize)
 {
-	struct window *w;
-
-
 	if (!bufsize)
 	{
 		return;
 	}
 
-	w = (struct window *)list_first(&scr->windows);
-	for (; w; w = (struct window *)node_next(&w->g.g.n))
+	if (scr->active)
 	{
-		int nbytes = keylisteners_description_line(&w->key_listeners, buf, bufsize);
+		int nbytes = keylisteners_description_line(&scr->active->key_listeners, buf, bufsize);
 		buf += nbytes;
 		bufsize -= nbytes;
 	}

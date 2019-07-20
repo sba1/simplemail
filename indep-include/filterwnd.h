@@ -23,6 +23,8 @@
 #ifndef SM__FILTERWND_H
 #define SM__FILTERWND_H
 
+struct filter;
+
 /**
  * Opens the filter window.
  */

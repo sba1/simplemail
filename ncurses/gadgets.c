@@ -262,6 +262,17 @@ static void listview_display(struct gadget *g, struct window *win)
 			win->scr->puts(win->scr, dx + i, dy + y, " ", 1);
 		}
 	}
+
+	/* Clear remaining space */
+	for (; y < g->r.h; y++)
+	{
+		int i;
+
+		for (i = 0; i < g->r.w; i++)
+		{
+			win->scr->puts(win->scr, dx + i, dy + y, " ", 1);
+		}
+	}
 }
 
 /******************************************************************************/

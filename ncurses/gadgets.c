@@ -309,6 +309,13 @@ void windows_display(struct window *wnd, struct screen *scr)
 
 /*******************************************************************************/
 
+void windows_activate_gadget(struct window *wnd, struct gadget *g)
+{
+	wnd->active = g;
+}
+
+/*******************************************************************************/
+
 void windows_add_key_listener(struct window *win, struct key_listener *l, int ch, const char *short_description, void (*callback)(void))
 {
 	l->ch = ch;

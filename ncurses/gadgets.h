@@ -249,6 +249,15 @@ void windows_init(struct window *win);
 void windows_display(struct window *wnd, struct screen *scr);
 
 /**
+ * Make the given gadget the active one in context of the window. This
+ * gadget will receive all unrouted events.
+ *
+ * @param wnd where g belongs to.
+ * @param g the gadget to be activated.
+ */
+void windows_activate_gadget(struct window *wnd, struct gadget *g);
+
+/**
  * Add window-scoped key listener to the window.
  *
  * @param win

@@ -12,8 +12,6 @@
 #include "support.h"
 #include "timesupport.h"
 
-#include <ncurses.h>
-#include <panel.h>
 #include <unistd.h>
 
 /******************************************************************************/

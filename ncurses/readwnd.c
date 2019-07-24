@@ -8,10 +8,13 @@
 #include "gadgets.h"
 #include "gui_main_ncurses.h"
 #include "mail.h"
+#include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
+#include "support_indep.h"
 #include "timesupport.h"
 
+#include <stdlib.h>
 #include <unistd.h>
 
 /******************************************************************************/
@@ -19,10 +22,12 @@
 static struct window read_win;
 
 static struct key_listener close_listener;
+static struct key_listener reply_listener;
 static struct screen_resize_listener resize_listener;
 static int resize_listener_added;
 
 static struct mail_complete *read_current_mail;
+static char *read_current_folder;
 
 static struct group read_group;
 static struct simple_text_label from_label;
@@ -42,6 +47,18 @@ static void read_window_close_current(void)
 	}
 
 	screen_remove_window(&gui_screen, &read_win);
+}
+
+/******************************************************************************/
+
+static void read_window_reply_current(void)
+{
+	if (!read_current_mail || !read_current_folder)
+	{
+		return;
+	}
+
+	callback_reply_mails(read_current_folder, 1, &read_current_mail->info);
 }
 
 /******************************************************************************/
@@ -100,6 +117,9 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 	getcwd(buf, sizeof(buf));
 	chdir(folder);
 
+	free(read_current_folder);
+	read_current_folder = mystrdup(folder);
+
 	if ((read_current_mail = mail_complete_create_from_file(NULL, mail->filename)))
 	{
 		struct mail_complete *initial;
@@ -153,6 +173,7 @@ int read_window_open(const char *folder, struct mail_info *mail, int window)
 	chdir(buf);
 
 	windows_add_key_listener(&read_win, &close_listener, 'c', "Close", read_window_close_current);
+	windows_add_key_listener(&read_win, &reply_listener, 'r', "Reply", read_window_reply_current);
 
 	return 1;
 }

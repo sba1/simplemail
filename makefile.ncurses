@@ -2,7 +2,7 @@
 # Makefile for SimpleMail for ncurses UI
 #
 
-TARGET_DIR=target
+TARGET_DIR=target-ncurses
 
 ifndef USE_CPLUSPLUS
 CC     = $(CROSS_COMPILE)gcc

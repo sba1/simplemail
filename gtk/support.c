@@ -186,8 +186,6 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 {
   int r;
 
-  extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
-
   va_list ap;
   
   va_start(ap, fmt);
@@ -243,7 +241,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 		PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7);
 		if (pkcs7_data)
 		{
-			char *mem = malloc(pkcs7_data->d.data->length+1);
+			char *mem = (char *)malloc(pkcs7_data->d.data->length+1);
 			if (*dest_ptr)
 			{
 				memcpy(mem,pkcs7_data->d.data->data,pkcs7_data->d.data->length);

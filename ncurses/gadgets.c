@@ -89,7 +89,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 	while ((endl = mystrchrnul(txt, '\n')) != txt && oy < h)
 	{
-		size_t txt_len;
+		int txt_len;
 		int i;
 
 		txt_len = endl - txt;

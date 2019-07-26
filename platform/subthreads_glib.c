@@ -21,7 +21,10 @@
 */
 
 /* Linux-only */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include <sched.h>
 
 #include <assert.h>
@@ -457,7 +460,7 @@ static gboolean thread_call_function_async_entry(gpointer user_data)
 
 /*****************************************************************************/
 
-int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
+int thread_call_function_async_(thread_t thread, void *function, int argcount, ...)
 {
 	struct thread_call_function_sync_data *data;
 	int i;
@@ -466,7 +469,7 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 
 	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
-	if (!(data = malloc(sizeof(*data))))
+	if (!(data = (struct thread_call_function_sync_data *)malloc(sizeof(*data))))
 		return 0;
 	memset(data, 0, sizeof(*data));
 

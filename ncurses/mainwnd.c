@@ -350,7 +350,7 @@ void main_set_folder_mails(struct folder *folder)
 		}
 	}
 
-	if (main_messagelist_from_width >= sizeof(from_buf))
+	if (main_messagelist_from_width >= (int)sizeof(from_buf))
 	{
 		main_messagelist_from_width = sizeof(from_buf) - 1;
 	}

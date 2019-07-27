@@ -129,6 +129,13 @@ static void main_read_mail(void)
 
 /*****************************************************************************/
 
+static void main_reply_mail()
+{
+	callback_reply_selected_mails();
+}
+
+/*****************************************************************************/
+
 /**
  * Find folder mail by its position.
  */
@@ -258,6 +265,7 @@ int main_window_open(void)
 	windows_add_key_listener(&main_win, &fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
 	windows_add_key_listener(&main_win, &next_mail_listener, GADS_KEY_DOWN, NULL, main_next_mail);
 	windows_add_key_listener(&main_win, &prev_mail_listener, GADS_KEY_UP, NULL, main_prev_mail);
+	windows_add_key_listener(&main_win, &next_mail_listener, 'r', _("Reply"), main_reply_mail);
 	windows_add_key_listener(&main_win, &read_mail_listener, '\n', NULL, main_read_mail);
 
 	return 1;

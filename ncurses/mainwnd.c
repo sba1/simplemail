@@ -420,6 +420,20 @@ struct mail_info *main_get_active_mail(void)
 
 /*****************************************************************************/
 
+struct mail_info *main_get_mail_first_selected(void *handle)
+{
+	return main_get_active_mail();
+}
+
+/*****************************************************************************/
+
+struct mail_info *main_get_mail_next_selected(void *handle)
+{
+	return NULL;
+}
+
+/*****************************************************************************/
+
 void main_freeze_mail_list(void)
 {
 }

@@ -97,9 +97,9 @@ static void *gui_timer(void *userdata)
 	{
 		if (ch == '\033')
 		{
-			if (getch() == '[')
+			if (wgetch(gui_screen.handle) == '[')
 			{
-				switch (getch())
+				switch (wgetch(gui_screen.handle))
 				{
 				case	'A': /* up */
 					ch = GADS_KEY_UP;

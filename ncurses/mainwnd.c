@@ -56,6 +56,7 @@ static struct key_listener next_folder_listener;
 static struct key_listener fetch_mail_listener;
 static struct key_listener next_mail_listener;
 static struct key_listener prev_mail_listener;
+static struct key_listener reply_mail_listener;
 static struct key_listener read_mail_listener;
 
 /*****************************************************************************/
@@ -265,7 +266,7 @@ int main_window_open(void)
 	windows_add_key_listener(&main_win, &fetch_mail_listener, 'f', _("Fetch"), callback_fetch_mails);
 	windows_add_key_listener(&main_win, &next_mail_listener, GADS_KEY_DOWN, NULL, main_next_mail);
 	windows_add_key_listener(&main_win, &prev_mail_listener, GADS_KEY_UP, NULL, main_prev_mail);
-	windows_add_key_listener(&main_win, &next_mail_listener, 'r', _("Reply"), main_reply_mail);
+	windows_add_key_listener(&main_win, &reply_mail_listener, 'r', _("Reply"), main_reply_mail);
 	windows_add_key_listener(&main_win, &read_mail_listener, '\n', NULL, main_read_mail);
 
 	return 1;

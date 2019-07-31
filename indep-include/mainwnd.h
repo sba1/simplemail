@@ -127,14 +127,6 @@ void main_set_folder_active(struct folder *folder);
 struct folder *main_get_folder(void);
 
 /**
- * Returns the path of the current selected folder, or NULL if no
- * folder is selected.
- *
- * @return the path of the currently selected folder
- */
-char *main_get_folder_drawer(void);
-
-/**
  * Sets the active mail
  *
  * @param m the mail to be the active one

@@ -740,7 +740,7 @@ static void settings_show_changed(void)
 	if (messageview)
 	{
 		struct mail_info *m = main_get_active_mail();
-		char *f = main_get_folder_drawer();
+		char *f = simplemail_get_main_folder_drawer();
 		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 	}
 }
@@ -1509,15 +1509,6 @@ struct folder *main_get_folder(void)
 
 /*****************************************************************************/
 
-char *main_get_folder_drawer(void)
-{
-	struct folder *folder = main_get_folder();
-	if (folder) return folder->path;
-	return NULL;
-}
-
-/*****************************************************************************/
-
 void main_set_active_mail(struct mail_info *m)
 {
 	set(mail_tree, MUIA_MailTree_Active, m);
@@ -1686,7 +1677,7 @@ void main_set_status_text(char *txt)
 void main_display_active_mail(void)
 {
 	struct mail_info *m = main_get_active_mail();
-	char *f = main_get_folder_drawer();
+	char *f = simplemail_get_main_folder_drawer();
 
 	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 }

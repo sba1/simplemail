@@ -602,7 +602,7 @@ void callback_reply_selected_mails(void)
 			mail = main_get_mail_next_selected(&handle);
 		}
 
-		callback_reply_mails(main_get_folder_drawer(), num, mail_array);
+		callback_reply_mails(simplemail_get_main_folder_drawer(), num, mail_array);
 		free(mail_array);
 	}
 }
@@ -688,7 +688,7 @@ void callback_forward_selected_mails(void)
 			mail = main_get_mail_next_selected(&handle);
 		}
 
-		callback_forward_mails(main_get_folder_drawer(), num, mail_array);
+		callback_forward_mails(simplemail_get_main_folder_drawer(), num, mail_array);
 		free(mail_array);
 	}
 }
@@ -1188,7 +1188,7 @@ void callback_change_mail(void)
 		char buf[256];
 
 		getcwd(buf, sizeof(buf));
-		chdir(main_get_folder_drawer());
+		chdir(simplemail_get_main_folder_drawer());
 
 		if ((mail = mail_complete_create_from_file(NULL, filename)))
 		{
@@ -1213,7 +1213,7 @@ void callback_show_raw(void)
 
 	if ((filename = simplemail_get_active_mail_filename()))
 	{
-		sm_show_ascii_file(main_get_folder_drawer(), filename);
+		sm_show_ascii_file(simplemail_get_main_folder_drawer(), filename);
 	}
 }
 
@@ -2528,6 +2528,15 @@ static void simplemail_update_progmonwnd(void)
 {
 	about_to_update_progmonwnd = 0;
 	progmonwnd_update(0);
+}
+
+/*****************************************************************************/
+
+char *simplemail_get_main_folder_drawer(void)
+{
+	struct folder *folder = main_get_folder();
+	if (folder) return folder->path;
+	return NULL;
 }
 
 /*****************************************************************************/

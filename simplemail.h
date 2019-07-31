@@ -646,6 +646,13 @@ void callback_rescan_folder(void);
  */
 int callback_import_addressbook(void);
 
+/**
+ * Returns the path of the current selected folder, or NULL if no
+ * folder is selected.
+ *
+ * @return the path of the currently selected folder
+ */
+char *simplemail_get_main_folder_drawer(void);
 
 /**
  * Returns the filename of the active mail, NULL if no thing is

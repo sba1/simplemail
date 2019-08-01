@@ -223,6 +223,31 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 
 /******************************************************************************/
 
+int text_edit_input(struct gadget *g, int value)
+{
+	return 0;
+}
+
+/******************************************************************************/
+
+void text_edit_display(struct gadget *g, struct window *win)
+{
+}
+
+/******************************************************************************/
+
+void gadgets_init_text_edit(struct text_edit *e)
+{
+	memset(e, 0, sizeof(*e));
+
+	gadgets_init(&e->g);
+
+	e->g.input = text_edit_input;
+	e->g.display = text_edit_display;
+}
+
+/******************************************************************************/
+
 /**
  * Callback called when displaying a list view.
  */

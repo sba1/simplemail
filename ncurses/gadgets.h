@@ -136,6 +136,17 @@ struct text_view
 	struct simple_text_label tl;
 };
 
+/** A simple text edit field */
+struct text_edit
+{
+	struct gadget g;
+	int xoffset;
+	int yoffset;
+
+	char *text;
+};
+
+
 /** A simple list of elements. Only a subset of them is usually shown. */
 struct listview
 {
@@ -224,6 +235,13 @@ void gadgets_set_label_text(struct simple_text_label *l, const char *text);
  * @param text the text to use. A copy will be made.
  */
 void gadgets_init_text_view(struct text_view *v, const char *text);
+
+/**
+ * Initializes the given text edit gadget.
+ *
+ * @param e the text edit gadget to be initialized.
+ */
+void gadgets_init_text_edit(struct text_edit *e);
 
 /**
  * Initialize the list view.

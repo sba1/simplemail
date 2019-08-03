@@ -328,6 +328,10 @@ void windows_display(struct window *wnd, struct screen *scr)
 	if (!wnd->no_input)
 	{
 		scr->active = wnd;
+
+		/* Update key description since another window was activated */
+		scr->keys_changed(scr);
+
 	}
 	wrefresh(wnd->scr->handle);
 }
@@ -347,7 +351,9 @@ void windows_add_key_listener(struct window *win, struct key_listener *l, int ch
 	l->short_description = short_description;
 	l->callback = callback;
 	list_insert_tail(&win->key_listeners, &l->n);
-	if (win->scr->keys_changed)
+
+	/* Update key command descriptions if window is the active one */
+	if (win->scr->keys_changed && win->scr && win->scr->active == win)
 	{
 		win->scr->keys_changed(win->scr);
 	}
@@ -455,6 +461,9 @@ void screen_remove_window(struct screen *scr, struct window *wnd)
 		}
 	}
 	wnd->scr = NULL;
+
+	/* Possibly new window, key set could have been changed */
+	scr->keys_changed(scr);
 }
 /*******************************************************************************/
 

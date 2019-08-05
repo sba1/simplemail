@@ -324,6 +324,18 @@ void windows_init(struct window *win)
 
 void windows_display(struct window *wnd, struct screen *scr)
 {
+	int ox = wnd->g.g.r.x;
+	int oy = wnd->g.g.r.y;
+
+	/* Clear the window's area before anything else is drawn onto it */
+	for (int y = oy; y < oy + wnd->g.g.r.h; y++)
+	{
+		for (int x = ox; x < ox + wnd->g.g.r.w; x++)
+		{
+			scr->puts(scr, x, y, " ", 1);
+		}
+	}
+
 	gadgets_display(wnd, &wnd->g.g);
 	if (!wnd->no_input)
 	{

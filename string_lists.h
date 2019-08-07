@@ -118,4 +118,12 @@ void string_list_free(struct string_list *list);
  */
 struct string_node *string_list_find(struct string_list *list, const char *str);
 
+/**
+ * Locate the string_node of the given index.
+ *
+ * @return the string_node or NULL if it the list is not large enough.
+ */
+struct string_node *string_list_find_by_index(struct string_list *list, int index);
+
+
 #endif

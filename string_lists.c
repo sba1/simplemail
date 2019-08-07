@@ -99,3 +99,15 @@ struct string_node *string_list_find(struct string_list *list, const char *str)
 	}
 	return NULL;
 }
+
+/*****************************************************************************/
+
+struct string_node *string_list_find_by_index(struct string_list *list, int index)
+{
+	struct string_node *node = (struct string_node*)list_first(&list->l);
+	while (node && index--)
+	{
+		node = (struct string_node*)node_next(&node->node);
+	}
+	return node;
+}

@@ -60,9 +60,10 @@ struct string_node *string_list_insert_tail(struct string_list *list, const char
 		if ((node->string = mystrdup(string)))
 		{
 			list_insert_tail(&list->l,&node->node);
+			return node;
 		}
 	}
-	return node;
+	return NULL;
 }
 
 /*****************************************************************************/

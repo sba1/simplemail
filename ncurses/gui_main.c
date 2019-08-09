@@ -137,6 +137,9 @@ static void *gui_timer(void *userdata)
 				{
 					if (g->input(g, ch))
 					{
+						/* Redisplay the entire window */
+						/* TODO: Obviously, this can be optimized */
+						windows_display(gui_screen.active, &gui_screen);
 						continue;
 					}
 				}

@@ -68,6 +68,17 @@ void string_list_insert_tail_node(struct string_list *list, struct string_node *
 
 /**
  * Inserts a string into the end of a string list. The string will
+ * be duplicated. Nothing will be inserted if the string's length was 0.
+ *
+ * @param list the list to which to add the string.
+ * @param string the string to be added. The string will be duplicated.
+ * @return the newly created node that has just been inserted or NULL on memory
+ *  failure or if length of string was 0.
+ */
+struct string_node *string_list_insert_tail(struct string_list *list, const char *string);
+
+/**
+ * Inserts a string into the end of a string list. The string will
  * be duplicated.
  *
  * @param list the list to which to add the string.
@@ -75,7 +86,7 @@ void string_list_insert_tail_node(struct string_list *list, struct string_node *
  * @return the newly created node that has just been inserted or NULL on memory
  *  failure.
  */
-struct string_node *string_list_insert_tail(struct string_list *list, const char *string);
+struct string_node *string_list_insert_tail_always(struct string_list *list, const char *string);
 
 /**
  * Remove the head from the given string list.

@@ -225,6 +225,37 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 
 int text_edit_input(struct gadget *g, int value)
 {
+	/* The following code is not optimized yet */
+	struct text_edit *e = (struct text_edit *)g;
+	struct string_node *s;
+
+	while (!(s = string_list_find_by_index(&e->line_list, e->cy)))
+	{
+		if (!string_list_insert_tail_always(&e->line_list, ""))
+		{
+			return 0;
+		}
+	}
+
+	if (value >= 32)
+	{
+		char *new_string;
+		int s_len;
+
+		s_len = strlen(s->string);
+		if (e->cx > s_len) e->cx = s_len;
+		if (!(new_string = malloc(s_len + 2)))
+		{
+			return 0;
+		}
+		strncpy(new_string, s->string, e->cx);
+		strcpy(&new_string[e->cx + 1], &s->string[e->cx]);
+		new_string[e->cx++] = value;
+		free(s->string);
+		s->string = new_string;
+		g->flags |= GADF_REDRAW_UPDATE;
+		return 1;
+	}
 	return 0;
 }
 
@@ -232,6 +263,28 @@ int text_edit_input(struct gadget *g, int value)
 
 void text_edit_display(struct gadget *g, struct window *win)
 {
+	struct text_edit *e = (struct text_edit *)g;
+	struct string_node *s;
+
+	int wx = win->g.g.r.x;
+	int wy = win->g.g.r.y;
+	int gx = e->g.r.x;
+	int gy = e->g.r.y;
+	int gw = e->g.r.w;
+	int gh = e->g.r.h;
+	int y = 0;
+
+	s = string_list_first(&e->line_list);
+
+	while (s)
+	{
+		int sl = strlen(s->string);
+		for (int x = 0; x < gw; x++)
+		{
+			win->scr->puts(win->scr, x + wx + gx, y + wy + gy, x<sl?&s->string[x]:" ", 1);
+		}
+		s = string_node_next(s);
+	}
 }
 
 /******************************************************************************/
@@ -241,6 +294,8 @@ void gadgets_init_text_edit(struct text_edit *e)
 	memset(e, 0, sizeof(*e));
 
 	gadgets_init(&e->g);
+	string_list_init(&e->line_list);
+
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;

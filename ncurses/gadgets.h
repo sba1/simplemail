@@ -2,6 +2,7 @@
 #define SIMPLEMAIL_NCURSES_GADGETS_H
 
 #include "lists.h"
+#include "string_lists.h"
 
 #include <ncurses.h>
 
@@ -142,6 +143,11 @@ struct text_edit
 	struct gadget g;
 	int xoffset;
 	int yoffset;
+
+	struct string_list line_list;
+
+	/* Cursor x and y position */
+	int cx, cy;
 
 	char *text;
 };

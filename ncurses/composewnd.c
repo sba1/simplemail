@@ -35,7 +35,7 @@ static int compose_win_initialized;
 static int compose_win_removed;
 
 static struct group compose_group;
-static struct text_edit compose_edit_group;
+static struct text_edit compose_edit;
 
 static struct key_listener close_listener;
 
@@ -62,11 +62,13 @@ int compose_window_open(struct compose_args *args)
 		gadgets_init_group(&compose_group);
 		gadgets_set_extend(&compose_group.g, 0, 0, gui_screen.w, gui_screen.h - 2);
 
-		gadgets_init_text_edit(&compose_edit_group);
-		gadgets_set_extend(&compose_edit_group.g, 0, 0, gui_screen.w, gui_screen.h - 2);
+		gadgets_init_text_edit(&compose_edit);
+		gadgets_set_extend(&compose_edit.g, 0, 0, gui_screen.w, gui_screen.h - 2);
+		gadgets_add(&compose_group, &compose_edit.g);
 
 		gadgets_add(&compose_win.g, &compose_group.g);
 
+		windows_activate_gadget(&compose_win, &compose_edit.g);
 		compose_win_initialized = 1;
 
 		windows_add_key_listener(&compose_win, &close_listener, 'c', "Close", compose_window_close_current);

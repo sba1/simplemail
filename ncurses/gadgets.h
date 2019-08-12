@@ -104,6 +104,9 @@ struct screen
 	/** Function to put a string on the screen */
 	void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
 
+	/** Function to put a string on the screen in cursor mode */
+	void (*put_cursor)(struct screen *scr, int x, int y, const char *text, int len);
+
 	/* Specific to the renderer, for now ncurses */
 	WINDOW *handle;
 };

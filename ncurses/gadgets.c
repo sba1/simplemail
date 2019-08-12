@@ -281,7 +281,12 @@ void text_edit_display(struct gadget *g, struct window *win)
 		int sl = strlen(s->string);
 		for (int x = 0; x < gw; x++)
 		{
-			win->scr->puts(win->scr, x + wx + gx, y + wy + gy, x<sl?&s->string[x]:" ", 1);
+			void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
+			if (x == e->cx)
+			{
+				puts = win->scr->put_cursor;
+			}
+			puts(win->scr, x + wx + gx, y + wy + gy, x<sl?&s->string[x]:" ", 1);
 		}
 		s = string_node_next(s);
 	}
@@ -484,6 +489,15 @@ static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *tx
 
 /*******************************************************************************/
 
+static void screen_ncurses_put_cursor(struct screen *scr, int x, int y, const char *txt, int len)
+{
+	wattron(scr->handle, A_REVERSE);
+	mvwaddnstr(scr->handle, y, x, txt, len);
+	wattroff(scr->handle, A_REVERSE);
+}
+
+/*******************************************************************************/
+
 void screen_init(struct screen *scr)
 {
 	memset(scr, 0, sizeof(*scr));
@@ -499,6 +513,7 @@ void screen_init(struct screen *scr)
 		scr->handle = newwin(h, w, 0, 0);
 		nodelay(scr->handle, TRUE);
 		scr->puts = screen_ncurses_puts;
+		scr->put_cursor = screen_ncurses_put_cursor;
 	}
 }
 

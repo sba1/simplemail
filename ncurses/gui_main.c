@@ -107,6 +107,12 @@ static void *gui_timer(void *userdata)
 				case	'B': /* down */
 					ch = GADS_KEY_DOWN;
 					break;
+				case	'C': /* right */
+					ch = GADS_KEY_RIGHT;
+					break;
+				case	'D': /* left */
+					ch = GADS_KEY_LEFT;
+					break;
 				default:
 					ch = -1;
 					break;

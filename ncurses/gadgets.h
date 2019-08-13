@@ -43,6 +43,8 @@ struct group
 #define GADS_KEY_NONE -1
 #define GADS_KEY_UP -2
 #define GADS_KEY_DOWN -3
+#define GADS_KEY_RIGHT -3
+#define GADS_KEY_LEFT -4
 
 struct key_listener
 {

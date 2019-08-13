@@ -256,7 +256,28 @@ int text_edit_input(struct gadget *g, int value)
 		g->flags |= GADF_REDRAW_UPDATE;
 		return 1;
 	}
-	return 0;
+
+	switch (value)
+	{
+	case GADS_KEY_RIGHT:
+		if (e->cx < strlen(s->string))
+		{
+			e->cx++;
+		}
+		break;
+
+	case GADS_KEY_LEFT:
+		if (e->cx)
+		{
+			e->cx--;
+		}
+		break;
+
+	default:
+		return 0;
+	}
+	g->flags |= GADF_REDRAW_UPDATE;
+	return 1;
 }
 
 /******************************************************************************/

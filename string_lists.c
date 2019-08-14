@@ -38,6 +38,13 @@ void string_list_insert_tail_node(struct string_list *list, struct string_node *
 
 /*****************************************************************************/
 
+void string_list_insert_after(struct string_list *list, struct string_node *newnode, struct string_node *prednode)
+{
+	list_insert(&list->l, &newnode->node, &prednode->node);
+}
+
+/*****************************************************************************/
+
 struct string_node *string_list_remove_head(struct string_list *list)
 {
 	return (struct string_node *)list_remove_head(&list->l);

@@ -67,6 +67,11 @@ struct string_node *string_node_next(struct string_node *node);
 void string_list_insert_tail_node(struct string_list *list, struct string_node *node);
 
 /**
+ * Insert the given node after the other given node.
+ */
+void string_list_insert_after(struct string_list *list, struct string_node *newnode, struct string_node *prednode);
+
+/**
  * Inserts a string into the end of a string list. The string will
  * be duplicated. Nothing will be inserted if the string's length was 0.
  *

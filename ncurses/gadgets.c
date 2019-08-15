@@ -297,19 +297,20 @@ void text_edit_display(struct gadget *g, struct window *win)
 
 	s = string_list_first(&e->line_list);
 
-	while (s)
+	while (s && y < gh)
 	{
 		int sl = strlen(s->string);
 		for (int x = 0; x < gw; x++)
 		{
 			void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
-			if (x == e->cx)
+			if (x == e->cx && y == e->cy)
 			{
 				puts = win->scr->put_cursor;
 			}
 			puts(win->scr, x + wx + gx, y + wy + gy, x<sl?&s->string[x]:" ", 1);
 		}
 		s = string_node_next(s);
+		y++;
 	}
 }
 

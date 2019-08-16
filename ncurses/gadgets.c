@@ -233,6 +233,7 @@ int text_edit_input(struct gadget *g, int value)
 	{
 		if (!string_list_insert_tail_always(&e->line_list, ""))
 		{
+			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
 		}
 	}
@@ -254,6 +255,25 @@ int text_edit_input(struct gadget *g, int value)
 		free(s->string);
 		s->string = new_string;
 		g->flags |= GADF_REDRAW_UPDATE;
+		return 1;
+	}
+
+	if (value == '\n')
+	{
+		struct string_node *new_node;
+
+		if (!(new_node = string_list_insert_tail_always(&e->line_list, &s->string[e->cx])))
+		{
+			/* Reject input in failure case (this is probably not a good idea) */
+			return 0;
+		}
+		s->string[e->cx] = 0;
+		e->cx = 0;
+		e->cy++;
+
+		/* Remove tail again (we just misused it) and insert at the proper pos */
+		string_list_remove_tail(&e->line_list);
+		string_list_insert_after(&e->line_list, new_node, s);
 		return 1;
 	}
 

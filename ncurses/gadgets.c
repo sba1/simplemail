@@ -279,6 +279,20 @@ int text_edit_input(struct gadget *g, int value)
 
 	switch (value)
 	{
+	case GADS_KEY_UP:
+		if (e->cy > 0)
+		{
+			e->cy--;
+		}
+		break;
+
+	case GADS_KEY_DOWN:
+		if (e->cy < list_length(&e->line_list))
+		{
+			e->cy++;
+		}
+		break;
+
 	case GADS_KEY_RIGHT:
 		if (e->cx < strlen(s->string))
 		{
@@ -307,6 +321,7 @@ void text_edit_display(struct gadget *g, struct window *win)
 	struct text_edit *e = (struct text_edit *)g;
 	struct string_node *s;
 
+	int cx = e->cx;
 	int wx = win->g.g.r.x;
 	int wy = win->g.g.r.y;
 	int gx = e->g.r.x;
@@ -320,10 +335,17 @@ void text_edit_display(struct gadget *g, struct window *win)
 	while (s && y < gh)
 	{
 		int sl = strlen(s->string);
+
+		/* Cursor should not appear past a line */
+		if (y == e->cy && cx > sl)
+		{
+			cx = sl;
+		}
+
 		for (int x = 0; x < gw; x++)
 		{
 			void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
-			if (x == e->cx && y == e->cy)
+			if (x == cx && y == e->cy)
 			{
 				puts = win->scr->put_cursor;
 			}

@@ -365,6 +365,8 @@ void gadgets_init_text_edit(struct text_edit *e)
 	gadgets_init(&e->g);
 	string_list_init(&e->line_list);
 
+	/* Insert first, empty line */
+	string_list_insert_tail_always(&e->line_list, "");
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;

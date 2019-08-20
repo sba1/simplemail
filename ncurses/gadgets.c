@@ -287,7 +287,7 @@ int text_edit_input(struct gadget *g, int value)
 		break;
 
 	case GADS_KEY_DOWN:
-		if (e->cy < list_length(&e->line_list))
+		if (e->cy < list_length(&e->line_list.l))
 		{
 			e->cy++;
 		}

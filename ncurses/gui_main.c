@@ -113,6 +113,10 @@ static void *gui_timer(void *userdata)
 				case	'D': /* left */
 					ch = GADS_KEY_LEFT;
 					break;
+				case	51: /* delete */
+					ch = GADS_KEY_DELETE;
+					break;
+
 				default:
 					ch = -1;
 					break;

@@ -154,8 +154,6 @@ struct text_edit
 
 	/* Cursor x and y position */
 	int cx, cy;
-
-	char *text;
 };
 
 

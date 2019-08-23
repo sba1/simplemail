@@ -277,6 +277,21 @@ int text_edit_input(struct gadget *g, int value)
 		return 1;
 	}
 
+	if (value == GADS_KEY_DELETE)
+	{
+		int s_len;
+
+		s_len = strlen(s->string);
+		if (e->cx < s_len)
+		{
+			memmove(&s->string[e->cx], &s->string[e->cx + 1], strlen(&s->string[e->cx + 1]) + 1);
+		} else
+		{
+			e->cx = s_len;
+		}
+		return 1;
+	}
+
 	switch (value)
 	{
 	case GADS_KEY_UP:

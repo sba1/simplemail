@@ -578,6 +578,7 @@ void screen_init(struct screen *scr)
 		scr->h = h;
 		scr->handle = newwin(h, w, 0, 0);
 		nodelay(scr->handle, TRUE);
+		keypad(scr->handle, TRUE);
 		scr->puts = screen_ncurses_puts;
 		scr->put_cursor = screen_ncurses_put_cursor;
 	}

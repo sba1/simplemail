@@ -95,43 +95,36 @@ static void *gui_timer(void *userdata)
 	int ch;
 	while ((ch = wgetch(gui_screen.handle)) != 'q')
 	{
-		if (ch == '\033')
-		{
-			if (wgetch(gui_screen.handle) == '[')
-			{
-				switch (wgetch(gui_screen.handle))
-				{
-				case	'A': /* up */
-					ch = GADS_KEY_UP;
-					break;
-				case	'B': /* down */
-					ch = GADS_KEY_DOWN;
-					break;
-				case	'C': /* right */
-					ch = GADS_KEY_RIGHT;
-					break;
-				case	'D': /* left */
-					ch = GADS_KEY_LEFT;
-					break;
-				case	51: /* delete */
-					ch = GADS_KEY_DELETE;
-					break;
-
-				default:
-					ch = -1;
-					break;
-				}
-			} else
-			{
-				ch = GADS_KEY_NONE;
-			}
-		} else if (ch == KEY_RESIZE)
+		if (ch == KEY_RESIZE)
 		{
 			screen_invoke_resize_listener(&gui_screen);
 			continue;
+		} else if (ch >= 0x100)
+		{
+			switch (ch)
+			{
+			case KEY_DOWN:
+				ch = GADS_KEY_DOWN;
+				break;
+			case KEY_UP:
+				ch = GADS_KEY_UP;
+				break;
+			case KEY_LEFT:
+				ch = GADS_KEY_LEFT;
+				break;
+			case KEY_RIGHT:
+				ch = GADS_KEY_RIGHT;
+				break;
+			case KEY_DC:
+				ch = GADS_KEY_DELETE;
+				break;
+			default:
+				ch = GADS_KEY_NONE;
+				break;
+			}
 		}
 
-		if (ch == -1)
+		if (ch == GADS_KEY_NONE)
 		{
 			return NULL;
 		}

@@ -277,11 +277,23 @@ int text_edit_input(struct gadget *g, int value)
 		return 1;
 	}
 
-	if (value == GADS_KEY_DELETE)
+	if (value == GADS_KEY_DELETE || value == GADG_KEY_BACKSPACE)
 	{
 		int s_len;
 
 		s_len = strlen(s->string);
+
+		if (value == GADG_KEY_BACKSPACE)
+		{
+			if (e->cx > 0)
+			{
+				e->cx--;
+			} else
+			{
+				return 1;
+			}
+		}
+
 		if (e->cx < s_len)
 		{
 			memmove(&s->string[e->cx], &s->string[e->cx + 1], strlen(&s->string[e->cx + 1]) + 1);

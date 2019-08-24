@@ -115,6 +115,9 @@ static void *gui_timer(void *userdata)
 			case KEY_RIGHT:
 				ch = GADS_KEY_RIGHT;
 				break;
+			case KEY_BACKSPACE:
+				ch = GADG_KEY_BACKSPACE;
+				break;
 			case KEY_DC:
 				ch = GADS_KEY_DELETE;
 				break;

@@ -41,6 +41,7 @@ TESTEXES=\
 	coroutines_unittest \
 	filter_unittest \
 	folder_unittest \
+	gadgets_unittest \
 	hash_unittest \
 	index_unittest \
 	index_external_unittest \

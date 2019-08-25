@@ -111,8 +111,11 @@ struct screen
 	/** Function to put a string on the screen in cursor mode */
 	void (*put_cursor)(struct screen *scr, int x, int y, const char *text, int len);
 
-	/* Specific to the renderer, for now ncurses */
+	/* Specific to the ncurses renderer */
 	WINDOW *handle;
+
+	/* Specific to the in-memory renderer */
+	char *buf;
 };
 
 /**
@@ -321,6 +324,15 @@ int window_invoke_key_listener(struct window *win, int ch);
  * @param scr the screen to be initialized.
  */
 void screen_init(struct screen *scr);
+
+/**
+ * Initialize the screen with plain memory as front end.
+ *
+ * @param scr the screen to initialue
+ * @param w the width
+ * @param h the height
+ */
+void screen_init_in_memory(struct screen *scr, int w, int h);
 
 /**
  * Add the given window to the screen.

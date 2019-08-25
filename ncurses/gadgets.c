@@ -575,6 +575,18 @@ static struct window *screen_find_next_active_candidate(struct screen *scr)
 
 /*******************************************************************************/
 
+static void screen_in_memory_puts(struct screen *scr, int x, int y, const char *txt, int len)
+{
+}
+
+/*******************************************************************************/
+
+static void screen_in_memory_put_cursor(struct screen *scr, int x, int y, const char *txt, int len)
+{
+}
+
+/*******************************************************************************/
+
 static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
 {
 	mvwaddnstr(scr->handle, y, x, txt, len);
@@ -591,12 +603,19 @@ static void screen_ncurses_put_cursor(struct screen *scr, int x, int y, const ch
 
 /*******************************************************************************/
 
-void screen_init(struct screen *scr)
+static void screen_init_base(struct screen *scr)
 {
 	memset(scr, 0, sizeof(*scr));
 	list_init(&scr->windows);
 	list_init(&scr->resize_listeners);
 	list_init(&scr->key_listeners);
+}
+
+/*******************************************************************************/
+
+void screen_init(struct screen *scr)
+{
+	screen_init_base(scr);
 
 	{
 		int w, h;
@@ -612,6 +631,26 @@ void screen_init(struct screen *scr)
 }
 
 /*******************************************************************************/
+
+void screen_init_in_memory(struct screen *scr, int w, int h)
+{
+	screen_init_base(scr);
+
+	scr->w = w;
+	scr->h = h;
+
+	if (!(scr->buf = malloc(w * h)))
+	{
+		fprintf(stderr, "Not enough memory (%s:%d)", __FILE__, __LINE__);
+		exit(1);
+	}
+
+	scr->puts = screen_in_memory_puts;
+	scr->put_cursor = screen_in_memory_put_cursor;
+}
+
+/*******************************************************************************/
+
 
 void screen_add_window(struct screen *scr, struct window *wnd)
 {

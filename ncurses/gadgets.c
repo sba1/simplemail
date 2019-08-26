@@ -577,12 +577,35 @@ static struct window *screen_find_next_active_candidate(struct screen *scr)
 
 static void screen_in_memory_puts(struct screen *scr, int x, int y, const char *txt, int len)
 {
+	int i;
+
+	if (y < 0 || y >= scr->h)
+	{
+		return;
+	}
+
+	if (x < 0)
+	{
+		len += x;
+		if (len < 0)
+		{
+			return;
+		}
+		txt -= x;
+		x = 0;
+	}
+	for (i = x; i < MIN(len, scr->w); i++)
+	{
+		scr->buf[i + scr->w * y] = txt[i-x];
+	}
 }
 
 /*******************************************************************************/
 
 static void screen_in_memory_put_cursor(struct screen *scr, int x, int y, const char *txt, int len)
 {
+	/* No special support for this for now */
+	screen_in_memory_puts(scr, x, y, txt, len);
 }
 
 /*******************************************************************************/

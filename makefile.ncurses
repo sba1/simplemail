@@ -44,7 +44,7 @@ INC = \
 	-I.
 
 GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)
-GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
+GLIB_LIBS    := $(shell pkg-config glib-2.0 --libs)
 
 CFLAGS = \
 	$(DATE)\
@@ -65,10 +65,6 @@ CFLAGS = \
 # Flags passed to gcc during linking
 LINK = \
 	$(SSL_LINK)\
-	$(GLIB_LDFLAGS)\
-	$(shell pkg-config ncurses --libs) \
-	$(shell pkg-config panel --libs) \
-	$(shell pkg-config form --libs) \
 	-Wl,--gc-sections \
 	$(DEBUG)
 
@@ -76,7 +72,7 @@ LINK = \
 TARGET = $(TARGET_DIR)/SimpleMail$(TARGETSUFFIX)
 
 # Additional linker libraries
-LIBS = -lexpat $(SSL_LIB)
+LIBS = -lexpat $(SSL_LIB) $(GLIB_LIBS) $(shell pkg-config ncurses --libs)
 
 # Version of the binary to build
 VERSION = 0

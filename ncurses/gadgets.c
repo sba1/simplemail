@@ -343,7 +343,7 @@ int text_edit_input(struct gadget *g, int value)
 
 /******************************************************************************/
 
-void text_edit_display(struct gadget *g, struct window *win)
+static void text_edit_display(struct gadget *g, struct window *win)
 {
 	struct text_edit *e = (struct text_edit *)g;
 	struct string_node *s;

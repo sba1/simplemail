@@ -258,6 +258,12 @@ void gadgets_init_text_view(struct text_view *v, const char *text);
 void gadgets_init_text_edit(struct text_edit *e);
 
 /**
+ * @return the text edit contents allocated via malloc(). Free with free when
+ *  no longer needed.
+ */
+char *gadgets_get_text_edit_contents(const struct text_edit *e);
+
+/**
  * Initialize the list view.
  *
  * @param v the value to be initialized

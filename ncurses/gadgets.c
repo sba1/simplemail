@@ -401,6 +401,42 @@ void gadgets_init_text_edit(struct text_edit *e)
 
 /******************************************************************************/
 
+char *gadgets_get_text_edit_contents(const struct text_edit *e)
+{
+	struct string_node *n;
+	char *str, *buf;
+	int l;
+
+	/* Determine length first */
+	l = 0;
+	n = string_list_first(&e->line_list);
+	while (n)
+	{
+		l += strlen(n->string) + 1; /* plus newline */
+		n = string_node_next(n);
+	}
+
+	if (!(str = (char *)malloc(l + 1))) /* plus null byte */
+	{
+		return NULL;
+	}
+
+	buf = str;
+	n = string_list_first(&e->line_list);
+	while (n)
+	{
+		strcpy(buf, n->string);
+		buf += strlen(n->string);
+		*buf++ = '\n';
+		n = string_node_next(n);
+	}
+	*buf = 0;
+
+	return str;
+}
+
+/******************************************************************************/
+
 /**
  * Callback called when displaying a list view.
  */

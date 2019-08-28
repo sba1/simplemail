@@ -51,12 +51,12 @@ void string_list_init(struct string_list *list);
  * @param list of which the first element should be returned
  * @return the first element or NULL if the list is empty
  */
-struct string_node *string_list_first(struct string_list *list);
+struct string_node *string_list_first(const struct string_list *list);
 
 /**
  * @return the node following the given node.
  */
-struct string_node *string_node_next(struct string_node *node);
+struct string_node *string_node_next(const struct string_node *node);
 
 /**
  * Insert the given string node at the tail of the given list.

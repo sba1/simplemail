@@ -91,7 +91,7 @@ struct node *list_find(struct list *list, int num);
  * @param list the list whose length should be determined.
  * @return the count.
  */
-int list_length(struct list *list);
+int list_length(const struct list *list);
 
 /**
  * Returns the index of the node.
@@ -122,7 +122,7 @@ void node_remove(struct node *node);
  * @param list the list whose first entry should be returned-
  * @return the node or NULL if the list is empty.
  */
-struct node *list_first(struct list *list);
+struct node *list_first(const struct list *list);
 
 /**
  * Returns the last entry.
@@ -130,7 +130,7 @@ struct node *list_first(struct list *list);
  * @param last the list whose last entry should be returned.
  * @return the node or NULL if the list is empty.
  */
-struct node *list_last(struct list *last);
+struct node *list_last(const struct list *last);
 
 /**
  * Returns the node's successor
@@ -138,7 +138,7 @@ struct node *list_last(struct list *last);
  * @param node the node whose successor should be returned
  * @return the successor or NULL if node was the last one.
  */
-struct node *node_next(struct node *node);
+struct node *node_next(const struct node *node);
 
 /**
  * Returns the node's predecessor.
@@ -146,7 +146,7 @@ struct node *node_next(struct node *node);
  * @param node the node whose predecessor should be returned
  * @return the predecessor or NULL if node was the head.
  */
-struct node *node_prev(struct node *node);
+struct node *node_prev(const struct node *node);
 
 /**
  * Returns the list where the node belongs to.

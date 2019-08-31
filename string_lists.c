@@ -102,6 +102,16 @@ void string_list_clear(struct string_list *list)
 	}
 }
 
+/*****************************************************************************/
+
+void string_list_exchange(struct string_list *a, struct string_list *b)
+{
+	struct string_list t;
+
+	t = *a;
+	*a = *b;
+	*b = t;
+}
 
 /*****************************************************************************/
 

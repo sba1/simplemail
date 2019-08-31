@@ -118,6 +118,14 @@ struct string_node *string_list_remove_tail(struct string_list *list);
 void string_list_clear(struct string_list *list);
 
 /**
+ * Exchange the contents of the two given string lists.
+ *
+ * @param a the first string list
+ * @param b the second string list
+ */
+void string_list_exchange(struct string_list *a, struct string_list *b);
+
+/**
  * Shortcut for calling string_list_clear() and free().
  *
  * @param list the list that should be cleared and freed.

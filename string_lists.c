@@ -169,3 +169,10 @@ struct string_node *string_list_find_by_index(struct string_list *list, int inde
 	}
 	return node;
 }
+
+/*****************************************************************************/
+
+int string_list_length(const struct string_list *l)
+{
+	return list_length(&l->l);
+}

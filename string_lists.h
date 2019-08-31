@@ -161,5 +161,12 @@ struct string_node *string_list_find(struct string_list *list, const char *str);
  */
 struct string_node *string_list_find_by_index(struct string_list *list, int index);
 
+/**
+ * Determine the length of the given string list.
+ *
+ * @param l the list of which to determine the length.
+ * @return the length (number of nodes).
+ */
+int string_list_length(const struct string_list *l);
 
 #endif

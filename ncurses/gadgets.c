@@ -401,6 +401,27 @@ void gadgets_init_text_edit(struct text_edit *e)
 
 /******************************************************************************/
 
+void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
+{
+	struct string_list l;
+	const char *endl;
+
+	string_list_init(&l);
+
+	while ((endl = mystrchrnul(txt, '\n')) != txt)
+	{
+		string_list_insert_tail_always_len(&l, txt, endl - txt);
+		txt = endl;
+	}
+
+	string_list_clear(&e->line_list);
+	string_list_exchange(&l, &e->line_list);
+
+	e->g.flags |= GADF_REDRAW_UPDATE;
+}
+
+/******************************************************************************/
+
 char *gadgets_get_text_edit_contents(const struct text_edit *e)
 {
 	struct string_node *n;

@@ -263,6 +263,15 @@ void gadgets_init_text_edit(struct text_edit *e);
  */
 char *gadgets_get_text_edit_contents(const struct text_edit *e);
 
+
+/**
+ * Set the full contents of the text editor.
+ *
+ * @param e the text edit gadget to be modified
+ * @param contents the contents to be set
+ */
+void gadgets_set_text_edit_contents(struct text_edit *e, const char *contents);
+
 /**
  * Initialize the list view.
  *

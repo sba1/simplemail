@@ -54,4 +54,10 @@ void test_text_edit_enter_simple_text_works(void)
 	CU_ASSERT(contents != NULL);
 	CU_ASSERT_STRING_EQUAL("ho\ni\n", contents);
 	free(contents);
+
+	gadgets_set_text_edit_contents(&te, "Line 1\nLine 2");
+	contents = gadgets_get_text_edit_contents(&te);
+	CU_ASSERT(contents != NULL);
+	CU_ASSERT_STRING_EQUAL("Line 1\nLine 2\n", contents);
+	free(contents);
 }

@@ -108,6 +108,7 @@ struct string_node *string_list_insert_tail_always_len(struct string_list *list,
 	}
 	strncpy(node->string, string, len);
 	node->string[len] = 0;
+	string_list_insert_tail_node(list, node);
 
 	return node;
 }

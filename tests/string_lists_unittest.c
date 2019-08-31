@@ -34,5 +34,24 @@ void test_string_lists_basics(void)
 	CU_ASSERT(n == string_list_first(&l));
 	CU_ASSERT_STRING_EQUAL(n->string, "Hell");
 
+	n = string_list_insert_tail_always(&l, "Hello");
+	CU_ASSERT(string_list_length(&l) == 2);
+	CU_ASSERT(n == string_list_last(&l));
+	CU_ASSERT_STRING_EQUAL(n->string, "Hello");
+
+	n = string_list_insert_tail_always(&l, "");
+	CU_ASSERT(string_list_length(&l) == 3);
+	CU_ASSERT(n == string_list_last(&l));
+	CU_ASSERT_STRING_EQUAL(n->string, "");
+
+	n = string_list_insert_tail_always(&l, "");
+	CU_ASSERT(string_list_length(&l) == 4);
+	CU_ASSERT(n == string_list_last(&l));
+	CU_ASSERT_STRING_EQUAL(n->string, "");
+
+	n = string_list_insert_tail(&l, "");
+	CU_ASSERT(string_list_length(&l) == 4);
+	CU_ASSERT(n == NULL);
+
 	string_list_clear(&l);
 }

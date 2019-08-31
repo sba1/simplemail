@@ -54,6 +54,14 @@ void string_list_init(struct string_list *list);
 struct string_node *string_list_first(const struct string_list *list);
 
 /**
+ * Return the last string node of the given string list.
+ *
+ * @param list of which the first element should be returned
+ * @return the first element or NULL if the list is empty
+ */
+struct string_node *string_list_last(const struct string_list *list);
+
+/**
  * @return the node following the given node.
  */
 struct string_node *string_node_next(const struct string_node *node);

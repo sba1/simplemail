@@ -24,6 +24,13 @@ struct string_node *string_list_first(const struct string_list *list)
 
 /*****************************************************************************/
 
+struct string_node *string_list_last(const struct string_list *list)
+{
+	return (struct string_node*)list_last(&list->l);
+}
+
+/*****************************************************************************/
+
 struct string_node *string_node_next(const struct string_node *node)
 {
 	return (struct string_node*)node_next(&node->node);

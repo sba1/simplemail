@@ -92,6 +92,28 @@ struct string_node *string_list_insert_tail_always(struct string_list *list, con
 
 /*****************************************************************************/
 
+struct string_node *string_list_insert_tail_always_len(struct string_list *list, const char *string, int len)
+{
+	struct string_node *node;
+
+	if (!(node = (struct string_node*)malloc(sizeof(struct string_node))))
+	{
+		return NULL;
+	}
+
+	if (!(node->string = (char *)malloc(len + 1)))
+	{
+		free(node);
+		return NULL;
+	}
+	strncpy(node->string, string, len);
+	node->string[len] = 0;
+
+	return node;
+}
+
+/*****************************************************************************/
+
 void string_list_clear(struct string_list *list)
 {
 	struct string_node *node;

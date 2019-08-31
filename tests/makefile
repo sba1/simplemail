@@ -52,6 +52,7 @@ TESTEXES=\
 	mail_unittest \
 	pop3_unittest \
 	ringbuffer_unittest \
+	string_lists_unittest \
 	string_pools_unittest \
 	support_indep_unittest \
 	test_account_unittest \

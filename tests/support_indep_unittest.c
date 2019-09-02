@@ -99,6 +99,17 @@ void test_longest_common_substring(void)
 	CU_ASSERT(pos_in_a == 0);
 }
 
+/********************************************************/
+
+/* @Test */
+void test_wrap_text(void)
+{
+	char buf[128];
+
+	strcpy(buf, "Word1, Word2, Word3, Word4, Word5, Word6");
+	wrap_text(buf, 14);
+	CU_ASSERT_STRING_EQUAL(buf, "Word1, Word2,\nWord3, Word4,\nWord5, Word6");
+}
 
 /********************************************************/
 

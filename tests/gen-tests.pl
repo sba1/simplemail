@@ -16,7 +16,7 @@ while ($file_contents =~ m/\@Test[\s\S]*?\*\/\s*.*void\s+([^\(]+)\(/g)
 {
 	my$test_funcname;
 	$test_funcname = $1;
-	print "\t\"Testing $test_funcname()\",$test_funcname,\n";
+	print "\t\"$test_funcname()\",$test_funcname,\n";
 }
 
 print "\tNULL,NULL\n};\n";

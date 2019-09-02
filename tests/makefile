@@ -67,12 +67,12 @@ test-objs/%.o: ../%.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # General rule to create the unittest table
-gen/%_unittest_table.c: %_unittest.c
+gen/%_unittest_table.c: %_unittest.c gen-tests.pl
 	mkdir -p gen
 	perl gen-tests.pl <$< >$@
 
 # General rule to compile the unit tests
-%_unittest: %_unittest.c gen/%_unittest_table.c lib$(SIMPLEMAIL_LIB).a
+%_unittest: %_unittest.c gen/%_unittest_table.c unittest_tmpl.c lib$(SIMPLEMAIL_LIB).a
 	# Generate test data files
 	python gen-test-data.py <$< --outdir gen-test-data
 	# Attempt to compile the unit test, but don't fail if it fails

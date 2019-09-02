@@ -129,3 +129,6 @@ debug: $(TARGET)
 .PHONY: debug-valgrind
 debug-valgrind: $(TARGET)
 	valgrind --tool=memcheck --vgdb=yes --vgdb-error=0 $(TARGET)
+
+# Now include dependencies, but don't fail if they are not available
+-include $(OBJS:.o=.d)

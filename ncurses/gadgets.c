@@ -84,7 +84,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 	while (yoffset && (endl = mystrchrnul(txt, '\n')) != txt)
 	{
 		/* Advance by one more, but not if this was the end */
-		txt = endl + !!(*txt);
+		txt = endl + !!(*endl);
 		yoffset--;
 	}
 
@@ -109,7 +109,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		{
 			win->scr->puts(win->scr, dx + i, dy + y + oy, " ", 1);
 		}
-		txt = endl + !!(*txt);
+		txt = endl + !!(*endl);
 		oy++;
 	}
 

@@ -42,11 +42,35 @@ struct unit_test unit_tests[1];
 
 /***************************************************************************/
 
-int main()
+int main(int argc, char *argv[])
 {
 	int i;
 
 	CU_pSuite pSuite = NULL;
+
+	if (argc >= 2)
+	{
+		int j;
+
+		for (j = 0; j < argc; j++)
+		{
+			if (!strcmp(argv[j], "--list-tests"))
+			{
+				for (i=0;unit_tests[i].test;i++)
+				{
+					printf("%s\n", unit_tests[i].name);
+				}
+
+				return 0;
+			}
+
+			if (!strcmp(argv[j], "--help"))
+			{
+				fprintf(stderr, "Usage: %s [--list-tests] [--help]\n", argv[0]);
+				return 0;
+			}
+		}
+	}
 
 	/* initialize the CUnit test registry */
 	if (CUE_SUCCESS != CU_initialize_registry())

@@ -83,7 +83,8 @@ static void simple_text_display(struct gadget *g, struct window *win)
 	/* Search for first text line to be displayed */
 	while (yoffset && (endl = mystrchrnul(txt, '\n')) != txt)
 	{
-		txt = endl + 1;
+		/* Advance by one more, but not if this was the end */
+		txt = endl + !!(*txt);
 		yoffset--;
 	}
 
@@ -108,7 +109,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		{
 			win->scr->puts(win->scr, dx + i, dy + y + oy, " ", 1);
 		}
-		txt = endl + 1;
+		txt = endl + !!(*txt);
 		oy++;
 	}
 

@@ -228,11 +228,12 @@ int text_edit_input(struct gadget *g, int value)
 {
 	/* The following code is not optimized yet */
 	struct text_edit *e = (struct text_edit *)g;
+	struct text_edit_model *m = &e->model;
 	struct string_node *s;
 
-	while (!(s = string_list_find_by_index(&e->line_list, e->cy)))
+	while (!(s = string_list_find_by_index(&m->line_list, e->cy)))
 	{
-		if (!string_list_insert_tail_always(&e->line_list, ""))
+		if (!string_list_insert_tail_always(&m->line_list, ""))
 		{
 			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
@@ -263,7 +264,7 @@ int text_edit_input(struct gadget *g, int value)
 	{
 		struct string_node *new_node;
 
-		if (!(new_node = string_list_insert_tail_always(&e->line_list, &s->string[e->cx])))
+		if (!(new_node = string_list_insert_tail_always(&m->line_list, &s->string[e->cx])))
 		{
 			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
@@ -273,8 +274,8 @@ int text_edit_input(struct gadget *g, int value)
 		e->cy++;
 
 		/* Remove tail again (we just misused it) and insert at the proper pos */
-		string_list_remove_tail(&e->line_list);
-		string_list_insert_after(&e->line_list, new_node, s);
+		string_list_remove_tail(&m->line_list);
+		string_list_insert_after(&m->line_list, new_node, s);
 		return 1;
 	}
 
@@ -315,7 +316,7 @@ int text_edit_input(struct gadget *g, int value)
 		break;
 
 	case GADS_KEY_DOWN:
-		if (e->cy < list_length(&e->line_list.l))
+		if (e->cy < list_length(&m->line_list.l))
 		{
 			e->cy++;
 		}
@@ -347,6 +348,7 @@ int text_edit_input(struct gadget *g, int value)
 static void text_edit_display(struct gadget *g, struct window *win)
 {
 	struct text_edit *e = (struct text_edit *)g;
+	struct text_edit_model *m = &e->model;
 	struct string_node *s;
 
 	int cx = e->cx;
@@ -358,7 +360,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	int gh = e->g.r.h;
 	int y = 0;
 
-	s = string_list_first(&e->line_list);
+	s = string_list_first(&m->line_list);
 
 	while (s && y < gh)
 	{
@@ -388,13 +390,15 @@ static void text_edit_display(struct gadget *g, struct window *win)
 
 void gadgets_init_text_edit(struct text_edit *e)
 {
+	struct text_edit_model *m = &e->model;
+
 	memset(e, 0, sizeof(*e));
 
 	gadgets_init(&e->g);
-	string_list_init(&e->line_list);
+	string_list_init(&m->line_list);
 
 	/* Insert first, empty line */
-	string_list_insert_tail_always(&e->line_list, "");
+	string_list_insert_tail_always(&m->line_list, "");
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;
@@ -404,6 +408,7 @@ void gadgets_init_text_edit(struct text_edit *e)
 
 void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 {
+	struct text_edit_model *m = &e->model;
 	struct string_list l;
 	const char *endl;
 
@@ -415,8 +420,8 @@ void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 		txt = endl;
 	}
 
-	string_list_clear(&e->line_list);
-	string_list_exchange(&l, &e->line_list);
+	string_list_clear(&m->line_list);
+	string_list_exchange(&l, &m->line_list);
 
 	e->g.flags |= GADF_REDRAW_UPDATE;
 }
@@ -425,13 +430,14 @@ void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 
 char *gadgets_get_text_edit_contents(const struct text_edit *e)
 {
+	const struct text_edit_model *m = &e->model;
 	struct string_node *n;
 	char *str, *buf;
 	int l;
 
 	/* Determine length first */
 	l = 0;
-	n = string_list_first(&e->line_list);
+	n = string_list_first(&m->line_list);
 	while (n)
 	{
 		l += strlen(n->string) + 1; /* plus newline */
@@ -444,7 +450,7 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 	}
 
 	buf = str;
-	n = string_list_first(&e->line_list);
+	n = string_list_first(&m->line_list);
 	while (n)
 	{
 		strcpy(buf, n->string);

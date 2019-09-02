@@ -147,6 +147,11 @@ struct text_view
 	struct simple_text_label tl;
 };
 
+struct text_edit_model
+{
+	struct string_list line_list;
+};
+
 /** A simple text edit field */
 struct text_edit
 {
@@ -154,7 +159,7 @@ struct text_edit
 	int xoffset;
 	int yoffset;
 
-	struct string_list line_list;
+	struct text_edit_model model;
 
 	/* Cursor x and y position */
 	int cx, cy;

@@ -109,6 +109,10 @@ void test_wrap_text(void)
 	strcpy(buf, "Word1, Word2, Word3, Word4, Word5, Word6");
 	wrap_text(buf, 14);
 	CU_ASSERT_STRING_EQUAL(buf, "Word1, Word2,\nWord3, Word4,\nWord5, Word6");
+
+	strcpy(buf, "AAA BB CC DDDDD");
+	wrap_text(buf, 7);
+	CU_ASSERT_STRING_EQUAL(buf, "AAA BB\nCC\nDDDDD");
 }
 
 /********************************************************/

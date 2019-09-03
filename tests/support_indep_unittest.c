@@ -140,7 +140,7 @@ void test_array_sort(void)
 /********************************************************/
 
 /* @Test */
-void testmystrreplace(void)
+void test_mystrreplace(void)
 {
 	char *r;
 

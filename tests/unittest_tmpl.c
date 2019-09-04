@@ -44,7 +44,10 @@ struct unit_test unit_tests[1];
 
 int main(int argc, char *argv[])
 {
+	const char *single_test;
 	int i;
+
+	single_test = NULL;
 
 	CU_pSuite pSuite = NULL;
 
@@ -52,23 +55,31 @@ int main(int argc, char *argv[])
 	{
 		int j;
 
-		for (j = 0; j < argc; j++)
+		for (j = 1; j < argc; j++)
 		{
-			if (!strcmp(argv[j], "--list-tests"))
+			if (*argv[j] == '-')
 			{
-				for (i=0;unit_tests[i].test;i++)
+				if (!strcmp(argv[j], "--list-tests"))
 				{
-					printf("%s\n", unit_tests[i].name);
+					for (i=0;unit_tests[i].test;i++)
+					{
+						printf("%s\n", unit_tests[i].name);
+					}
+
+					return 0;
 				}
 
-				return 0;
+				if (!strcmp(argv[j], "-h") || !strcmp(argv[j], "--help"))
+				{
+					fprintf(stderr, "Usage: %s [testname] [--list-tests] [--help]\n", argv[0]);
+					return 0;
+				}
+
+				fprintf(stderr, "Option \'%s\' is unknown\n", argv[j]);
+				return -1;
 			}
 
-			if (!strcmp(argv[j], "--help"))
-			{
-				fprintf(stderr, "Usage: %s [--list-tests] [--help]\n", argv[0]);
-				return 0;
-			}
+			single_test = argv[j];
 		}
 	}
 
@@ -83,12 +94,41 @@ int main(int argc, char *argv[])
 		return CU_get_error();
 	}
 
-	for (i=0;unit_tests[i].test;i++)
+	if (single_test)
 	{
+		int present = 0;
+
+		/* Check the presence of the single test */
+		for (i=0;unit_tests[i].test;i++)
+		{
+			if (!strcmp(unit_tests[i].name, single_test))
+			{
+				present = 1;
+				break;
+			}
+		}
+
+		if (!present)
+		{
+			fprintf(stderr, "Test \'%s\' is not known\n", single_test);
+			return -1;
+		}
+
 		if (!CU_add_test(pSuite, unit_tests[i].name, unit_tests[i].test))
 		{
 			CU_cleanup_registry();
 			return CU_get_error();
+		}
+	} else
+	{
+		/* Add all tests */
+		for (i=0;unit_tests[i].test;i++)
+		{
+			if (!CU_add_test(pSuite, unit_tests[i].name, unit_tests[i].test))
+			{
+				CU_cleanup_registry();
+				return CU_get_error();
+			}
 		}
 	}
 

@@ -682,7 +682,7 @@ void wrap_line_nicely(char *text, int border)
 		{
 			if (bp[j])
 			{
-				int line_len = pos[j] - pos[last_bp];
+				int line_len = pos[j] - pos[last_bp] - 1; /* don't count the trailing space */
 				if (line_len > border)
 				{
 					cost = 1000000;

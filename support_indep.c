@@ -550,25 +550,9 @@ void wrap_text(char *text, int border)
 /*****************************************************************************/
 
 /**
- * @return whether all elements of the bitstring bs are 1.
- */
-static int all_of_one(unsigned char *bs, int len)
-{
-	int i;
-	for (i = 0; i < len; i++)
-	{
-		if (bs[i] != 1)
-		{
-			return 0;
-		}
-	}
-	return 1;
-}
-
-/**
  * Add one to the given bitstring.
  */
-static void add_one(unsigned char *bs, int len)
+static void add_one(char *bs, int len)
 {
 	int i;
 
@@ -585,6 +569,47 @@ static void add_one(unsigned char *bs, int len)
 }
 
 /*#define DEBUG_WRAP_LINE_NICELY */
+
+/*****************************************************************************/
+
+/**
+ * Determine the cost of the given breakpoint configuration.
+ *
+ * @param pos the position of the words to be wrapped
+ * @param bp vector of breakpoint indicators
+ * @param vlen the length of both vectors.
+ * @param mlen the maximal allowed length of one line
+ *
+ * @return the costs
+ */
+unsigned int breakpoint_costs(const int *pos, const char *bp, int vlen, int mlen)
+{
+	unsigned int cost = 0;
+
+	/* initially, last breakpoint is before first word */
+	int last_bp = 0;
+
+	/* <= because the arrays carry one more element and we don't want
+	 * to special case that yet */
+	for (int j = 1; j < vlen; j++)
+	{
+		if (bp[j])
+		{
+			int line_len = pos[j] - pos[last_bp] - 1; /* don't count the trailing space */
+
+			if (line_len > mlen)
+			{
+				cost = 1000000;
+			} else
+			{
+				cost += (mlen - line_len) * (mlen - line_len);
+			}
+			/* Remember this break point as new last */
+			last_bp = j;
+		}
+	}
+	return cost;
+}
 
 /*****************************************************************************/
 
@@ -664,8 +689,7 @@ void wrap_line_nicely(char *text, int border)
 	min_cost = 1000000;
 	while (!bp[0])
 	{
-		unsigned int cost = 0;
-		int last_bp = 0; /* initially, last breakpoint is before first word */
+		unsigned int cost;
 
 #ifdef DEBUG_WRAP_LINE_NICELY
 		printf("\n");
@@ -676,31 +700,7 @@ void wrap_line_nicely(char *text, int border)
 		printf("\n");
 #endif
 
-		/* <= because the arrays carry one more element and we don't want
-		 * to special case that yet */
-		for (int j = 1; j <= bps + 1; j++)
-		{
-			if (bp[j])
-			{
-				int line_len = pos[j] - pos[last_bp] - 1; /* don't count the trailing space */
-				if (line_len > border)
-				{
-					cost = 1000000;
-#ifdef DEBUG_WRAP_LINE_NICELY
-					printf("j=%d line len: %d cost add: %d\n", j, line_len, cost);
-#endif
-				} else
-				{
-					cost += (border - line_len) * (border - line_len);
-#ifdef DEBUG_WRAP_LINE_NICELY
-					printf("j=%d line len: %d cost add: %d\n", j, line_len, (border - line_len) * (border - line_len));
-#endif
-				}
-
-				/* Remember this break point as new last */
-				last_bp = j;
-			}
-		}
+		cost = breakpoint_costs(pos, bp, bps + 2 /* head and tail */, border);
 
 		if (cost < min_cost)
 		{

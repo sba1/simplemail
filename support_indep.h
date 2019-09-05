@@ -275,12 +275,21 @@ int myfilecopy(const char *sourcename, const char *destname);
 int mydeletedir(const char *path);
 
 /**
- * Wraps a text at the given border
+ * Wraps a text at the given border in a simple greedy fashion.
  *
  * @param text defines the text which should be wrapped. The contents is overwritten.
- * @param border
+ * @param border defines the first empty column (i.e, maximal length + 1).
  */
 void wrap_text(char *text, int border);
+
+/**
+ * Wraps a line at the given border to penalize shorter lines (as in
+ * Knuth-Plass's algorithm).
+ *
+ * @param line defines the lines which should be wrapped. The contents is overwritten.
+ * @param border defines the first empty column (i.e, maximal length + 1).
+ */
+void wrap_line_nicely(char *text, int border);
 
 /**
  * Determine the longest common prefix of the given strings.

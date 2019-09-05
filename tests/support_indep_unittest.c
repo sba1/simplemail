@@ -118,6 +118,22 @@ void test_wrap_text(void)
 /********************************************************/
 
 /* @Test */
+void test_wrap_line_nicely(void)
+{
+	char buf[256];
+
+	strcpy(buf, "AAAAA BBBB");
+	wrap_line_nicely(buf, 8);
+	CU_ASSERT_STRING_EQUAL(buf, "AAAAA\nBBBB");
+
+	strcpy(buf, "AAA BB CC DDDDD");
+	wrap_line_nicely(buf, 7);
+	CU_ASSERT_STRING_EQUAL(buf, "AAA\nBB CC\nDDDDD");
+}
+
+/********************************************************/
+
+/* @Test */
 void test_array_sort(void)
 {
 	char **a = NULL;

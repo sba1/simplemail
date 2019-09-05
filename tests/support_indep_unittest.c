@@ -129,6 +129,19 @@ void test_wrap_line_nicely(void)
 	strcpy(buf, "AAA BB CC DDDDD");
 	wrap_line_nicely(buf, 7);
 	CU_ASSERT_STRING_EQUAL(buf, "AAA\nBB CC\nDDDDD");
+
+	strcpy(buf, "AAA BB C DDDDD E FFFFF G HH II JJ K LLLL MM N OOOO PPPPP QQ RR SS TT UUU VV WW");
+	wrap_line_nicely(buf, 11);
+	CU_ASSERT_STRING_EQUAL(buf,
+		"AAA BB C\n"
+		"DDDDD E\n"
+		"FFFFF G\n"
+		"HH II JJ\n"
+		"K LLLL MM\n"
+		"N OOOO\n"
+		"PPPPP QQ\n"
+		"RR SS TT\n"
+		"UUU VV WW");
 }
 
 /********************************************************/

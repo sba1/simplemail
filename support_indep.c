@@ -582,7 +582,7 @@ static void add_one(char *bs, int len)
  *
  * @return the costs
  */
-unsigned int breakpoint_costs(const int *pos, const char *bp, int vlen, int mlen)
+static unsigned int breakpoint_costs(const int *pos, const char *bp, int vlen, int mlen)
 {
 	unsigned int cost = 0;
 

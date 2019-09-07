@@ -302,11 +302,21 @@ static void wrap_line_nicely_naive(char *text, int border)
 	free(bp);
 }
 
+static void wrap_line_nicely_dummy_cb(int num_breakpoints, int bp, int pos, void *udata)
+{
+}
 
 /* @Test */
 void test_wrap_line_nicely(void)
 {
 	char buf[256];
+	int bps;
+
+	bps = wrap_line_nicely_cb("AAAAAA", 8, wrap_line_nicely_dummy_cb, NULL);
+	CU_ASSERT_EQUAL(bps, 0);
+
+	bps = wrap_line_nicely_cb("AAAAAA BBBBBB", 8, wrap_line_nicely_dummy_cb, NULL);
+	CU_ASSERT_EQUAL(bps, 1);
 
 	strcpy(buf, "AAAAA BBBB");
 	wrap_line_nicely(buf, 8);

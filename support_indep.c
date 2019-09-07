@@ -549,7 +549,7 @@ void wrap_text(char *text, int border)
 
 /*****************************************************************************/
 
-void wrap_line_nicely(char *text, int border)
+int wrap_line_nicely_cb(const char *text, int border, wrap_breakpoint_callback_t callback, void *udata)
 {
 	unsigned char *buf = (unsigned char *)text;
 	int words;
@@ -590,20 +590,20 @@ void wrap_line_nicely(char *text, int border)
 	/* Allocate our vectors */
 	if (!(pos = (int *)malloc((words + 1) * sizeof(pos[0]))))
 	{
-		return;
+		return -1;
 	}
 
 	if (!(prev_bp = (int *)malloc((words + 1) * sizeof(prev_bp[0]))))
 	{
 		free(pos);
-		return;
+		return -1;
 	}
 
 	if (!(costs = (int *)malloc((words + 1) * sizeof(costs[0]))))
 	{
 		free(prev_bp);
 		free(pos);
-		return;
+		return -1;
 	}
 
 	/* Fix start and end */
@@ -656,19 +656,62 @@ void wrap_line_nicely(char *text, int border)
 		costs[j] = min_cost;
 	}
 
+	free(costs);
+
+	/* Count number of actual breakpoints */
+	bps = 0;
 	j = words;
 	while (prev_bp[j])
 	{
-		text[pos[prev_bp[j]]] = '\n';
+		bps++;
 		j = prev_bp[j];
 	}
 
-#ifdef DEBUG_WRAP_LINE_NICELY
-	printf("OUTPUT\n%s\n", text);
-#endif
-	free(costs);
-	free(prev_bp);
+	/* And call back... */
+	if (bps)
+	{
+		j = words;
+		i = bps - 1;
+
+		while (prev_bp[j])
+		{
+			callback(bps, i, pos[prev_bp[j]], udata);
+			j = prev_bp[j];
+			i--;
+		}
+	} else
+	{
+		callback(0, 0, 0, udata);
+	}
+
+	/* Cleanup */
 	free(pos);
+	free(prev_bp);
+
+	return bps;
+}
+
+/*****************************************************************************/
+
+static void wrap_line_nicely_callback(int num_breakpoints, int bp, int pos, void *udata)
+{
+	char *t;
+
+	if (!num_breakpoints)
+	{
+		return;
+	}
+
+
+	t = (char *)udata;
+	t[pos] = '\n';
+}
+
+/*****************************************************************************/
+
+void wrap_line_nicely(char *text, int border)
+{
+	wrap_line_nicely_cb(text, border, wrap_line_nicely_callback, text);
 }
 
 /**

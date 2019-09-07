@@ -283,6 +283,27 @@ int mydeletedir(const char *path);
 void wrap_text(char *text, int border);
 
 /**
+ * @param num_breakpoints total number of breakpoints
+ * @param bp current breakpoint index
+ * @param pos position of breakpoint
+ * @param udata some userdata.
+ */
+typedef void (*wrap_breakpoint_callback_t)(int num_breakpoints, int bp, int pos, void *udata);
+
+/**
+ * Wraps a line at the given border to penalize shorter lines (as in
+ * Knuth-Plass's algorithm).
+ *
+ * @param line defines the lines which should be wrapped. The contents is overwritten.
+ * @param border defines the first empty column (i.e, maximal length + 1).
+ * @param callback
+ * @param udata
+ *
+ * @return the number of breakpoints (size of *bp) or -1 on an error
+ */
+int wrap_line_nicely_cb(const char *text, int border, wrap_breakpoint_callback_t callback, void *udata);
+
+/**
  * Wraps a line at the given border to penalize shorter lines (as in
  * Knuth-Plass's algorithm).
  *

@@ -552,7 +552,6 @@ void wrap_text(char *text, int border)
 void wrap_line_nicely(char *text, int border)
 {
 	unsigned char *buf = (unsigned char *)text;
-	int min_cost;
 	int words;
 	int word;
 	int bps;

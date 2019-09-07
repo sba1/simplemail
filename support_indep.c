@@ -621,10 +621,12 @@ void wrap_line_nicely(char *text, int border)
 	int word;
 	int bps;
 	int len;
-	int i;
+	int i,j;
 
 	int *pos; /* position vector */
 	char *bp; /* breakpoint vector */
+	int *costs;
+	int *prev_bp; /* index to the previous break point (together, they form a line) */
 
 	border--;
 
@@ -659,14 +661,31 @@ void wrap_line_nicely(char *text, int border)
 
 	if (!(bp = (char *)malloc((words + 1) * sizeof(bp[0]))))
 	{
+		free(pos);
+		return;
+	}
+
+	if (!(prev_bp = (int *)malloc((words + 1) * sizeof(prev_bp[0]))))
+	{
+		free(pos);
 		free(bp);
 		return;
 	}
 
+	if (!(costs = (int *)malloc((words + 1) * sizeof(costs[0]))))
+	{
+		free(prev_bp);
+		free(bp);
+		free(pos);
+		return;
+	}
 
 	/* Fix start and end */
 	pos[0] = -1; /* this "emulates" a space before the first word */
 	bp[0] = 0; /* will be misused as an indicator to leave (if it is 1) */
+	prev_bp[0] = 0;
+	costs[0] = 0;
+
 	pos[words] = len;
 	bp[words] = 1; /* this forces a breakpoint at the end of the line */
 
@@ -682,7 +701,46 @@ void wrap_line_nicely(char *text, int border)
 			word++;
 		}
 	}
+#if 1
+	for (j = 1; j <= words; j++)
+	{
+		int min_cost_i = -1;
+		int min_cost = 1000000;
 
+		/* Loop over potential previous breakpoints */
+		for (i = 0; i < j; i++)
+		{
+			int mlen = border;
+			int cost;
+
+			int line_len = pos[j] - pos[i] - 1; /* don't count the trailing space */
+
+			if (line_len > mlen || costs[i] >= 1000000)
+			{
+				cost = 1000000;
+			} else
+			{
+				cost = costs[i] + (mlen - line_len) * (mlen - line_len);
+			}
+
+			if (cost <= min_cost)
+			{
+				min_cost = cost;
+				min_cost_i = i;
+			}
+		}
+		prev_bp[j] = min_cost_i;
+		costs[j] = min_cost;
+	}
+
+	j = words;
+	while (prev_bp[j])
+	{
+		text[pos[prev_bp[j]]] = '\n';
+		j = prev_bp[j];
+	}
+
+#else
 	/* Enumerate and evaluate. This is a naive implementation and not usable for
 	 * even low number of words.
 	 */
@@ -723,10 +781,13 @@ void wrap_line_nicely(char *text, int border)
 		/* Next combination, note that if the index will become 1, we'll leave */
 		add_one(bp, bps + 1);
 	}
+#endif
 
 #ifdef DEBUG_WRAP_LINE_NICELY
 	printf("OUTPUT\n%s\n", text);
 #endif
+	free(costs);
+	free(prev_bp);
 	free(pos);
 	free(bp);
 }

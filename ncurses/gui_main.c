@@ -58,10 +58,6 @@ int gui_init(void)
 
 	signal(SIGSEGV, gui_segf_handler);
 
-	initscr();
-	noecho();
-	curs_set(0);
-
 	screen_init(&gui_screen);
 	gui_screen.keys_changed = gui_screen_keys_changed;
 

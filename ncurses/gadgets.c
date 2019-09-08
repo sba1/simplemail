@@ -767,8 +767,21 @@ static void screen_init_base(struct screen *scr)
 
 /*******************************************************************************/
 
+static int ncurses_initialized;
+
+/*******************************************************************************/
+
 void screen_init(struct screen *scr)
 {
+	if (!ncurses_initialized)
+	{
+		initscr();
+		noecho();
+		curs_set(0);
+
+		ncurses_initialized = 1;
+	}
+
 	screen_init_base(scr);
 
 	{

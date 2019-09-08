@@ -860,12 +860,12 @@ int screen_handle(struct screen *scr)
 			return 0;
 		}
 
-		if (gui_screen.active)
+		if (scr->active)
 		{
 			struct gadget *g;
 
 			/* Try active gagdet first */
-			if ((g = gui_screen.active->active))
+			if ((g = scr->active->active))
 			{
 				if (g->input)
 				{

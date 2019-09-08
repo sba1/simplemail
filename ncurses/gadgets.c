@@ -3,6 +3,7 @@
  */
 
 #include "gadgets.h"
+#include "support_indep.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -345,11 +346,41 @@ int text_edit_input(struct gadget *g, int value)
 
 /******************************************************************************/
 
+struct text_edit_wrap
+{
+	int *pos;
+	int bps;
+};
+
+/**
+ * A simple callback that stores all positions.
+ */
+static void text_edit_wrap_callback(int num_breakpoints, int bp, int pos, void *udata)
+{
+	struct text_edit_wrap *wrap;
+
+	wrap = (struct text_edit_wrap *)udata;
+
+	wrap->bps = num_breakpoints;
+	if (!wrap->pos)
+	{
+		wrap->pos = (int *)malloc(sizeof(wrap->pos[0]) * num_breakpoints);
+	}
+
+	if (wrap->pos)
+	{
+		wrap->pos[bp] = pos;
+	}
+}
+
+/******************************************************************************/
+
 static void text_edit_display(struct gadget *g, struct window *win)
 {
 	struct text_edit *e = (struct text_edit *)g;
 	struct text_edit_model *m = &e->model;
 	struct string_node *s;
+	struct text_edit_wrap wrap = {};
 
 	int cx = e->cx;
 	int wx = win->g.g.r.x;
@@ -358,6 +389,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	int gy = e->g.r.y;
 	int gw = e->g.r.w;
 	int gh = e->g.r.h;
+	int line = 0;
 	int y = 0;
 
 	s = string_list_first(&m->line_list);
@@ -365,6 +397,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	while (s && y < gh)
 	{
 		int sl = strlen(s->string);
+		int bps;
 
 		/* Cursor should not appear past a line */
 		if (y == e->cy && cx > sl)
@@ -372,17 +405,51 @@ static void text_edit_display(struct gadget *g, struct window *win)
 			cx = sl;
 		}
 
-		for (int x = 0; x < gw; x++)
+		wrap.bps = -1;
+
+		if ((bps = wrap_line_nicely_cb(s->string, gw, text_edit_wrap_callback, &wrap)) >= 0)
 		{
-			void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
-			if (x == cx && y == e->cy)
+			const char *t; /* text */
+			int tx; /* text x */
+			int bp; /* breakpoint */
+
+			t = s->string;
+			tx = 0;
+
+			for (bp = 0; bp <= bps; bp++)
 			{
-				puts = win->scr->put_cursor;
+				/* Position of next breakpoint */
+				int bp_pos = bp < bps?wrap.pos[bp]:sl;
+
+				for (int x = 0; x < gw; x++)
+				{
+					const char *c; /* character to be displayed next */
+
+					void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
+					if (tx == cx && line == e->cy)
+					{
+						puts = win->scr->put_cursor;
+					}
+
+					if (tx < bp_pos)
+					{
+						c = &t[tx++];
+					} else
+					{
+						c = " ";
+					}
+					puts(win->scr, x + wx + gx, y + wy + gy, c, 1);
+				}
+				tx++; /* skip possible space */
+				y++;
 			}
-			puts(win->scr, x + wx + gx, y + wy + gy, x<sl?&s->string[x]:" ", 1);
+		} else
+		{
+			y++;
 		}
+
 		s = string_node_next(s);
-		y++;
+		line++;
 	}
 }
 

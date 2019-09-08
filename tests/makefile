@@ -251,7 +251,7 @@ $(foreach testexe,$(TESTEXES), \
 )
 
 # Separate playground for the editing component
-edit: edit.o
+edit: edit.o lib$(SIMPLEMAIL_LIB).a
 	$(CC) edit.o -o $@ -L. -l$(SIMPLEMAIL_LIB) -lncurses -Wl,--gc-sections
 
 # Now include dependencies, but don't fail if they are not available

@@ -88,75 +88,7 @@ int gui_init(void)
  */
 static void *gui_timer(void *userdata)
 {
-	int ch;
-	while ((ch = wgetch(gui_screen.handle)) != 'q')
-	{
-		if (ch == KEY_RESIZE)
-		{
-			screen_invoke_resize_listener(&gui_screen);
-			continue;
-		} else if (ch >= 0x100)
-		{
-			switch (ch)
-			{
-			case KEY_DOWN:
-				ch = GADS_KEY_DOWN;
-				break;
-			case KEY_UP:
-				ch = GADS_KEY_UP;
-				break;
-			case KEY_LEFT:
-				ch = GADS_KEY_LEFT;
-				break;
-			case KEY_RIGHT:
-				ch = GADS_KEY_RIGHT;
-				break;
-			case KEY_BACKSPACE:
-				ch = GADG_KEY_BACKSPACE;
-				break;
-			case KEY_DC:
-				ch = GADS_KEY_DELETE;
-				break;
-			default:
-				ch = GADS_KEY_NONE;
-				break;
-			}
-		}
-
-		if (ch == GADS_KEY_NONE)
-		{
-			return NULL;
-		}
-
-		if (gui_screen.active)
-		{
-			struct gadget *g;
-
-			/* Try active gagdet first */
-			if ((g = gui_screen.active->active))
-			{
-				if (g->input)
-				{
-					if (g->input(g, ch))
-					{
-						/* Redisplay the entire window */
-						/* TODO: Obviously, this can be optimized */
-						windows_display(gui_screen.active, &gui_screen);
-						continue;
-					}
-				}
-			}
-
-			/* Now invoke possible window-related listeners */
-			if (window_invoke_key_listener(gui_screen.active, ch))
-			{
-				continue;
-			}
-		}
-		screen_invoke_key_listener(&gui_screen, ch);
-	}
-
-	if (ch == 'q')
+	if (screen_handle(&gui_screen))
 	{
 		thread_abort(thread_get_main());
 	}

@@ -354,6 +354,15 @@ void screen_init(struct screen *scr);
  */
 void screen_init_in_memory(struct screen *scr, int w, int h);
 
+
+/**
+ * Handle screen events.
+ *
+ * @param scr the screen to handle.
+ * @return 1 if loop should be left.
+ */
+int screen_handle(struct screen *scr);
+
 /**
  * Add the given window to the screen.
 

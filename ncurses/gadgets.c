@@ -818,6 +818,80 @@ void screen_init_in_memory(struct screen *scr, int w, int h)
 
 /*******************************************************************************/
 
+int screen_handle(struct screen *scr)
+{
+	int ch;
+	while ((ch = wgetch(scr->handle)) != 'q')
+	{
+		if (ch == KEY_RESIZE)
+		{
+			screen_invoke_resize_listener(scr);
+			continue;
+		} else if (ch >= 0x100)
+		{
+			switch (ch)
+			{
+			case KEY_DOWN:
+				ch = GADS_KEY_DOWN;
+				break;
+			case KEY_UP:
+				ch = GADS_KEY_UP;
+				break;
+			case KEY_LEFT:
+				ch = GADS_KEY_LEFT;
+				break;
+			case KEY_RIGHT:
+				ch = GADS_KEY_RIGHT;
+				break;
+			case KEY_BACKSPACE:
+				ch = GADG_KEY_BACKSPACE;
+				break;
+			case KEY_DC:
+				ch = GADS_KEY_DELETE;
+				break;
+			default:
+				ch = GADS_KEY_NONE;
+				break;
+			}
+		}
+
+		if (ch == GADS_KEY_NONE)
+		{
+			return 0;
+		}
+
+		if (gui_screen.active)
+		{
+			struct gadget *g;
+
+			/* Try active gagdet first */
+			if ((g = gui_screen.active->active))
+			{
+				if (g->input)
+				{
+					if (g->input(g, ch))
+					{
+						/* Redisplay the entire window */
+						/* TODO: Obviously, this can be optimized */
+						windows_display(scr->active, scr);
+						continue;
+					}
+				}
+			}
+
+			/* Now invoke possible window-related listeners */
+			if (window_invoke_key_listener(scr->active, ch))
+			{
+				continue;
+			}
+		}
+		screen_invoke_key_listener(scr, ch);
+	}
+
+	return ch == 'q';
+}
+
+/*******************************************************************************/
 
 void screen_add_window(struct screen *scr, struct window *wnd)
 {

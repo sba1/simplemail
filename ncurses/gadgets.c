@@ -626,8 +626,10 @@ void windows_display(struct window *wnd, struct screen *scr)
 		scr->active = wnd;
 
 		/* Update key description since another window was activated */
-		scr->keys_changed(scr);
-
+		if (scr->keys_changed)
+		{
+			scr->keys_changed(scr);
+		}
 	}
 	wrefresh(wnd->scr->handle);
 }

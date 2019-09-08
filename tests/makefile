@@ -23,7 +23,7 @@ SSL_LDFLAGS :=  $(shell pkg-config openssl --libs)
 GTK_CFLAGS := $(shell pkg-config gtk+-x11-2.0 --cflags)
 
 CC = gcc
-CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
+CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk -I ../ncurses $(GLIB_CFLAGS) $(GTK_CFLAGS) \
 	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror -DUSE_OPENSSL \
 	-DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"'
 
@@ -248,6 +248,10 @@ endef
 $(foreach testexe,$(TESTEXES), \
  $(eval $(call helgrind.tmpl,$(testexe))) \
 )
+
+# Separate playground for the editing component
+edit: edit.o
+	$(CC) edit.o -o $@ -L. -l$(SIMPLEMAIL_LIB)
 
 # Now include dependencies, but don't fail if they are not available
 -include $(OBJS:.o=.d) $(addsuffix .d,$(TESTEXES))

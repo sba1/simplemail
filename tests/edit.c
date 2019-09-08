@@ -8,6 +8,7 @@
 
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 /******************************************************************************/
 
@@ -35,7 +36,12 @@ int main(int argc, char **argv)
 	signal(SIGSEGV, gui_segf_handler);
 
 	atexit(edit_exit);
+
 	screen_init(&scr);
 
+	while(!screen_handle(&scr))
+	{
+		usleep(10000);
+	}
 	return 0;
 }

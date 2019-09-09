@@ -225,6 +225,106 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 
 /******************************************************************************/
 
+static struct line_node *text_edit_line_list_insert_tail(struct list *l, struct string_node *s, int pos)
+{
+	struct line_node *n;
+
+	if (!(n = (struct line_node *)malloc(sizeof(*n))))
+	{
+		return NULL;
+	}
+	memset(n, 0, sizeof(*n));
+	n->pos = pos;
+	n->s = s;
+
+	list_insert_tail(l, &n->n);
+	return n;
+}
+
+/**
+ * Clean the line (view) list.
+ */
+static void text_edit_clean_line_list(struct text_edit *e)
+{
+	struct line_node *ln;
+
+	while ((ln = (struct line_node *)list_remove_tail(&e->line_list)))
+	{
+		free(ln);
+	}
+}
+
+/******************************************************************************/
+
+struct text_edit_wrap
+{
+	int *pos;
+	int bps;
+};
+
+/******************************************************************************/
+
+/**
+ * A simple callback that stores all positions.
+ */
+static void text_edit_wrap_callback(int num_breakpoints, int bp, int pos, void *udata)
+{
+	struct text_edit_wrap *wrap;
+
+	wrap = (struct text_edit_wrap *)udata;
+
+	wrap->bps = num_breakpoints;
+	if (!wrap->pos)
+	{
+		wrap->pos = (int *)malloc(sizeof(wrap->pos[0]) * num_breakpoints);
+	}
+
+	if (wrap->pos)
+	{
+		wrap->pos[bp] = pos;
+	}
+}
+
+/**
+ * Formats the model according to the current view properties, i.e., populates
+ * the gadgets line list that is used for layout purposes.
+ */
+static void text_edit_format(struct text_edit *e)
+{
+	struct text_edit_model *m = &e->model;
+	struct text_edit_wrap wrap = {};
+	struct string_node *s;
+
+	int gw = e->g.r.w;
+
+	/* Start from scratch */
+	text_edit_clean_line_list(e);
+
+	s = string_list_first(&m->line_list);
+
+	while (s)
+	{
+		int bps;
+
+		wrap.bps = -1;
+
+		if ((bps = wrap_line_nicely_cb(s->string, gw, text_edit_wrap_callback, &wrap)) >= 0)
+		{
+			int bp; /* breakpoint */
+
+			for (bp = 0; bp <= bps; bp++)
+			{
+				text_edit_line_list_insert_tail(&e->line_list, s, bp?wrap.pos[bp-1] + 1:0);
+			}
+		} else
+		{
+			text_edit_line_list_insert_tail(&e->line_list, s, 0);
+		}
+
+		s = string_node_next(s);
+	}
+}
+
 int text_edit_input(struct gadget *g, int value)
 {
 	/* The following code is not optimized yet */
@@ -346,110 +446,74 @@ int text_edit_input(struct gadget *g, int value)
 
 /******************************************************************************/
 
-struct text_edit_wrap
-{
-	int *pos;
-	int bps;
-};
-
-/**
- * A simple callback that stores all positions.
- */
-static void text_edit_wrap_callback(int num_breakpoints, int bp, int pos, void *udata)
-{
-	struct text_edit_wrap *wrap;
-
-	wrap = (struct text_edit_wrap *)udata;
-
-	wrap->bps = num_breakpoints;
-	if (!wrap->pos)
-	{
-		wrap->pos = (int *)malloc(sizeof(wrap->pos[0]) * num_breakpoints);
-	}
-
-	if (wrap->pos)
-	{
-		wrap->pos[bp] = pos;
-	}
-}
-
-/******************************************************************************/
-
 static void text_edit_display(struct gadget *g, struct window *win)
 {
 	struct text_edit *e = (struct text_edit *)g;
-	struct text_edit_model *m = &e->model;
-	struct string_node *s;
-	struct text_edit_wrap wrap = {};
 
 	int cx = e->cx;
+	int cy = e->cy;
 	int wx = win->g.g.r.x;
 	int wy = win->g.g.r.y;
 	int gx = e->g.r.x;
 	int gy = e->g.r.y;
 	int gw = e->g.r.w;
 	int gh = e->g.r.h;
-	int line = 0;
+	int line = 0, nline = 0;
 	int y = 0;
 
-	s = string_list_first(&m->line_list);
+	struct line_node *l, *nl;
 
-	while (s && y < gh)
+	text_edit_format(e);
+
+	l = (struct line_node *)list_first(&e->line_list);
+	while (l && y < gh)
 	{
-		int sl = strlen(s->string);
-		int bps;
+		int x;
+		int mx; /* max x that bears a true character */
 
-		/* Cursor should not appear past a line */
-		if (y == e->cy && cx > sl)
+		nl = (struct line_node *)node_next(&l->n);
+
+		/* Determine maximum x in this line */
+		if (nl && nl->s == l->s)
 		{
-			cx = sl;
-		}
-
-		wrap.bps = -1;
-
-		if ((bps = wrap_line_nicely_cb(s->string, gw, text_edit_wrap_callback, &wrap)) >= 0)
-		{
-			const char *t; /* text */
-			int tx; /* text x */
-			int bp; /* breakpoint */
-
-			t = s->string;
-			tx = 0;
-
-			for (bp = 0; bp <= bps; bp++)
-			{
-				/* Position of next breakpoint */
-				int bp_pos = bp < bps?wrap.pos[bp]:sl;
-
-				for (int x = 0; x < gw; x++)
-				{
-					const char *c; /* character to be displayed next */
-
-					void (*puts)(struct screen *scr, int x, int y, const char *text, int len) = win->scr->puts;
-					if (tx == cx && line == e->cy)
-					{
-						puts = win->scr->put_cursor;
-					}
-
-					if (tx < bp_pos)
-					{
-						c = &t[tx++];
-					} else
-					{
-						c = " ";
-					}
-					puts(win->scr, x + wx + gx, y + wy + gy, c, 1);
-				}
-				tx++; /* skip possible space */
-				y++;
-			}
+			/* Next displayed line is same as this, consider the breakpoint */
+			mx = nl->pos - 1;
 		} else
 		{
-			y++;
+			/* Next displayed line is a different one than this, consider line length */
+			mx = strlen(l->s->string);
+
+			/* Also increment line number for the next iteration */
+			nline = line + 1;
 		}
 
-		s = string_node_next(s);
-		line++;
+		for (x = 0; x < gw; x++)
+		{
+			const char *c; /* character to be displayed next */
+			void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
+
+			if (l->pos + x < mx)
+			{
+				c = &l->s->string[l->pos + x];
+			} else
+			{
+				c = " ";
+			}
+
+			if (l->pos + x == cx && l->pos + x <= mx && line == cy)
+			{
+				puts = win->scr->put_cursor;
+			} else
+			{
+				puts = win->scr->puts;
+			}
+
+			puts(win->scr, x + wx + gx, y + wy + gy, c, 1);
+		}
+
+		line = nline;
+		l = nl;
+		y++;
 	}
 }
 
@@ -458,14 +522,17 @@ static void text_edit_display(struct gadget *g, struct window *win)
 void gadgets_init_text_edit(struct text_edit *e)
 {
 	struct text_edit_model *m = &e->model;
+	struct string_node *s;
 
 	memset(e, 0, sizeof(*e));
 
 	gadgets_init(&e->g);
 	string_list_init(&m->line_list);
+	list_init(&e->line_list);
 
 	/* Insert first, empty line */
-	string_list_insert_tail_always(&m->line_list, "");
+	s = string_list_insert_tail_always(&m->line_list, "");
+	text_edit_line_list_insert_tail(&e->line_list, s, 0);
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;

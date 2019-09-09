@@ -152,6 +152,17 @@ struct text_edit_model
 	struct string_list line_list;
 };
 
+struct line_node
+{
+	struct node n;
+
+	/** The string_node that produces the line */
+	struct string_node *s;
+
+	/** The first position within the string node */
+	int pos;
+};
+
 /** A simple text edit field */
 struct text_edit
 {
@@ -160,6 +171,7 @@ struct text_edit
 	int yoffset;
 
 	struct text_edit_model model;
+	struct list line_list;
 
 	/* Cursor x and y position */
 	int cx, cy;

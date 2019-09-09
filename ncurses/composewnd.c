@@ -24,8 +24,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "composewnd.h"
+#include "account.h"
+#include "addresslist.h"
+#include "configuration.h"
+#include "mail.h"
+#include "support_indep.h"
 
+#include "composewnd.h"
 #include "gadgets.h"
 
 /*****************************************************************************/
@@ -54,6 +59,8 @@ int compose_window_open(struct compose_args *args)
 {
 	if (!compose_win_initialized)
 	{
+		string txt;
+
 		/* FIXME: Doesn't work with multiple windows yet */
 		windows_init(&compose_win);
 		screen_add_window(&gui_screen, &compose_win);
@@ -71,6 +78,47 @@ int compose_window_open(struct compose_args *args)
 		windows_activate_gadget(&compose_win, &compose_edit.g);
 		compose_win_initialized = 1;
 
+		string_initialize(&txt, 1000);
+
+		if (args->to_change)
+		{
+			char *from;
+
+			string_append(&txt, "From: ");
+
+			/* Find and set the correct account */
+			if ((from = mail_find_header_contents(args->to_change, "from")))
+			{
+				struct account *ac;
+
+				if ((ac = account_find_by_from(from)))
+				{
+					string_append(&txt, ac->email);
+				}
+			}
+			string_append(&txt, "\n");
+
+			string_append(&txt, "To: ");
+			if ((args->to_change->info->to_list))
+			{
+				utf8 *to_str = address_list_to_utf8_codeset_safe(args->to_change->info->to_list,user.config.default_codeset);
+				if (to_str)
+				{
+					string_append(&txt, to_str);
+					free(to_str);
+				}
+			}
+
+			string_append(&txt, "\n");
+
+			string_append(&txt, "Subject: ");
+			string_append(&txt, "\n");
+
+			string_append(&txt, "\n");
+		}
+
+		gadgets_set_text_edit_contents(&compose_edit, txt.str);
+		free(txt.str);
 		windows_add_key_listener(&compose_win, &close_listener, 'c', "Close", compose_window_close_current);
 	} else if (compose_win_removed)
 	{

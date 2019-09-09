@@ -643,7 +643,16 @@ int wrap_line_nicely_cb(const char *text, int border, wrap_breakpoint_callback_t
 				cost = 1000000;
 			} else
 			{
-				cost = costs[i] + (mlen - line_len) * (mlen - line_len);
+				/* The end of the line doesn't impose any extra costs. It is
+				 * natural that it can't be placed evenly.
+				 */
+				if (j == words)
+				{
+					cost = costs[i];
+				} else
+				{
+					cost = costs[i] + (mlen - line_len) * (mlen - line_len);
+				}
 			}
 
 			if (cost <= min_cost)

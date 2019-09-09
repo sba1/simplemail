@@ -171,7 +171,13 @@ static unsigned int breakpoint_costs(const int *pos, const char *bp, int vlen, i
 				cost = 1000000;
 			} else
 			{
-				cost += (mlen - line_len) * (mlen - line_len);
+				/* Only increase cost, if this is not the final breakpoint
+				 * (i.e., the normal line end)
+				 */
+				if (j < vlen - 1)
+				{
+					cost += (mlen - line_len) * (mlen - line_len);
+				}
 			}
 			/* Remember this break point as new last */
 			last_bp = j;
@@ -337,26 +343,26 @@ void test_wrap_line_nicely(void)
 	CU_ASSERT_STRING_EQUAL(buf,
 		"AAA BB C\n"
 		"DDDDD E\n"
-		"FFFFF G\n"
-		"HH II JJ\n"
-		"K LLLL MM\n"
-		"N OOOO\n"
-		"PPPPP QQ\n"
-		"RR SS TT\n"
-		"UUU VV WW");
+		"FFFFF G HH\n"
+		"II JJ K\n"
+		"LLLL MM N\n"
+		"OOOO PPPPP\n"
+		"QQ RR SS\n"
+		"TT UUU VV\n"
+		"WW");
 
 	strcpy(buf, txt5);
 	wrap_line_nicely(buf, 11);
 	CU_ASSERT_STRING_EQUAL(buf,
 		"AAA BB C\n"
 		"DDDDD E\n"
-		"FFFFF G\n"
-		"HH II JJ\n"
-		"K LLLL MM\n"
-		"N OOOO\n"
-		"PPPPP QQ\n"
-		"RR SS TT\n"
-		"UUU VV WW");
+		"FFFFF G HH\n"
+		"II JJ K\n"
+		"LLLL MM N\n"
+		"OOOO PPPPP\n"
+		"QQ RR SS\n"
+		"TT UUU VV\n"
+		"WW");
 }
 
 /********************************************************/

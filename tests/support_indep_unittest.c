@@ -309,24 +309,43 @@ static void wrap_line_nicely_dummy_cb(int num_breakpoints, int bp, int pos, void
 /* @Test */
 void test_wrap_line_nicely(void)
 {
+	const char *txt1 = "AAAAAA";
+	const char *txt2 = "AAAAAA BBBBBB";
+	const char *txt3 = "AAAAA BBBB";
+	const char *txt4 = "AAA BB CC DDDDD";
+	const char *txt5 = "AAA BB C DDDDD E FFFFF G HH II JJ K LLLL MM N OOOO PPPPP QQ RR SS TT UUU VV WW";
+
 	char buf[256];
 	int bps;
 
-	bps = wrap_line_nicely_cb("AAAAAA", 8, wrap_line_nicely_dummy_cb, NULL);
+	bps = wrap_line_nicely_cb(txt1, 8, wrap_line_nicely_dummy_cb, NULL);
 	CU_ASSERT_EQUAL(bps, 0);
 
-	bps = wrap_line_nicely_cb("AAAAAA BBBBBB", 8, wrap_line_nicely_dummy_cb, NULL);
+	bps = wrap_line_nicely_cb(txt2, 8, wrap_line_nicely_dummy_cb, NULL);
 	CU_ASSERT_EQUAL(bps, 1);
 
-	strcpy(buf, "AAAAA BBBB");
+	strcpy(buf, txt3);
 	wrap_line_nicely(buf, 8);
 	CU_ASSERT_STRING_EQUAL(buf, "AAAAA\nBBBB");
 
-	strcpy(buf, "AAA BB CC DDDDD");
+	strcpy(buf, txt4);
 	wrap_line_nicely(buf, 7);
 	CU_ASSERT_STRING_EQUAL(buf, "AAA\nBB CC\nDDDDD");
 
-	strcpy(buf, "AAA BB C DDDDD E FFFFF G HH II JJ K LLLL MM N OOOO PPPPP QQ RR SS TT UUU VV WW");
+	strcpy(buf, txt5);
+	wrap_line_nicely_naive(buf, 11);
+	CU_ASSERT_STRING_EQUAL(buf,
+		"AAA BB C\n"
+		"DDDDD E\n"
+		"FFFFF G\n"
+		"HH II JJ\n"
+		"K LLLL MM\n"
+		"N OOOO\n"
+		"PPPPP QQ\n"
+		"RR SS TT\n"
+		"UUU VV WW");
+
+	strcpy(buf, txt5);
 	wrap_line_nicely(buf, 11);
 	CU_ASSERT_STRING_EQUAL(buf,
 		"AAA BB C\n"

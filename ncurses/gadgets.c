@@ -559,7 +559,7 @@ void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 	while ((endl = mystrchrnul(txt, '\n')) != txt)
 	{
 		string_list_insert_tail_always_len(&l, txt, endl - txt);
-		txt = endl;
+		txt = endl + !!*endl;
 	}
 
 	string_list_clear(&m->line_list);

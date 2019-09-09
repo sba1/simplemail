@@ -175,6 +175,12 @@ struct text_edit
 
 	/* Cursor x and y position */
 	int cx, cy;
+
+	/**
+	 * @return whether the given position is editable.
+	 */
+	int (*editable)(struct text_edit *, int ch, int x, int y, void *udata);
+	void *editable_udata;
 };
 
 

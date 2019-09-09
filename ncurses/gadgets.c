@@ -341,6 +341,14 @@ int text_edit_input(struct gadget *g, int value)
 		}
 	}
 
+	if (e->editable && (value >= 32 || value == '\n' || value == GADS_KEY_DELETE || value == GADG_KEY_BACKSPACE))
+	{
+		if (!e->editable(e, value, e->cx, e->cy, e->editable_udata))
+		{
+			return 0;
+		}
+	}
+
 	if (value >= 32)
 	{
 		char *new_string;

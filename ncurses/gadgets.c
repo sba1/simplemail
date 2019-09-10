@@ -296,19 +296,39 @@ static void text_edit_format(struct text_edit *e)
 	struct string_node *s;
 
 	int gw = e->g.r.w;
+	int lines = 0;
+	int vruler_width;
+	int vw;
 
 	/* Start from scratch */
 	text_edit_clean_line_list(e);
 
+	/* count lines first */
 	s = string_list_first(&m->line_list);
+	while (s)
+	{
+		lines++;
+		s = string_node_next(s);
+	}
 
+	vruler_width = 1;
+	while (lines)
+	{
+		vruler_width++;
+		lines /= 10;
+	}
+
+	vw = gw - vruler_width;
+	e->vruler_width = vruler_width;
+
+	s = string_list_first(&m->line_list);
 	while (s)
 	{
 		int bps;
 
 		wrap.bps = -1;
 
-		if ((bps = wrap_line_nicely_cb(s->string, gw, text_edit_wrap_callback, &wrap)) >= 0)
+		if ((bps = wrap_line_nicely_cb(s->string, vw, text_edit_wrap_callback, &wrap)) >= 0)
 		{
 			int bp; /* breakpoint */
 
@@ -465,6 +485,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	int gx = e->g.r.x;
 	int gy = e->g.r.y;
 	int gw = e->g.r.w;
+	int vw = gw - e->vruler_width;
 	int gh = e->g.r.h;
 	int line = 0, nline = 0;
 	int y = 0;
@@ -476,8 +497,12 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	l = (struct line_node *)list_first(&e->line_list);
 	while (l && y < gh)
 	{
+		char lbuf[20];
 		int x;
 		int mx; /* max x that bears a true character */
+
+		snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
+		win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
 
 		nl = (struct line_node *)node_next(&l->n);
 
@@ -495,7 +520,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 			nline = line + 1;
 		}
 
-		for (x = 0; x < gw; x++)
+		for (x = 0; x < vw; x++)
 		{
 			const char *c; /* character to be displayed next */
 			void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
@@ -516,7 +541,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 				puts = win->scr->puts;
 			}
 
-			puts(win->scr, x + wx + gx, y + wy + gy, c, 1);
+			puts(win->scr, x + wx + gx + e->vruler_width, y + wy + gy, c, 1);
 		}
 
 		line = nline;

@@ -43,11 +43,16 @@ static struct group compose_group;
 static struct text_edit compose_edit;
 
 static struct key_listener send_listener;
+static struct key_listener later_listener;
 static struct key_listener close_listener;
 
 /*****************************************************************************/
 
 static void compose_window_send_current(void)
+{
+}
+
+static void compose_window_send_later_current(void)
 {
 }
 
@@ -139,6 +144,7 @@ int compose_window_open(struct compose_args *args)
 		free(txt.str);
 
 		windows_add_key_listener(&compose_win, &send_listener, 's', "Send", compose_window_send_current);
+		windows_add_key_listener(&compose_win, &later_listener, 'l', "Later", compose_window_send_later_current);
 		windows_add_key_listener(&compose_win, &close_listener, 'c', "Close", compose_window_close_current);
 	} else if (compose_win_removed)
 	{

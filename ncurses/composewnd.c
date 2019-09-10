@@ -42,7 +42,14 @@ static int compose_win_removed;
 static struct group compose_group;
 static struct text_edit compose_edit;
 
+static struct key_listener send_listener;
 static struct key_listener close_listener;
+
+/*****************************************************************************/
+
+static void compose_window_send_current(void)
+{
+}
 
 static void compose_window_close_current(void)
 {
@@ -130,6 +137,8 @@ int compose_window_open(struct compose_args *args)
 
 		gadgets_set_text_edit_contents(&compose_edit, txt.str);
 		free(txt.str);
+
+		windows_add_key_listener(&compose_win, &send_listener, 's', "Send", compose_window_send_current);
 		windows_add_key_listener(&compose_win, &close_listener, 'c', "Close", compose_window_close_current);
 	} else if (compose_win_removed)
 	{

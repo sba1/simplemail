@@ -99,13 +99,24 @@ int compose_window_open(struct compose_args *args)
 			string_append(&txt, "\n");
 
 			string_append(&txt, "To: ");
-			if ((args->to_change->info->to_list))
+			if (args->to_change->info->to_list)
 			{
 				utf8 *to_str = address_list_to_utf8_codeset_safe(args->to_change->info->to_list,user.config.default_codeset);
 				if (to_str)
 				{
 					string_append(&txt, to_str);
 					free(to_str);
+				}
+			}
+
+			if (args->to_change->info->cc_list)
+			{
+				string_append(&txt, "CC: ");
+				utf8 *cc_str = address_list_to_utf8_codeset_safe(args->to_change->info->cc_list,user.config.default_codeset);
+				if (cc_str)
+				{
+					string_append(&txt, cc_str);
+					free(cc_str);
 				}
 			}
 

@@ -158,9 +158,11 @@ static unsigned int breakpoint_costs(const int *pos, const char *bp, int vlen, i
 	/* initially, last breakpoint is before first word */
 	int last_bp = 0;
 
+	int j;
+
 	/* <= because the arrays carry one more element and we don't want
 	 * to special case that yet */
-	for (int j = 1; j < vlen; j++)
+	for (j = 1; j < vlen; j++)
 	{
 		if (bp[j])
 		{
@@ -281,13 +283,15 @@ static void wrap_line_nicely_naive(char *text, int border)
 
 		if (cost < min_cost)
 		{
+			int j;
+
 #ifdef DEBUG_WRAP_LINE_NICELY
 			printf("NEW MIN\n");
 #endif
 			min_cost = cost;
 
 			/* Now set breakpoints corresponding to the current minimal config */
-			for (int j = 1; j <= bps; j++)
+			for (j = 1; j <= bps; j++)
 			{
 				text[pos[j]] = bp[j]?'\n':' ';
 			}

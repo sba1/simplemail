@@ -1101,9 +1101,12 @@ void screen_remove_key_listener(struct screen *scr, struct key_listener *l)
 
 /*******************************************************************************/
 
-void screen_invoke_key_listener(struct screen *scr, int ch)
+int screen_invoke_key_listener(struct screen *scr, int ch)
 {
-	struct key_listener *l = (struct key_listener *)list_first(&scr->key_listeners);
+	struct key_listener *l;
+	int called = 0;
+
+	l = (struct key_listener *)list_first(&scr->key_listeners);
 	while (l)
 	{
 		struct key_listener *n;
@@ -1112,10 +1115,12 @@ void screen_invoke_key_listener(struct screen *scr, int ch)
 		if (l->ch == ch)
 		{
 			l->callback();
+			called = 1;
 		}
 
 		l = n;
 	}
+	return called;
 }
 
 /*******************************************************************************/

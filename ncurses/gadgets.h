@@ -454,8 +454,10 @@ void screen_remove_key_listener(struct screen *src, struct key_listener *l);
  *
  * @param scr the scr that contains all listeners.
  * @param ch the character value
+ *
+ * @return whether a listener has been called.
  */
-void screen_invoke_key_listener(struct screen *scr, int ch);
+int screen_invoke_key_listener(struct screen *scr, int ch);
 
 /**
  * Fill in the given buf with a description line of the current active key

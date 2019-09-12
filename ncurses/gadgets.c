@@ -956,6 +956,13 @@ int screen_handle(struct screen *scr)
 				ch = GADS_KEY_NONE;
 				break;
 			}
+		} else if (ch <= 0x1f && ch != '\n')
+		{
+			/* Try to map ctrl keys to proper char first */
+			if (screen_invoke_key_listener(scr, ch+64))
+			{
+				continue;
+			}
 		}
 
 		if (ch == GADS_KEY_NONE)

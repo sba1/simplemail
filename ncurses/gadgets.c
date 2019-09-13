@@ -500,9 +500,12 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		char lbuf[20];
 		int x;
 		int mx; /* max x that bears a true character */
+		int sl;
 
 		snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
 		win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
+
+		sl = strlen(l->s->string);
 
 		nl = (struct line_node *)node_next(&l->n);
 
@@ -514,7 +517,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		} else
 		{
 			/* Next displayed line is a different one than this, consider line length */
-			mx = strlen(l->s->string);
+			mx = sl;
 
 			/* Also increment line number for the next iteration */
 			nline = line + 1;
@@ -533,7 +536,10 @@ static void text_edit_display(struct gadget *g, struct window *win)
 				c = " ";
 			}
 
-			if (l->pos + x == cx && l->pos + x <= mx && line == cy)
+			/* If this is the character below the cursor, enable cursor mode.
+			 * We also deal here with the cursor being outside the line length.
+			 */
+			if ((l->pos + x == cx || (l->pos + x == sl && e->cx > sl)) && l->pos + x <= mx && line == cy)
 			{
 				puts = win->scr->put_cursor;
 			} else

@@ -254,5 +254,10 @@ $(foreach testexe,$(TESTEXES), \
 edit: edit.o lib$(SIMPLEMAIL_LIB).a
 	$(CC) edit.o -o $@ -L. -l$(SIMPLEMAIL_LIB) -lncurses -Wl,--gc-sections
 
+.PHONY: debug-edit
+debug-edit: edit
+	@echo run \'gdb -ex \"target remote localhost:11111\"\' for debugging
+	gdbserver :11111 edit
+
 # Now include dependencies, but don't fail if they are not available
 -include $(OBJS:.o=.d) $(addsuffix .d,$(TESTEXES))

@@ -455,6 +455,13 @@ int text_edit_input(struct gadget *g, int value)
 		if (e->cx < strlen(s->string))
 		{
 			e->cx++;
+		} else
+		{
+			if (e->cy < list_length(&m->line_list.l))
+			{
+				e->cx = 0;
+				e->cy++;
+			}
 		}
 		break;
 
@@ -462,6 +469,13 @@ int text_edit_input(struct gadget *g, int value)
 		if (e->cx)
 		{
 			e->cx--;
+		} else if (e->cy > 0)
+		{
+			struct string_node *s;
+
+			e->cy--;
+			s = string_list_find_by_index(&e->model.line_list, e->cy);
+			e->cx = strlen(s->string);
 		}
 		break;
 

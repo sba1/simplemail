@@ -33,6 +33,11 @@ struct string_node
 	char *string;
 };
 
+static inline int string_node_len(struct string_node *s)
+{
+	return strlen(s->string);
+}
+
 struct string_list
 {
 	struct list l;

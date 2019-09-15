@@ -374,7 +374,7 @@ int text_edit_input(struct gadget *g, int value)
 		char *new_string;
 		int s_len;
 
-		s_len = strlen(s->string);
+		s_len = string_node_len(s);
 		if (e->cx > s_len) e->cx = s_len;
 		if (!(new_string = malloc(s_len + 2)))
 		{
@@ -412,7 +412,7 @@ int text_edit_input(struct gadget *g, int value)
 	{
 		int s_len;
 
-		s_len = strlen(s->string);
+		s_len = string_node_len(s);
 
 		if (value == GADG_KEY_BACKSPACE)
 		{
@@ -452,7 +452,7 @@ int text_edit_input(struct gadget *g, int value)
 		break;
 
 	case GADS_KEY_RIGHT:
-		if (e->cx < strlen(s->string))
+		if (e->cx < string_node_len(s))
 		{
 			e->cx++;
 		} else
@@ -475,7 +475,7 @@ int text_edit_input(struct gadget *g, int value)
 
 			e->cy--;
 			s = string_list_find_by_index(&e->model.line_list, e->cy);
-			e->cx = strlen(s->string);
+			e->cx = string_node_len(s);
 		}
 		break;
 
@@ -519,7 +519,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
 		win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
 
-		sl = strlen(l->s->string);
+		sl = string_node_len(l->s);
 
 		nl = (struct line_node *)node_next(&l->n);
 
@@ -627,7 +627,7 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 	n = string_list_first(&m->line_list);
 	while (n)
 	{
-		l += strlen(n->string) + 1; /* plus newline */
+		l += string_node_len(n) + 1; /* plus newline */
 		n = string_node_next(n);
 	}
 
@@ -641,7 +641,7 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 	while (n)
 	{
 		strcpy(buf, n->string);
-		buf += strlen(n->string);
+		buf += string_node_len(n);
 		*buf++ = '\n';
 		n = string_node_next(n);
 	}

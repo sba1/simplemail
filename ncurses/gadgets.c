@@ -994,7 +994,7 @@ int screen_handle(struct screen *scr)
 		{
 			struct gadget *g;
 
-			/* Try active gagdet first */
+			/* Try active gadget first */
 			if ((g = scr->active->active))
 			{
 				if (g->input)

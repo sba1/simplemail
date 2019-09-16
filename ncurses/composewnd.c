@@ -48,13 +48,11 @@ static struct key_listener close_listener;
 
 /*****************************************************************************/
 
-static void compose_window_send_current(void)
+static void compose_current()
 {
 }
 
-static void compose_window_send_later_current(void)
-{
-}
+/*****************************************************************************/
 
 static void compose_window_close_current(void)
 {
@@ -63,6 +61,20 @@ static void compose_window_close_current(void)
 		screen_remove_window(&gui_screen, &compose_win);
 		compose_win_removed = 1;
 	}
+}
+
+/*****************************************************************************/
+
+static void compose_window_send_current(void)
+{
+	compose_window_close_current();
+}
+
+/*****************************************************************************/
+
+static void compose_window_send_later_current(void)
+{
+	compose_window_close_current();
 }
 
 /*****************************************************************************/

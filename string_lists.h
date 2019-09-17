@@ -27,6 +27,8 @@
 #include "lists.h"
 #endif
 
+#include <string.h>
+
 struct string_node
 {
 	struct node node; /* embedded node struct */

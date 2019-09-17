@@ -152,6 +152,7 @@ struct text_edit_model
 	struct string_list line_list;
 };
 
+/** A line as it displayed (after wrapping) */
 struct line_node
 {
 	struct node n;

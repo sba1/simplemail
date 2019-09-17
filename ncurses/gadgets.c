@@ -457,7 +457,7 @@ int text_edit_input(struct gadget *g, int value)
 			e->cx++;
 		} else
 		{
-			if (e->cy < list_length(&m->line_list.l))
+			if (e->cy + 1 < list_length(&m->line_list.l))
 			{
 				e->cx = 0;
 				e->cy++;

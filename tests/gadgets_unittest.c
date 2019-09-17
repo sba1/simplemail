@@ -26,6 +26,7 @@ void test_text_edit_enter_simple_text_works(void)
 	struct screen scr;
 	struct text_edit te;
 	char *contents;
+	int i;
 
 	screen_init_in_memory(&scr, 200, 40);
 	gadgets_init_text_edit(&te);
@@ -66,4 +67,17 @@ void test_text_edit_enter_simple_text_works(void)
 	CU_ASSERT_STRING_EQUAL("Line 1\nLine 2\n", contents);
 	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 2);
 	free(contents);
+
+	/* Move below the limit */
+	te.g.input(&te.g, GADS_KEY_DOWN);
+	te.g.input(&te.g, GADS_KEY_DOWN);
+	te.g.input(&te.g, GADS_KEY_DOWN);
+	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 2);
+
+	/* Move below the limit also via right keys */
+	for (i = 0; i < 100; i++)
+	{
+		te.g.input(&te.g, GADS_KEY_RIGHT);
+	}
+	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 2);
 }

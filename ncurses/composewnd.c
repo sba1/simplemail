@@ -79,6 +79,23 @@ static void compose_window_send_later_current(void)
 
 /*****************************************************************************/
 
+int compose_window_editable(struct text_edit *te, int ch, int x, int y, void *udata)
+{
+	if (y == 0 && x < 6)
+	{
+		return 0;
+	}
+
+	if (y == 1 && x < 4)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 int compose_window_open(struct compose_args *args)
 {
 	if (!compose_win_initialized)
@@ -101,6 +118,7 @@ int compose_window_open(struct compose_args *args)
 
 		windows_activate_gadget(&compose_win, &compose_edit.g);
 		compose_win_initialized = 1;
+		compose_edit.editable = compose_window_editable;
 
 		string_initialize(&txt, 1000);
 

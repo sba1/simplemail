@@ -104,11 +104,11 @@ int compose_window_open(struct compose_args *args)
 
 		string_initialize(&txt, 1000);
 
+		string_append(&txt, "From: ");
+
 		if (args->to_change)
 		{
 			char *from;
-
-			string_append(&txt, "From: ");
 
 			/* Find and set the correct account */
 			if ((from = mail_find_header_contents(args->to_change, "from")))
@@ -120,9 +120,13 @@ int compose_window_open(struct compose_args *args)
 					string_append(&txt, ac->email);
 				}
 			}
-			string_append(&txt, "\n");
+		}
+		string_append(&txt, "\n");
 
-			string_append(&txt, "To: ");
+		string_append(&txt, "To: ");
+
+		if (args->to_change)
+		{
 			if (args->to_change->info->to_list)
 			{
 				utf8 *to_str;
@@ -133,7 +137,12 @@ int compose_window_open(struct compose_args *args)
 					free(to_str);
 				}
 			}
+		}
 
+		string_append(&txt, "\n");
+
+		if (args->to_change)
+		{
 			if (args->to_change->info->cc_list)
 			{
 				utf8 *cc_str;

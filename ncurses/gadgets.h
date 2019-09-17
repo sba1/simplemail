@@ -288,6 +288,10 @@ void gadgets_init_text_edit(struct text_edit *e);
  */
 char *gadgets_get_text_edit_contents(const struct text_edit *e);
 
+/**
+ * @return the number of lines that are currently edited.
+ */
+int gadgets_get_text_edit_number_of_lines(const struct text_edit *e);
 
 /**
  * Set the full contents of the text editor.

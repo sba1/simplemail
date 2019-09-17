@@ -652,6 +652,13 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 
 /******************************************************************************/
 
+int gadgets_get_text_edit_number_of_lines(const struct text_edit *e)
+{
+	return string_list_length(&e->model.line_list);
+}
+
+/******************************************************************************/
+
 /**
  * Callback called when displaying a list view.
  */

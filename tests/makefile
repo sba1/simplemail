@@ -251,6 +251,9 @@ $(foreach testexe,$(TESTEXES), \
 )
 
 # Separate playground for the editing component
+edit.o: edit.c
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
 edit: edit.o lib$(SIMPLEMAIL_LIB).a
 	$(CC) edit.o -o $@ -L. -l$(SIMPLEMAIL_LIB) -lncurses -Wl,--gc-sections
 
@@ -260,4 +263,4 @@ debug-edit: edit
 	gdbserver :11111 edit
 
 # Now include dependencies, but don't fail if they are not available
--include $(OBJS:.o=.d) $(addsuffix .d,$(TESTEXES))
+-include $(OBJS:.o=.d) $(addsuffix .d,$(TESTEXES)) edit.d

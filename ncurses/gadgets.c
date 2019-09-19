@@ -311,11 +311,17 @@ static void text_edit_format(struct text_edit *e)
 		s = string_node_next(s);
 	}
 
-	vruler_width = 1;
-	while (lines)
+	if (e->display_line_numbers)
 	{
-		vruler_width++;
-		lines /= 10;
+		vruler_width = 1;
+		while (lines)
+		{
+			vruler_width++;
+			lines /= 10;
+		}
+	} else
+	{
+		vruler_width = 0;
 	}
 
 	vw = gw - vruler_width;
@@ -516,8 +522,11 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		int mx; /* max x that bears a true character */
 		int sl;
 
-		snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
-		win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
+		if (e->vruler_width)
+		{
+			snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
+			win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
+		}
 
 		sl = string_node_len(l->s);
 

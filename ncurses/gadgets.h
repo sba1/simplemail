@@ -179,6 +179,9 @@ struct text_edit
 	/* Cursor x and y position */
 	int cx, cy;
 
+	/** If line numbers shall be displayed */
+	int display_line_numbers;
+
 	/**
 	 * @return whether the given position is editable.
 	 */

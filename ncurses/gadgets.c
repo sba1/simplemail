@@ -248,7 +248,7 @@ static void text_edit_clean_line_list(struct text_edit *e)
 {
 	struct line_node *ln;
 
-	while ((ln = (struct line_node *)list_remove_tail(&e->line_list)))
+	while ((ln = (struct line_node *)list_remove_tail(&e->formatted_line_list)))
 	{
 		free(ln);
 	}
@@ -340,11 +340,11 @@ static void text_edit_format(struct text_edit *e)
 
 			for (bp = 0; bp <= bps; bp++)
 			{
-				text_edit_line_list_insert_tail(&e->line_list, s, bp?wrap.pos[bp-1] + 1:0);
+				text_edit_line_list_insert_tail(&e->formatted_line_list, s, bp?wrap.pos[bp-1] + 1:0);
 			}
 		} else
 		{
-			text_edit_line_list_insert_tail(&e->line_list, s, 0);
+			text_edit_line_list_insert_tail(&e->formatted_line_list, s, 0);
 		}
 
 		s = string_node_next(s);
@@ -514,7 +514,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 
 	text_edit_format(e);
 
-	l = (struct line_node *)list_first(&e->line_list);
+	l = (struct line_node *)list_first(&e->formatted_line_list);
 	while (l && y < gh)
 	{
 		char lbuf[20];
@@ -590,11 +590,11 @@ void gadgets_init_text_edit(struct text_edit *e)
 
 	gadgets_init(&e->g);
 	string_list_init(&m->line_list);
-	list_init(&e->line_list);
+	list_init(&e->formatted_line_list);
 
 	/* Insert first, empty line */
 	s = string_list_insert_tail_always(&m->line_list, "");
-	text_edit_line_list_insert_tail(&e->line_list, s, 0);
+	text_edit_line_list_insert_tail(&e->formatted_line_list, s, 0);
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;

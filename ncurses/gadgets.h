@@ -173,7 +173,7 @@ struct text_edit
 
 	struct text_edit_model model;
 
-	struct list line_list;
+	struct list formatted_line_list;
 	int vruler_width;
 
 	/* Cursor x and y position */

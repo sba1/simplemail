@@ -988,6 +988,13 @@ int screen_handle(struct screen *scr)
 			case KEY_DC:
 				ch = GADS_KEY_DELETE;
 				break;
+			case KEY_BEG:
+				ch = GADS_KEY_BEGIN;
+				break;
+			case KEY_END:
+				ch = GADS_KEY_END;
+				break;
+
 			default:
 				ch = GADS_KEY_NONE;
 				break;

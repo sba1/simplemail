@@ -47,6 +47,8 @@ struct group
 #define GADS_KEY_LEFT -5
 #define GADS_KEY_DELETE -6
 #define GADG_KEY_BACKSPACE -7
+#define GADS_KEY_BEGIN -8
+#define GADS_KEY_END -9
 
 struct key_listener
 {

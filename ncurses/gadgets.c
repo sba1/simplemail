@@ -485,6 +485,10 @@ int text_edit_input(struct gadget *g, int value)
 		}
 		break;
 
+	case GADS_KEY_BEGIN:
+		e->cx = 0;
+		break;
+
 	default:
 		return 0;
 	}

@@ -489,6 +489,16 @@ int text_edit_input(struct gadget *g, int value)
 		e->cx = 0;
 		break;
 
+	case GADS_KEY_END:
+		{
+			struct string_node *s;
+			if ((s = string_list_find_by_index(&e->model.line_list, e->cy)))
+			{
+				e->cx = strlen(s->string);
+			}
+		}
+		break;
+
 	default:
 		return 0;
 	}

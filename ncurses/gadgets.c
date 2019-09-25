@@ -485,7 +485,7 @@ int text_edit_input(struct gadget *g, int value)
 		}
 		break;
 
-	case GADS_KEY_BEGIN:
+	case GADS_KEY_HOME:
 		e->cx = 0;
 		break;
 
@@ -1002,8 +1002,8 @@ int screen_handle(struct screen *scr)
 			case KEY_DC:
 				ch = GADS_KEY_DELETE;
 				break;
-			case KEY_BEG:
-				ch = GADS_KEY_BEGIN;
+			case KEY_HOME:
+				ch = GADS_KEY_HOME;
 				break;
 			case KEY_END:
 				ch = GADS_KEY_END;

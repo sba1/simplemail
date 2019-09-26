@@ -86,4 +86,8 @@ void test_text_edit_enter_simple_text_works(void)
 		te.g.input(&te.g, GADS_KEY_RIGHT);
 	}
 	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 2);
+
+	/* Empty line at the end */
+	te.g.input(&te.g, '\n');
+	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 3);
 }

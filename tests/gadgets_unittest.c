@@ -74,7 +74,7 @@ void test_text_edit_enter_simple_text_works(void)
 	te.g.input(&te.g, GADS_KEY_DOWN);
 	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 2);
 
-	te.g.input(&te.g, GADS_KEY_BEGIN);
+	te.g.input(&te.g, GADS_KEY_HOME);
 	CU_ASSERT_EQUAL(te.cx, 0);
 
 	te.g.input(&te.g, GADS_KEY_END);

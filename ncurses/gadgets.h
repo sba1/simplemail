@@ -149,9 +149,36 @@ struct text_view
 	struct simple_text_label tl;
 };
 
+struct style
+{
+	unsigned char underline;
+};
+
+typedef struct style style_t;
+
+/** Holds style information for a single part of a line */
+struct style_node
+{
+	struct node n;
+	int len;
+	style_t style;
+};
+
+/** Node for each line that contains style_nodes */
+struct style_line_node
+{
+	struct node n;
+
+	/* List of lines */
+	struct list styles;
+};
+
 struct text_edit_model
 {
 	struct string_list line_list;
+
+	/** Members are style_line_nodes */
+	struct list styles;
 };
 
 /** A line as it displayed (after wrapping) */
@@ -180,6 +207,9 @@ struct text_edit
 
 	/* Cursor x and y position */
 	int cx, cy;
+
+	/* Current style */
+	style_t cs;
 
 	/** If line numbers shall be displayed */
 	int display_line_numbers;

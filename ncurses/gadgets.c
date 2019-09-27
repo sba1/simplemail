@@ -604,6 +604,7 @@ void gadgets_init_text_edit(struct text_edit *e)
 
 	gadgets_init(&e->g);
 	string_list_init(&m->line_list);
+	list_init(&m->styles);
 	list_init(&e->formatted_line_list);
 
 	/* Insert first, empty line */

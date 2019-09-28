@@ -351,11 +351,26 @@ static void text_edit_format(struct text_edit *e)
 	}
 }
 
+/**
+ * Find the given style node by index.
+ *
+ * @param l the style list
+ * @param idx the index of the style line node.
+ * @return the style line node or NULL.
+ */
+static struct style_line_node *style_list_find_by_index(struct list *l, int idx)
+{
+	return (struct style_line_node *)list_find(l, idx);
+}
+
+/******************************************************************************/
+
 int text_edit_input(struct gadget *g, int value)
 {
 	/* The following code is not optimized yet */
 	struct text_edit *e = (struct text_edit *)g;
 	struct text_edit_model *m = &e->model;
+	struct style_line_node *sln;
 	struct string_node *s;
 
 	while (!(s = string_list_find_by_index(&m->line_list, e->cy)))
@@ -365,6 +380,15 @@ int text_edit_input(struct gadget *g, int value)
 			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
 		}
+	}
+
+	while (!(sln = style_list_find_by_index(&m->styles, e->cy)))
+	{
+		if (!(sln = malloc(sizeof(*sln))))
+		{
+			return 0;
+		}
+		list_insert_tail(&m->styles, &sln->n);
 	}
 
 	if (e->editable && (value >= 32 || value == '\n' || value == GADS_KEY_DELETE || value == GADG_KEY_BACKSPACE))

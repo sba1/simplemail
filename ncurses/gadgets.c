@@ -388,6 +388,8 @@ int text_edit_input(struct gadget *g, int value)
 		{
 			return 0;
 		}
+		memset(sln, 0, sizeof(*sln));
+		list_init(&sln->styles);
 		list_insert_tail(&m->styles, &sln->n);
 	}
 

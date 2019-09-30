@@ -157,6 +157,8 @@ void gadgets_set_extend(struct gadget *g, int x, int y, int w, int h)
 
 void gadgets_init_group(struct group *g)
 {
+	memset(g, 0, sizeof(*g));
+
 	gadgets_init(&g->g);
 
 	list_init(&g->l);
@@ -181,6 +183,8 @@ void gadgets_remove(struct gadget *gad)
 
 void gadgets_init_simple_text_label(struct simple_text_label *l, const char *text)
 {
+	memset(l, 0, sizeof(*l));
+
 	gadgets_init(&l->tl.g);
 
 	l->tl.xoffset = l->tl.yoffset = 0;
@@ -209,6 +213,8 @@ void gadgets_set_label_text(struct simple_text_label *l, const char *text)
 void gadgets_init_text_view(struct text_view *v, const char *text)
 {
 	char *buf;
+
+	memset(v, 0, sizeof(*v));
 
 	gadgets_init(&v->tl.tl.g);
 
@@ -765,6 +771,8 @@ static void listview_display(struct gadget *g, struct window *win)
 
 void gadgets_init_listview(struct listview *v, void (*render)(int pos, char *buf, int bufsize))
 {
+	memset(v, 0, sizeof(*v));
+
 	gadgets_init(&v->g);
 	v->active = -1;
 	v->rows = 0;

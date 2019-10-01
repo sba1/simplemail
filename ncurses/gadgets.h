@@ -173,6 +173,16 @@ struct style_line_node
 	struct list styles;
 };
 
+/** Node for lines */
+struct line
+{
+	struct node n;
+
+	char *contents;
+
+	struct list styles;
+};
+
 struct text_edit_model
 {
 	struct string_list line_list;

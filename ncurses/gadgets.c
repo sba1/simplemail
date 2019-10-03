@@ -231,11 +231,11 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 
 /******************************************************************************/
 
-static struct line_node *text_edit_line_list_insert_tail(struct list *l, struct string_node *s, int pos)
+static struct formatted_line_node *text_edit_line_list_insert_tail(struct list *l, struct string_node *s, int pos)
 {
-	struct line_node *n;
+	struct formatted_line_node *n;
 
-	if (!(n = (struct line_node *)malloc(sizeof(*n))))
+	if (!(n = (struct formatted_line_node *)malloc(sizeof(*n))))
 	{
 		return NULL;
 	}
@@ -252,9 +252,9 @@ static struct line_node *text_edit_line_list_insert_tail(struct list *l, struct 
  */
 static void text_edit_clean_line_list(struct text_edit *e)
 {
-	struct line_node *ln;
+	struct formatted_line_node *ln;
 
-	while ((ln = (struct line_node *)list_remove_tail(&e->formatted_line_list)))
+	while ((ln = (struct formatted_line_node *)list_remove_tail(&e->formatted_line_list)))
 	{
 		free(ln);
 	}
@@ -556,11 +556,11 @@ static void text_edit_display(struct gadget *g, struct window *win)
 	int line = 0, nline = 0;
 	int y = 0;
 
-	struct line_node *l, *nl;
+	struct formatted_line_node *l, *nl;
 
 	text_edit_format(e);
 
-	l = (struct line_node *)list_first(&e->formatted_line_list);
+	l = (struct formatted_line_node *)list_first(&e->formatted_line_list);
 	while (l && y < gh)
 	{
 		char lbuf[20];
@@ -576,7 +576,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 
 		sl = string_node_len(l->s);
 
-		nl = (struct line_node *)node_next(&l->n);
+		nl = (struct formatted_line_node *)node_next(&l->n);
 
 		/* Determine maximum x in this line */
 		if (nl && nl->s == l->s)

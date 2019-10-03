@@ -192,7 +192,7 @@ struct text_edit_model
 };
 
 /** A line as it displayed (after wrapping) */
-struct line_node
+struct formatted_line_node
 {
 	struct node n;
 

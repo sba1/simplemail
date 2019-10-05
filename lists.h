@@ -83,7 +83,7 @@ struct node *list_remove_tail(struct list *list);
  * @param num defines the index of the list element to be returned
  * @return the entry or NULL if the list doesn't contain that much entries.
  */
-struct node *list_find(struct list *list, int num);
+struct node *list_find(const struct list *list, int num);
 
 /**
  * Returns the length of the list, i.e., counts the number of nodes it contains.

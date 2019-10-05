@@ -122,7 +122,7 @@ struct node *list_last(const struct list *list)
 
 /*****************************************************************************/
 
-struct node *list_find(struct list *list, int num)
+struct node *list_find(const struct list *list, int num)
 {
   struct node *n = list_first(list);
   while (n)

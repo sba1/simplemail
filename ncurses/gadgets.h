@@ -183,12 +183,14 @@ struct line
 	struct list styles;
 };
 
+struct line_list
+{
+	struct list l;
+};
+
 struct text_edit_model
 {
-	struct string_list line_list;
-
-	/** Members are style_line_nodes */
-	struct list styles;
+	struct line_list line_list;
 };
 
 /** A line as it displayed (after wrapping) */
@@ -197,7 +199,7 @@ struct formatted_line_node
 	struct node n;
 
 	/** The string_node that produces the line */
-	struct string_node *s;
+	struct line *l;
 
 	/** The first position within the string node */
 	int pos;

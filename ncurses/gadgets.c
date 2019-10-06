@@ -231,10 +231,98 @@ void gadgets_init_text_view(struct text_view *v, const char *text)
 
 /******************************************************************************/
 
+static struct line *line_first(const struct line_list *list)
+{
+	return (struct line *)list_first(&list->l);
+}
+
+static struct line *line_next(struct line *line)
+{
+	return (struct line *)node_next(&line->n);
+}
+
+static struct line *line_find(const struct line_list *list, int index)
+{
+	return (struct line *)list_find(&list->l, index);
+}
+
+static struct line *line_remove_tail(struct line_list *list)
+{
+	return (struct line *)list_remove_tail(&list->l);
+}
+
+static void line_insert_after(struct line_list *l, struct line *new, struct line *pred)
+{
+	list_insert(&l->l, &new->n, &pred->n);
+}
+
+static struct line *line_insert_tail(struct line_list *list, const char *str)
+{
+	struct line *line;
+	if (!(line = (struct line *)malloc(sizeof(*line))))
+	{
+		return NULL;
+	}
+	memset(line, 0, sizeof(*line));
+	list_init(&line->styles);
+	if (!(line->contents = (char *)malloc(strlen(str) + 1)))
+	{
+		free(line);
+		return NULL;
+	}
+	strcpy(line->contents, str);
+	list_insert_tail(&list->l, &line->n);
+	return line;
+}
+
+static struct line *line_insert_tail_len(struct line_list *list, const char *str, int len)
+{
+	struct line *l;
+
+	if (!(l = line_insert_tail(list, "")))
+	{
+		return NULL;
+	}
+	free(l->contents);
+	if (!(l->contents = (char *)malloc(len + 1)))
+	{
+		free(l);
+		return NULL;
+	}
+	strncpy(l->contents, str, len);
+	l->contents[len] = 0;
+	return l;
+}
+
+static int line_len(const struct line *line)
+{
+	return strlen(line->contents);
+}
+
+static void line_clear(struct line_list *list)
+{
+	struct line *node;
+	while ((node = line_remove_tail(list)))
+	{
+		if (node->contents) free(node->contents);
+		free(node);
+	}
+}
+
+static void line_exchange(struct line_list *a, struct line_list *b)
+{
+	struct line_list t;
+
+	t = *a;
+	*a = *b;
+	*b = t;
+}
+
+
 /**
  * Insert new formatted line starting at pos into the given list.
  */
-static struct formatted_line_node *text_edit_formatted_line_list_insert_tail(struct list *l, struct string_node *s, int pos)
+static struct formatted_line_node *text_edit_formatted_line_list_insert_tail(struct list *list, struct line *line, int pos)
 {
 	struct formatted_line_node *n;
 
@@ -244,9 +332,9 @@ static struct formatted_line_node *text_edit_formatted_line_list_insert_tail(str
 	}
 	memset(n, 0, sizeof(*n));
 	n->pos = pos;
-	n->s = s;
+	n->l = line;
 
-	list_insert_tail(l, &n->n);
+	list_insert_tail(list, &n->n);
 	return n;
 }
 
@@ -302,7 +390,7 @@ static void text_edit_format(struct text_edit *e)
 {
 	struct text_edit_model *m = &e->model;
 	struct text_edit_wrap wrap = {};
-	struct string_node *s;
+	struct line *line;
 
 	int gw = e->g.r.w;
 	int lines = 0;
@@ -313,11 +401,11 @@ static void text_edit_format(struct text_edit *e)
 	text_edit_clean_formatted_line_list(e);
 
 	/* count lines first */
-	s = string_list_first(&m->line_list);
-	while (s)
+	line = line_first(&m->line_list);
+	while (line)
 	{
 		lines++;
-		s = string_node_next(s);
+		line = line_next(line);
 	}
 
 	if (e->display_line_numbers)
@@ -336,40 +424,28 @@ static void text_edit_format(struct text_edit *e)
 	vw = gw - vruler_width;
 	e->vruler_width = vruler_width;
 
-	s = string_list_first(&m->line_list);
-	while (s)
+	line = line_first(&m->line_list);
+	while (line)
 	{
 		int bps;
 
 		wrap.bps = -1;
 
-		if ((bps = wrap_line_nicely_cb(s->string, vw, text_edit_wrap_callback, &wrap)) >= 0)
+		if ((bps = wrap_line_nicely_cb(line->contents, vw, text_edit_wrap_callback, &wrap)) >= 0)
 		{
 			int bp; /* breakpoint */
 
 			for (bp = 0; bp <= bps; bp++)
 			{
-				text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, s, bp?wrap.pos[bp-1] + 1:0);
+				text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, line, bp?wrap.pos[bp-1] + 1:0);
 			}
 		} else
 		{
-			text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, s, 0);
+			text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, line, 0);
 		}
 
-		s = string_node_next(s);
+		line = line_next(line);
 	}
-}
-
-/**
- * Find the given style node by index.
- *
- * @param l the style list
- * @param idx the index of the style line node.
- * @return the style line node or NULL.
- */
-static struct style_line_node *style_list_find_by_index(struct list *l, int idx)
-{
-	return (struct style_line_node *)list_find(l, idx);
 }
 
 /******************************************************************************/
@@ -379,27 +455,15 @@ int text_edit_input(struct gadget *g, int value)
 	/* The following code is not optimized yet */
 	struct text_edit *e = (struct text_edit *)g;
 	struct text_edit_model *m = &e->model;
-	struct style_line_node *sln;
-	struct string_node *s;
+	struct line *line;
 
-	while (!(s = string_list_find_by_index(&m->line_list, e->cy)))
+	while (!(line = line_find(&m->line_list, e->cy)))
 	{
-		if (!string_list_insert_tail_always(&m->line_list, ""))
+		if (!line_insert_tail(&m->line_list, ""))
 		{
 			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
 		}
-	}
-
-	while (!(sln = style_list_find_by_index(&m->styles, e->cy)))
-	{
-		if (!(sln = malloc(sizeof(*sln))))
-		{
-			return 0;
-		}
-		memset(sln, 0, sizeof(*sln));
-		list_init(&sln->styles);
-		list_insert_tail(&m->styles, &sln->n);
 	}
 
 	if (e->editable && (value >= 32 || value == '\n' || value == GADS_KEY_DELETE || value == GADG_KEY_BACKSPACE))
@@ -415,37 +479,37 @@ int text_edit_input(struct gadget *g, int value)
 		char *new_string;
 		int s_len;
 
-		s_len = string_node_len(s);
+		s_len = line_len(line);
 		if (e->cx > s_len) e->cx = s_len;
 		if (!(new_string = malloc(s_len + 2)))
 		{
 			return 0;
 		}
-		strncpy(new_string, s->string, e->cx);
-		strcpy(&new_string[e->cx + 1], &s->string[e->cx]);
+		strncpy(new_string, line->contents, e->cx);
+		strcpy(&new_string[e->cx + 1], &line->contents[e->cx]);
 		new_string[e->cx++] = value;
-		free(s->string);
-		s->string = new_string;
+		free(line->contents);
+		line->contents = new_string;
 		g->flags |= GADF_REDRAW_UPDATE;
 		return 1;
 	}
 
 	if (value == '\n')
 	{
-		struct string_node *new_node;
+		struct line *new_node;
 
-		if (!(new_node = string_list_insert_tail_always(&m->line_list, &s->string[e->cx])))
+		if (!(new_node = line_insert_tail(&m->line_list, &line->contents[e->cx])))
 		{
 			/* Reject input in failure case (this is probably not a good idea) */
 			return 0;
 		}
-		s->string[e->cx] = 0;
+		line->contents[e->cx] = 0;
 		e->cx = 0;
 		e->cy++;
 
 		/* Remove tail again (we just misused it) and insert at the proper pos */
-		string_list_remove_tail(&m->line_list);
-		string_list_insert_after(&m->line_list, new_node, s);
+		line_remove_tail(&m->line_list);
+		line_insert_after(&m->line_list, new_node, line);
 		return 1;
 	}
 
@@ -453,7 +517,7 @@ int text_edit_input(struct gadget *g, int value)
 	{
 		int s_len;
 
-		s_len = string_node_len(s);
+		s_len = line_len(line);
 
 		if (value == GADG_KEY_BACKSPACE)
 		{
@@ -468,7 +532,7 @@ int text_edit_input(struct gadget *g, int value)
 
 		if (e->cx < s_len)
 		{
-			memmove(&s->string[e->cx], &s->string[e->cx + 1], strlen(&s->string[e->cx + 1]) + 1);
+			memmove(&line->contents[e->cx], &line->contents[e->cx + 1], strlen(&line->contents[e->cx + 1]) + 1);
 		} else
 		{
 			e->cx = s_len;
@@ -493,7 +557,7 @@ int text_edit_input(struct gadget *g, int value)
 		break;
 
 	case GADS_KEY_RIGHT:
-		if (e->cx < string_node_len(s))
+		if (e->cx < line_len(line))
 		{
 			e->cx++;
 		} else
@@ -512,11 +576,11 @@ int text_edit_input(struct gadget *g, int value)
 			e->cx--;
 		} else if (e->cy > 0)
 		{
-			struct string_node *s;
+			struct line *l;
 
 			e->cy--;
-			s = string_list_find_by_index(&e->model.line_list, e->cy);
-			e->cx = string_node_len(s);
+			l = line_find(&e->model.line_list, e->cy);
+			e->cx = line_len(l);
 		}
 		break;
 
@@ -526,10 +590,10 @@ int text_edit_input(struct gadget *g, int value)
 
 	case GADS_KEY_END:
 		{
-			struct string_node *s;
-			if ((s = string_list_find_by_index(&e->model.line_list, e->cy)))
+			struct line *l;
+			if ((l = line_find(&e->model.line_list, e->cy)))
 			{
-				e->cx = strlen(s->string);
+				e->cx = line_len(l);
 			}
 		}
 		break;
@@ -577,12 +641,12 @@ static void text_edit_display(struct gadget *g, struct window *win)
 			win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
 		}
 
-		sl = string_node_len(l->s);
+		sl = line_len(l->l);
 
 		nl = (struct formatted_line_node *)node_next(&l->n);
 
 		/* Determine maximum x in this line */
-		if (nl && nl->s == l->s)
+		if (nl && nl->l == l->l)
 		{
 			/* Next displayed line is same as this, consider the breakpoint */
 			mx = nl->pos - 1;
@@ -602,7 +666,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 
 			if (l->pos + x < mx)
 			{
-				c = &l->s->string[l->pos + x];
+				c = &l->l->contents[l->pos + x];
 			} else
 			{
 				c = " ";
@@ -633,18 +697,17 @@ static void text_edit_display(struct gadget *g, struct window *win)
 void gadgets_init_text_edit(struct text_edit *e)
 {
 	struct text_edit_model *m = &e->model;
-	struct string_node *s;
+	struct line *l;
 
 	memset(e, 0, sizeof(*e));
 
 	gadgets_init(&e->g);
-	string_list_init(&m->line_list);
-	list_init(&m->styles);
+	list_init(&m->line_list.l);
 	list_init(&e->formatted_line_list);
 
 	/* Insert first, empty line */
-	s = string_list_insert_tail_always(&m->line_list, "");
-	text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, s, 0);
+	l = line_insert_tail(&m->line_list, "");
+	text_edit_formatted_line_list_insert_tail(&e->formatted_line_list, l, 0);
 
 	e->g.input = text_edit_input;
 	e->g.display = text_edit_display;
@@ -655,19 +718,19 @@ void gadgets_init_text_edit(struct text_edit *e)
 void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 {
 	struct text_edit_model *m = &e->model;
-	struct string_list l;
+	struct line_list l;
 	const char *endl;
 
-	string_list_init(&l);
+	list_init(&l.l);
 
 	while ((endl = mystrchrnul(txt, '\n')) != txt)
 	{
-		string_list_insert_tail_always_len(&l, txt, endl - txt);
+		line_insert_tail_len(&l, txt, endl - txt);
 		txt = endl + !!*endl;
 	}
 
-	string_list_clear(&m->line_list);
-	string_list_exchange(&l, &m->line_list);
+	line_clear(&m->line_list);
+	line_exchange(&l, &m->line_list);
 
 	e->g.flags |= GADF_REDRAW_UPDATE;
 }
@@ -677,17 +740,17 @@ void gadgets_set_text_edit_contents(struct text_edit *e, const char *txt)
 char *gadgets_get_text_edit_contents(const struct text_edit *e)
 {
 	const struct text_edit_model *m = &e->model;
-	struct string_node *n;
+	struct line *n;
 	char *str, *buf;
 	int l;
 
 	/* Determine length first */
 	l = 0;
-	n = string_list_first(&m->line_list);
+	n = line_first(&m->line_list);
 	while (n)
 	{
-		l += string_node_len(n) + 1; /* plus newline */
-		n = string_node_next(n);
+		l += line_len(n) + 1; /* plus newline */
+		n = line_next(n);
 	}
 
 	if (!(str = (char *)malloc(l + 1))) /* plus null byte */
@@ -696,13 +759,13 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 	}
 
 	buf = str;
-	n = string_list_first(&m->line_list);
+	n = line_first(&m->line_list);
 	while (n)
 	{
-		strcpy(buf, n->string);
-		buf += string_node_len(n);
+		strcpy(buf, n->contents);
+		buf += line_len(n);
 		*buf++ = '\n';
-		n = string_node_next(n);
+		n = line_next(n);
 	}
 	*buf = 0;
 
@@ -713,7 +776,7 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 
 int gadgets_get_text_edit_number_of_lines(const struct text_edit *e)
 {
-	return string_list_length(&e->model.line_list);
+	return list_length(&e->model.line_list.l);
 }
 
 /******************************************************************************/

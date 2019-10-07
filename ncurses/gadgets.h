@@ -164,15 +164,6 @@ struct style_node
 	style_t style;
 };
 
-/** Node for each line that contains style_nodes */
-struct style_line_node
-{
-	struct node n;
-
-	/* List of lines */
-	struct list styles;
-};
-
 /** Node for lines */
 struct line
 {
@@ -180,6 +171,7 @@ struct line
 
 	char *contents;
 
+	/* Container of style_node(s) */
 	struct list styles;
 };
 

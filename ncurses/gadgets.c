@@ -304,7 +304,13 @@ static void line_clear(struct line_list *list)
 	struct line *node;
 	while ((node = line_remove_tail(list)))
 	{
-		if (node->contents) free(node->contents);
+		struct style_node *sn;
+
+		while ((sn = (struct style_node *)list_remove_tail(&node->styles)))
+		{
+			free(sn);
+		}
+		free(node->contents);
 		free(node);
 	}
 }

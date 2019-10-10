@@ -4,6 +4,7 @@
 
 #include "gadgets.h"
 #include "support_indep.h"
+#include "text_edit_helper.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -322,35 +323,6 @@ static void line_exchange(struct line_list *a, struct line_list *b)
 	t = *a;
 	*a = *b;
 	*b = t;
-}
-
-/**
- * Return the style at the given position of the line.
- *
- * @param l the line for which the style shall be returned.
- * @param pos the position for which the style should be returned.
- * @return the style at pos
- */
-static style_t line_style_at(struct line *l, int pos)
-{
-	struct style_node *n;
-	style_t s = {};
-	int cur = 0;
-
-	n = (struct style_node *)list_first(&l->styles);
-	while (n)
-	{
-		s = n->style;
-		cur += n->len;
-
-		if (cur > pos)
-		{
-			break;
-		}
-
-		n = (struct style_node *)node_next(&n->n);
-	}
-	return s;
 }
 
 /**

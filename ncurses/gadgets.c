@@ -35,6 +35,10 @@ static const char *mystrchrnul(const char *s, int c)
 
 /******************************************************************************/
 
+static const style_t normal_style;
+
+/******************************************************************************/
+
 /**
  * Initializes the base structure of the gadget.
  */
@@ -101,7 +105,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 		{
 			txt += xoffset;
 			txt_len -= xoffset;
-			win->scr->puts(win->scr, dx + x, dy + y + oy, txt, endl - txt);
+			win->scr->puts(win->scr, dx + x, dy + y + oy, txt, endl - txt, normal_style);
 		} else
 		{
 			txt_len = 0;
@@ -109,7 +113,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 		for (i = txt_len; i < w; i++)
 		{
-			win->scr->puts(win->scr, dx + i, dy + y + oy, " ", 1);
+			win->scr->puts(win->scr, dx + i, dy + y + oy, " ", 1, normal_style);
 		}
 		txt = endl + !!(*endl);
 		oy++;
@@ -122,7 +126,7 @@ static void simple_text_display(struct gadget *g, struct window *win)
 
 		for (i = 0; i < g->r.w; i++)
 		{
-			win->scr->puts(win->scr, dx + x + i, dy + y + oy, " ", 1);
+			win->scr->puts(win->scr, dx + x + i, dy + y + oy, " ", 1, normal_style);
 		}
 		oy++;
 	}
@@ -644,7 +648,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		if (e->vruler_width)
 		{
 			snprintf(lbuf, sizeof(lbuf), "%*d  ", e->vruler_width - 1, line);
-			win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf));
+			win->scr->puts(win->scr, wx + gx, y + wy + gy, lbuf, strlen(lbuf), normal_style);
 		}
 
 		sl = line_len(l->l);
@@ -668,7 +672,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		for (x = 0; x < vw; x++)
 		{
 			const char *c; /* character to be displayed next */
-			void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
+			void (*puts)(struct screen *scr, int x, int y, const char *text, int len, style_t style);
 
 			if (l->pos + x < mx)
 			{
@@ -689,7 +693,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 				puts = win->scr->puts;
 			}
 
-			puts(win->scr, x + wx + gx + e->vruler_width, y + wy + gy, c, 1);
+			puts(win->scr, x + wx + gx + e->vruler_width, y + wy + gy, c, 1, normal_style);
 		}
 
 		line = nline;
@@ -820,10 +824,10 @@ static void listview_display(struct gadget *g, struct window *win)
 		{
 			buf_len = g->r.w;
 		}
-		win->scr->puts(win->scr, dx, dy + y, buf, buf_len);
+		win->scr->puts(win->scr, dx, dy + y, buf, buf_len, normal_style);
 		for (i = buf_len; i < g->r.w; i++)
 		{
-			win->scr->puts(win->scr, dx + i, dy + y, " ", 1);
+			win->scr->puts(win->scr, dx + i, dy + y, " ", 1, normal_style);
 		}
 	}
 
@@ -834,7 +838,7 @@ static void listview_display(struct gadget *g, struct window *win)
 
 		for (i = 0; i < g->r.w; i++)
 		{
-			win->scr->puts(win->scr, dx + i, dy + y, " ", 1);
+			win->scr->puts(win->scr, dx + i, dy + y, " ", 1, normal_style);
 		}
 	}
 }
@@ -874,7 +878,7 @@ void windows_display(struct window *wnd, struct screen *scr)
 	{
 		for (x = ox; x < ox + wnd->g.g.r.w; x++)
 		{
-			scr->puts(scr, x, y, " ", 1);
+			scr->puts(scr, x, y, " ", 1, normal_style);
 		}
 	}
 
@@ -966,7 +970,7 @@ static struct window *screen_find_next_active_candidate(struct screen *scr)
 
 /*******************************************************************************/
 
-static void screen_in_memory_puts(struct screen *scr, int x, int y, const char *txt, int len)
+static void screen_in_memory_puts(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
 	int i;
 
@@ -993,22 +997,22 @@ static void screen_in_memory_puts(struct screen *scr, int x, int y, const char *
 
 /*******************************************************************************/
 
-static void screen_in_memory_put_cursor(struct screen *scr, int x, int y, const char *txt, int len)
+static void screen_in_memory_put_cursor(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
 	/* No special support for this for now */
-	screen_in_memory_puts(scr, x, y, txt, len);
+	screen_in_memory_puts(scr, x, y, txt, len, style);
 }
 
 /*******************************************************************************/
 
-static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len)
+static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
 	mvwaddnstr(scr->handle, y, x, txt, len);
 }
 
 /*******************************************************************************/
 
-static void screen_ncurses_put_cursor(struct screen *scr, int x, int y, const char *txt, int len)
+static void screen_ncurses_put_cursor(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
 	wattron(scr->handle, A_REVERSE);
 	mvwaddnstr(scr->handle, y, x, txt, len);

@@ -81,6 +81,14 @@ struct window
 	key_listeners_t key_listeners;
 };
 
+
+struct style
+{
+	unsigned char underline;
+};
+
+typedef struct style style_t;
+
 /**
  * The root of all windows.
  */
@@ -108,10 +116,10 @@ struct screen
 	int h;
 
 	/** Function to put a string on the screen */
-	void (*puts)(struct screen *scr, int x, int y, const char *text, int len);
+	void (*puts)(struct screen *scr, int x, int y, const char *text, int len, style_t style);
 
 	/** Function to put a string on the screen in cursor mode */
-	void (*put_cursor)(struct screen *scr, int x, int y, const char *text, int len);
+	void (*put_cursor)(struct screen *scr, int x, int y, const char *text, int len, style_t style);
 
 	/* Specific to the ncurses renderer */
 	WINDOW *handle;
@@ -148,13 +156,6 @@ struct text_view
 {
 	struct simple_text_label tl;
 };
-
-struct style
-{
-	unsigned char underline;
-};
-
-typedef struct style style_t;
 
 /** Holds style information for a single part of a line */
 struct style_node

@@ -1007,7 +1007,17 @@ static void screen_in_memory_put_cursor(struct screen *scr, int x, int y, const 
 
 static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
+	if (style.underline)
+	{
+		wattron(scr->handle, A_UNDERLINE);
+	}
+
 	mvwaddnstr(scr->handle, y, x, txt, len);
+
+	if (style.underline)
+	{
+		wattroff(scr->handle, A_UNDERLINE);
+	}
 }
 
 /*******************************************************************************/

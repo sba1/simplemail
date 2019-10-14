@@ -1025,7 +1025,7 @@ static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *tx
 static void screen_ncurses_put_cursor(struct screen *scr, int x, int y, const char *txt, int len, style_t style)
 {
 	wattron(scr->handle, A_REVERSE);
-	mvwaddnstr(scr->handle, y, x, txt, len);
+	screen_ncurses_puts(scr, x, y, txt, len, style);
 	wattroff(scr->handle, A_REVERSE);
 }
 

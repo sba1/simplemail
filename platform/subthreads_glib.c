@@ -82,7 +82,9 @@ static struct thread_s main_thread;
 int init_threads(void)
 {
 	/* TODO: Proper bailout on failure */
+#if !GLIB_CHECK_VERSION(2,32,0)
 	if (!g_thread_get_initialized()) g_thread_init (NULL);
+#endif
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
 	list_init(&thread_list);

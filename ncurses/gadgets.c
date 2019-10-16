@@ -672,11 +672,14 @@ static void text_edit_display(struct gadget *g, struct window *win)
 		for (x = 0; x < vw; x++)
 		{
 			const char *c; /* character to be displayed next */
+			style_t style = normal_style; /* style to be used next */
+
 			void (*puts)(struct screen *scr, int x, int y, const char *text, int len, style_t style);
 
 			if (l->pos + x < mx)
 			{
 				c = &l->l->contents[l->pos + x];
+				style = line_find(&l->l, l->pos + x);
 			} else
 			{
 				c = " ";
@@ -693,7 +696,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 				puts = win->scr->puts;
 			}
 
-			puts(win->scr, x + wx + gx + e->vruler_width, y + wy + gy, c, 1, normal_style);
+			puts(win->scr, x + wx + gx + e->vruler_width, y + wy + gy, c, 1, style);
 		}
 
 		line = nline;

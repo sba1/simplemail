@@ -679,7 +679,7 @@ static void text_edit_display(struct gadget *g, struct window *win)
 			if (l->pos + x < mx)
 			{
 				c = &l->l->contents[l->pos + x];
-				style = line_find(&l->l, l->pos + x);
+				style = line_style_at(l->l, l->pos + x);
 			} else
 			{
 				c = " ";

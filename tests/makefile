@@ -187,6 +187,23 @@ $(foreach testexe,$(TESTEXES), \
  $(eval $(call run.tmpl,$(testexe))) \
 )
 
+# gdb template
+#
+# $(1): The name of the unit test
+define gdb.tmpl
+gdb-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
+	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
+	cd gen-test-data && gdb ../$$<
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
+endef
+
+# "instanciate" gdb targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call gdb.tmpl,$(testexe))) \
+)
+
+
 # ddd template
 #
 # $(1): The name of the unit test

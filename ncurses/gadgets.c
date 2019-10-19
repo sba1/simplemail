@@ -323,10 +323,25 @@ static void line_clear(struct line_list *list)
 static void line_exchange(struct line_list *a, struct line_list *b)
 {
 	struct line_list t;
+	struct node *n;
 
 	t = *a;
 	*a = *b;
 	*b = t;
+
+	/* Fix up list pointer */
+	n = list_first(&a->l);
+	while (n)
+	{
+		n->list = &a->l;
+		n = node_next(n);
+	}
+	n = list_first(&b->l);
+	while (n)
+	{
+		n->list = &b->l;
+		n = node_next(n);
+	}
 }
 
 /**

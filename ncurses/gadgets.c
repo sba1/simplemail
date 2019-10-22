@@ -246,9 +246,19 @@ static struct line *line_next(struct line *line)
 	return (struct line *)node_next(&line->n);
 }
 
+static struct line *line_prev(struct line *line)
+{
+	return (struct line *)node_prev(&line->n);
+}
+
 static struct line *line_find(const struct line_list *list, int index)
 {
 	return (struct line *)list_find(&list->l, index);
+}
+
+static void line_remove(struct line *line)
+{
+	node_remove(&line->n);
 }
 
 static struct line *line_remove_tail(struct line_list *list)

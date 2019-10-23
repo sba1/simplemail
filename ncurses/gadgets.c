@@ -559,8 +559,32 @@ int text_edit_input(struct gadget *g, int value)
 			if (e->cx > 0)
 			{
 				e->cx--;
-			} else
+			} else if (e->cy != 0)
 			{
+				struct line *prev_line;
+				int prev_s_len;
+				char *new_contents;
+
+				if ((prev_line = line_prev(line)))
+				{
+					prev_s_len = strlen(prev_line->contents);
+					if ((new_contents = malloc(s_len + prev_s_len + 1)))
+					{
+						/* TODO: also consider styles */
+						strcpy(new_contents, prev_line->contents);
+						strcat(new_contents, line->contents);
+
+						free(prev_line->contents);
+						prev_line->contents = new_contents;
+						line_remove(line);
+
+						e->cx = prev_s_len;
+						e->cy--;
+						return 1;
+					}
+				}
+			} else {
+				/* Nothing to do, Backspace in the very beginning of the first line */
 				return 1;
 			}
 		}

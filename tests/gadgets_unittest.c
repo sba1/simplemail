@@ -90,4 +90,10 @@ void test_text_edit_enter_simple_text_works(void)
 	/* Empty line at the end */
 	te.g.input(&te.g, '\n');
 	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 3);
+
+	/* "Reset" */
+	gadgets_set_text_edit_contents(&te, "Line 1\nLine 2");
+	te.g.input(&te.g, GADS_KEY_DOWN);
+	te.g.input(&te.g, GADG_KEY_BACKSPACE);
+	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 1);
 }

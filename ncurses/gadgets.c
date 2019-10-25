@@ -554,6 +554,17 @@ int text_edit_input(struct gadget *g, int value)
 
 		s_len = line_len(line);
 
+		if (value == GADS_KEY_DELETE && e->cx == s_len && e->cy + 1 < list_length(&m->line_list.l))
+		{
+			/* Simulate by moving the cursor to the beginning of the next line and pressing backspace */
+			e->cx = 0;
+			e->cy++;
+
+			value = GADG_KEY_BACKSPACE;
+			line = line_next(line);
+			s_len = line_len(line);
+		}
+
 		if (value == GADG_KEY_BACKSPACE)
 		{
 			if (e->cx > 0)

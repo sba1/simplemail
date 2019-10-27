@@ -343,6 +343,15 @@ int gadgets_get_text_edit_number_of_lines(const struct text_edit *e);
 void gadgets_set_text_edit_contents(struct text_edit *e, const char *contents);
 
 /**
+ * Set the editors cursor position.
+ *
+ * @param e the text edit gadget to be modified
+ * @param cx the cursors x position
+ * @param cy the cursors y position
+ */
+void gadgets_set_text_edit_cursor(struct text_edit *e, int cx, int cy);
+
+/**
  * Initialize the list view.
  *
  * @param v the value to be initialized

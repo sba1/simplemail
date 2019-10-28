@@ -97,4 +97,12 @@ void test_text_edit_enter_simple_text_works(void)
 	te.g.input(&te.g, GADS_KEY_DOWN);
 	te.g.input(&te.g, GADG_KEY_BACKSPACE);
 	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 1);
+
+	/* "Reset" */
+	gadgets_set_text_edit_contents(&te, "Line 1\nLine 2");
+	gadgets_set_text_edit_cursor(&te, 0, 0);
+	te.g.input(&te.g, GADS_KEY_DOWN);
+	te.g.input(&te.g, GADS_KEY_LEFT);
+	te.g.input(&te.g, GADS_KEY_DELETE);
+	CU_ASSERT_EQUAL(gadgets_get_text_edit_number_of_lines(&te), 1);
 }

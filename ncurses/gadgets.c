@@ -847,10 +847,10 @@ char *gadgets_get_text_edit_contents(const struct text_edit *e)
 
 /******************************************************************************/
 
-void gadgets_set_text_edit_cursor(struct text_edit *e, int cy, int cy)
+void gadgets_set_text_edit_cursor(struct text_edit *e, int cx, int cy)
 {
-	te.cx = cx;
-	te.cy = cy;
+	e->cx = cx;
+	e->cy = cy;
 }
 
 /******************************************************************************/

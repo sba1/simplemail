@@ -352,6 +352,14 @@ void gadgets_set_text_edit_contents(struct text_edit *e, const char *contents);
 void gadgets_set_text_edit_cursor(struct text_edit *e, int cx, int cy);
 
 /**
+ * Set the text edit's current style.
+ *
+ * @param e
+ * @param style
+ */
+void gadgets_set_text_edit_style(struct text_edit *e, style_t style);
+
+/**
  * Initialize the list view.
  *
  * @param v the value to be initialized

@@ -855,6 +855,13 @@ void gadgets_set_text_edit_cursor(struct text_edit *e, int cx, int cy)
 
 /******************************************************************************/
 
+void gadgets_set_text_edit_style(struct text_edit *e, style_t style)
+{
+	e->cs = style;
+}
+
+/******************************************************************************/
+
 int gadgets_get_text_edit_number_of_lines(const struct text_edit *e)
 {
 	return list_length(&e->model.line_list.l);

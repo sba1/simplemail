@@ -6,6 +6,13 @@
 
 /******************************************************************************/
 
+int style_equals(style_t s1, style_t s2)
+{
+	return s1.underline == s2.underline;
+}
+
+/******************************************************************************/
+
 struct style_node *line_style_first(struct line *l)
 {
 	return (struct style_node *)list_first(&l->styles);

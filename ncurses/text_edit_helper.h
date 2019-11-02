@@ -8,6 +8,11 @@
 #include "gadgets.h"
 
 /**
+ * @return whether the two given styles are equal.
+ */
+int style_equals(style_t s1, style_t s2);
+
+/**
  * @return first style node of a line.
  */
 struct style_node *line_style_first(struct line *l);

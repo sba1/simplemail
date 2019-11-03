@@ -17,8 +17,16 @@
  */
 
 #include "ncurses/gadgets.h"
+#include "ncurses/text_edit_helper.h"
 
 #include <stdlib.h>
+
+/* @Test */
+void test_text_edit_style_helper(void)
+{
+	struct line l = {};
+	CU_ASSERT(!line_style_at(&l, 0).underline);
+}
 
 /* @Test */
 void test_text_edit_enter_simple_text_works(void)

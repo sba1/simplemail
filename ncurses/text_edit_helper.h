@@ -31,4 +31,11 @@ struct style_node *line_style_next(struct style_node *n);
  */
 style_t line_style_at(struct line *l, int pos);
 
+/**
+ * Insert the given line style at the given position.
+ *
+ * @return wether the style could be inserted.
+ */
+int line_style_insert(struct line *l, int pos, style_t s);
+
 #endif

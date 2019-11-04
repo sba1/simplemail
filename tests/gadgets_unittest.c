@@ -25,7 +25,47 @@
 void test_text_edit_style_helper(void)
 {
 	struct line l = {};
+	style_t underline;
+	style_t normal;
+
+	memset(&underline, 0, sizeof(underline));
+	underline.underline = 1;
+
+	memset(&normal, 0, sizeof(normal));
+
+	list_init(&l.styles);
 	CU_ASSERT(!line_style_at(&l, 0).underline);
+	CU_ASSERT(line_style_insert(&l, 0, underline));
+	CU_ASSERT(line_style_insert(&l, 0, underline));
+	CU_ASSERT(line_style_insert(&l, 2, underline));
+	CU_ASSERT(line_style_at(&l, 0).underline);
+	CU_ASSERT(line_style_at(&l, 1).underline);
+	CU_ASSERT(line_style_at(&l, 2).underline);
+	CU_ASSERT(line_style_at(&l, 3).underline); /* Not existent, but should return the last one */
+
+	CU_ASSERT(line_style_insert(&l, 0, normal));
+	CU_ASSERT(!line_style_at(&l, 0).underline);
+	CU_ASSERT(line_style_at(&l, 1).underline);
+	CU_ASSERT(line_style_at(&l, 2).underline);
+	CU_ASSERT(line_style_at(&l, 3).underline);
+	CU_ASSERT(line_style_at(&l, 4).underline); /* Not existent, but should return the last one */
+
+	CU_ASSERT(line_style_insert(&l, 2, normal));
+	CU_ASSERT(!line_style_at(&l, 0).underline);
+	CU_ASSERT(line_style_at(&l, 1).underline);
+	CU_ASSERT(!line_style_at(&l, 2).underline);
+	CU_ASSERT(line_style_at(&l, 3).underline);
+	CU_ASSERT(line_style_at(&l, 4).underline);
+	CU_ASSERT(line_style_at(&l, 5).underline); /* Not existent, but should return the last one */
+
+	CU_ASSERT(line_style_insert(&l, 5, normal));
+	CU_ASSERT(!line_style_at(&l, 0).underline);
+	CU_ASSERT(line_style_at(&l, 1).underline);
+	CU_ASSERT(!line_style_at(&l, 2).underline);
+	CU_ASSERT(line_style_at(&l, 3).underline);
+	CU_ASSERT(line_style_at(&l, 4).underline);
+	CU_ASSERT(!line_style_at(&l, 5).underline);
+	CU_ASSERT(!line_style_at(&l, 6).underline); /* Not existent, but should return the last one */
 }
 
 /* @Test */

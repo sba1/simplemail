@@ -118,3 +118,29 @@ int line_style_insert(struct line *l, int pos, style_t s)
 	}
 	return 1;
 }
+
+/******************************************************************************/
+
+void line_style_remove(struct line *l, int pos)
+{
+	struct style_node *n;
+	int cur = 0;
+
+	n = line_style_first(l);
+	while (n)
+	{
+		if (cur + n->len > pos)
+		{
+			n->len--;
+			if (!n->len)
+			{
+				node_remove(&n->n);
+				free(n);
+			}
+			return;
+		}
+
+		cur += n->len;
+		n = line_style_next(n);
+	}
+}

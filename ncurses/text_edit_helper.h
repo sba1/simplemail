@@ -38,4 +38,11 @@ style_t line_style_at(struct line *l, int pos);
  */
 int line_style_insert(struct line *l, int pos, style_t s);
 
+/**
+ * Remove the line style information at the given position.
+ * Line-styles after the to-be-removed one will be moved one
+ * position to the left.
+ */
+void line_style_remove(struct line *l, int pos);
+
 #endif

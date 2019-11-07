@@ -522,6 +522,7 @@ int text_edit_input(struct gadget *g, int value)
 		}
 		strncpy(new_string, line->contents, e->cx);
 		strcpy(&new_string[e->cx + 1], &line->contents[e->cx]);
+		line_style_insert(line, e->cx, e->cs);
 		new_string[e->cx++] = value;
 		free(line->contents);
 		line->contents = new_string;
@@ -666,6 +667,10 @@ int text_edit_input(struct gadget *g, int value)
 				e->cx = line_len(l);
 			}
 		}
+		break;
+
+	case	27: /* ESC */
+		e->cs.underline = !e->cs.underline;
 		break;
 
 	default:

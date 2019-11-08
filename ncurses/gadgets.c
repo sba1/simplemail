@@ -604,6 +604,7 @@ int text_edit_input(struct gadget *g, int value)
 		if (e->cx < s_len)
 		{
 			memmove(&line->contents[e->cx], &line->contents[e->cx + 1], strlen(&line->contents[e->cx + 1]) + 1);
+			line_style_remove(line, e->cx);
 		} else
 		{
 			e->cx = s_len;

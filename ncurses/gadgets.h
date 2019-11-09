@@ -85,6 +85,7 @@ struct window
 struct style
 {
 	unsigned char underline;
+	unsigned char bold;
 };
 
 typedef struct style style_t;

@@ -1096,7 +1096,17 @@ static void screen_ncurses_puts(struct screen *scr, int x, int y, const char *tx
 		wattron(scr->handle, A_UNDERLINE);
 	}
 
+	if (style.bold)
+	{
+		wattron(scr->handle, A_BOLD);
+	}
+
 	mvwaddnstr(scr->handle, y, x, txt, len);
+
+	if (style.bold)
+	{
+		wattroff(scr->handle, A_BOLD);
+	}
 
 	if (style.underline)
 	{

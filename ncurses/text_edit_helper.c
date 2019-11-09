@@ -10,7 +10,7 @@
 
 int style_equals(style_t s1, style_t s2)
 {
-	return s1.underline == s2.underline;
+	return s1.underline == s2.underline && s2.bold == s2.bold;
 }
 
 /******************************************************************************/

@@ -1230,8 +1230,20 @@ int screen_handle(struct screen *scr)
 			}
 		} else if (ch <= 0x1f && ch != '\n')
 		{
+			int skip = 0;
+
+			if (ch == 27)
+			{
+				int nch = wgetch(scr->handle);
+				if (nch != -1)
+				{
+					ch = nch | GADS_KEY_QUALIFIER_ALT;
+					skip = 1;
+				}
+			}
+
 			/* Try to map ctrl keys to proper char first */
-			if (screen_invoke_key_listener(scr, ch+64))
+			if (!skip && screen_invoke_key_listener(scr, ch+64))
 			{
 				continue;
 			}

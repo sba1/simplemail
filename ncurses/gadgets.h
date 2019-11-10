@@ -50,6 +50,8 @@ struct group
 #define GADS_KEY_HOME -8
 #define GADS_KEY_END -9
 
+#define GADS_KEY_QUALIFIER_ALT (1<<30)
+
 struct key_listener
 {
 	struct node n;

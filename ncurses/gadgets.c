@@ -509,7 +509,7 @@ int text_edit_input(struct gadget *g, int value)
 		}
 	}
 
-	if (value >= 32)
+	if (value >= 32 && value < 256)
 	{
 		char *new_string;
 		int s_len;
@@ -612,6 +612,19 @@ int text_edit_input(struct gadget *g, int value)
 		return 1;
 	}
 
+	if (value & GADS_KEY_QUALIFIER_ALT)
+	{
+		switch (value & ~(GADS_KEY_QUALIFIER_ALT))
+		{
+		case	'u':
+				e->cs.underline = !e->cs.underline;
+				break;
+		case	'b':
+				e->cs.bold = !e->cs.bold;
+				break;
+		}
+	}
+
 	switch (value)
 	{
 	case GADS_KEY_UP:
@@ -668,10 +681,6 @@ int text_edit_input(struct gadget *g, int value)
 				e->cx = line_len(l);
 			}
 		}
-		break;
-
-	case	27: /* ESC */
-		e->cs.underline = !e->cs.underline;
 		break;
 
 	default:

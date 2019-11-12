@@ -485,6 +485,19 @@ static void text_edit_format(struct text_edit *e)
 
 /******************************************************************************/
 
+static void text_edit_handle_state_update(struct text_edit *e)
+{
+	struct line *l = line_find(&e->model.line_list, e->cy);
+	if (!l)
+	{
+		return;
+	}
+
+	e->cs = line_style_at(l, (e->cx > 0)? e->cx - 1 : 0);
+}
+
+/******************************************************************************/
+
 int text_edit_input(struct gadget *g, int value)
 {
 	/* The following code is not optimized yet */
@@ -609,6 +622,7 @@ int text_edit_input(struct gadget *g, int value)
 		{
 			e->cx = s_len;
 		}
+		text_edit_handle_state_update(e);
 		return 1;
 	}
 
@@ -632,6 +646,7 @@ int text_edit_input(struct gadget *g, int value)
 		{
 			e->cy--;
 		}
+		text_edit_handle_state_update(e);
 		break;
 
 	case GADS_KEY_DOWN:
@@ -639,6 +654,7 @@ int text_edit_input(struct gadget *g, int value)
 		{
 			e->cy++;
 		}
+		text_edit_handle_state_update(e);
 		break;
 
 	case GADS_KEY_RIGHT:
@@ -653,6 +669,7 @@ int text_edit_input(struct gadget *g, int value)
 				e->cy++;
 			}
 		}
+		text_edit_handle_state_update(e);
 		break;
 
 	case GADS_KEY_LEFT:
@@ -667,10 +684,12 @@ int text_edit_input(struct gadget *g, int value)
 			l = line_find(&e->model.line_list, e->cy);
 			e->cx = line_len(l);
 		}
+		text_edit_handle_state_update(e);
 		break;
 
 	case GADS_KEY_HOME:
 		e->cx = 0;
+		text_edit_handle_state_update(e);
 		break;
 
 	case GADS_KEY_END:
@@ -681,6 +700,7 @@ int text_edit_input(struct gadget *g, int value)
 				e->cx = line_len(l);
 			}
 		}
+		text_edit_handle_state_update(e);
 		break;
 
 	default:

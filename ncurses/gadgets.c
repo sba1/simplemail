@@ -309,11 +309,6 @@ static struct line *line_insert_tail_len(struct line_list *list, const char *str
 	return l;
 }
 
-static int line_len(const struct line *line)
-{
-	return strlen(line->contents);
-}
-
 static void line_clear(struct line_list *list)
 {
 	struct line *node;

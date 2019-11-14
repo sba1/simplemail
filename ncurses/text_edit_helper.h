@@ -8,6 +8,11 @@
 #include "gadgets.h"
 
 /**
+ * @return the length of the line.
+ */
+int line_len(const struct line *line);
+
+/**
  * @return whether the two given styles are equal.
  */
 int style_equals(style_t s1, style_t s2);

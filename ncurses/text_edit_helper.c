@@ -151,3 +151,25 @@ void line_style_remove(struct line *l, int pos)
 		n = line_style_next(n);
 	}
 }
+
+/*******************************************************************************/
+
+int line_insert_seq(struct line *line, int pos, char *seq, style_t s)
+{
+	char *new_string;
+	int s_len;
+
+	s_len = line_len(line);
+	if (pos > s_len) pos = s_len;
+	if (!(new_string = malloc(s_len + 2)))
+	{
+		return -1;
+	}
+	strncpy(new_string, line->contents, pos);
+	strcpy(&new_string[pos + 1], &line->contents[pos]);
+	line_style_insert(line, pos, s);
+	new_string[pos++] = seq[0];
+	free(line->contents);
+	line->contents = new_string;
+	return pos;
+}

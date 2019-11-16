@@ -50,4 +50,15 @@ int line_style_insert(struct line *l, int pos, style_t s);
  */
 void line_style_remove(struct line *l, int pos);
 
+/**
+ * Insert the given sequence into the line at the given position.
+ *
+ * @param l the line where to insert the sequence.
+ * @param pos the character position where to insert the sequence.
+ * @param seq the sequence which shall be inserted
+ * @param s the style that the sequence should have
+ * @return the new position of the cursor or -1 to indicate a failure.
+ */
+int line_insert_seq(struct line *l, int pos, char *seq, style_t s);
+
 #endif

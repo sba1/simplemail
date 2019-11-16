@@ -519,22 +519,18 @@ int text_edit_input(struct gadget *g, int value)
 
 	if (value >= 32 && value < 256)
 	{
-		char *new_string;
-		int s_len;
+		char seq[2];
+		int new_pos;
 
-		s_len = line_len(line);
-		if (e->cx > s_len) e->cx = s_len;
-		if (!(new_string = malloc(s_len + 2)))
+		seq[0] = value;
+		seq[1] = 0;
+
+		new_pos = line_insert_seq(line, e->cx, seq, e->cs);
+		if (new_pos < 0)
 		{
 			return 0;
 		}
-		strncpy(new_string, line->contents, e->cx);
-		strcpy(&new_string[e->cx + 1], &line->contents[e->cx]);
-		line_style_insert(line, e->cx, e->cs);
-		new_string[e->cx++] = value;
-		free(line->contents);
-		line->contents = new_string;
-		g->flags |= GADF_REDRAW_UPDATE;
+		e->cx = new_pos;
 		return 1;
 	}
 

@@ -93,6 +93,7 @@ OBJSDIR=$(TARGET_DIR)/$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
 
 OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
 
+.PHONY: all
 all: $(TARGET)
 
 .PHONY: dirs

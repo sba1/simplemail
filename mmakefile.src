@@ -12,7 +12,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 contrib-simplemail-bin-quick : contrib-simplemail-bin
 
 AMIGAMUI := \
-	vsnprintf \
 	utf8stringclass \
 	transwndclass \
 	timesupport \
@@ -141,7 +140,9 @@ NOWARN_FLAGS := $(NOWARN_STRICT_ALIASING) $(NOWARN_IMPLICIT_FUNCTION_DECL) $(NOW
 	$(NOWARN_ERROR) $(NOWARN_UNUSED_BUT_SET_VARIABLE) $(NOWARN_MAYBE_UNINITIALIZED) $(NOWARN_INT_CONVERSION) \
 	$(NOWARN_FORMAT) $(NOWARN_DISCARDED_QUALIFIERS) $(NOWARN_INCOMPAT_POINTER_TYPES)
 
-USER_CFLAGS := $(NOWARN_FLAGS) -DHAVE_OPENURL -DUSE_OPENSSL -D__USE_XOPEN2K8 -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+USER_CFLAGS := $(NOWARN_FLAGS) 
+
+USER_CPPFLAGS := -DHAVE_OPENURL -DUSE_OPENSSL -D_XOPEN_SOURCE=700 -D_BSD_SOURCE -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -DSIMPLEMAIL_YEAR=\"`date +%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arossupport mui expat ssl crypto net"

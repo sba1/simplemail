@@ -85,20 +85,42 @@ ARCHSRCS = $(wildcard ncurses/*.c) \
 	platform/tcpip_posix.c \
 	gtk/support.c
 
-SRCS = $(NONARCHSRCS) $(ARCHSRCS)
+
+# -------------------------------------------------------------
+
+.PHONY: all
+all: $(TARGET)
+
+# -------------------------------------------------------------
+
+include unity.mk
+
+# Will create UNITIES macro
+$(call make-unities, $(NONARCHSRCS))
+
+# -------------------------------------------------------------
+
+SRCS=$(ARCHSRCS)
 
 # -------------------------------------------------------------
 
 OBJSDIR=$(TARGET_DIR)/$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
 
-OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
+OBJS = \
+	$(UNITIES:$(TARGET_DIR)/%.c=$(OBJSDIR)/%.o) \
+	$(SRCS:%.c=$(OBJSDIR)/%.o)
 
-.PHONY: all
-all: $(TARGET)
+# -------------------------------------------------------------
+
+# Construct rules to create the unity files
+$(call make-unity-rules, $(UNITIES))
+
+# -------------------------------------------------------------
+
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) $(TARGET_DIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform
+	-$(MKDIR) $(TARGET_DIR) $(OBJSDIR) $(OBJSDIR)/gtk $(OBJSDIR)/ncurses $(OBJSDIR)/platform $(OBJSDIR)/unities
 
 # Rules for building
 $(TARGET): dirs $(OBJS) $(OBJSDIR)/stubs.c
@@ -118,9 +140,12 @@ $(OBJSDIR)/stubs.c: dirs $(OBJS) devtools/gen-stubs.py
 $(OBJSDIR)/%.o: %.c
 	$(CC) -MMD -MP $(CFLAGS) -c $< -o $@
 
+$(OBJSDIR)/%.o: $(TARGET_DIR)/%.c
+	$(CC) -MMD -MP $(CFLAGS) -c $< -o $@
+
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS) $(OBJSDIR)
+	$(RM) $(TARGET) $(OBJS) $(OBJSDIR) $(UNITIES)
 
 .PHONY: run
 run: $(TARGET)
